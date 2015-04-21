@@ -1481,7 +1481,7 @@ namespace Ohana3DS_Rebirth.GUI
             Rectangle rightDock = new Rectangle((rect.X + rect.Width) - rightDockWidth, rect.Y, rightDockWidth, rect.Height);
             Rectangle leftDock = new Rectangle(rect.X, rect.Y, leftDockWidth, rect.Height);
             Rectangle bottomDock = new Rectangle(rect.X, (rect.Y + rect.Height) - bottomDockHeight, rect.Width, bottomDockHeight);
-            Rectangle topDock = new Rectangle(rect.X, rect.Y, rect.Width, bottomDockHeight);
+            Rectangle topDock = new Rectangle(rect.X, rect.Y, rect.Width, topDockHeight);
             Rectangle centerDock = new Rectangle(rect.Location, rect.Size);
 
             //Redimensiona os espaços de dock de acordo com outros Dock Sides existentes
