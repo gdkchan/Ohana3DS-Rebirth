@@ -2,7 +2,7 @@
 //
 //TODO:
 //- Some functions can be a bit optimized (+ reduce redundant code)
-
+//- Add code to resize the Dock Container and the windows inside and keep proportions?
 
 using System;
 using System.Collections.Generic;
@@ -19,8 +19,6 @@ namespace Ohana3DS_Rebirth.GUI
 {
     public partial class ODock : Control
     {
-        Form parentForm;
-
         const int defaultSideSize = 128;
 
         int rightDockWidth = defaultSideSize;
@@ -46,7 +44,7 @@ namespace Ohana3DS_Rebirth.GUI
         }
         private class formInfoStruct
         {
-            public Form form;
+            public Control form;
             public int index;
             public dockMode dock;
             public bool hasGrip;
@@ -60,44 +58,37 @@ namespace Ohana3DS_Rebirth.GUI
         private Point dragMousePosition;
         private resizeMode dragMode;
         private dockMode dragSide;
- 
+
         public ODock()
         {
             SetStyle(ControlStyles.SupportsTransparentBackColor, true);
-            InitializeComponent();
-        }
-
-        public void Initialize(Form form)
-        {
-            parentForm = form;
             this.MouseMove += new MouseEventHandler(Control_MouseMove);
             this.MouseDown += new MouseEventHandler(Control_MouseDown);
             this.MouseUp += new MouseEventHandler(Control_MouseUp);
+            InitializeComponent();
         }
 
-        public void Launch_Form(Form form)
+        public void launch(ODockWindow window)
         {
-            form.Move += new EventHandler(Form_Move);
-            form.ResizeEnd += new EventHandler(Form_MoveEnded);
-            form.ShowInTaskbar = false;
-            form.Owner = parentForm;
+            this.Controls.Add(window);
+            window.Move += new EventHandler(Form_Move);
+            window.MoveEnded += new EventHandler(Form_MoveEnded);
 
             formInfoStruct info = new formInfoStruct();
             info.index = formIndex;
             info.dock = dockMode.Floating;
-            info.form = form;
+            info.form = window;
             formInfo.Add(info);
-            form.Tag = formIndex;
+            window.Tag = formIndex;
+            window.BringToFront();
             formIndex += 1;
-
-            form.Show();
         }
 
         private void Control_MouseMove(Object sender, MouseEventArgs e)
         {
             if (drag)
             {
-                Rectangle rect = new Rectangle(parentForm.Left + this.Left, parentForm.Top + this.Top, this.Width, this.Height);
+                Rectangle rect = new Rectangle(0, 0, this.Width, this.Height);
 
                 if (dragMode == resizeMode.entireSide)
                 {
@@ -105,13 +96,19 @@ namespace Ohana3DS_Rebirth.GUI
                     {
                         case dockMode.Right:
                             bool canResizeRight = false;
-                            int newWidthRight = (rect.X + rect.Width) - Cursor.Position.X;
+                            int newWidthRight = (rect.X + rect.Width) - this.PointToClient(Cursor.Position).X;
                             if (newWidthRight < minWidth(dragSide)) newWidthRight = minWidth(dragSide);
                             if (newWidthRight > this.Width - gripSize) newWidthRight = this.Width - gripSize;
                             int differenceRight = newWidthRight - rightDockWidth;
                             if (differenceRight > 0) //Aumentou
                             {
-                                canResizeRight = getSpaceToCreateDockSide(dockMode.Right, differenceRight - gripSize);
+                                while (newWidthRight > rightDockWidth)
+                                {
+                                    canResizeRight = getSpaceToCreateDockSide(dockMode.Right, differenceRight - gripSize);
+                                    if (canResizeRight) break;
+                                    newWidthRight--;
+                                    differenceRight = newWidthRight - rightDockWidth;
+                                }
                             }
                             else if (differenceRight < 0) //Diminuiu
                             {
@@ -126,7 +123,7 @@ namespace Ohana3DS_Rebirth.GUI
 
                                 if (formCount(dockMode.Center) > 0)
                                 {
-                                    int centerFormIndex = getRightmostForm(dockMode.Center);
+                                    int centerFormIndex = getCenterForm();
                                     formInfo[centerFormIndex].form.Width += diff;
                                 }
 
@@ -164,13 +161,19 @@ namespace Ohana3DS_Rebirth.GUI
 
                         case dockMode.Left:
                             bool canResizeLeft = false;
-                            int newWidthLeft = Cursor.Position.X - rect.X;
+                            int newWidthLeft = this.PointToClient(Cursor.Position).X - rect.X;
                             if (newWidthLeft < minWidth(dragSide)) newWidthLeft = minWidth(dragSide);
                             if (newWidthLeft > this.Width - gripSize) newWidthLeft = this.Width - gripSize;
                             int differenceLeft = newWidthLeft - leftDockWidth;
                             if (differenceLeft > 0) //Aumentou
                             {
-                                canResizeLeft = getSpaceToCreateDockSide(dockMode.Left, differenceLeft - gripSize);
+                                while (newWidthLeft > leftDockWidth)
+                                {
+                                    canResizeLeft = getSpaceToCreateDockSide(dockMode.Left, differenceLeft - gripSize);
+                                    if (canResizeLeft) break;
+                                    newWidthLeft--;
+                                    differenceLeft = newWidthLeft - leftDockWidth;
+                                }
                             }
                             else if (differenceLeft < 0) //Diminuiu
                             {
@@ -225,13 +228,19 @@ namespace Ohana3DS_Rebirth.GUI
 
                         case dockMode.Bottom:
                             bool canResizeBottom = false;
-                            int newBottomHeight = (rect.Y + rect.Height) - Cursor.Position.Y;
+                            int newBottomHeight = (rect.Y + rect.Height) - this.PointToClient(Cursor.Position).Y;
                             if (newBottomHeight < minHeight(dragSide)) newBottomHeight = minHeight(dragSide);
                             if (newBottomHeight > this.Height - gripSize) newBottomHeight = this.Height - gripSize;
                             int differenceBottom = newBottomHeight - bottomDockHeight;
                             if (differenceBottom > 0) //Aumentou
                             {
-                                canResizeBottom = getSpaceToCreateDockSide(dockMode.Bottom, differenceBottom - gripSize);
+                                while (newBottomHeight > bottomDockHeight)
+                                {
+                                    canResizeBottom = getSpaceToCreateDockSide(dockMode.Bottom, differenceBottom - gripSize);
+                                    if (canResizeBottom) break;
+                                    newBottomHeight--;
+                                    differenceBottom = newBottomHeight - bottomDockHeight;
+                                }
                             }
                             else if (differenceBottom < 0) //Diminuiu
                             {
@@ -272,13 +281,19 @@ namespace Ohana3DS_Rebirth.GUI
 
                         case dockMode.Top:
                             bool canResizeTop = false;
-                            int newTopHeight = Cursor.Position.Y - rect.Y;
+                            int newTopHeight = this.PointToClient(Cursor.Position).Y - rect.Y;
                             if (newTopHeight < minHeight(dragSide)) newTopHeight = minHeight(dragSide);
                             if (newTopHeight > this.Height - gripSize) newTopHeight = this.Height - gripSize;
                             int differenceTop = newTopHeight - topDockHeight;
                             if (differenceTop > 0) //Aumentou
                             {
-                                canResizeTop = getSpaceToCreateDockSide(dockMode.Top, differenceTop - gripSize);
+                                while (newTopHeight > topDockHeight)
+                                {
+                                    canResizeTop = getSpaceToCreateDockSide(dockMode.Top, differenceTop - gripSize);
+                                    if (canResizeTop) break;
+                                    newTopHeight--;
+                                    differenceTop = newTopHeight - topDockHeight;
+                                }
                             }
                             else if (differenceTop < 0) //Diminuiu
                             {
@@ -330,45 +345,45 @@ namespace Ohana3DS_Rebirth.GUI
 
                             int belowForm = getBelowForm(getRectangle(formInfo[dragIndex].form), formInfo[dragIndex].dock, dragIndex);
                             int belowFormHeight;
-                            int belowBelowForm = getBelowForm(getRectangle(formInfo[belowForm].form), formInfo[dragIndex].dock, belowForm); //!
-                            if (formInfo[belowForm].hasGrip) //!
+                            int belowBelowForm = getBelowForm(getRectangle(formInfo[belowForm].form), formInfo[dragIndex].dock, belowForm);
+                            if (formInfo[belowForm].hasGrip)
                             {
-                                belowFormHeight = (formInfo[belowBelowForm].form.Top - (formInfo[belowForm].form.Top + dragDistanceY)) - gripSize; //!
+                                belowFormHeight = (formInfo[belowBelowForm].form.Top - (formInfo[belowForm].form.Top + dragDistanceY)) - gripSize;
                             }
                             else
                             {
-                                belowFormHeight = (rect.Top + rect.Height) - (formInfo[belowForm].form.Top + dragDistanceY); //!
+                                belowFormHeight = (rect.Top + rect.Height) - (formInfo[belowForm].form.Top + dragDistanceY);
                             }
 
-                            if (formInfo[dragIndex].form.Height + dragDistanceY >= formInfo[dragIndex].form.MinimumSize.Height && belowFormHeight >= formInfo[belowForm].form.MinimumSize.Height) //!
+                            if (formInfo[dragIndex].form.Height + dragDistanceY >= formInfo[dragIndex].form.MinimumSize.Height && belowFormHeight >= formInfo[belowForm].form.MinimumSize.Height)
                             {
                                 formInfo[dragIndex].form.Height += dragDistanceY;
-                                formInfo[belowForm].form.Height = belowFormHeight; //!
-                                formInfo[belowForm].form.Top += dragDistanceY; //!
+                                formInfo[belowForm].form.Height = belowFormHeight;
+                                formInfo[belowForm].form.Top += dragDistanceY;
                             }
                             else if (formInfo[dragIndex].form.Height + dragDistanceY < formInfo[dragIndex].form.MinimumSize.Height)
                             {
                                 formInfo[dragIndex].form.Height = formInfo[dragIndex].form.MinimumSize.Height;
                                 formInfo[belowForm].form.Top = (formInfo[dragIndex].form.Top + formInfo[dragIndex].form.Height) + gripSize;
-                                if (formInfo[belowForm].hasGrip) //!
+                                if (formInfo[belowForm].hasGrip)
                                 {
-                                    formInfo[belowForm].form.Height = (formInfo[belowBelowForm].form.Top - formInfo[belowForm].form.Top) - gripSize; //!
+                                    formInfo[belowForm].form.Height = (formInfo[belowBelowForm].form.Top - formInfo[belowForm].form.Top) - gripSize;
                                 }
                                 else
                                 {
-                                    formInfo[belowForm].form.Height = (rect.Top + rect.Height) - formInfo[belowForm].form.Top; //!
+                                    formInfo[belowForm].form.Height = (rect.Top + rect.Height) - formInfo[belowForm].form.Top;
                                 }
                             }
                             else if (belowFormHeight < formInfo[belowForm].form.MinimumSize.Height)
                             {
                                 formInfo[belowForm].form.Height = formInfo[belowForm].form.MinimumSize.Height;
-                                if (formInfo[belowForm].hasGrip) //!
+                                if (formInfo[belowForm].hasGrip)
                                 {
-                                    formInfo[belowForm].form.Top = (formInfo[belowBelowForm].form.Top - formInfo[belowForm].form.Height) - gripSize; //!
+                                    formInfo[belowForm].form.Top = (formInfo[belowBelowForm].form.Top - formInfo[belowForm].form.Height) - gripSize;
                                 }
                                 else
                                 {
-                                    formInfo[belowForm].form.Top = (rect.Top + rect.Height) - formInfo[belowForm].form.Height; //!
+                                    formInfo[belowForm].form.Top = (rect.Top + rect.Height) - formInfo[belowForm].form.Height;
                                 }
                                 formInfo[dragIndex].form.Height = (formInfo[belowForm].form.Top - formInfo[dragIndex].form.Top) - gripSize;
                             }
@@ -381,45 +396,45 @@ namespace Ohana3DS_Rebirth.GUI
 
                             int rightForm = getRightForm(getRectangle(formInfo[dragIndex].form), formInfo[dragIndex].dock, dragIndex);
                             int rightFormWidth;
-                            int rightRightForm = getRightForm(getRectangle(formInfo[rightForm].form), formInfo[dragIndex].dock, rightForm); //!
-                            if (formInfo[rightForm].hasGrip) //!
+                            int rightRightForm = getRightForm(getRectangle(formInfo[rightForm].form), formInfo[dragIndex].dock, rightForm);
+                            if (formInfo[rightForm].hasGrip)
                             {
-                                rightFormWidth = (formInfo[rightRightForm].form.Left - (formInfo[rightForm].form.Left + dragDistanceX)) - gripSize; //!
+                                rightFormWidth = (formInfo[rightRightForm].form.Left - (formInfo[rightForm].form.Left + dragDistanceX)) - gripSize;
                             }
                             else
                             {
-                                rightFormWidth = (rect.Left + rect.Width) - (formInfo[rightForm].form.Left + dragDistanceX); //!
+                                rightFormWidth = (rect.Left + rect.Width) - (formInfo[rightForm].form.Left + dragDistanceX);
                             }
 
-                            if (formInfo[dragIndex].form.Width + dragDistanceX >= formInfo[dragIndex].form.MinimumSize.Width && rightFormWidth >= formInfo[rightForm].form.MinimumSize.Width) //!
+                            if (formInfo[dragIndex].form.Width + dragDistanceX >= formInfo[dragIndex].form.MinimumSize.Width && rightFormWidth >= formInfo[rightForm].form.MinimumSize.Width)
                             {
                                 formInfo[dragIndex].form.Width += dragDistanceX;
-                                formInfo[rightForm].form.Width = rightFormWidth; //!
-                                formInfo[rightForm].form.Left += dragDistanceX; //!
+                                formInfo[rightForm].form.Width = rightFormWidth;
+                                formInfo[rightForm].form.Left += dragDistanceX;
                             }
                             else if (formInfo[dragIndex].form.Width + dragDistanceX < formInfo[dragIndex].form.MinimumSize.Width)
                             {
                                 formInfo[dragIndex].form.Width = formInfo[dragIndex].form.MinimumSize.Width;
                                 formInfo[rightForm].form.Left = (formInfo[dragIndex].form.Left + formInfo[dragIndex].form.Width) + gripSize;
-                                if (formInfo[rightForm].hasGrip) //!
+                                if (formInfo[rightForm].hasGrip)
                                 {
-                                    formInfo[rightForm].form.Width = (formInfo[rightRightForm].form.Left - formInfo[rightForm].form.Left) - gripSize; //!
+                                    formInfo[rightForm].form.Width = (formInfo[rightRightForm].form.Left - formInfo[rightForm].form.Left) - gripSize;
                                 }
                                 else
                                 {
-                                    formInfo[rightForm].form.Width = (rect.Left + rect.Width) - formInfo[rightForm].form.Left; //!
+                                    formInfo[rightForm].form.Width = (rect.Left + rect.Width) - formInfo[rightForm].form.Left;
                                 }
                             }
                             else if (rightFormWidth < formInfo[rightForm].form.MinimumSize.Width)
                             {
                                 formInfo[rightForm].form.Width = formInfo[rightForm].form.MinimumSize.Width;
-                                if (formInfo[rightForm].hasGrip) //!
+                                if (formInfo[rightForm].hasGrip)
                                 {
-                                    formInfo[rightForm].form.Left = (formInfo[rightRightForm].form.Left - formInfo[rightForm].form.Width) - gripSize; //!
+                                    formInfo[rightForm].form.Left = (formInfo[rightRightForm].form.Left - formInfo[rightForm].form.Width) - gripSize;
                                 }
                                 else
                                 {
-                                    formInfo[rightForm].form.Left = (rect.Left + rect.Width) - formInfo[rightForm].form.Width; //!
+                                    formInfo[rightForm].form.Left = (rect.Left + rect.Width) - formInfo[rightForm].form.Width;
                                 }
                                 formInfo[dragIndex].form.Width = (formInfo[rightForm].form.Left - formInfo[dragIndex].form.Left) - gripSize;
                             }
@@ -432,8 +447,8 @@ namespace Ohana3DS_Rebirth.GUI
             }
             else
             {
-                Rectangle rect = new Rectangle(parentForm.Left + this.Left, parentForm.Top + this.Top, this.Width, this.Height);
-                Rectangle mouseRect = new Rectangle(Cursor.Position, new Size(1, 1));
+                Rectangle rect = new Rectangle(0, 0, this.Width, this.Height);
+                Rectangle mouseRect = new Rectangle(this.PointToClient(Cursor.Position), new Size(1, 1));
 
                 for (int i = 0; i < formInfo.Count; i++)
                 {
@@ -444,13 +459,13 @@ namespace Ohana3DS_Rebirth.GUI
                             case dockMode.Right:
                             case dockMode.Left:
                                 Rectangle gripRectRL = new Rectangle(formInfo[i].form.Left, formInfo[i].form.Top + formInfo[i].form.Height, formInfo[i].form.Width, gripSize);
-                                if (mouseRect.IntersectsWith(gripRectRL)) Cursor.Current = Cursors.SizeNS;
+                                if (mouseRect.IntersectsWith(gripRectRL)) Cursor.Current = Cursors.HSplit;
                                 break;
 
                             case dockMode.Bottom:
                             case dockMode.Top:
                                 Rectangle gripRectBT = new Rectangle(formInfo[i].form.Left + formInfo[i].form.Width, formInfo[i].form.Top, gripSize, formInfo[i].form.Height);
-                                if (mouseRect.IntersectsWith(gripRectBT)) Cursor.Current = Cursors.SizeWE;
+                                if (mouseRect.IntersectsWith(gripRectBT)) Cursor.Current = Cursors.VSplit;
                                 break;
                         }
                     }
@@ -461,17 +476,17 @@ namespace Ohana3DS_Rebirth.GUI
                 Rectangle bottomDockDrag = new Rectangle(rect.X, ((rect.Y + rect.Height) - bottomDockHeight) - gripSize, rect.Width, gripSize);
                 Rectangle topDockDrag = new Rectangle(rect.X, rect.Y + topDockHeight, rect.Width, gripSize);
 
-                if ((formCount(dockMode.Right) > 0) && mouseRect.IntersectsWith(rightDockDrag)) Cursor.Current = Cursors.SizeWE;
-                if ((formCount(dockMode.Left) > 0) && mouseRect.IntersectsWith(leftDockDrag)) Cursor.Current = Cursors.SizeWE;
-                if ((formCount(dockMode.Bottom) > 0) && mouseRect.IntersectsWith(bottomDockDrag)) Cursor.Current = Cursors.SizeNS;
-                if ((formCount(dockMode.Top) > 0) && mouseRect.IntersectsWith(topDockDrag)) Cursor.Current = Cursors.SizeNS;
+                if ((formCount(dockMode.Right) > 0) && mouseRect.IntersectsWith(rightDockDrag)) Cursor.Current = Cursors.VSplit;
+                if ((formCount(dockMode.Left) > 0) && mouseRect.IntersectsWith(leftDockDrag)) Cursor.Current = Cursors.VSplit;
+                if ((formCount(dockMode.Bottom) > 0) && mouseRect.IntersectsWith(bottomDockDrag)) Cursor.Current = Cursors.HSplit;
+                if ((formCount(dockMode.Top) > 0) && mouseRect.IntersectsWith(topDockDrag)) Cursor.Current = Cursors.HSplit;
             }
         }
 
         private void Control_MouseDown(Object sender, MouseEventArgs e)
         {
-            Rectangle rect = new Rectangle(parentForm.Left + this.Left, parentForm.Top + this.Top, this.Width, this.Height);
-            Rectangle mouseRect = new Rectangle(Cursor.Position, new Size(1, 1));
+            Rectangle rect = new Rectangle(0, 0, this.Width, this.Height);
+            Rectangle mouseRect = new Rectangle(this.PointToClient(Cursor.Position), new Size(1, 1));
 
             for (int i = 0; i < formInfo.Count; i++)
             {
@@ -485,7 +500,7 @@ namespace Ohana3DS_Rebirth.GUI
 
                             if (mouseRect.IntersectsWith(gripRectRL))
                             {
-                                Cursor.Current = Cursors.SizeNS;
+                                Cursor.Current = Cursors.HSplit;
                                 drag = true;
                                 dragIndex = i;
                                 dragMousePosition = Cursor.Position;
@@ -500,7 +515,7 @@ namespace Ohana3DS_Rebirth.GUI
 
                             if (mouseRect.IntersectsWith(gripRectBT))
                             {
-                                Cursor.Current = Cursors.SizeWE;
+                                Cursor.Current = Cursors.VSplit;
                                 drag = true;
                                 dragIndex = i;
                                 dragMousePosition = Cursor.Position;
@@ -519,7 +534,7 @@ namespace Ohana3DS_Rebirth.GUI
 
             if ((formCount(dockMode.Right) > 0) && mouseRect.IntersectsWith(rightDockDrag))
             {
-                Cursor.Current = Cursors.SizeWE;
+                Cursor.Current = Cursors.VSplit;
                 drag = true;
                 dragMousePosition = Cursor.Position;
                 dragMode = resizeMode.entireSide;
@@ -527,7 +542,7 @@ namespace Ohana3DS_Rebirth.GUI
             }
             else if ((formCount(dockMode.Left) > 0) && mouseRect.IntersectsWith(leftDockDrag))
             {
-                Cursor.Current = Cursors.SizeWE;
+                Cursor.Current = Cursors.VSplit;
                 drag = true;
                 dragMousePosition = Cursor.Position;
                 dragMode = resizeMode.entireSide;
@@ -535,7 +550,7 @@ namespace Ohana3DS_Rebirth.GUI
             }
             else if ((formCount(dockMode.Bottom) > 0) && mouseRect.IntersectsWith(bottomDockDrag))
             {
-                Cursor.Current = Cursors.SizeNS;
+                Cursor.Current = Cursors.HSplit;
                 drag = true;
                 dragMousePosition = Cursor.Position;
                 dragMode = resizeMode.entireSide;
@@ -543,7 +558,7 @@ namespace Ohana3DS_Rebirth.GUI
             }
             else if ((formCount(dockMode.Top) > 0) && mouseRect.IntersectsWith(topDockDrag))
             {
-                Cursor.Current = Cursors.SizeNS;
+                Cursor.Current = Cursors.HSplit;
                 drag = true;
                 dragMousePosition = Cursor.Position;
                 dragMode = resizeMode.entireSide;
@@ -564,10 +579,10 @@ namespace Ohana3DS_Rebirth.GUI
         {
             if (drag) return;
 
-            Form form = (Form)sender;
-            int infoIndex = Get_Form_Info_Index((int)form.Tag);
+            Control form = (Control)sender;
+            int infoIndex = getFormInfoIndex((int)form.Tag);
 
-            Rectangle rect = new Rectangle(parentForm.Left + this.Left, parentForm.Top + this.Top, this.Width, this.Height);
+            Rectangle rect = new Rectangle(0, 0, this.Width, this.Height);
             Rectangle rightDock = getDockRect(dockMode.Right);
             Rectangle leftDock = getDockRect(dockMode.Left);
             Rectangle bottomDock = getDockRect(dockMode.Bottom);
@@ -641,10 +656,10 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void Form_MoveEnded(Object sender, EventArgs e)
         {
-            Form form = (Form)sender;
-            int infoIndex = Get_Form_Info_Index((int)form.Tag);
+            Control form = (Control)sender;
+            int infoIndex = getFormInfoIndex((int)form.Tag);
 
-            Rectangle rect = new Rectangle(parentForm.Left + this.Left, parentForm.Top + this.Top, this.Width, this.Height);
+            Rectangle rect = new Rectangle(0, 0, this.Width, this.Height);
 
             if (formCount(dockMode.Right) == 0) rightDockWidth = defaultSideSize; //Reseta valores caso não tenha nada no Dock Side ainda
             if (formCount(dockMode.Left) == 0) leftDockWidth = defaultSideSize;
@@ -666,6 +681,7 @@ namespace Ohana3DS_Rebirth.GUI
                 {
                     form.Location = centerDock.Location;
                     form.Size = centerDock.Size;
+                    form.SendToBack();
 
                     formInfo[infoIndex].hasGrip = false;
                     formInfo[infoIndex].dock = dockMode.Center;
@@ -699,6 +715,7 @@ namespace Ohana3DS_Rebirth.GUI
                     {
                         formInfo[infoIndex].denyDock = true;
                         deny = true;
+                        form.BringToFront();
                     }
                 }
 
@@ -738,6 +755,7 @@ namespace Ohana3DS_Rebirth.GUI
                         }
 
                         form.Size = new Size(currentRect.Width, height);
+                        form.SendToBack();
 
                         formInfo[infoIndex].dock = currentDock;
                     }
@@ -746,9 +764,9 @@ namespace Ohana3DS_Rebirth.GUI
                         int height;
                         if (formInfo[belowForm].hasGrip)
                         {
-                            int belowBelowForm = getBelowForm(getRectangle(formInfo[belowForm].form), currentDock, Get_Form_Info_Index((int)formInfo[belowForm].form.Tag));
+                            int belowBelowForm = getBelowForm(getRectangle(formInfo[belowForm].form), currentDock, getFormInfoIndex((int)formInfo[belowForm].form.Tag));
                             height = (formInfo[belowForm].form.Height + gripSize) / 2;
-                            formInfo[belowForm].form.Height = (formInfo[belowBelowForm].form.Top - (formInfo[belowForm].form.Top + height)) - gripSize; //!
+                            formInfo[belowForm].form.Height = (formInfo[belowBelowForm].form.Top - (formInfo[belowForm].form.Top + height)) - gripSize;
                         }
                         else
                         {
@@ -761,6 +779,7 @@ namespace Ohana3DS_Rebirth.GUI
 
                         form.Location = new Point(currentRect.X, top);
                         form.Size = new Size(currentRect.Width, height - gripSize);
+                        form.SendToBack();
 
                         formInfo[infoIndex].hasGrip = true;
                         formInfo[infoIndex].dock = currentDock;
@@ -769,6 +788,7 @@ namespace Ohana3DS_Rebirth.GUI
                     {
                         form.Location = currentRect.Location;
                         form.Size = currentRect.Size;
+                        form.SendToBack();
 
                         formInfo[infoIndex].hasGrip = false;
                         formInfo[infoIndex].dock = currentDock;
@@ -776,6 +796,7 @@ namespace Ohana3DS_Rebirth.GUI
                     else
                     {
                         formInfo[infoIndex].denyDock = true;
+                        form.BringToFront();
                     }
 
                     form.ResumeLayout();
@@ -805,6 +826,7 @@ namespace Ohana3DS_Rebirth.GUI
                     {
                         formInfo[infoIndex].denyDock = true;
                         deny = true;
+                        form.BringToFront();
                     }
                 }
 
@@ -844,6 +866,7 @@ namespace Ohana3DS_Rebirth.GUI
                         }
 
                         form.Size = new Size(width, currentRect.Height);
+                        form.SendToBack();
 
                         formInfo[infoIndex].dock = currentDock;
                     }
@@ -852,9 +875,9 @@ namespace Ohana3DS_Rebirth.GUI
                         int width;
                         if (formInfo[rightForm].hasGrip)
                         {
-                            int rightRightForm = getRightForm(getRectangle(formInfo[rightForm].form), currentDock, Get_Form_Info_Index((int)formInfo[rightForm].form.Tag));
+                            int rightRightForm = getRightForm(getRectangle(formInfo[rightForm].form), currentDock, getFormInfoIndex((int)formInfo[rightForm].form.Tag));
                             width = (formInfo[rightForm].form.Width + gripSize) / 2;
-                            formInfo[rightForm].form.Width = (formInfo[rightRightForm].form.Left - (formInfo[rightForm].form.Left + width)) - gripSize; //!
+                            formInfo[rightForm].form.Width = (formInfo[rightRightForm].form.Left - (formInfo[rightForm].form.Left + width)) - gripSize;
                         }
                         else
                         {
@@ -867,6 +890,7 @@ namespace Ohana3DS_Rebirth.GUI
 
                         form.Location = new Point(left, currentRect.Y);
                         form.Size = new Size(width - gripSize, currentRect.Height);
+                        form.SendToBack();
 
                         formInfo[infoIndex].hasGrip = true;
                         formInfo[infoIndex].dock = currentDock;
@@ -875,6 +899,7 @@ namespace Ohana3DS_Rebirth.GUI
                     {
                         form.Location = currentRect.Location;
                         form.Size = currentRect.Size;
+                        form.SendToBack();
 
                         formInfo[infoIndex].hasGrip = false;
                         formInfo[infoIndex].dock = currentDock;
@@ -882,6 +907,7 @@ namespace Ohana3DS_Rebirth.GUI
                     else
                     {
                         formInfo[infoIndex].denyDock = true;
+                        form.BringToFront();
                     }
 
                     form.ResumeLayout();
@@ -898,8 +924,7 @@ namespace Ohana3DS_Rebirth.GUI
             autoArrange(dockMode.Top, getDockRect(dockMode.Top));
             if (formCount(dockMode.Center) > 0)
             {
-                int centerFormIndex = 0;
-                centerFormIndex = getCenterForm();
+                int centerFormIndex = getCenterForm();
                 centerDock = getDockRect(dockMode.Center);
                 formInfo[centerFormIndex].form.Location = centerDock.Location;
                 formInfo[centerFormIndex].form.Size = centerDock.Size;
@@ -923,7 +948,7 @@ namespace Ohana3DS_Rebirth.GUI
             {
                 if (formInfo[i].dock == dock && formInfo[i].form.Top < rect.Y && i != ignoreIndex)
                 {
-                    if (formInfo[i].form.Top > top)
+                    if (formInfo[i].form.Top >= top)
                     {
                         top = formInfo[i].form.Top;
                         index = i;
@@ -979,7 +1004,7 @@ namespace Ohana3DS_Rebirth.GUI
             {
                 if (formInfo[i].dock == dock && formInfo[i].form.Left < rect.X && i != ignoreIndex)
                 {
-                    if (formInfo[i].form.Left > left)
+                    if (formInfo[i].form.Left >= left)
                     {
                         left = formInfo[i].form.Left;
                         index = i;
@@ -1023,7 +1048,7 @@ namespace Ohana3DS_Rebirth.GUI
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        private int Get_Form_Info_Index(int index)
+        private int getFormInfoIndex(int index)
         {
             for (int i = 0; i < formInfo.Count; i++)
             {
@@ -1040,60 +1065,62 @@ namespace Ohana3DS_Rebirth.GUI
         /// <param name="dockRect"></param>
         private void autoArrange(dockMode dock, Rectangle dockRect)
         {
-            for (int i = 0; i < formInfo.Count; i++)
+            int top = dockRect.Top;
+            int left = dockRect.Left;
+
+            switch (dock)
             {
-                if (formInfo[i].dock == dock)
-                {
-                    switch (dock)
+                case dockMode.Left:
+                case dockMode.Right:
+                    int indexRL = getTopmostForm(dock);
+                    while (indexRL > -1)
                     {
-                        case dockMode.Left:
-                        case dockMode.Right:
-                            int aboveForm = getAboveForm(getRectangle(formInfo[i].form), dock, i);
-                            int belowForm = getBelowForm(getRectangle(formInfo[i].form), dock, i);
+                        int belowForm = getBelowForm(getRectangle(formInfo[indexRL].form), dock, indexRL);
 
-                            if (aboveForm == -1)
-                            {
-                                formInfo[i].form.Top = dockRect.Y;
-                            }
-
-                            if (belowForm > -1)
-                            {
-                                formInfo[i].form.Height = (formInfo[belowForm].form.Top - formInfo[i].form.Top) - gripSize;
-                                formInfo[i].hasGrip = true;
-                            }
-                            else
-                            {
-                                formInfo[i].form.Height = ((dockRect.Y + dockRect.Height) - formInfo[i].form.Top);
-                                formInfo[i].hasGrip = false;
-                            }
-
-                            break;
-                        
-                        case dockMode.Bottom:
-                        case dockMode.Top:
-                            int leftForm = getLeftForm(getRectangle(formInfo[i].form), dock, i);
-                            int rightForm = getRightForm(getRectangle(formInfo[i].form), dock, i);
-
-                            if (leftForm == -1)
-                            {
-                                formInfo[i].form.Left = dockRect.X;
-                            }
-
-                            if (rightForm > -1)
-                            {
-                                formInfo[i].form.Width = (formInfo[rightForm].form.Left - formInfo[i].form.Left) - gripSize;
-                                formInfo[i].hasGrip = true;
-                            }
-                            else
-                            {
-                                formInfo[i].form.Width = ((dockRect.X + dockRect.Width) - formInfo[i].form.Left);
-                                formInfo[i].hasGrip = false;
-                            }
-
-                            break;
+                        formInfo[indexRL].form.Top = top;
+                        formInfo[indexRL].form.Left = dockRect.Left;
+                        formInfo[indexRL].form.Width = dockRect.Width;
+                        if (belowForm > -1)
+                        {
+                            formInfo[indexRL].form.Height = (formInfo[belowForm].form.Top - formInfo[indexRL].form.Top) - gripSize;
+                            formInfo[indexRL].hasGrip = true;
+                        }
+                        else
+                        {
+                            formInfo[indexRL].form.Height = ((dockRect.Y + dockRect.Height) - formInfo[indexRL].form.Top);
+                            formInfo[indexRL].hasGrip = false;
+                        }
+                        top += formInfo[indexRL].form.Height + gripSize;
+                        indexRL = belowForm;
                     }
 
-                }
+                break;
+                        
+                case dockMode.Bottom:
+                case dockMode.Top:
+                    int indexBT = getLeftmostForm(dock);
+                    while (indexBT > -1)
+                    {
+                        int rightForm = getRightForm(getRectangle(formInfo[indexBT].form), dock, indexBT);
+
+                        formInfo[indexBT].form.Top = dockRect.Top;
+                        formInfo[indexBT].form.Left = left;
+                        formInfo[indexBT].form.Height = dockRect.Height;
+                        if (rightForm > -1)
+                        {
+                            formInfo[indexBT].form.Width = (formInfo[rightForm].form.Left - formInfo[indexBT].form.Left) - gripSize;
+                            formInfo[indexBT].hasGrip = true;
+                        }
+                        else
+                        {
+                            formInfo[indexBT].form.Width = ((dockRect.X + dockRect.Width) - formInfo[indexBT].form.Left);
+                            formInfo[indexBT].hasGrip = false;
+                        }
+                        left += formInfo[indexBT].form.Width + gripSize;
+                        indexBT = rightForm;
+                    }
+
+                break;
             }
         }
 
@@ -1158,6 +1185,56 @@ namespace Ohana3DS_Rebirth.GUI
         }
 
         /// <summary>
+        ///     Get the first form from top to bottom of a given dock side.
+        /// </summary>
+        /// <param name="dock"></param>
+        /// <returns></returns>
+        private int getTopmostForm(dockMode dock)
+        {
+            int index = -1;
+            int top = int.MaxValue;
+
+            for (int i = 0; i < formInfo.Count; i++)
+            {
+                if (formInfo[i].dock == dock)
+                {
+                    if (formInfo[i].form.Top < top)
+                    {
+                        top = formInfo[i].form.Top;
+                        index = i;
+                    }
+                }
+            }
+
+            return index;
+        }
+
+        /// <summary>
+        ///     Get the last form from top to bottom of a given dock side.
+        /// </summary>
+        /// <param name="dock"></param>
+        /// <returns></returns>
+        private int getBottommostForm(dockMode dock)
+        {
+            int index = -1;
+            int top = 0;
+
+            for (int i = 0; i < formInfo.Count; i++)
+            {
+                if (formInfo[i].dock == dock)
+                {
+                    if (formInfo[i].form.Top >= top)
+                    {
+                        top = formInfo[i].form.Top;
+                        index = i;
+                    }
+                }
+            }
+
+            return index;
+        }
+
+        /// <summary>
         ///     Get the first form from left to right of a given dock side.
         /// </summary>
         /// <param name="dock"></param>
@@ -1196,7 +1273,7 @@ namespace Ohana3DS_Rebirth.GUI
             {
                 if (formInfo[i].dock == dock)
                 {
-                    if (formInfo[i].form.Left > left)
+                    if (formInfo[i].form.Left >= left)
                     {
                         left = formInfo[i].form.Left;
                         index = i;
@@ -1400,7 +1477,7 @@ namespace Ohana3DS_Rebirth.GUI
         /// <returns></returns>
         private Rectangle getDockRect(dockMode dock)
         {
-            Rectangle rect = new Rectangle(parentForm.Left + this.Left, parentForm.Top + this.Top, this.Width, this.Height);
+            Rectangle rect = new Rectangle(0, 0, this.Width, this.Height);
             Rectangle rightDock = new Rectangle((rect.X + rect.Width) - rightDockWidth, rect.Y, rightDockWidth, rect.Height);
             Rectangle leftDock = new Rectangle(rect.X, rect.Y, leftDockWidth, rect.Height);
             Rectangle bottomDock = new Rectangle(rect.X, (rect.Y + rect.Height) - bottomDockHeight, rect.Width, bottomDockHeight);
@@ -1449,20 +1526,9 @@ namespace Ohana3DS_Rebirth.GUI
         /// </summary>
         /// <param name="form"></param>
         /// <returns>The rectangle :P</returns>
-        private Rectangle getRectangle(Form form)
+        private Rectangle getRectangle(Control form)
         {
             return new Rectangle(form.Location, form.Size);
-        }
-
-        /// <summary>
-        ///     Returns the position relative to a control based on the screen position.
-        /// </summary>
-        /// <param name="rect"></param>
-        /// <param name="controlScreenRelativeRect"></param>
-        /// <returns>The rectangle :P</returns>
-        private Rectangle screenToControl(Rectangle rect, Rectangle controlScreenRelativeRect)
-        {
-            return new Rectangle(new Point(rect.X - controlScreenRelativeRect.X, rect.Y - controlScreenRelativeRect.Y), rect.Size);
         }
     }
 }

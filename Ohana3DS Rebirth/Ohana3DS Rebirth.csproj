@@ -55,12 +55,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Form1.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
-    </Compile>
     <Compile Include="FrmMain.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -72,6 +66,12 @@
     </Compile>
     <Compile Include="GUI\ODock.Designer.cs">
       <DependentUpon>ODock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\ODockWindow.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\ODockWindow.Designer.cs">
+      <DependentUpon>ODockWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\OMenuStrip.cs" />
     <Compile Include="GUI\OMenuStrip.Designer.cs">
@@ -93,11 +93,11 @@
     <Compile Include="Ohana\IOUtils.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="FrmMain.resx">
       <DependentUpon>FrmMain.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\ODockWindow.resx">
+      <DependentUpon>ODockWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="OForm.resx">
       <DependentUpon>OForm.cs</DependentUpon>
@@ -145,6 +145,30 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\hover_normal.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_close.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_close_hover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_dockable.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_dockable_hover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_locked.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_locked_hover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_maximize.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_maximize_hover.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

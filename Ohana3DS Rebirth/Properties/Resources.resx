@@ -139,4 +139,28 @@
   <data name="hover_red" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\hover_red.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="icn_close" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\icn_close.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icn_close_hover" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\icn_close_hover.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icn_dockable" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\icn_dockable.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icn_dockable_hover" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\icn_dockable_hover.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icn_locked" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\icn_locked.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icn_locked_hover" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\icn_locked_hover.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icn_maximize" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\icn_maximize.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icn_maximize_hover" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\icn_maximize_hover.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

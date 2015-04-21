@@ -17,11 +17,14 @@ namespace Ohana3DS_Rebirth
             this.SuspendLayout();
             MainMenu.Renderer = new GUI.OMenuStrip();
             MainMenu.BackColor = Color.Transparent;
-            DockContainer.Initialize(this);
-            DockContainer.Launch_Form(new Form1());
-            DockContainer.Launch_Form(new Form1());
-            DockContainer.Launch_Form(new Form1());
-            DockContainer.Launch_Form(new Form1());
+            DockContainer.launch(new GUI.ODockWindow());
+            DockContainer.launch(new GUI.ODockWindow());
+            DockContainer.launch(new GUI.ODockWindow());
+            DockContainer.launch(new GUI.ODockWindow());
+            DockContainer.launch(new GUI.ODockWindow());
+            DockContainer.launch(new GUI.ODockWindow());
+            DockContainer.launch(new GUI.ODockWindow());
+            DockContainer.launch(new GUI.ODockWindow());
             this.ResumeLayout();
         }
 
