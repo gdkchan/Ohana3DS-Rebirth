@@ -29,16 +29,28 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OForm));
+            this.ContentContainer = new System.Windows.Forms.Panel();
             this.TitleBar = new System.Windows.Forms.Panel();
             this.BtnMinimize = new System.Windows.Forms.PictureBox();
             this.BtnMinMax = new System.Windows.Forms.PictureBox();
             this.BtnClose = new System.Windows.Forms.PictureBox();
             this.LblTitle = new System.Windows.Forms.Label();
+            this.ContentContainer.SuspendLayout();
             this.TitleBar.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.BtnMinimize)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BtnMinMax)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BtnClose)).BeginInit();
             this.SuspendLayout();
+            // 
+            // ContentContainer
+            // 
+            this.ContentContainer.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ContentContainer.BackgroundImage")));
+            this.ContentContainer.Controls.Add(this.TitleBar);
+            this.ContentContainer.Location = new System.Drawing.Point(4, 4);
+            this.ContentContainer.MinimumSize = new System.Drawing.Size(128, 64);
+            this.ContentContainer.Name = "ContentContainer";
+            this.ContentContainer.Size = new System.Drawing.Size(640, 472);
+            this.ContentContainer.TabIndex = 0;
             // 
             // TitleBar
             // 
@@ -59,7 +71,7 @@
             this.BtnMinimize.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.BtnMinimize.BackColor = System.Drawing.Color.Transparent;
             this.BtnMinimize.Image = ((System.Drawing.Image)(resources.GetObject("BtnMinimize.Image")));
-            this.BtnMinimize.Location = new System.Drawing.Point(576, 4);
+            this.BtnMinimize.Location = new System.Drawing.Point(580, 4);
             this.BtnMinimize.Name = "BtnMinimize";
             this.BtnMinimize.Size = new System.Drawing.Size(20, 20);
             this.BtnMinimize.TabIndex = 3;
@@ -73,7 +85,7 @@
             this.BtnMinMax.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.BtnMinMax.BackColor = System.Drawing.Color.Transparent;
             this.BtnMinMax.Image = ((System.Drawing.Image)(resources.GetObject("BtnMinMax.Image")));
-            this.BtnMinMax.Location = new System.Drawing.Point(596, 4);
+            this.BtnMinMax.Location = new System.Drawing.Point(600, 4);
             this.BtnMinMax.Name = "BtnMinMax";
             this.BtnMinMax.Size = new System.Drawing.Size(20, 20);
             this.BtnMinMax.TabIndex = 2;
@@ -87,7 +99,7 @@
             this.BtnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.BtnClose.BackColor = System.Drawing.Color.Transparent;
             this.BtnClose.Image = ((System.Drawing.Image)(resources.GetObject("BtnClose.Image")));
-            this.BtnClose.Location = new System.Drawing.Point(616, 4);
+            this.BtnClose.Location = new System.Drawing.Point(620, 4);
             this.BtnClose.Name = "BtnClose";
             this.BtnClose.Size = new System.Drawing.Size(20, 20);
             this.BtnClose.TabIndex = 1;
@@ -104,9 +116,9 @@
             this.LblTitle.ForeColor = System.Drawing.Color.White;
             this.LblTitle.Location = new System.Drawing.Point(2, 4);
             this.LblTitle.Name = "LblTitle";
-            this.LblTitle.Size = new System.Drawing.Size(98, 19);
+            this.LblTitle.Size = new System.Drawing.Size(37, 19);
             this.LblTitle.TabIndex = 12;
-            this.LblTitle.Text = "[Place Holder]";
+            this.LblTitle.Text = "Title";
             this.LblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.LblTitle.MouseDown += new System.Windows.Forms.MouseEventHandler(this.OForm_MouseDown);
             // 
@@ -114,16 +126,18 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
-            this.ClientSize = new System.Drawing.Size(640, 480);
-            this.Controls.Add(this.TitleBar);
+            this.BackColor = System.Drawing.Color.Black;
+            this.ClientSize = new System.Drawing.Size(648, 480);
+            this.Controls.Add(this.ContentContainer);
             this.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.MinimumSize = new System.Drawing.Size(128, 64);
             this.Name = "OForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Título";
             this.Layout += new System.Windows.Forms.LayoutEventHandler(this.OForm_Layout);
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.OForm_MouseDown);
+            this.ContentContainer.ResumeLayout(false);
             this.TitleBar.ResumeLayout(false);
             this.TitleBar.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.BtnMinimize)).EndInit();
@@ -140,6 +154,7 @@
         private System.Windows.Forms.PictureBox BtnMinMax;
         private System.Windows.Forms.PictureBox BtnClose;
         protected System.Windows.Forms.Label LblTitle;
+        protected System.Windows.Forms.Panel ContentContainer;
     }
 }
 

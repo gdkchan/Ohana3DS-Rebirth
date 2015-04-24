@@ -15,26 +15,15 @@ namespace Ohana3DS_Rebirth
         {
             InitializeComponent();
             this.SuspendLayout();
-            MainMenu.Renderer = new GUI.OMenuStrip();
-            MainMenu.BackColor = Color.Transparent;
-            DockContainer.launch(new GUI.ODockWindow());
-            DockContainer.launch(new GUI.ODockWindow());
-            DockContainer.launch(new GUI.ODockWindow());
-            DockContainer.launch(new GUI.ODockWindow());
-            DockContainer.launch(new GUI.ODockWindow());
-            DockContainer.launch(new GUI.ODockWindow());
-            DockContainer.launch(new GUI.ODockWindow());
-            DockContainer.launch(new GUI.ODockWindow());
-            this.ResumeLayout();
-        }
-
-        private void FrmMain_Layout(object sender, LayoutEventArgs e)
-        {
-            if (this.WindowState == FormWindowState.Maximized) {
-                Status.SizingGrip = false;
-            } else {
-                Status.SizingGrip = true;
+            WindowManager.Initialize(DockContainer);
+            for (int i = 0; i < 8; i++)
+            {
+                GUI.ODockWindow window = new GUI.ODockWindow();
+                DockContainer.launch(window);
+                WindowManager.addWindow(window);
             }
+            WindowManager.createGroup("Lorem Ipsum");
+            this.ResumeLayout();
         }
 
         private void MnuOpen_Click(object sender, EventArgs e)

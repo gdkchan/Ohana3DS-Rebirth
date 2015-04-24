@@ -118,32 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="BtnMinimize.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAACwwAAAsMAT9AIsgAAAAHdElNRQffAgITNSxx/CzNAAAAHWlUWHRDb21tZW50AAAA
-        AABDcmVhdGVkIHdpdGggR0lNUGQuZQcAAAAkSURBVDhPYxgFo2AUjIKBAf9JBFBtuAFUHdEAqm0UUA0w
-        MAAAV01focKG1GkAAAAASUVORK5CYII=
-</value>
-  </data>
-  <data name="BtnMinMax.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAACwwAAAsMAT9AIsgAAAAHdElNRQffAgITNhRy08eQAAAAHWlUWHRDb21tZW50AAAA
-        AABDcmVhdGVkIHdpdGggR0lNUGQuZQcAAAAzSURBVDhPYxgF1Af/SQRQbbgBVB3RAKoNNyBKERSMGogd
-        jBqIFwycgaQAqLZRQDXAwAAAsR/XKfueYM8AAAAASUVORK5CYII=
-</value>
-  </data>
-  <data name="BtnClose.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAACwwAAAsMAT9AIsgAAAAHdElNRQffAgITLimooBPYAAAAHWlUWHRDb21tZW50AAAA
-        AABDcmVhdGVkIHdpdGggR0lNUGQuZQcAAABvSURBVDhP7dOxDcAgDAVR9l+I8Rzn6+LGAYFFyZNScBh3
-        add5Ztb9M45D74zrHMcYFFLCtZDmmBVSIAtpDW+EVF/24W3CdQ07ArmOPYFcw46E6z28FdJvW8IbIQWy
-        kOaYFVLCtZDGfObsr3dtau0BfdH94c/jMHoAAAAASUVORK5CYII=
-</value>
-  </data>
-  <data name="$this.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+  <data name="ContentContainer.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTED8xAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
         YQUAAAAJcEhZcwAADsEAAA7BAbiRa+0AAAAHdElNRQffAgMULyUF/h9SAAAOpUlEQVR4Xu3X63obNxJF
@@ -210,6 +185,31 @@
         gNY/tZcAtH6rDgy8BaD1z+45AK3ftlcGjgFo/Q49AaD1z+ipgQMAWr9P9wC0/nk9GngFQOt36ycAWv/s
         7gw8BaD1e/YDgNbv062BRwBav3MVgNbv2aeBOwBav3//AND6/SsGbgFo/Uv60PpXxfo/AWj9q/r48uVL
         vRDlHm8+d6D1L+vbt/8BhTYVINw1GSAAAAAASUVORK5CYII=
+</value>
+  </data>
+  <data name="BtnMinimize.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAACwwAAAsMAT9AIsgAAAAHdElNRQffAgITNSxx/CzNAAAAHWlUWHRDb21tZW50AAAA
+        AABDcmVhdGVkIHdpdGggR0lNUGQuZQcAAAAkSURBVDhPYxgFo2AUjIKBAf9JBFBtuAFUHdEAqm0UUA0w
+        MAAAV01focKG1GkAAAAASUVORK5CYII=
+</value>
+  </data>
+  <data name="BtnMinMax.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAACwwAAAsMAT9AIsgAAAAHdElNRQffAgITNhRy08eQAAAAHWlUWHRDb21tZW50AAAA
+        AABDcmVhdGVkIHdpdGggR0lNUGQuZQcAAAAzSURBVDhPYxgF1Af/SQRQbbgBVB3RAKoNNyBKERSMGogd
+        jBqIFwycgaQAqLZRQDXAwAAAsR/XKfueYM8AAAAASUVORK5CYII=
+</value>
+  </data>
+  <data name="BtnClose.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAACwwAAAsMAT9AIsgAAAAHdElNRQffAgITLimooBPYAAAAHWlUWHRDb21tZW50AAAA
+        AABDcmVhdGVkIHdpdGggR0lNUGQuZQcAAABvSURBVDhP7dOxDcAgDAVR9l+I8Rzn6+LGAYFFyZNScBh3
+        add5Ztb9M45D74zrHMcYFFLCtZDmmBVSIAtpDW+EVF/24W3CdQ07ArmOPYFcw46E6z28FdJvW8IbIQWy
+        kOaYFVLCtZDGfObsr3dtau0BfdH94c/jMHoAAAAASUVORK5CYII=
 </value>
   </data>
 </root>

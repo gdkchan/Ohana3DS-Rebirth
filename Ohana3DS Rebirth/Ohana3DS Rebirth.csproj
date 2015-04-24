@@ -83,6 +83,12 @@
     <Compile Include="GUI\OStatusStrip.Designer.cs">
       <DependentUpon>OStatusStrip.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\OWindowManager.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OWindowManager.Designer.cs">
+      <DependentUpon>OWindowManager.cs</DependentUpon>
+    </Compile>
     <Compile Include="OForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -169,6 +175,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\icn_maximize_hover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_wm_close.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_wm_up_arrow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_ticked.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

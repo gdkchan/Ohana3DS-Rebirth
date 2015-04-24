@@ -13,6 +13,8 @@ namespace Ohana3DS_Rebirth
 {
     public partial class OForm : Form
     {
+        const int gripSize = 4;
+
         public const int WM_NCLBUTTONDOWN = 0xA1;
         public const int WM_NCHITTEST = 0x84;
         public const int HT_CAPTION = 0x2;
@@ -27,7 +29,7 @@ namespace Ohana3DS_Rebirth
             get
             {
                 CreateParams cp = base.CreateParams;
-                cp.ExStyle |= 0x02000000;  //Turn on WS_EX_COMPOSITED
+                cp.ExStyle |= 0x02000000; //Turn on WS_EX_COMPOSITED
                 return cp;
             }
         }
@@ -35,19 +37,62 @@ namespace Ohana3DS_Rebirth
         #region "WndProc Form Resize"
             protected override void WndProc(ref Message m)
             {
+                const int HTLEFT = 10;
+                const int HTRIGHT = 11;
+                const int HTTOP = 12;
+                const int HTTOPLEFT = 13;
+                const int HTTOPRIGHT = 14;
+                const int HTBOTTOM = 15;
+                const int HTBOTTOMLEFT = 16;
                 const int HTBOTTOMRIGHT = 17;
-
+                
                 if (m.Msg == WM_NCHITTEST && this.WindowState == FormWindowState.Normal)
                 {
                     int x = (int)(m.LParam.ToInt32() & 0xFFFF);
                     int y = (int)((m.LParam.ToInt32() & 0xFFFF0000) >> 16);
                     Point pt = PointToClient(new Point(x, y));
-                    if (pt.X > ClientSize.Width - 24 && pt.Y > ClientSize.Height - 24)
+                    if (pt.X < gripSize && pt.Y < gripSize)
+                    {
+                        m.Result = (IntPtr)HTTOPLEFT;
+                        return;
+                    }
+                    else if (pt.X >= ClientSize.Width - gripSize && pt.Y < gripSize)
+                    {
+                        m.Result = (IntPtr)HTTOPRIGHT;
+                        return;
+                    }
+                    else if (pt.X < gripSize && pt.Y >= ClientSize.Height - gripSize)
+                    {
+                        m.Result = (IntPtr)HTBOTTOMLEFT;
+                        return;
+                    }
+                    else if (pt.X >= ClientSize.Width - gripSize && pt.Y >= ClientSize.Height - gripSize)
                     {
                         m.Result = (IntPtr)HTBOTTOMRIGHT;
                         return;
                     }
+                    else if (pt.X < gripSize)
+                    {
+                        m.Result = (IntPtr)HTLEFT;
+                        return;
+                    }
+                    else if (pt.X >= ClientSize.Width - gripSize)
+                    {
+                        m.Result = (IntPtr)HTRIGHT;
+                        return;
+                    }
+                    else if (pt.Y < gripSize)
+                    {
+                        m.Result = (IntPtr)HTTOP;
+                        return;
+                    }
+                    else if (pt.Y >= ClientSize.Height - gripSize)
+                    {
+                        m.Result = (IntPtr)HTBOTTOM;
+                        return;
+                    }
                 }
+
                 base.WndProc(ref m);
             }
         #endregion
@@ -56,7 +101,6 @@ namespace Ohana3DS_Rebirth
             public OForm()
             {
                 InitializeComponent();
-                this.MinimumSize = new Size(128, 74);
                 this.DoubleBuffered = true;
             }
 
@@ -74,10 +118,16 @@ namespace Ohana3DS_Rebirth
                 if (this.WindowState != FormWindowState.Maximized)
                 {
                     BtnMinMax.Image = Ohana3DS_Rebirth.Properties.Resources.btnmaximize;
+                    
+                    ContentContainer.Location = new Point(4, 4);
+                    ContentContainer.Size = new Size(this.Width - 8, this.Height - 8);
                 }
                 else
                 {
                     BtnMinMax.Image = Ohana3DS_Rebirth.Properties.Resources.btnnormal;
+
+                    ContentContainer.Location = Point.Empty;
+                    ContentContainer.Size = this.Size;
                 }
             }
 

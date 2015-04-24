@@ -31,12 +31,12 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ODockWindow));
             this.WindowTop = new System.Windows.Forms.Panel();
             this.LblTitle = new System.Windows.Forms.Label();
-            this.BtnMinimize = new System.Windows.Forms.PictureBox();
-            this.BtnMinMax = new System.Windows.Forms.PictureBox();
+            this.BtnPin = new System.Windows.Forms.PictureBox();
+            this.BtnMax = new System.Windows.Forms.PictureBox();
             this.BtnClose = new System.Windows.Forms.PictureBox();
             this.WindowTop.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.BtnMinimize)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.BtnMinMax)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.BtnPin)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.BtnMax)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BtnClose)).BeginInit();
             this.SuspendLayout();
             // 
@@ -44,8 +44,8 @@
             // 
             this.WindowTop.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("WindowTop.BackgroundImage")));
             this.WindowTop.Controls.Add(this.LblTitle);
-            this.WindowTop.Controls.Add(this.BtnMinimize);
-            this.WindowTop.Controls.Add(this.BtnMinMax);
+            this.WindowTop.Controls.Add(this.BtnPin);
+            this.WindowTop.Controls.Add(this.BtnMax);
             this.WindowTop.Controls.Add(this.BtnClose);
             this.WindowTop.Dock = System.Windows.Forms.DockStyle.Top;
             this.WindowTop.Location = new System.Drawing.Point(0, 0);
@@ -59,7 +59,7 @@
             // LblTitle
             // 
             this.LblTitle.AutoSize = true;
-            this.LblTitle.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTitle.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblTitle.Location = new System.Drawing.Point(0, 0);
             this.LblTitle.Name = "LblTitle";
             this.LblTitle.Size = new System.Drawing.Size(30, 15);
@@ -69,27 +69,32 @@
             this.LblTitle.MouseMove += new System.Windows.Forms.MouseEventHandler(this.WindowTop_MouseMove);
             this.LblTitle.MouseUp += new System.Windows.Forms.MouseEventHandler(this.WindowTop_MouseUp);
             // 
-            // BtnMinimize
+            // BtnPin
             // 
-            this.BtnMinimize.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.BtnMinimize.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(26)))), ((int)(((byte)(26)))));
-            this.BtnMinimize.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_dockable;
-            this.BtnMinimize.Location = new System.Drawing.Point(208, 0);
-            this.BtnMinimize.Name = "BtnMinimize";
-            this.BtnMinimize.Size = new System.Drawing.Size(16, 16);
-            this.BtnMinimize.TabIndex = 6;
-            this.BtnMinimize.TabStop = false;
+            this.BtnPin.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.BtnPin.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(26)))), ((int)(((byte)(26)))));
+            this.BtnPin.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_dockable;
+            this.BtnPin.Location = new System.Drawing.Point(208, 0);
+            this.BtnPin.Name = "BtnPin";
+            this.BtnPin.Size = new System.Drawing.Size(16, 16);
+            this.BtnPin.TabIndex = 6;
+            this.BtnPin.TabStop = false;
+            this.BtnPin.MouseDown += new System.Windows.Forms.MouseEventHandler(this.BtnPin_MouseDown);
+            this.BtnPin.MouseEnter += new System.EventHandler(this.BtnPin_MouseEnter);
+            this.BtnPin.MouseLeave += new System.EventHandler(this.BtnPin_MouseLeave);
             // 
-            // BtnMinMax
+            // BtnMax
             // 
-            this.BtnMinMax.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.BtnMinMax.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(26)))), ((int)(((byte)(26)))));
-            this.BtnMinMax.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_maximize;
-            this.BtnMinMax.Location = new System.Drawing.Point(224, 0);
-            this.BtnMinMax.Name = "BtnMinMax";
-            this.BtnMinMax.Size = new System.Drawing.Size(16, 16);
-            this.BtnMinMax.TabIndex = 5;
-            this.BtnMinMax.TabStop = false;
+            this.BtnMax.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.BtnMax.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(26)))), ((int)(((byte)(26)))));
+            this.BtnMax.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_maximize;
+            this.BtnMax.Location = new System.Drawing.Point(224, 0);
+            this.BtnMax.Name = "BtnMax";
+            this.BtnMax.Size = new System.Drawing.Size(16, 16);
+            this.BtnMax.TabIndex = 5;
+            this.BtnMax.TabStop = false;
+            this.BtnMax.MouseEnter += new System.EventHandler(this.BtnMax_MouseEnter);
+            this.BtnMax.MouseLeave += new System.EventHandler(this.BtnMax_MouseLeave);
             // 
             // BtnClose
             // 
@@ -101,6 +106,8 @@
             this.BtnClose.Size = new System.Drawing.Size(16, 16);
             this.BtnClose.TabIndex = 4;
             this.BtnClose.TabStop = false;
+            this.BtnClose.MouseEnter += new System.EventHandler(this.BtnClose_MouseEnter);
+            this.BtnClose.MouseLeave += new System.EventHandler(this.BtnClose_MouseLeave);
             // 
             // ODockWindow
             // 
@@ -110,13 +117,12 @@
             this.Controls.Add(this.WindowTop);
             this.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.MinimumSize = new System.Drawing.Size(128, 64);
             this.Name = "ODockWindow";
             this.Size = new System.Drawing.Size(256, 256);
             this.WindowTop.ResumeLayout(false);
             this.WindowTop.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.BtnMinimize)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.BtnMinMax)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.BtnPin)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.BtnMax)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.BtnClose)).EndInit();
             this.ResumeLayout(false);
 
@@ -125,8 +131,8 @@
         #endregion
 
         private System.Windows.Forms.Panel WindowTop;
-        private System.Windows.Forms.PictureBox BtnMinimize;
-        private System.Windows.Forms.PictureBox BtnMinMax;
+        private System.Windows.Forms.PictureBox BtnPin;
+        private System.Windows.Forms.PictureBox BtnMax;
         private System.Windows.Forms.PictureBox BtnClose;
         protected System.Windows.Forms.Label LblTitle;
     }

@@ -29,14 +29,9 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.MainMenu = new System.Windows.Forms.MenuStrip();
-            this.MnuFile = new System.Windows.Forms.ToolStripMenuItem();
-            this.MnuOpen = new System.Windows.Forms.ToolStripMenuItem();
-            this.Status = new Ohana3DS_Rebirth.GUI.OStatusStrip(this.components);
-            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.DockContainer = new Ohana3DS_Rebirth.GUI.ODock();
-            this.MainMenu.SuspendLayout();
-            this.Status.SuspendLayout();
+            this.WindowManager = new Ohana3DS_Rebirth.GUI.OWindowManager(this.components);
+            this.ContentContainer.SuspendLayout();
             this.SuspendLayout();
             // 
             // LblTitle
@@ -44,92 +39,50 @@
             this.LblTitle.Size = new System.Drawing.Size(76, 19);
             this.LblTitle.Text = "Ohana3DS";
             // 
-            // MainMenu
+            // ContentContainer
             // 
-            this.MainMenu.BackColor = System.Drawing.SystemColors.Control;
-            this.MainMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MnuFile});
-            this.MainMenu.Location = new System.Drawing.Point(0, 28);
-            this.MainMenu.Name = "MainMenu";
-            this.MainMenu.Size = new System.Drawing.Size(640, 24);
-            this.MainMenu.TabIndex = 10;
-            // 
-            // MnuFile
-            // 
-            this.MnuFile.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MnuOpen});
-            this.MnuFile.Name = "MnuFile";
-            this.MnuFile.Size = new System.Drawing.Size(37, 20);
-            this.MnuFile.Text = "&File";
-            // 
-            // MnuOpen
-            // 
-            this.MnuOpen.Name = "MnuOpen";
-            this.MnuOpen.Size = new System.Drawing.Size(103, 22);
-            this.MnuOpen.Text = "&Open";
-            this.MnuOpen.Click += new System.EventHandler(this.MnuOpen_Click);
-            // 
-            // Status
-            // 
-            this.Status.BackColor = System.Drawing.Color.Black;
-            this.Status.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripStatusLabel1});
-            this.Status.Location = new System.Drawing.Point(0, 458);
-            this.Status.Name = "Status";
-            this.Status.Size = new System.Drawing.Size(640, 22);
-            this.Status.TabIndex = 11;
-            this.Status.Text = "oStatusStrip1";
-            // 
-            // toolStripStatusLabel1
-            // 
-            this.toolStripStatusLabel1.ForeColor = System.Drawing.Color.White;
-            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(118, 17);
-            this.toolStripStatusLabel1.Text = "toolStripStatusLabel1";
+            this.ContentContainer.Controls.Add(this.DockContainer);
+            this.ContentContainer.Controls.Add(this.WindowManager);
+            this.ContentContainer.MinimumSize = new System.Drawing.Size(128, 32);
+            this.ContentContainer.Size = new System.Drawing.Size(632, 472);
+            this.ContentContainer.Controls.SetChildIndex(this.WindowManager, 0);
+            this.ContentContainer.Controls.SetChildIndex(this.DockContainer, 0);
             // 
             // DockContainer
             // 
             this.DockContainer.BackColor = System.Drawing.Color.Transparent;
             this.DockContainer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.DockContainer.Location = new System.Drawing.Point(0, 52);
+            this.DockContainer.Location = new System.Drawing.Point(0, 28);
             this.DockContainer.Name = "DockContainer";
-            this.DockContainer.Size = new System.Drawing.Size(640, 406);
-            this.DockContainer.TabIndex = 12;
+            this.DockContainer.Size = new System.Drawing.Size(632, 416);
+            this.DockContainer.TabIndex = 14;
             this.DockContainer.Text = "oDock1";
+            // 
+            // WindowManager
+            // 
+            this.WindowManager.BackColor = System.Drawing.Color.Transparent;
+            this.WindowManager.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.WindowManager.Location = new System.Drawing.Point(0, 444);
+            this.WindowManager.Name = "WindowManager";
+            this.WindowManager.Size = new System.Drawing.Size(632, 28);
+            this.WindowManager.TabIndex = 15;
             // 
             // FrmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.ClientSize = new System.Drawing.Size(640, 480);
-            this.Controls.Add(this.DockContainer);
-            this.Controls.Add(this.Status);
-            this.Controls.Add(this.MainMenu);
-            this.MainMenuStrip = this.MainMenu;
+            this.MinimumSize = new System.Drawing.Size(256, 128);
             this.Name = "FrmMain";
             this.Text = "Ohana3DS";
-            this.Layout += new System.Windows.Forms.LayoutEventHandler(this.FrmMain_Layout);
-            this.Controls.SetChildIndex(this.MainMenu, 0);
-            this.Controls.SetChildIndex(this.Status, 0);
-            this.Controls.SetChildIndex(this.DockContainer, 0);
-            this.MainMenu.ResumeLayout(false);
-            this.MainMenu.PerformLayout();
-            this.Status.ResumeLayout(false);
-            this.Status.PerformLayout();
+            this.ContentContainer.ResumeLayout(false);
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
         #endregion
 
-        private System.Windows.Forms.MenuStrip MainMenu;
-        private System.Windows.Forms.ToolStripMenuItem MnuFile;
-        private GUI.OStatusStrip Status;
-        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
-        private System.Windows.Forms.ToolStripMenuItem MnuOpen;
         private GUI.ODock DockContainer;
-
-
+        private GUI.OWindowManager WindowManager;
 
 
     }
