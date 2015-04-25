@@ -18,10 +18,19 @@ namespace Ohana3DS_Rebirth.GUI
 
         private bool dockSwitch = false;
 
+        private Bitmap hoverRed = new Bitmap(16, 16);
+        private Bitmap hoverBlue = new Bitmap(16, 16);
+
         public event EventHandler MoveEnded;
+        public event EventHandler ToggleDockable;
 
         public ODockWindow()
         {
+            Graphics gfx1 = Graphics.FromImage(hoverRed);
+            Graphics gfx2 = Graphics.FromImage(hoverBlue);
+            gfx1.FillRectangle(new SolidBrush(Color.FromArgb(0x7f, Color.Crimson)), new Rectangle(1, 1, hoverRed.Width - 2, hoverRed.Height - 2));
+            gfx2.FillRectangle(new SolidBrush(Color.FromArgb(0x7f, Color.FromArgb(15, 82, 186))), new Rectangle(1, 1, hoverBlue.Width - 2, hoverBlue.Height - 2));
+            
             InitializeComponent();
         }
 
@@ -30,6 +39,10 @@ namespace Ohana3DS_Rebirth.GUI
             get
             {
                 return LblTitle.Text;
+            }
+            set
+            {
+                LblTitle.Text = value;
             }
         }
 
@@ -72,57 +85,40 @@ namespace Ohana3DS_Rebirth.GUI
         #region "Control Box"
             private void BtnClose_MouseEnter(object sender, EventArgs e)
             {
-                BtnClose.Image = Ohana3DS_Rebirth.Properties.Resources.icn_close_hover;
+                BtnClose.BackgroundImage = hoverRed;
             }
             private void BtnClose_MouseLeave(object sender, EventArgs e)
             {
-                BtnClose.Image = Ohana3DS_Rebirth.Properties.Resources.icn_close;
+                BtnClose.BackgroundImage = null;
             }
-
-            private void BtnMax_MouseEnter(object sender, EventArgs e)
+            private void BtnClose_MouseDown(object sender, MouseEventArgs e)
             {
-                BtnMax.Image = Ohana3DS_Rebirth.Properties.Resources.icn_maximize_hover;
-            }
-            private void BtnMax_MouseLeave(object sender, EventArgs e)
-            {
-                BtnMax.Image = Ohana3DS_Rebirth.Properties.Resources.icn_maximize;
+                if (e.Button == MouseButtons.Left) this.Visible = false;
             }
 
             private void BtnPin_MouseEnter(object sender, EventArgs e)
             {
-                if (dockSwitch)
-                {
-                    BtnPin.Image = Ohana3DS_Rebirth.Properties.Resources.icn_locked_hover;
-                }
-                else
-                {
-                    BtnPin.Image = Ohana3DS_Rebirth.Properties.Resources.icn_dockable_hover;
-                }
+                BtnPin.BackgroundImage = hoverBlue;
             }
             private void BtnPin_MouseLeave(object sender, EventArgs e)
             {
-                if (dockSwitch)
-                {
-                    BtnPin.Image = Ohana3DS_Rebirth.Properties.Resources.icn_locked;
-                }
-                else
-                {
-                    BtnPin.Image = Ohana3DS_Rebirth.Properties.Resources.icn_dockable;
-                }
+                BtnPin.BackgroundImage = null;
             }
             private void BtnPin_MouseDown(object sender, MouseEventArgs e)
             {
                 if (e.Button == MouseButtons.Left)
                 {
                     dockSwitch = !dockSwitch;
+                    this.ToggleDockable(this, EventArgs.Empty);
                     if (dockSwitch)
                     {
-                        BtnPin.Image = Ohana3DS_Rebirth.Properties.Resources.icn_locked_hover;
+                        BtnPin.Image = Ohana3DS_Rebirth.Properties.Resources.icn_locked;
                     }
                     else
                     {
-                        BtnPin.Image = Ohana3DS_Rebirth.Properties.Resources.icn_dockable_hover;
+                        BtnPin.Image = Ohana3DS_Rebirth.Properties.Resources.icn_dockable;
                     }
+                    BtnPin.BackgroundImage = hoverBlue;
                 }
             }
         #endregion

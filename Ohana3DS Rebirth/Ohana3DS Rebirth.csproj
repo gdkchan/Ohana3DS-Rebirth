@@ -61,6 +61,7 @@
     <Compile Include="FrmMain.Designer.cs">
       <DependentUpon>FrmMain.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\DrawingHelper.cs" />
     <Compile Include="GUI\ODock.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -76,12 +77,6 @@
     <Compile Include="GUI\OMenuStrip.cs" />
     <Compile Include="GUI\OMenuStrip.Designer.cs">
       <DependentUpon>OMenuStrip.cs</DependentUpon>
-    </Compile>
-    <Compile Include="GUI\OStatusStrip.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="GUI\OStatusStrip.Designer.cs">
-      <DependentUpon>OStatusStrip.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\OWindowManager.cs">
       <SubType>Component</SubType>

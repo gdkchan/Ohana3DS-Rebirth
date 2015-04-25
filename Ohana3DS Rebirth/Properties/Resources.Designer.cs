@@ -83,16 +83,6 @@ namespace Ohana3DS_Rebirth.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap grip {
-            get {
-                object obj = ResourceManager.GetObject("grip", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap hover_maximize {
             get {
                 object obj = ResourceManager.GetObject("hover_maximize", resourceCulture);
@@ -143,16 +133,6 @@ namespace Ohana3DS_Rebirth.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap icn_close_hover {
-            get {
-                object obj = ResourceManager.GetObject("icn_close_hover", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap icn_dockable {
             get {
                 object obj = ResourceManager.GetObject("icn_dockable", resourceCulture);
@@ -163,49 +143,9 @@ namespace Ohana3DS_Rebirth.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap icn_dockable_hover {
-            get {
-                object obj = ResourceManager.GetObject("icn_dockable_hover", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap icn_locked {
             get {
                 object obj = ResourceManager.GetObject("icn_locked", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap icn_locked_hover {
-            get {
-                object obj = ResourceManager.GetObject("icn_locked_hover", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap icn_maximize {
-            get {
-                object obj = ResourceManager.GetObject("icn_maximize", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap icn_maximize_hover {
-            get {
-                object obj = ResourceManager.GetObject("icn_maximize_hover", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

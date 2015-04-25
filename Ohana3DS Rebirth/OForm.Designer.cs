@@ -62,7 +62,7 @@
             this.TitleBar.Dock = System.Windows.Forms.DockStyle.Top;
             this.TitleBar.Location = new System.Drawing.Point(0, 0);
             this.TitleBar.Name = "TitleBar";
-            this.TitleBar.Size = new System.Drawing.Size(640, 28);
+            this.TitleBar.Size = new System.Drawing.Size(640, 20);
             this.TitleBar.TabIndex = 9;
             this.TitleBar.MouseDown += new System.Windows.Forms.MouseEventHandler(this.OForm_MouseDown);
             // 
@@ -71,9 +71,9 @@
             this.BtnMinimize.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.BtnMinimize.BackColor = System.Drawing.Color.Transparent;
             this.BtnMinimize.Image = ((System.Drawing.Image)(resources.GetObject("BtnMinimize.Image")));
-            this.BtnMinimize.Location = new System.Drawing.Point(580, 4);
+            this.BtnMinimize.Location = new System.Drawing.Point(592, 0);
             this.BtnMinimize.Name = "BtnMinimize";
-            this.BtnMinimize.Size = new System.Drawing.Size(20, 20);
+            this.BtnMinimize.Size = new System.Drawing.Size(16, 20);
             this.BtnMinimize.TabIndex = 3;
             this.BtnMinimize.TabStop = false;
             this.BtnMinimize.Click += new System.EventHandler(this.BtnMinimize_Click);
@@ -84,10 +84,10 @@
             // 
             this.BtnMinMax.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.BtnMinMax.BackColor = System.Drawing.Color.Transparent;
-            this.BtnMinMax.Image = ((System.Drawing.Image)(resources.GetObject("BtnMinMax.Image")));
-            this.BtnMinMax.Location = new System.Drawing.Point(600, 4);
+            this.BtnMinMax.Image = global::Ohana3DS_Rebirth.Properties.Resources.btnmaximize;
+            this.BtnMinMax.Location = new System.Drawing.Point(608, 0);
             this.BtnMinMax.Name = "BtnMinMax";
-            this.BtnMinMax.Size = new System.Drawing.Size(20, 20);
+            this.BtnMinMax.Size = new System.Drawing.Size(16, 20);
             this.BtnMinMax.TabIndex = 2;
             this.BtnMinMax.TabStop = false;
             this.BtnMinMax.Click += new System.EventHandler(this.BtnMinMax_Click);
@@ -99,9 +99,9 @@
             this.BtnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.BtnClose.BackColor = System.Drawing.Color.Transparent;
             this.BtnClose.Image = ((System.Drawing.Image)(resources.GetObject("BtnClose.Image")));
-            this.BtnClose.Location = new System.Drawing.Point(620, 4);
+            this.BtnClose.Location = new System.Drawing.Point(624, 0);
             this.BtnClose.Name = "BtnClose";
-            this.BtnClose.Size = new System.Drawing.Size(20, 20);
+            this.BtnClose.Size = new System.Drawing.Size(16, 20);
             this.BtnClose.TabIndex = 1;
             this.BtnClose.TabStop = false;
             this.BtnClose.Click += new System.EventHandler(this.BtnClose_Click);
@@ -114,7 +114,7 @@
             this.LblTitle.BackColor = System.Drawing.Color.Transparent;
             this.LblTitle.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblTitle.ForeColor = System.Drawing.Color.White;
-            this.LblTitle.Location = new System.Drawing.Point(2, 4);
+            this.LblTitle.Location = new System.Drawing.Point(0, 0);
             this.LblTitle.Name = "LblTitle";
             this.LblTitle.Size = new System.Drawing.Size(37, 19);
             this.LblTitle.TabIndex = 12;
@@ -149,12 +149,12 @@
 
         #endregion
 
-        private System.Windows.Forms.Panel TitleBar;
         private System.Windows.Forms.PictureBox BtnMinimize;
         private System.Windows.Forms.PictureBox BtnMinMax;
         private System.Windows.Forms.PictureBox BtnClose;
-        protected System.Windows.Forms.Label LblTitle;
         protected System.Windows.Forms.Panel ContentContainer;
+        protected System.Windows.Forms.Label LblTitle;
+        private System.Windows.Forms.Panel TitleBar;
     }
 }
 

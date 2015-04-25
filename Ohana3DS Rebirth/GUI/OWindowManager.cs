@@ -95,6 +95,8 @@ namespace Ohana3DS_Rebirth.GUI
         /// <param name="window">The Window to be added</param>
         public void addWindow(ODockWindow window)
         {
+            window.VisibleChanged += new EventHandler(Window_VisibleChanged);
+
             currentGroup.indexList.Add((int)window.Tag);
             currentGroup.window.Add(window);
 
@@ -141,13 +143,21 @@ namespace Ohana3DS_Rebirth.GUI
             int left = 0;
             for (int i = 0; i < group.Count; i++)
             {
-                Color baseColor;
-                if (hasVisibleWindows(i)) baseColor = Color.FromArgb(15, 82, 186); else baseColor = Color.DarkGray;
-
-                Rectangle rect = new Rectangle(left, 4, groupWidth, this.Height - 8);
+                Rectangle rect = new Rectangle(left, 4, groupWidth, this.Height - 4);
                 Rectangle rect2 = new Rectangle(rect.X + 1, rect.Y, rect.Width - 2, rect.Height - 1);
-                e.Graphics.FillRectangle(new LinearGradientBrush(rect2, Color.FromArgb(0x5f, baseColor), Color.FromArgb(0x7f, Color.Black), LinearGradientMode.Vertical), rect2);
-                e.Graphics.DrawRectangle(new Pen(new LinearGradientBrush(rect, Color.FromArgb(0x7f, baseColor), Color.Black, LinearGradientMode.Vertical)), new Rectangle(rect.X, rect.Y, rect.Width - 1, rect.Height - 1));
+
+                Color baseColor;
+                if (hasVisibleWindows(i))
+                {
+                    baseColor = Color.FromArgb(15, 82, 186);
+                    DrawingHelper.drawButtonFace(e.Graphics, rect, Color.FromArgb(0x7f, baseColor), Color.Black, Color.FromArgb(0x5f, baseColor), Color.FromArgb(0x7f, Color.Black));
+                }
+                else
+                {
+                    baseColor = Color.DarkGray;
+                    DrawingHelper.drawButtonFace(e.Graphics, rect, Color.FromArgb(0xdf, Color.Black), Color.FromArgb(0x1f, baseColor), Color.FromArgb(0x5f, Color.Black), Color.FromArgb(0x3f, baseColor));
+                }
+                
                 e.Graphics.DrawString(group[i].title, new Font("Segoe UI", 10), new SolidBrush(Color.White), new Point(rect.Left + 16, rect.Top));
 
                 Rectangle upArrowRect = new Rectangle(rect.X, rect.Y + (rect.Height / 2) - 8, 16, 16);
@@ -227,6 +237,19 @@ namespace Ohana3DS_Rebirth.GUI
             this.Refresh();
 
             base.OnMouseLeave(e);
+        }
+
+        private void Window_VisibleChanged(Object sender, EventArgs e)
+        {
+            this.Refresh();
+            for (int i = 0; i < group.Count; i++)
+            {
+                for (int j = 0; j < group[i].window.Count; j++)
+                {
+                    ToolStripMenuItem item = (ToolStripMenuItem)group[i].menu.Items[j];
+                    item.Checked = group[i].window[j].Visible;
+                }
+            }
         }
     }
 }
