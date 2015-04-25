@@ -104,6 +104,7 @@
             this.ForeColor = System.Drawing.Color.WhiteSmoke;
             this.Name = "ODockWindow";
             this.Size = new System.Drawing.Size(256, 256);
+            this.Layout += new System.Windows.Forms.LayoutEventHandler(this.ODockWindow_Layout);
             this.WindowTop.ResumeLayout(false);
             this.WindowTop.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.BtnPin)).EndInit();

@@ -28,13 +28,14 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OForm));
             this.ContentContainer = new System.Windows.Forms.Panel();
             this.TitleBar = new System.Windows.Forms.Panel();
             this.BtnMinimize = new System.Windows.Forms.PictureBox();
             this.BtnMinMax = new System.Windows.Forms.PictureBox();
             this.BtnClose = new System.Windows.Forms.PictureBox();
-            this.LblTitle = new System.Windows.Forms.Label();
+            this.LblTitle = new Ohana3DS_Rebirth.GUI.OLabel(this.components);
             this.ContentContainer.SuspendLayout();
             this.TitleBar.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.BtnMinimize)).BeginInit();
@@ -55,10 +56,10 @@
             // TitleBar
             // 
             this.TitleBar.BackColor = System.Drawing.Color.Transparent;
+            this.TitleBar.Controls.Add(this.LblTitle);
             this.TitleBar.Controls.Add(this.BtnMinimize);
             this.TitleBar.Controls.Add(this.BtnMinMax);
             this.TitleBar.Controls.Add(this.BtnClose);
-            this.TitleBar.Controls.Add(this.LblTitle);
             this.TitleBar.Dock = System.Windows.Forms.DockStyle.Top;
             this.TitleBar.Location = new System.Drawing.Point(0, 0);
             this.TitleBar.Name = "TitleBar";
@@ -110,16 +111,16 @@
             // 
             // LblTitle
             // 
-            this.LblTitle.AutoSize = true;
+            this.LblTitle.AutomaticSize = true;
             this.LblTitle.BackColor = System.Drawing.Color.Transparent;
-            this.LblTitle.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTitle.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblTitle.ForeColor = System.Drawing.Color.White;
+            this.LblTitle.Image = null;
             this.LblTitle.Location = new System.Drawing.Point(0, 0);
             this.LblTitle.Name = "LblTitle";
             this.LblTitle.Size = new System.Drawing.Size(37, 19);
             this.LblTitle.TabIndex = 12;
             this.LblTitle.Text = "Title";
-            this.LblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.LblTitle.MouseDown += new System.Windows.Forms.MouseEventHandler(this.OForm_MouseDown);
             // 
             // OForm
@@ -139,7 +140,6 @@
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.OForm_MouseDown);
             this.ContentContainer.ResumeLayout(false);
             this.TitleBar.ResumeLayout(false);
-            this.TitleBar.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.BtnMinimize)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.BtnMinMax)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.BtnClose)).EndInit();
@@ -153,8 +153,8 @@
         private System.Windows.Forms.PictureBox BtnMinMax;
         private System.Windows.Forms.PictureBox BtnClose;
         protected System.Windows.Forms.Panel ContentContainer;
-        protected System.Windows.Forms.Label LblTitle;
         private System.Windows.Forms.Panel TitleBar;
+        protected GUI.OLabel LblTitle;
     }
 }
 

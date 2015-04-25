@@ -1,4 +1,8 @@
-﻿using System;
+﻿//BCH Importer/Exporter
+//Note: Still need to figure out a LOT of stuff, and a bunch of things before the bare-bones model can be rendered
+//Note to myself: Remember to stop using Managed DirectX structures and make a class with general structures that will be converted on DirectX structs later.
+//^ This way the lib can be easily switched to another one, like for example, SharpDX or some OpenGL wrapper.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -116,7 +120,7 @@ namespace Ohana3DS_Rebirth.Ohana
               | Header primário |
               +=================+*/
             BCH_Header Header = new BCH_Header();
-            Header.Magic = IOUtils.Read_String(Data, 0);
+            Header.Magic = IOUtils.Read_String(Input, 0);
             Header.Backward_Compatibility = Input.ReadByte();
             Header.Foward_Compatibility = Input.ReadByte();
             Header.Version = Input.ReadUInt16();

@@ -1,4 +1,7 @@
-﻿using System;
+﻿//OMenuStrip made for Ohana3DS by gdkchan
+//Custom menu design, should be used with "Renderer" property of a Menu
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;

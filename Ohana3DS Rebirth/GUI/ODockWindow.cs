@@ -1,4 +1,7 @@
-﻿using System;
+﻿//ODock Window made for Ohana3DS by gdkchan
+//Inherit from this control to make any window you want to be dockable.
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -24,6 +27,8 @@ namespace Ohana3DS_Rebirth.GUI
         public event EventHandler MoveEnded;
         public event EventHandler ToggleDockable;
 
+        private String title;
+
         public ODockWindow()
         {
             Graphics gfx1 = Graphics.FromImage(hoverRed);
@@ -34,15 +39,26 @@ namespace Ohana3DS_Rebirth.GUI
             InitializeComponent();
         }
 
+        private void ODockWindow_Layout(object sender, LayoutEventArgs e)
+        {
+            updateTitle();
+        }
+
+        private void updateTitle()
+        {
+            LblTitle.Text = DrawingHelper.clampText(title, LblTitle.Font, this.Width - 32);
+        }
+
         public string Title
         {
             get
             {
-                return LblTitle.Text;
+                return title;
             }
             set
             {
-                LblTitle.Text = value;
+                title = value;
+                updateTitle();
             }
         }
 

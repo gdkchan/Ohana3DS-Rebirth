@@ -62,7 +62,6 @@ namespace Ohana3DS_Rebirth.GUI
             public bool denyDock;
         }
         List<windowInfoStruct> windowInfo = new List<windowInfoStruct>();
-        private int windowIndex;
 
         private bool drag;
         private int dragIndex;
@@ -109,6 +108,8 @@ namespace Ohana3DS_Rebirth.GUI
             window.VisibleChanged += new EventHandler(Window_VisibleChanged);
             window.ToggleDockable += new EventHandler(Window_ToggleDockable);
 
+            int windowIndex = getAvailableIndex();
+            if ((windowIndex & 0x80000000) != 0) throw new Exception("You added too many docks!");
             windowInfoStruct info = new windowInfoStruct();
             info.index = windowIndex;
             info.dock = dockMode.Floating;
@@ -120,7 +121,23 @@ namespace Ohana3DS_Rebirth.GUI
             window.Tag = windowIndex;
             window.Location = new Point(x, y);
             window.BringToFront();
-            windowIndex += 1;
+        }
+
+        private int getAvailableIndex()
+        {
+            int index = -1;
+            bool found = true;
+            while (found)
+            {
+                index++;
+                found = false;
+                for (int i = 0; i < windowInfo.Count; i++)
+                {
+                    if (windowInfo[i].index == index) found = true;
+                }
+            }
+
+            return index;
         }
 
         private void Control_Resize(Object sender, EventArgs e)

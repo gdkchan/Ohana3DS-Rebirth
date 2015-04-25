@@ -1,8 +1,11 @@
-﻿using System;
+﻿//A bunch of functions to help drawing of the other controls
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
@@ -27,6 +30,25 @@ namespace Ohana3DS_Rebirth.GUI
             g.DrawLine(new Pen(new LinearGradientBrush(rect, color1, color2, LinearGradientMode.Vertical)), new Point(rect.X, rect.Y + 1), new Point(rect.X, (rect.Y + rect.Height) - 2));
             g.DrawLine(new Pen(new LinearGradientBrush(rect, color1, color2, LinearGradientMode.Vertical)), new Point((rect.X + rect.Width) - 1, rect.Y + 1), new Point((rect.X + rect.Width) - 1, (rect.Y + rect.Height) - 2));
             g.DrawLine(new Pen(color2), new Point(rect.X + 1, (rect.Y + rect.Height) - 1), new Point((rect.X + rect.Width) - 2, (rect.Y + rect.Height) - 1));
+        }
+
+        public static String clampText(String text, Font font, int maxWidth)
+        {
+            String outText = text;
+            int i = 1;
+            while (TextRenderer.MeasureText(outText, font).Width > maxWidth)
+            {
+                if (text.Length - i <= 0) return null;
+                while (text.Substring(text.Length - (i + 1), 1) == " ")
+                {
+                    i++;
+                    if (i > text.Length - 1) return null;
+                }
+                outText = text.Substring(0, text.Length - i) + "...";
+                i++;
+            }
+
+            return outText;
         }
     }
 }

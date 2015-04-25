@@ -173,6 +173,26 @@ namespace Ohana3DS_Rebirth.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap icn_wm_scroll_left {
+            get {
+                object obj = ResourceManager.GetObject("icn_wm_scroll_left", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap icn_wm_scroll_right {
+            get {
+                object obj = ResourceManager.GetObject("icn_wm_scroll_right", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap icn_wm_up_arrow {
             get {
                 object obj = ResourceManager.GetObject("icn_wm_up_arrow", resourceCulture);

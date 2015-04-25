@@ -74,6 +74,12 @@
     <Compile Include="GUI\ODockWindow.Designer.cs">
       <DependentUpon>ODockWindow.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\OLabel.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OLabel.Designer.cs">
+      <DependentUpon>OLabel.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\OMenuStrip.cs" />
     <Compile Include="GUI\OMenuStrip.Designer.cs">
       <DependentUpon>OMenuStrip.cs</DependentUpon>
@@ -127,9 +133,6 @@
     <None Include="Resources\App.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\grip.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\hover_red.png" />
   </ItemGroup>
   <ItemGroup>
@@ -151,25 +154,10 @@
     <None Include="Resources\icn_close.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\icn_close_hover.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\icn_dockable.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\icn_dockable_hover.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\icn_locked.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_locked_hover.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_maximize.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_maximize_hover.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\icn_wm_close.png" />
@@ -179,6 +167,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\icn_ticked.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_wm_scroll_left.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_wm_scroll_right.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

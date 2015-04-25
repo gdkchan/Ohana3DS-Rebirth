@@ -9,30 +9,23 @@ namespace Ohana3DS_Rebirth.Ohana
 {
     class IOUtils
     {
-        public static string Read_String(Stream Data, UInt32 Address)
-        {
-            Data.Seek(Address, SeekOrigin.Begin);
-            var Bytes = new List<byte>();
-            for (;;)
-            {
-
-                byte b = (byte)Data.ReadByte();
-                if (b == 0) break;
-                Bytes.Add(b);
-            }
-            return Encoding.ASCII.GetString(Bytes.ToArray());
-        }
-
+        /// <summary>
+        ///     Read an ASCII String from a given Reader at a given address.
+        ///     Note that the text MUST end with a Null Terminator (0x0).
+        /// </summary>
+        /// <param name="Input">The Reader of the file Stream</param>
+        /// <param name="Address">Address where the text begins</param>
+        /// <returns></returns>
         public static string Read_String(BinaryReader Input, UInt32 Address)
         {
             Input.BaseStream.Seek(Address, SeekOrigin.Begin);
-            var Bytes = new List<byte>();
+            MemoryStream Bytes = new MemoryStream();
             for (; ; )
             {
 
                 byte b = (byte)Input.ReadByte();
                 if (b == 0) break;
-                Bytes.Add(b);
+                Bytes.WriteByte(b);
             }
             return Encoding.ASCII.GetString(Bytes.ToArray());
         }

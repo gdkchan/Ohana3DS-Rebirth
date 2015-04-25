@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmMain));
             this.DockContainer = new Ohana3DS_Rebirth.GUI.ODock();
             this.WindowManager = new Ohana3DS_Rebirth.GUI.OWindowManager(this.components);
             this.MainMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -49,7 +50,8 @@
             // 
             // LblTitle
             // 
-            this.LblTitle.Size = new System.Drawing.Size(76, 19);
+            this.LblTitle.Image = ((System.Drawing.Bitmap)(resources.GetObject("LblTitle.Image")));
+            this.LblTitle.Size = new System.Drawing.Size(86, 19);
             this.LblTitle.Text = "Ohana3DS";
             this.LblTitle.MouseDown += new System.Windows.Forms.MouseEventHandler(this.LblTitle_MouseDown);
             this.LblTitle.MouseEnter += new System.EventHandler(this.LblTitle_MouseEnter);
@@ -79,19 +81,19 @@
             this.mnuOpen,
             this.mnuImport});
             this.MainMenu.Name = "MainMenu";
-            this.MainMenu.Size = new System.Drawing.Size(153, 70);
+            this.MainMenu.Size = new System.Drawing.Size(111, 48);
             // 
             // mnuOpen
             // 
             this.mnuOpen.Name = "mnuOpen";
-            this.mnuOpen.Size = new System.Drawing.Size(152, 22);
+            this.mnuOpen.Size = new System.Drawing.Size(110, 22);
             this.mnuOpen.Text = "&Open";
             this.mnuOpen.Click += new System.EventHandler(this.mnuOpen_Click);
             // 
             // mnuImport
             // 
             this.mnuImport.Name = "mnuImport";
-            this.mnuImport.Size = new System.Drawing.Size(152, 22);
+            this.mnuImport.Size = new System.Drawing.Size(110, 22);
             this.mnuImport.Text = "&Import";
             // 
             // FrmMain
