@@ -61,7 +61,7 @@ namespace Ohana3DS_Rebirth
             OpenDlg.Filter = "Binary CTR H3D File|*.bch";
             if (OpenDlg.ShowDialog() == DialogResult.OK)
             {
-                Ohana.BCH.Load(OpenDlg.FileName);
+                Ohana.BCH.load(OpenDlg.FileName);
             }
         }
     }

@@ -18,15 +18,17 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <returns></returns>
         public static string Read_String(BinaryReader Input, UInt32 Address)
         {
+            long originalPosition = Input.BaseStream.Position;
             Input.BaseStream.Seek(Address, SeekOrigin.Begin);
             MemoryStream Bytes = new MemoryStream();
-            for (; ; )
+            for (;;)
             {
 
                 byte b = (byte)Input.ReadByte();
                 if (b == 0) break;
                 Bytes.WriteByte(b);
             }
+            Input.BaseStream.Seek(originalPosition, SeekOrigin.Begin);
             return Encoding.ASCII.GetString(Bytes.ToArray());
         }
     }

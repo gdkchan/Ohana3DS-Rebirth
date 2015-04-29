@@ -98,6 +98,7 @@
     </Compile>
     <Compile Include="Ohana\BCH.cs" />
     <Compile Include="Ohana\IOUtils.cs" />
+    <Compile Include="Ohana\RenderBase.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="FrmMain.resx">
