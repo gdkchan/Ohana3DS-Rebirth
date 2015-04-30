@@ -16,20 +16,20 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="Input">The Reader of the file Stream</param>
         /// <param name="Address">Address where the text begins</param>
         /// <returns></returns>
-        public static string Read_String(BinaryReader Input, UInt32 Address)
+        public static string readString(BinaryReader input, uint address)
         {
-            long originalPosition = Input.BaseStream.Position;
-            Input.BaseStream.Seek(Address, SeekOrigin.Begin);
-            MemoryStream Bytes = new MemoryStream();
+            long originalPosition = input.BaseStream.Position;
+            input.BaseStream.Seek(address, SeekOrigin.Begin);
+            MemoryStream bytes = new MemoryStream();
             for (;;)
             {
 
-                byte b = (byte)Input.ReadByte();
+                byte b = input.ReadByte();
                 if (b == 0) break;
-                Bytes.WriteByte(b);
+                bytes.WriteByte(b);
             }
-            Input.BaseStream.Seek(originalPosition, SeekOrigin.Begin);
-            return Encoding.ASCII.GetString(Bytes.ToArray());
+            input.BaseStream.Seek(originalPosition, SeekOrigin.Begin);
+            return Encoding.ASCII.GetString(bytes.ToArray());
         }
     }
 }

@@ -81,7 +81,12 @@ namespace Ohana3DS_Rebirth.Ohana
             public uint skeletonOffset;
             public uint skeletonEntries;
             public uint skeletonNameOffset;
+            public uint facesNameFlagsOffset;
+            public uint facesNameFlagsBits;
             public String modelName;
+            public uint facesNameEntries;
+            public uint facesNameOffset;
+            public uint boundingBoxAndMeasuresPointerOffset;
         }
 
         private struct bchObjectEntry
@@ -134,7 +139,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
             //Header primário
             bchHeader header = new bchHeader();
-            header.magic = IOUtils.Read_String(input, 0);
+            header.magic = IOUtils.readString(input, 0);
             data.Seek(4, SeekOrigin.Current);
             header.backwardCompatibility = input.ReadByte();
             header.forwardCompatibility = input.ReadByte();
@@ -262,20 +267,44 @@ namespace Ohana3DS_Rebirth.Ohana
                 objectsHeader.texturesTableEntries = input.ReadUInt32();
                 objectsHeader.objectsNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
                 objectsHeader.verticesTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
-                MessageBox.Show(data.Position.ToString("X8"));
                 objectsHeader.verticesTableEntries = input.ReadUInt32();
                 data.Seek(0x28, SeekOrigin.Current);
                 objectsHeader.skeletonOffset = input.ReadUInt32() + header.mainHeaderOffset;
                 objectsHeader.skeletonEntries = input.ReadUInt32();
                 objectsHeader.skeletonNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
-                input.ReadUInt32(); //Aponta para 0xFFFF e mais nada
-                input.ReadUInt32(); //Count? (ex: 0x10)
-                objectsHeader.modelName = IOUtils.Read_String(input, header.stringTableOffset + input.ReadUInt32());
-                input.ReadUInt32(); //Count? (ex: 0x10) sempre igual ao Count acima ao que parece, 0x1 tbm
-                //0xFFFF - parece que cada bit definido é uma face na tabela abaixo
-                uint offset = input.ReadUInt32(); //Aponta para uma estrutura de comandos localizada logo após o 0xFFFF acima - acredito ter relação com as faces
+                objectsHeader.facesNameFlagsOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                objectsHeader.facesNameFlagsBits = input.ReadUInt32();
+                objectsHeader.modelName = IOUtils.readString(input, input.ReadUInt32() + header.stringTableOffset);
+                objectsHeader.facesNameEntries = input.ReadUInt32();
+                objectsHeader.facesNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
                 input.ReadUInt32(); //0x0
-                input.ReadUInt32(); //Dar uma olhada depois
+                objectsHeader.boundingBoxAndMeasuresPointerOffset = input.ReadUInt32() + header.mainHeaderOffset;
+
+                data.Seek(objectsHeader.boundingBoxAndMeasuresPointerOffset, SeekOrigin.Begin);
+                uint measuresHeaderOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                uint measuresHeaderEntries = input.ReadUInt32();
+
+                uint boundingBoxOffset = 0;
+                float heightCentimeters = 0;
+                float heightAdjustCentimeters = 0;
+                for (int index = 0; index < measuresHeaderEntries; index++)
+                {
+                    data.Seek(measuresHeaderOffset + (index * 0xc), SeekOrigin.Begin);
+                    uint nameOffset = input.ReadUInt32() + header.stringTableOffset;
+                    uint flags = input.ReadUInt32();
+                    uint dataOffset = input.ReadUInt32() + header.mainHeaderOffset;
+
+                    switch (index)
+                    {
+                        case 0: boundingBoxOffset = dataOffset; break;
+                        case 1: data.Seek(dataOffset, SeekOrigin.Begin); heightCentimeters = input.ReadSingle(); break;
+                        case 2: data.Seek(dataOffset, SeekOrigin.Begin); heightAdjustCentimeters = input.ReadSingle(); break;
+                    }
+                }
+
+                data.Seek(boundingBoxOffset, SeekOrigin.Begin);
+                RenderBase.OVector3 minimumVector = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                RenderBase.OVector3 maximumVector = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
 
                 //Header dos vértices
                 data.Seek(objectsHeader.verticesTableOffset, SeekOrigin.Begin);
@@ -306,6 +335,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     uint vertexFlags;
                     uint vertexDataOffset;
                     byte vertexEntryLength;
+                    uint unknow = input.ReadUInt32();
                     for (int entry = 0; entry < objects[index].verticesHeaderEntries; entry++)
                     {
                         uint code = input.ReadUInt32();

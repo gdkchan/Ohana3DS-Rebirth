@@ -148,13 +148,11 @@ namespace Ohana3DS_Rebirth.Ohana
         public class OModelSurface
         {
             public List<OVertex> model;
-            public List<OVector3> boundingBox;
             public String surfaceName = null;
 
             public OModelSurface()
             {
                 model = new List<OVertex>();
-                boundingBox = new List<OVector3>();
             }
 
             /// <summary>
@@ -164,15 +162,6 @@ namespace Ohana3DS_Rebirth.Ohana
             public void addVertex(OVertex Vertex)
             {
                 model.Add(Vertex);
-            }
-
-            /// <summary>
-            ///     Add a new Vector to the Bounding Box.
-            /// </summary>
-            /// <param name="Vertex">The Vector</param>
-            public void addVectorBB(OVector3 Vector)
-            {
-                boundingBox.Add(Vector);
             }
         }
 
