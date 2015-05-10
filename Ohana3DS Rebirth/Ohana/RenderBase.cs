@@ -88,7 +88,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public OVector2 texture;
             public List<int> node;
             public List<float> weight;
-            public int diffuseColor;
+            public uint diffuseColor;
 
             /// <summary>
             ///     Creates a new Vertex.
@@ -106,7 +106,7 @@ namespace Ohana3DS_Rebirth.Ohana
             /// <param name="Normal">The normal Vector (optional)</param>
             /// <param name="UV">The texture U/V coordinates (optional)</param>
             /// <param name="Color">The diffuse color (optional)</param>
-            public OVertex(OVector3 Position, OVector3 Normal, OVector2 UV, int Color)
+            public OVertex(OVector3 Position, OVector3 Normal, OVector2 UV, uint Color)
             {
                 node = new List<int>();
                 weight = new List<float>();
@@ -145,43 +145,24 @@ namespace Ohana3DS_Rebirth.Ohana
             public float M41 = 0; public float M42 = 0; public float M43 = 0; public float M44 = 1;
         }
 
-        public class OModelSurface
+        public class OModelObject
         {
-            public List<OVertex> model;
-            public String surfaceName = null;
+            public List<OVertex> obj;
+            public int textureId = 0;
+            public String objName = null;
 
-            public OModelSurface()
+            public OModelObject()
             {
-                model = new List<OVertex>();
+                obj = new List<OVertex>();
             }
 
             /// <summary>
-            ///     Add a new Vertex to the Surface.
+            ///     Add a new Vertex to the Object.
             /// </summary>
             /// <param name="Vertex">The Vertex</param>
             public void addVertex(OVertex Vertex)
             {
-                model.Add(Vertex);
-            }
-        }
-
-        public class OModelObject
-        {
-            public List<OModelSurface> surface;
-            public int textureId = 0;
-
-            public OModelObject()
-            {
-                surface = new List<OModelSurface>();
-            }
-
-            /// <summary>
-            ///     Add a new Surface to the Object.
-            /// </summary>
-            /// <param name="Vertex">The Surface</param>
-            public void addVertex(OModelSurface Surface)
-            {
-                surface.Add(Surface);
+                obj.Add(Vertex);
             }
         }
 
@@ -223,14 +204,51 @@ namespace Ohana3DS_Rebirth.Ohana
         public class OModel
         {
             public List<OModelObject> modelObject;
-            public List<OTexture> texture;
             public List<OBone> skeleton;
 
             public OModel()
             {
                 modelObject = new List<OModelObject>();
-                texture = new List<OTexture>();
                 skeleton = new List<OBone>();
+            }
+
+            /// <summary>
+            ///     Adds a Object to the model.
+            /// </summary>
+            /// <param name="obj">The Object</param>
+            public void addObject(OModelObject obj)
+            {
+                modelObject.Add(obj);
+            }
+        }
+
+        public class OModelGroup
+        {
+            public List<OModel> model;
+            public List<OTexture> texture;
+
+            public OModelGroup()
+            {
+                model = new List<OModel>();
+                texture = new List<OTexture>();
+            }
+
+            /// <summary>
+            ///     Adds a Model.
+            /// </summary>
+            /// <param name="mdl">The Model</param>
+            public void addModel(OModel mdl)
+            {
+                model.Add(mdl);
+            }
+
+            /// <summary>
+            ///     Adds a new Texture.
+            /// </summary>
+            /// <param name="tex">The Texture</param>
+            public void addTexture(OTexture tex)
+            {
+                texture.Add(tex);
             }
         }
     }

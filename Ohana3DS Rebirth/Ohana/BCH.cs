@@ -1,7 +1,5 @@
 ﻿//BCH Importer/Exporter
 //Note: Still need to figure out a LOT of stuff, and a bunch of things before the bare-bones model can be rendered
-//Note to myself: Remember to stop using Managed DirectX structures and make a class with general structures that will be converted on DirectX structs later.
-//^ This way the lib can be easily switched to another one, like for example, SharpDX or some OpenGL wrapper.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,27 +41,21 @@ namespace Ohana3DS_Rebirth.Ohana
 
         private struct bchContentHeader
         {
-            public uint objectsHeaderPointerOffset;
-            public uint objectsHeaderPointerEntries;
-            public uint objectsShadowNameOffset;
-            public uint objectsShadowOffset;
-            public uint objectsShadowEntries;
-            public uint materialsOffset;
-            public uint materialsEntries;
+            public uint modelsPointerTableOffset;
+            public uint modelsPointerTableEntries;
+            public uint modelsNameOffset;
+            public uint silhouetteMaterialPointerTableOffset;
+            public uint silhouetteMaterialPointerTableEntries;
+            public uint silhouetteMaterialNameOffset;
+            public uint shadersPointerTableOffset;
+            public uint shadersPointerTableEntries;
+            public uint shadersNameOffset;
             public uint texturesPointerTableOffset;
             public uint texturesPointerTableEntries;
-            public uint Unknow_2_Name_Offset;
+            public uint texturesNameOffset;
             public uint texturesPointerTable2Offset;
             public uint texturesPointerTable2Entries;
-        }
-        private struct BCH_Object_Shadow
-        {
-            public UInt32 Unknow_3;
-            public UInt32 Unknow_4;
-            public RenderBase.OVector3 Unknow_1_1;
-            public RenderBase.OVector3 Unknow_1_2;
-            public RenderBase.OVector3 Unknow_2_1;
-            public RenderBase.OVector3 Unknow_2_2;
+            public uint texturesName2Offset;
         }
 
         private struct bchObjectsHeader
@@ -99,7 +91,8 @@ namespace Ohana3DS_Rebirth.Ohana
             public uint facesHeaderEntries;
             public uint verticesHeader2Offset;
             public uint verticesHeader2Entries;
-            public RenderBase.OVector3 boundingBoxVector;
+            public RenderBase.OVector3 centerVector;
+            public uint flagsOffset;
             public uint nodesHeaderOffset;
 
             //Dados das sub-tabelas
@@ -130,14 +123,14 @@ namespace Ohana3DS_Rebirth.Ohana
 
         const uint codeBlockEnd = 0x000f023d;
 
-        public static RenderBase.OModel load(string fileName)
+        public static RenderBase.OModelGroup load(string fileName)
         {
             FileStream data = new FileStream(fileName, FileMode.Open);
             BinaryReader input = new BinaryReader(data);
 
-            RenderBase.OModel model = new RenderBase.OModel();
+            RenderBase.OModelGroup models = new RenderBase.OModelGroup();
 
-            //Header primário
+            //Primary header
             bchHeader header = new bchHeader();
             header.magic = IOUtils.readString(input, 0);
             data.Seek(4, SeekOrigin.Current);
@@ -164,83 +157,88 @@ namespace Ohana3DS_Rebirth.Ohana
             header.flags = input.ReadUInt16();
             header.addressCount = input.ReadUInt16();
 
-            //Header secundário
+            //Content header
             data.Seek(header.mainHeaderOffset, SeekOrigin.Begin);
             bchContentHeader contentHeader = new bchContentHeader();
-            contentHeader.objectsHeaderPointerOffset = input.ReadUInt32();
-            contentHeader.objectsHeaderPointerEntries = input.ReadUInt32();
-            contentHeader.objectsShadowNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.objectsShadowOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.objectsShadowEntries = input.ReadUInt32();
-            contentHeader.materialsOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.materialsEntries = input.ReadUInt32();
-            input.ReadUInt32(); //??? (0x0) ^ Provavelmente relacionado ao material
-            input.ReadUInt32(); //Unused? Nota: olhar depois
+            contentHeader.modelsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
+            contentHeader.modelsPointerTableEntries = input.ReadUInt32();
+            contentHeader.modelsNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
+            contentHeader.silhouetteMaterialPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
+            contentHeader.silhouetteMaterialPointerTableEntries = input.ReadUInt32();
+            contentHeader.silhouetteMaterialNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
+            contentHeader.shadersPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
+            contentHeader.shadersPointerTableEntries = input.ReadUInt32();
+            contentHeader.shadersNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
             contentHeader.texturesPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
             contentHeader.texturesPointerTableEntries = input.ReadUInt32();
-            contentHeader.Unknow_2_Name_Offset = input.ReadUInt32() + header.mainHeaderOffset;
+            contentHeader.texturesNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
             contentHeader.texturesPointerTable2Offset = input.ReadUInt32() + header.mainHeaderOffset;
             contentHeader.texturesPointerTable2Entries = input.ReadUInt32();
-            input.ReadUInt32(); //Nome vazio
-            //(O resto não é usado, apenas aponta para um campo vazio de 0x0)
+            contentHeader.texturesName2Offset = input.ReadUInt32() + header.mainHeaderOffset;
+            //Note: 15 entries total, all have the same pattern: Table Offset/Table Entries/Name Offset
 
-            if (contentHeader.objectsHeaderPointerOffset != 0)
+            //Silhouette Material
+            for (int index = 0; index < contentHeader.silhouetteMaterialPointerTableEntries; index++)
             {
-                data.Seek(contentHeader.objectsHeaderPointerOffset + header.mainHeaderOffset, SeekOrigin.Begin);
-                UInt32 objectsHeaderOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                data.Seek(contentHeader.silhouetteMaterialPointerTableOffset + (index * 4), SeekOrigin.Begin);
+                UInt32 dataOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                data.Seek(dataOffset, SeekOrigin.Begin);
 
-                //Sombra dos objetos?
-                List<BCH_Object_Shadow> Objects_Shadow = new List<BCH_Object_Shadow>();
-                for (int Index = 0; Index < contentHeader.objectsShadowEntries; Index++)
+                //TODO: Figure out
+                //Nota para gdkchan: Alterar o valor em 0x4 deixou parte do corpo do personagem preto.
+            }
+
+            //Shaders
+            for (int index = 0; index < contentHeader.shadersPointerTableEntries; index++)
+            {
+                data.Seek(contentHeader.shadersPointerTableOffset + (index * 4), SeekOrigin.Begin);
+                uint dataOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                data.Seek(dataOffset, SeekOrigin.Begin);
+
+                uint shaderDataOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                uint shaderDataLength = input.ReadUInt32();
+            }
+
+            //Textures
+            for (int index = 0; index < contentHeader.texturesPointerTableEntries; index++)
+            {
+                data.Seek(contentHeader.texturesPointerTableOffset + (index * 4), SeekOrigin.Begin);
+                uint dataOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                data.Seek(dataOffset, SeekOrigin.Begin);
+
+                uint textureHeaderOffset = input.ReadUInt32() + header.descriptionOffset;
+                uint textureHeaderEntries = input.ReadUInt32();
+
+                data.Seek(textureHeaderOffset, SeekOrigin.Begin);
+                ushort textureHeight = input.ReadUInt16();
+                ushort textureWidth = input.ReadUInt16();
+                uint textureDataOffset;
+                uint textureFormatId;
+                for (int entry = 0; entry < textureHeaderEntries; entry++)
                 {
-                    BCH_Object_Shadow Object_Shadow;
-
-                    data.Seek(contentHeader.objectsShadowOffset + (Index * 4), SeekOrigin.Begin);
-                    UInt32 dataOffset = input.ReadUInt32() + header.mainHeaderOffset;
-                    data.Seek(dataOffset, SeekOrigin.Begin);
-
-                    Object_Shadow.Unknow_3 = input.ReadUInt32();
-                    Object_Shadow.Unknow_4 = input.ReadUInt32(); //Alterar isso deixa os personagens pretos!!!!
-
-                    Object_Shadow.Unknow_1_1 = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
-                    Object_Shadow.Unknow_1_2 = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
-                    Object_Shadow.Unknow_2_1 = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle()); //Flag 0x10?
-                    Object_Shadow.Unknow_2_2 = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
-                }
-
-                //Textures
-                for (int index = 0; index < contentHeader.texturesPointerTableEntries; index++)
-                {
-                    data.Seek(contentHeader.texturesPointerTableOffset + (index * 4), SeekOrigin.Begin);
-                    uint dataOffset = input.ReadUInt32() + header.mainHeaderOffset;
-                    data.Seek(dataOffset, SeekOrigin.Begin);
-
-                    uint textureHeaderOffset = input.ReadUInt32() + header.descriptionOffset;
-                    uint textureHeaderEntries = input.ReadUInt32();
-
-                    data.Seek(textureHeaderOffset, SeekOrigin.Begin);
-                    ushort textureHeight = input.ReadUInt16();
-                    ushort textureWidth = input.ReadUInt16();
-                    uint textureDataOffset;
-                    uint textureFormatId;
-                    for (int entry = 0; entry < textureHeaderEntries; entry++)
+                    uint code = input.ReadUInt32();
+                    switch (code)
                     {
-                        uint code = input.ReadUInt32();
-                        switch (code)
-                        {
-                            case codeTextureDataOffset:
-                            case codeTextureDataOffsetExtension:
-                                textureDataOffset = input.ReadUInt32() + header.dataOffset;
-                                entry++;
-                                break;
-                            case codeTextureFormatId: textureFormatId = input.ReadUInt32(); entry++; break;
-                            case codeBlockEnd: entry = (int)textureHeaderEntries; break;
-                            default: input.ReadUInt32(); entry++; break;
-                        }
+                        case codeTextureDataOffset:
+                        case codeTextureDataOffsetExtension:
+                            textureDataOffset = input.ReadUInt32() + header.dataOffset;
+                            entry++;
+                            break;
+                        case codeTextureFormatId: textureFormatId = input.ReadUInt32(); entry++; break;
+                        case codeBlockEnd: entry = (int)textureHeaderEntries; break;
+                        default: input.ReadUInt32(); entry++; break;
                     }
                 }
+            }
 
-                //Header dos objetos
+            for (int modelIndex = 0; modelIndex < contentHeader.modelsPointerTableEntries; modelIndex++)
+            {
+                RenderBase.OModel model = new RenderBase.OModel();
+
+                data.Seek(contentHeader.modelsPointerTableOffset + (modelIndex * 4), SeekOrigin.Begin);
+                UInt32 objectsHeaderOffset = input.ReadUInt32() + header.mainHeaderOffset;
+
+                //Objects header
                 data.Seek(objectsHeaderOffset, SeekOrigin.Begin);
                 bchObjectsHeader objectsHeader;
                 objectsHeader.flags = input.ReadByte();
@@ -302,11 +300,15 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                 }
 
-                data.Seek(boundingBoxOffset, SeekOrigin.Begin);
-                RenderBase.OVector3 minimumVector = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
-                RenderBase.OVector3 maximumVector = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                RenderBase.OVector3 minimumVector, maximumVector;
+                if (measuresHeaderEntries > 0)
+                {
+                    data.Seek(boundingBoxOffset, SeekOrigin.Begin);
+                    minimumVector = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                    maximumVector = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                }
 
-                //Header dos vértices
+                //Vertices header
                 data.Seek(objectsHeader.verticesTableOffset, SeekOrigin.Begin);
                 List<bchObjectEntry> objects = new List<bchObjectEntry>();
 
@@ -321,20 +323,23 @@ namespace Ohana3DS_Rebirth.Ohana
                     objectEntry.facesHeaderEntries = input.ReadUInt32();
                     objectEntry.verticesHeader2Offset = input.ReadUInt32() + header.descriptionOffset;
                     objectEntry.verticesHeader2Entries = input.ReadUInt32();
-                    objectEntry.boundingBoxVector = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
-                    input.ReadUInt32(); //ex: 0x278 fixo
+                    objectEntry.centerVector = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                    objectEntry.flagsOffset = input.ReadUInt32() + header.mainHeaderOffset;
                     input.ReadUInt32(); //ex: 0x0 fixo
-                    objectEntry.nodesHeaderOffset = input.ReadUInt32() + header.mainHeaderOffset; //Bounding Box Name?
+                    objectEntry.nodesHeaderOffset = input.ReadUInt32() + header.mainHeaderOffset;
 
                     objects.Add(objectEntry);
                 }
 
+                uint faceExtendedOffset = header.dataExtendedOffset;
                 for (int index = 0; index < objects.Count; index++)
                 {
+                    RenderBase.OModelObject obj = new RenderBase.OModelObject();
+
                     data.Seek(objects[index].verticesHeaderOffset, SeekOrigin.Begin);
-                    uint vertexFlags;
-                    uint vertexDataOffset;
-                    byte vertexEntryLength;
+                    uint vertexFlags = 0;
+                    uint vertexDataOffset = 0;
+                    byte vertexEntryLength = 0;
                     uint unknow = input.ReadUInt32();
                     for (int entry = 0; entry < objects[index].verticesHeaderEntries; entry++)
                     {
@@ -344,7 +349,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             case codeVerticeHeaderData:
                                 vertexFlags = input.ReadUInt32();
                                 input.ReadUInt32(); //TODO: Figure out what all this data is
-                                vertexDataOffset = input.ReadUInt32();
+                                vertexDataOffset = input.ReadUInt32() + header.dataOffset;
                                 input.ReadUInt32();
                                 input.ReadUInt16();
                                 vertexEntryLength = input.ReadByte();
@@ -358,42 +363,84 @@ namespace Ohana3DS_Rebirth.Ohana
                         }
                     }
 
+                    faceExtendedOffset += 8;
                     for (int i = 0; i < objects[index].facesHeaderEntries; i++)
                     {
                         uint baseOffset = objects[index].facesHeaderOffset + ((uint)i * 0x34);
                         data.Seek(baseOffset, SeekOrigin.Begin);
-                        for (int j = 0; j < 0x2c; j++)
+                        ushort faceFlags = input.ReadUInt16();
+                        ushort faceEntries = input.ReadUInt16();
+                        for (int j = 0; j < faceEntries; j++)
                         {
-                            ushort a = input.ReadUInt16();
-                            ushort b = input.ReadUInt16();
-                            ushort c = input.ReadUInt16();
-
-                            if (a == 0 && b == 0 && c == 0) break;
+                            ushort value = input.ReadUInt16();
                         }
 
                         data.Seek(baseOffset + 0x2c, SeekOrigin.Begin);
                         uint faceHeaderOffset = input.ReadUInt32() + header.descriptionOffset;
                         uint faceHeaderEntries = input.ReadUInt32();
 
+                        data.Seek(faceHeaderOffset, SeekOrigin.Begin);
                         uint flags = input.ReadUInt32();
-                        uint faceDataOffset;
-                        uint faceDataLength;
+                        uint faceDataOffset = 0;
+                        uint faceDataEntries = 0;
                         for (int entry = 0; entry < faceHeaderEntries; entry++)
                         {
                             uint code = input.ReadUInt32();
                             switch (code)
                             {
                                 case codeFaceDataOffset: faceDataOffset = input.ReadUInt32() + header.dataOffset; entry++; break;
-                                case codeFaceDataLength: faceDataLength = input.ReadUInt32(); entry++; break;
+                                case codeFaceDataLength: faceDataEntries = input.ReadUInt32(); entry++; break;
                                 case codeBlockEnd: entry = (int)faceHeaderEntries; break;
                                 default: input.ReadUInt32(); entry++; break;
                             }
                         }
+
+                        data.Seek(faceExtendedOffset, SeekOrigin.Begin);
+                        uint faceExtendedData = input.ReadUInt32();
+                        faceExtendedOffset += 4;
+                        byte faceDataFormat = (byte)(faceExtendedData >> 24);
+
+                        data.Seek(faceDataOffset, SeekOrigin.Begin);
+                        for (int faceIndex = 0; faceIndex < faceDataEntries / 3; faceIndex++)
+                        {
+                            ushort[] indices = new ushort[3];
+
+                            if (faceDataFormat == 0x4e)
+                            {
+                                indices[0] = input.ReadUInt16();
+                                indices[1] = input.ReadUInt16();
+                                indices[2] = input.ReadUInt16();
+                            }
+                            else if (faceDataFormat == 0x50)
+                            {
+                                indices[0] = input.ReadByte();
+                                indices[1] = input.ReadByte();
+                                indices[2] = input.ReadByte();
+                            }
+
+                            long position = data.Position;
+                            for (int j = 0; j < 3; j++)
+                            {
+                                data.Seek(vertexDataOffset + (indices[j] * vertexEntryLength), SeekOrigin.Begin);
+                                RenderBase.OVector3 coord = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                                RenderBase.OVector3 normal = new RenderBase.OVector3();
+                                RenderBase.OVector2 texUV = new RenderBase.OVector2();
+                                uint color = 0xffffffff;
+
+                                obj.addVertex(new RenderBase.OVertex(coord, normal, texUV, color));
+                            }
+                            data.Seek(position, SeekOrigin.Begin);
+                        }
                     }
+
+                    model.addObject(obj);
                 }
+
+                models.addModel(model);
             }
 
-            return model;
+            input.Close();
+            return models;
         }
     }
 }
