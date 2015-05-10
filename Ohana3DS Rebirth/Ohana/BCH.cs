@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 using System.Windows.Forms;
 
@@ -93,7 +92,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public uint verticesHeader2Entries;
             public RenderBase.OVector3 centerVector;
             public uint flagsOffset;
-            public uint nodesHeaderOffset;
+            public uint boundingBoxOffset;
 
             //Dados das sub-tabelas
         }
@@ -231,6 +230,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 }
             }
 
+            uint faceExtendedOffset = header.dataExtendedOffset;
             for (int modelIndex = 0; modelIndex < contentHeader.modelsPointerTableEntries; modelIndex++)
             {
                 RenderBase.OModel model = new RenderBase.OModel();
@@ -278,6 +278,42 @@ namespace Ohana3DS_Rebirth.Ohana
                 input.ReadUInt32(); //0x0
                 objectsHeader.boundingBoxAndMeasuresPointerOffset = input.ReadUInt32() + header.mainHeaderOffset;
 
+                //Skeleton
+                data.Seek(objectsHeader.skeletonOffset, SeekOrigin.Begin);
+                for (int index = 0; index < objectsHeader.skeletonEntries; index++)
+                {
+                    RenderBase.OBone bone = new RenderBase.OBone();
+
+                    uint boneFlags = input.ReadUInt32();
+                    bone.parentId = input.ReadInt16();
+                    ushort boneSpacer = input.ReadUInt16();
+                    bone.scale = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                    bone.rotation = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                    bone.translation = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                    
+                    RenderBase.OMatrix boneMatrix = new RenderBase.OMatrix();
+                    boneMatrix.M11 = input.ReadSingle();
+                    boneMatrix.M12 = input.ReadSingle();
+                    boneMatrix.M13 = input.ReadSingle();
+                    boneMatrix.M14 = input.ReadSingle();
+
+                    boneMatrix.M21 = input.ReadSingle();
+                    boneMatrix.M22 = input.ReadSingle();
+                    boneMatrix.M23 = input.ReadSingle();
+                    boneMatrix.M24 = input.ReadSingle();
+
+                    boneMatrix.M31 = input.ReadSingle();
+                    boneMatrix.M32 = input.ReadSingle();
+                    boneMatrix.M33 = input.ReadSingle();
+                    boneMatrix.M34 = input.ReadSingle();
+
+                    bone.name = IOUtils.readString(input, input.ReadUInt32() + header.stringTableOffset);
+                    input.ReadUInt32(); //TODO: Figure out
+
+                    model.addBone(bone);
+                }
+
+                //Bounding Box
                 data.Seek(objectsHeader.boundingBoxAndMeasuresPointerOffset, SeekOrigin.Begin);
                 uint measuresHeaderOffset = input.ReadUInt32() + header.mainHeaderOffset;
                 uint measuresHeaderEntries = input.ReadUInt32();
@@ -326,12 +362,11 @@ namespace Ohana3DS_Rebirth.Ohana
                     objectEntry.centerVector = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
                     objectEntry.flagsOffset = input.ReadUInt32() + header.mainHeaderOffset;
                     input.ReadUInt32(); //ex: 0x0 fixo
-                    objectEntry.nodesHeaderOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                    objectEntry.boundingBoxOffset = input.ReadUInt32() + header.mainHeaderOffset;
 
                     objects.Add(objectEntry);
                 }
 
-                uint faceExtendedOffset = header.dataExtendedOffset;
                 for (int index = 0; index < objects.Count; index++)
                 {
                     RenderBase.OModelObject obj = new RenderBase.OModelObject();
@@ -364,15 +399,16 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
 
                     faceExtendedOffset += 8;
+                    List<ushort> nodeList = new List<ushort>();
                     for (int i = 0; i < objects[index].facesHeaderEntries; i++)
                     {
                         uint baseOffset = objects[index].facesHeaderOffset + ((uint)i * 0x34);
                         data.Seek(baseOffset, SeekOrigin.Begin);
-                        ushort faceFlags = input.ReadUInt16();
-                        ushort faceEntries = input.ReadUInt16();
-                        for (int j = 0; j < faceEntries; j++)
+                        ushort nodeIdFlags = input.ReadUInt16();
+                        ushort nodeIdEntries = input.ReadUInt16();
+                        for (int j = 0; j < nodeIdEntries; j++)
                         {
-                            ushort value = input.ReadUInt16();
+                            nodeList.Add(input.ReadUInt16());
                         }
 
                         data.Seek(baseOffset + 0x2c, SeekOrigin.Begin);
@@ -422,15 +458,49 @@ namespace Ohana3DS_Rebirth.Ohana
                             for (int j = 0; j < 3; j++)
                             {
                                 data.Seek(vertexDataOffset + (indices[j] * vertexEntryLength), SeekOrigin.Begin);
-                                RenderBase.OVector3 coord = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
-                                RenderBase.OVector3 normal = new RenderBase.OVector3();
-                                RenderBase.OVector2 texUV = new RenderBase.OVector2();
-                                uint color = 0xffffffff;
+                                RenderBase.OVertex vertex = new RenderBase.OVertex();
 
-                                obj.addVertex(new RenderBase.OVertex(coord, normal, texUV, color));
+                                //Position
+                                if ((vertexFlags & 8) != 0)
+                                {
+                                    switch (((vertexFlags & 2) >> 1) | ((vertexFlags & 0x10) >> 3))
+                                    {
+                                        case 0: vertex.position = new RenderBase.OVector3(input.ReadByte(), input.ReadByte(), input.ReadByte()); break;
+                                        case 1: vertex.position = new RenderBase.OVector3(input.ReadInt16(), input.ReadInt16(), input.ReadInt16()); break;
+                                        case 3: vertex.position = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle()); break;
+                                    }
+                                }
+
+                                //Normal
+                                if ((vertexFlags & 0x80) != 0)
+                                {
+                                    switch ((vertexFlags & 1) | ((vertexFlags & 0x20) >> 4))
+                                    {
+                                        case 0: vertex.normal = new RenderBase.OVector3(input.ReadByte(), input.ReadByte(), input.ReadByte()); break;
+                                        case 1: vertex.normal = new RenderBase.OVector3(input.ReadInt16(), input.ReadInt16(), input.ReadInt16()); break;
+                                        case 3: vertex.normal = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle()); break;
+                                    }
+                                }
+
+                                //Texture U/V
+                                if ((vertexFlags & 0x400) != 0)
+                                {
+                                    switch ((vertexFlags & 0x300) >> 8)
+                                    {
+                                        case 0: vertex.texture = new RenderBase.OVector2(input.ReadByte(), input.ReadByte()); break;
+                                        case 1: vertex.texture = new RenderBase.OVector2(input.ReadInt16(), input.ReadInt16()); break;
+                                        case 3: vertex.texture = new RenderBase.OVector2(input.ReadSingle(), input.ReadSingle()); break;
+                                    }
+                                }
+
+                                vertex.diffuseColor = 0xffffffff;
+
+                                obj.addVertex(vertex);
                             }
                             data.Seek(position, SeekOrigin.Begin);
                         }
+
+                        //MessageBox.Show(vertexFlags.ToString("X8") + " - " + vertexEntryLength.ToString() + " - " + nodeList.Count.ToString());
                     }
 
                     model.addObject(obj);

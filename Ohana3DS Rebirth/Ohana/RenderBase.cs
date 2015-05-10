@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Drawing;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
-    class RenderBase
+    public class RenderBase
     {
         public class OVector2
         {
@@ -97,6 +96,10 @@ namespace Ohana3DS_Rebirth.Ohana
             {
                 node = new List<int>();
                 weight = new List<float>();
+
+                position = new OVector3();
+                normal = new OVector3();
+                texture = new OVector2();
             }
 
             /// <summary>
@@ -171,6 +174,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public OVector3 translation;
             public OVector3 rotation;
             public OVector3 scale;
+            public short parentId;
             public String name = null;
 
             /// <summary>
@@ -219,6 +223,15 @@ namespace Ohana3DS_Rebirth.Ohana
             public void addObject(OModelObject obj)
             {
                 modelObject.Add(obj);
+            }
+
+            /// <summary>
+            ///     Adds a Bone to the skeleton.
+            /// </summary>
+            /// <param name="bone">The Bone</param>
+            public void addBone(OBone bone)
+            {
+                skeleton.Add(bone);
             }
         }
 

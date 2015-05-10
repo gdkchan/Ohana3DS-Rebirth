@@ -6,6 +6,9 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
+using System.IO;
+
+using Ohana3DS_Rebirth.Ohana;
 
 namespace Ohana3DS_Rebirth
 {
@@ -14,31 +17,11 @@ namespace Ohana3DS_Rebirth
         public FrmMain()
         {
             InitializeComponent();
-            this.SuspendLayout();
             WindowManager.Initialize(DockContainer);
-
-            //testing only
-            for (int i = 0; i < 4; i++)
-            {
-                GUI.ODockWindow window = new GUI.ODockWindow();
-                window.Title = "window_" + Convert.ToChar(0x41 + i) + " #1";
-                DockContainer.launch(window);
-                WindowManager.addWindow(window);
-            }
-            WindowManager.createGroup("Group 1");
-            for (int i = 0; i < 4; i++)
-            {
-                GUI.ODockWindow window = new GUI.ODockWindow();
-                window.Title = "window_" + Convert.ToChar(0x41 + i) + " #2";
-                DockContainer.launch(window);
-                WindowManager.addWindow(window);
-            }
-            WindowManager.createGroup("Group 2");
 
             this.MaximumSize = Screen.PrimaryScreen.WorkingArea.Size;
             this.WindowState = FormWindowState.Maximized;
             MainMenu.Renderer = new GUI.OMenuStrip();
-            this.ResumeLayout();
         }
 
         private void LblTitle_MouseEnter(object sender, EventArgs e)
@@ -57,11 +40,26 @@ namespace Ohana3DS_Rebirth
 
         private void mnuOpen_Click(object sender, EventArgs e)
         {
-            OpenFileDialog OpenDlg = new OpenFileDialog();
-            OpenDlg.Filter = "Binary CTR H3D File|*.bch";
-            if (OpenDlg.ShowDialog() == DialogResult.OK)
+            OpenFileDialog openDlg = new OpenFileDialog();
+            openDlg.Filter = "Binary CTR H3D File|*.bch";
+            if (openDlg.ShowDialog() == DialogResult.OK)
             {
-                Ohana.BCH.load(OpenDlg.FileName);
+                FileIdentifier.fileFormat format = FileIdentifier.identify(openDlg.FileName);
+                switch (format)
+                {
+                    case FileIdentifier.fileFormat.H3D:
+                        GUI.OModelWindow window = new GUI.OModelWindow();
+                        window.Title = Path.GetFileNameWithoutExtension(openDlg.FileName + " :: Model");
+                        DockContainer.launch(window);
+                        WindowManager.addWindow(window);
+                        WindowManager.createGroup(Path.GetFileName(openDlg.FileName));
+                        window.initialize(Ohana.BCH.load(openDlg.FileName));
+                        break;
+
+                    default:
+                        MessageBox.Show("Unsupported file format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                        break;
+                }
             }
         }
     }
