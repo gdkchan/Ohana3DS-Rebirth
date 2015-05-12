@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Windows.Forms;
+using System.Drawing;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
@@ -31,8 +32,8 @@ namespace Ohana3DS_Rebirth.Ohana
             public uint dataLength;
             public uint dataExtendedLength;
             public uint relocatableTableLength;
-            public uint unusedDataSectionLength;
-            public uint unusedDescriptionSectionLength;
+            public uint uninitializedDataSectionLength;
+            public uint uninitializedDescriptionSectionLength;
 
             public ushort flags;
             public ushort addressCount;
@@ -43,9 +44,9 @@ namespace Ohana3DS_Rebirth.Ohana
             public uint modelsPointerTableOffset;
             public uint modelsPointerTableEntries;
             public uint modelsNameOffset;
-            public uint silhouetteMaterialPointerTableOffset;
-            public uint silhouetteMaterialPointerTableEntries;
-            public uint silhouetteMaterialNameOffset;
+            public uint materialsPointerTableOffset;
+            public uint materialsPointerTableEntries;
+            public uint materialsNameOffset;
             public uint shadersPointerTableOffset;
             public uint shadersPointerTableEntries;
             public uint shadersNameOffset;
@@ -83,7 +84,7 @@ namespace Ohana3DS_Rebirth.Ohana
         private struct bchObjectEntry
         {
             public uint textureId;
-            public uint visibilityGroup;
+            public uint renderPriority;
             public uint verticesHeaderOffset;
             public uint verticesHeaderEntries;
             public uint facesHeaderOffset;
@@ -116,9 +117,9 @@ namespace Ohana3DS_Rebirth.Ohana
         const uint codeVerticeUnknow3 = 0x000f02bb;
         const uint codeVerticeUnknow4 = 0x000f02bc;
         const uint codeVerticeHeaderData = 0x805f0200;
-        const uint codeVerticeUnknow5 = 0x804f02c0;
-        const uint codeVerticeUnknow6 = 0x000f02c0;
-        const uint codeVerticeUnknow7 = 0x007f02c1;
+        const uint codeVerticePositionOffset = 0x804f02c0;
+        const uint codeVerticeUnknow5 = 0x000f02c0;
+        const uint codeVerticeScale = 0x007f02c1;
 
         const uint codeBlockEnd = 0x000f023d;
 
@@ -150,8 +151,8 @@ namespace Ohana3DS_Rebirth.Ohana
             header.dataLength = input.ReadUInt32();
             header.dataExtendedLength = input.ReadUInt32();
             header.relocatableTableLength = input.ReadUInt32();
-            header.unusedDataSectionLength = input.ReadUInt32();
-            header.unusedDescriptionSectionLength = input.ReadUInt32();
+            header.uninitializedDataSectionLength = input.ReadUInt32();
+            header.uninitializedDescriptionSectionLength = input.ReadUInt32();
 
             header.flags = input.ReadUInt16();
             header.addressCount = input.ReadUInt16();
@@ -162,9 +163,9 @@ namespace Ohana3DS_Rebirth.Ohana
             contentHeader.modelsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
             contentHeader.modelsPointerTableEntries = input.ReadUInt32();
             contentHeader.modelsNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.silhouetteMaterialPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.silhouetteMaterialPointerTableEntries = input.ReadUInt32();
-            contentHeader.silhouetteMaterialNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
+            contentHeader.materialsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
+            contentHeader.materialsPointerTableEntries = input.ReadUInt32();
+            contentHeader.materialsNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
             contentHeader.shadersPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
             contentHeader.shadersPointerTableEntries = input.ReadUInt32();
             contentHeader.shadersNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
@@ -176,15 +177,31 @@ namespace Ohana3DS_Rebirth.Ohana
             contentHeader.texturesName2Offset = input.ReadUInt32() + header.mainHeaderOffset;
             //Note: 15 entries total, all have the same pattern: Table Offset/Table Entries/Name Offset
 
-            //Silhouette Material
-            for (int index = 0; index < contentHeader.silhouetteMaterialPointerTableEntries; index++)
+            //Materials
+            for (int index = 0; index < contentHeader.materialsPointerTableEntries; index++)
             {
-                data.Seek(contentHeader.silhouetteMaterialPointerTableOffset + (index * 4), SeekOrigin.Begin);
+                data.Seek(contentHeader.materialsPointerTableOffset + (index * 4), SeekOrigin.Begin);
                 UInt32 dataOffset = input.ReadUInt32() + header.mainHeaderOffset;
                 data.Seek(dataOffset, SeekOrigin.Begin);
 
-                //TODO: Figure out
-                //Nota para gdkchan: Alterar o valor em 0x4 deixou parte do corpo do personagem preto.
+                uint blendFlags = input.ReadUInt32();
+                uint unknow = input.ReadUInt32();
+
+                data.Seek(0x50, SeekOrigin.Current);
+                RenderBase.OMaterial material = new RenderBase.OMaterial();
+                material.emission = RenderBase.getMaterialColor(input);
+                material.ambient = RenderBase.getMaterialColor(input);
+                material.diffuse = RenderBase.getMaterialColor(input);
+                material.specular0 = RenderBase.getMaterialColor(input);
+                material.specular1 = RenderBase.getMaterialColor(input);
+                material.constant0 = RenderBase.getMaterialColor(input);
+                material.constant1 = RenderBase.getMaterialColor(input);
+                material.constant2 = RenderBase.getMaterialColor(input);
+                material.constant3 = RenderBase.getMaterialColor(input);
+                material.constant4 = RenderBase.getMaterialColor(input);
+                material.constant5 = RenderBase.getMaterialColor(input);
+
+                models.addMaterial(material);
             }
 
             //Shaders
@@ -207,12 +224,14 @@ namespace Ohana3DS_Rebirth.Ohana
 
                 uint textureHeaderOffset = input.ReadUInt32() + header.descriptionOffset;
                 uint textureHeaderEntries = input.ReadUInt32();
+                data.Seek(0x14, SeekOrigin.Current);
+                String textureName = IOUtils.readString(input, input.ReadUInt32() + header.stringTableOffset);
 
                 data.Seek(textureHeaderOffset, SeekOrigin.Begin);
                 ushort textureHeight = input.ReadUInt16();
                 ushort textureWidth = input.ReadUInt16();
-                uint textureDataOffset;
-                uint textureFormatId;
+                uint textureDataOffset = 0;
+                uint textureFormatId = 0;
                 for (int entry = 0; entry < textureHeaderEntries; entry++)
                 {
                     uint code = input.ReadUInt32();
@@ -228,9 +247,102 @@ namespace Ohana3DS_Rebirth.Ohana
                         default: input.ReadUInt32(); entry++; break;
                     }
                 }
+
+                Bitmap texture = null;
+                #region "Texture decoding"
+                data.Seek(textureDataOffset, SeekOrigin.Begin);
+                switch (textureFormatId)
+                {
+                    case 0:
+                        byte[] bufferRgba8 = new byte[textureWidth * textureHeight * 4];
+                        input.Read(bufferRgba8, 0, bufferRgba8.Length);
+                        texture = TextureCodec.decode(bufferRgba8, textureWidth, textureHeight, TextureCodec.textureFormat.rgba8);
+                        break;
+
+                    case 1:
+                        byte[] bufferRgb8 = new byte[textureWidth * textureHeight * 3];
+                        input.Read(bufferRgb8, 0, bufferRgb8.Length);
+                        texture = TextureCodec.decode(bufferRgb8, textureWidth, textureHeight, TextureCodec.textureFormat.rgb8);
+                        break;
+
+                    case 2:
+                        byte[] bufferRgba5551 = new byte[textureWidth * textureHeight * 2];
+                        input.Read(bufferRgba5551, 0, bufferRgba5551.Length);
+                        texture = TextureCodec.decode(bufferRgba5551, textureWidth, textureHeight, TextureCodec.textureFormat.rgba5551);
+                        break;
+
+                    case 3:
+                        byte[] bufferRgb565 = new byte[textureWidth * textureHeight * 2];
+                        input.Read(bufferRgb565, 0, bufferRgb565.Length);
+                        texture = TextureCodec.decode(bufferRgb565, textureWidth, textureHeight, TextureCodec.textureFormat.rgb565);
+                        break;
+
+                    case 4:
+                        byte[] bufferRgba4 = new byte[textureWidth * textureHeight * 2];
+                        input.Read(bufferRgba4, 0, bufferRgba4.Length);
+                        texture = TextureCodec.decode(bufferRgba4, textureWidth, textureHeight, TextureCodec.textureFormat.rgba4);
+                        break;
+
+                    case 5:
+                        byte[] bufferLa8 = new byte[textureWidth * textureHeight * 2];
+                        input.Read(bufferLa8, 0, bufferLa8.Length);
+                        texture = TextureCodec.decode(bufferLa8, textureWidth, textureHeight, TextureCodec.textureFormat.la8);
+                        break;
+
+                    case 6:
+                        byte[] bufferHilo8 = new byte[textureWidth * textureHeight * 2];
+                        input.Read(bufferHilo8, 0, bufferHilo8.Length);
+                        texture = TextureCodec.decode(bufferHilo8, textureWidth, textureHeight, TextureCodec.textureFormat.hilo8);
+                        break;
+
+                    case 7:
+                        byte[] bufferL8 = new byte[textureWidth * textureHeight];
+                        input.Read(bufferL8, 0, bufferL8.Length);
+                        texture = TextureCodec.decode(bufferL8, textureWidth, textureHeight, TextureCodec.textureFormat.l8);
+                        break;
+
+                    case 8:
+                        byte[] bufferA8 = new byte[textureWidth * textureHeight];
+                        input.Read(bufferA8, 0, bufferA8.Length);
+                        texture = TextureCodec.decode(bufferA8, textureWidth, textureHeight, TextureCodec.textureFormat.a8);
+                        break;
+
+                    case 9:
+                        byte[] bufferLA4 = new byte[textureWidth * textureHeight];
+                        input.Read(bufferLA4, 0, bufferLA4.Length);
+                        texture = TextureCodec.decode(bufferLA4, textureWidth, textureHeight, TextureCodec.textureFormat.la4);
+                        break;
+
+                    case 0xa:
+                        byte[] bufferL4 = new byte[(textureWidth * textureHeight) / 2];
+                        input.Read(bufferL4, 0, bufferL4.Length);
+                        texture = TextureCodec.decode(bufferL4, textureWidth, textureHeight, TextureCodec.textureFormat.l4);
+                        break;
+
+                    case 0xb:
+                        byte[] bufferA4 = new byte[(textureWidth * textureHeight) / 2];
+                        input.Read(bufferA4, 0, bufferA4.Length);
+                        texture = TextureCodec.decode(bufferA4, textureWidth, textureHeight, TextureCodec.textureFormat.a4);
+                        break;
+
+                    case 0xc:
+                        byte[] bufferEtc1 = new byte[(textureWidth * textureHeight) / 2];
+                        input.Read(bufferEtc1, 0, bufferEtc1.Length);
+                        texture = TextureCodec.decode(bufferEtc1, textureWidth, textureHeight, TextureCodec.textureFormat.etc1);
+                        break;
+
+                    case 0xd:
+                        byte[] bufferEtc1a4 = new byte[textureWidth * textureHeight];
+                        input.Read(bufferEtc1a4, 0, bufferEtc1a4.Length);
+                        texture = TextureCodec.decode(bufferEtc1a4, textureWidth, textureHeight, TextureCodec.textureFormat.etc1a4);
+                        break;
+                }
+                #endregion
+
+                models.addTexture(new RenderBase.OTexture(texture, textureName));
             }
 
-            uint faceExtendedOffset = header.dataExtendedOffset;
+            uint objectExtendedOffset = header.relocatableTableOffset;
             for (int modelIndex = 0; modelIndex < contentHeader.modelsPointerTableEntries; modelIndex++)
             {
                 RenderBase.OModel model = new RenderBase.OModel();
@@ -313,7 +425,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     model.addBone(bone);
                 }
 
-                //Bounding Box
+                //Bounding box
                 data.Seek(objectsHeader.boundingBoxAndMeasuresPointerOffset, SeekOrigin.Begin);
                 uint measuresHeaderOffset = input.ReadUInt32() + header.mainHeaderOffset;
                 uint measuresHeaderEntries = input.ReadUInt32();
@@ -352,7 +464,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 {
                     bchObjectEntry objectEntry = new bchObjectEntry();
                     objectEntry.textureId = input.ReadUInt32();
-                    objectEntry.visibilityGroup = input.ReadUInt32();
+                    objectEntry.renderPriority = input.ReadUInt32();
                     objectEntry.verticesHeaderOffset = input.ReadUInt32() + header.descriptionOffset;
                     objectEntry.verticesHeaderEntries = input.ReadUInt32();
                     objectEntry.facesHeaderOffset = input.ReadUInt32() + header.mainHeaderOffset;
@@ -371,10 +483,19 @@ namespace Ohana3DS_Rebirth.Ohana
                 {
                     RenderBase.OModelObject obj = new RenderBase.OModelObject();
 
+                    //Vertices
+                    objectExtendedOffset += 4;
+                    data.Seek(objectExtendedOffset, SeekOrigin.Begin);
+                    uint vertexExtendedData = input.ReadUInt32();
+                    byte vertexDataLocation = (byte)(vertexExtendedData >> 24);
+                    objectExtendedOffset += 4;
+
                     data.Seek(objects[index].verticesHeaderOffset, SeekOrigin.Begin);
                     uint vertexFlags = 0;
                     uint vertexDataOffset = 0;
                     byte vertexEntryLength = 0;
+                    RenderBase.OVector3 positionOffset = new RenderBase.OVector3();
+                    float objectScale;
                     uint unknow = input.ReadUInt32();
                     for (int entry = 0; entry < objects[index].verticesHeaderEntries; entry++)
                     {
@@ -384,7 +505,13 @@ namespace Ohana3DS_Rebirth.Ohana
                             case codeVerticeHeaderData:
                                 vertexFlags = input.ReadUInt32();
                                 input.ReadUInt32(); //TODO: Figure out what all this data is
-                                vertexDataOffset = input.ReadUInt32() + header.dataOffset;
+                                vertexDataOffset = input.ReadUInt32();
+                                switch (vertexDataLocation)
+                                {
+                                    case 0x4c: vertexDataOffset += header.dataOffset; break;
+                                    case 0x56: vertexDataOffset += header.dataExtendedOffset; break;
+                                    default: throw new Exception("BCH: Unknow Vertex Data Location! STOP!");
+                                }
                                 input.ReadUInt32();
                                 input.ReadUInt16();
                                 vertexEntryLength = input.ReadByte();
@@ -393,12 +520,23 @@ namespace Ohana3DS_Rebirth.Ohana
                                 input.ReadUInt32();
                                 entry += 6;
                                 break;
+                            case codeVerticePositionOffset:
+                                input.ReadUInt32();
+                                positionOffset.z = input.ReadSingle();
+                                positionOffset.y = input.ReadSingle();
+                                positionOffset.x = input.ReadSingle();
+                                break;
+                            case codeVerticeScale:
+                                input.ReadUInt32();
+                                input.ReadUInt32();
+                                objectScale = input.ReadSingle();
+                                break;
                             case codeBlockEnd: entry = (int)objects[index].verticesHeaderEntries; break;
                             default: input.ReadUInt32(); entry++; break;
                         }
                     }
 
-                    faceExtendedOffset += 8;
+                    //Faces
                     List<ushort> nodeList = new List<ushort>();
                     for (int i = 0; i < objects[index].facesHeaderEntries; i++)
                     {
@@ -415,6 +553,11 @@ namespace Ohana3DS_Rebirth.Ohana
                         uint faceHeaderOffset = input.ReadUInt32() + header.descriptionOffset;
                         uint faceHeaderEntries = input.ReadUInt32();
 
+                        data.Seek(objectExtendedOffset, SeekOrigin.Begin);
+                        uint faceExtendedData = input.ReadUInt32();
+                        objectExtendedOffset += 4;
+                        byte faceDataFormat = (byte)(faceExtendedData >> 24);
+
                         data.Seek(faceHeaderOffset, SeekOrigin.Begin);
                         uint flags = input.ReadUInt32();
                         uint faceDataOffset = 0;
@@ -424,34 +567,42 @@ namespace Ohana3DS_Rebirth.Ohana
                             uint code = input.ReadUInt32();
                             switch (code)
                             {
-                                case codeFaceDataOffset: faceDataOffset = input.ReadUInt32() + header.dataOffset; entry++; break;
+                                case codeFaceDataOffset:
+                                    faceDataOffset = input.ReadUInt32();
+                                    switch (faceDataFormat)
+                                    {
+                                        case 0x4e: case 0x50: faceDataOffset += header.dataOffset; break;
+                                        case 0x58: case 0x5a: faceDataOffset += header.dataExtendedOffset; break;
+                                        default: throw new Exception("BCH: Unknow Face Data Location/Format! STOP!");
+                                    }
+                                    entry++; 
+                                    break;
                                 case codeFaceDataLength: faceDataEntries = input.ReadUInt32(); entry++; break;
                                 case codeBlockEnd: entry = (int)faceHeaderEntries; break;
                                 default: input.ReadUInt32(); entry++; break;
                             }
                         }
 
-                        data.Seek(faceExtendedOffset, SeekOrigin.Begin);
-                        uint faceExtendedData = input.ReadUInt32();
-                        faceExtendedOffset += 4;
-                        byte faceDataFormat = (byte)(faceExtendedData >> 24);
-
                         data.Seek(faceDataOffset, SeekOrigin.Begin);
                         for (int faceIndex = 0; faceIndex < faceDataEntries / 3; faceIndex++)
                         {
                             ushort[] indices = new ushort[3];
 
-                            if (faceDataFormat == 0x4e)
+                            switch (faceDataFormat)
                             {
-                                indices[0] = input.ReadUInt16();
-                                indices[1] = input.ReadUInt16();
-                                indices[2] = input.ReadUInt16();
-                            }
-                            else if (faceDataFormat == 0x50)
-                            {
-                                indices[0] = input.ReadByte();
-                                indices[1] = input.ReadByte();
-                                indices[2] = input.ReadByte();
+                                case 0x4e:
+                                case 0x58:
+                                    indices[0] = input.ReadUInt16();
+                                    indices[1] = input.ReadUInt16();
+                                    indices[2] = input.ReadUInt16();
+                                    break;
+                                case 0x50:
+                                case 0x5a:
+                                    indices[0] = input.ReadByte();
+                                    indices[1] = input.ReadByte();
+                                    indices[2] = input.ReadByte();
+                                    break;
+                                default: throw new Exception("BCH: Unknow Face Data Format! STOP!");
                             }
 
                             long position = data.Position;
@@ -497,6 +648,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
                                 obj.addVertex(vertex);
                             }
+
                             data.Seek(position, SeekOrigin.Begin);
                         }
 

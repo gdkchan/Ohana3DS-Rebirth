@@ -115,9 +115,9 @@
 
         #endregion
 
-        private System.Windows.Forms.Panel WindowTop;
         private System.Windows.Forms.PictureBox BtnPin;
         private System.Windows.Forms.PictureBox BtnClose;
-        protected System.Windows.Forms.Label LblTitle;
+        private System.Windows.Forms.Panel WindowTop;
+        private System.Windows.Forms.Label LblTitle;
     }
 }

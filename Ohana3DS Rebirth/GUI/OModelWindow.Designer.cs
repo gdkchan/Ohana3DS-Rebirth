@@ -32,20 +32,19 @@
             ((System.ComponentModel.ISupportInitialize)(this.Screen)).BeginInit();
             this.SuspendLayout();
             // 
-            // LblTitle
-            // 
-            this.LblTitle.Size = new System.Drawing.Size(0, 15);
-            this.LblTitle.Text = "";
-            // 
             // Screen
             // 
             this.Screen.BackColor = System.Drawing.Color.Black;
             this.Screen.Dock = System.Windows.Forms.DockStyle.Fill;
             this.Screen.Location = new System.Drawing.Point(0, 16);
             this.Screen.Name = "Screen";
-            this.Screen.Size = new System.Drawing.Size(480, 304);
+            this.Screen.Size = new System.Drawing.Size(640, 480);
             this.Screen.TabIndex = 1;
             this.Screen.TabStop = false;
+            this.Screen.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Screen_MouseDown);
+            this.Screen.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Screen_MouseMove);
+            this.Screen.MouseUp += new System.Windows.Forms.MouseEventHandler(this.Screen_MouseUp);
+            this.Screen.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.Screen_MouseWheel);
             // 
             // OModelWindow
             // 
@@ -53,7 +52,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.Screen);
             this.Name = "OModelWindow";
-            this.Size = new System.Drawing.Size(480, 320);
+            this.Size = new System.Drawing.Size(640, 496);
             this.Controls.SetChildIndex(this.Screen, 0);
             ((System.ComponentModel.ISupportInitialize)(this.Screen)).EndInit();
             this.ResumeLayout(false);

@@ -118,6 +118,7 @@ namespace Ohana3DS_Rebirth.GUI
             windowInfo.Add(info);
             window.Tag = windowIndex;
             window.Location = new Point(x, y);
+            window.PerformLayout();
             window.BringToFront();
         }
 

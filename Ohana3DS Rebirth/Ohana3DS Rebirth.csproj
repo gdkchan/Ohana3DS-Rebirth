@@ -91,11 +91,23 @@
     <Compile Include="GUI\ODockWindow.Designer.cs">
       <DependentUpon>ODockWindow.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\OHscroll.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OHscroll.Designer.cs">
+      <DependentUpon>OHscroll.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\OLabel.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="GUI\OLabel.Designer.cs">
       <DependentUpon>OLabel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OList.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\OList.Designer.cs">
+      <DependentUpon>OList.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\OMenuStrip.cs" />
     <Compile Include="GUI\OMenuStrip.Designer.cs">
@@ -106,6 +118,18 @@
     </Compile>
     <Compile Include="GUI\OModelWindow.Designer.cs">
       <DependentUpon>OModelWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OTextureWindow.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\OTextureWindow.Designer.cs">
+      <DependentUpon>OTextureWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OVScroll.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OVScroll.Designer.cs">
+      <DependentUpon>OVScroll.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\OWindowManager.cs">
       <SubType>Component</SubType>
@@ -124,6 +148,7 @@
     <Compile Include="Ohana\IOUtils.cs" />
     <Compile Include="Ohana\RenderBase.cs" />
     <Compile Include="Ohana\RenderEngine.cs" />
+    <Compile Include="Ohana\TextureCodec.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="FrmMain.resx">
@@ -132,8 +157,14 @@
     <EmbeddedResource Include="GUI\ODockWindow.resx">
       <DependentUpon>ODockWindow.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GUI\OList.resx">
+      <DependentUpon>OList.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\OModelWindow.resx">
       <DependentUpon>OModelWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\OTextureWindow.resx">
+      <DependentUpon>OTextureWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="OForm.resx">
       <DependentUpon>OForm.cs</DependentUpon>

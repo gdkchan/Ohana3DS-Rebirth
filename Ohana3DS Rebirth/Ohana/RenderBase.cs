@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Drawing;
+using System.IO;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
@@ -188,23 +189,6 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
-        public class OTexture
-        {
-            public Bitmap texture;
-            public String name;
-
-            /// <summary>
-            ///     Creates a new Texture.
-            /// </summary>
-            /// <param name="Texture">The texture, size must be a power of 2</param>
-            /// <param name="Name">Texture name</param>
-            public OTexture(Bitmap Texture, String Name)
-            {
-                texture = new Bitmap(Texture);
-                name = Name;
-            }
-        }
-
         public class OModel
         {
             public List<OModelObject> modelObject;
@@ -235,15 +219,59 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        public class OTexture
+        {
+            public Bitmap texture;
+            public String name;
+
+            /// <summary>
+            ///     Creates a new Texture.
+            /// </summary>
+            /// <param name="Texture">The texture, size must be a power of 2</param>
+            /// <param name="Name">Texture name</param>
+            public OTexture(Bitmap Texture, String Name)
+            {
+                texture = new Bitmap(Texture);
+                name = Name;
+            }
+        }
+
+        public class OMaterial
+        {
+            public Color emission;
+            public Color ambient;
+            public Color diffuse;
+            public Color specular0;
+            public Color specular1;
+            public Color constant0;
+            public Color constant1;
+            public Color constant2;
+            public Color constant3;
+            public Color constant4;
+            public Color constant5;
+        }
+
+        public static Color getMaterialColor(BinaryReader input)
+        {
+            byte r = (byte)input.ReadByte();
+            byte g = (byte)input.ReadByte();
+            byte b = (byte)input.ReadByte();
+            byte a = (byte)input.ReadByte();
+
+            return Color.FromArgb(a, r, g, b);
+        }
+
         public class OModelGroup
         {
             public List<OModel> model;
             public List<OTexture> texture;
+            public List<OMaterial> material;
 
             public OModelGroup()
             {
                 model = new List<OModel>();
                 texture = new List<OTexture>();
+                material = new List<OMaterial>();
             }
 
             /// <summary>
@@ -262,6 +290,15 @@ namespace Ohana3DS_Rebirth.Ohana
             public void addTexture(OTexture tex)
             {
                 texture.Add(tex);
+            }
+
+            /// <summary>
+            ///     Adds a new material.
+            /// </summary>
+            /// <param name="mat">The Material</param>
+            public void addMaterial(OMaterial mat)
+            {
+                material.Add(mat);
             }
         }
     }

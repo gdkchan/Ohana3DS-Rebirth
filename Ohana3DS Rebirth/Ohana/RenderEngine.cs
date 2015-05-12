@@ -25,6 +25,10 @@ namespace Ohana3DS_Rebirth.Ohana
         }
         private List<CustomVertex> renderData;
 
+        public Vector2 translation;
+        public Vector2 rotation;
+        public float zoom;
+
         private bool keepRendering;
 
         public void initialize(System.IntPtr handler, int width, int height)
@@ -39,7 +43,15 @@ namespace Ohana3DS_Rebirth.Ohana
             pParams.EnableAutoDepthStencil = true;
             pParams.AutoDepthStencilFormat = DepthFormat.D16;
 
-            device = new Device(0, DeviceType.Reference, handler, CreateFlags.HardwareVertexProcessing, pParams);
+            try
+            {
+                device = new Device(0, DeviceType.Hardware, handler, CreateFlags.HardwareVertexProcessing, pParams);
+            }
+            catch
+            {
+                MessageBox.Show("Failed to initialize Direct3D with Hardware Acceleration!" + Environment.NewLine + "Now trying to use Software processing... Expect poor performance!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                device = new Device(0, DeviceType.Reference, handler, CreateFlags.HardwareVertexProcessing, pParams);
+            }
             device.RenderState.CullMode = Cull.None;
             device.RenderState.ZBufferEnable = true;
             device.RenderState.AlphaBlendEnable = true;
@@ -61,6 +73,10 @@ namespace Ohana3DS_Rebirth.Ohana
             {
                 device.Clear(ClearFlags.Target | ClearFlags.ZBuffer, 0x5f5f5f, 1.0f, 0);
                 device.BeginScene();
+
+                Matrix rotationMatrix = Matrix.RotationYawPitchRoll(-rotation.X / 200.0f, -rotation.Y / 200.0f, 0);
+                Matrix translationMatrix = Matrix.Translation(new Vector3(-translation.X / 50.0f, translation.Y / 50.0f, zoom));
+                device.Transform.World = rotationMatrix * translationMatrix * Matrix.Scaling(-1, 1, 1);
 
                 Material material = new Material();
                 material.Diffuse = Color.White;

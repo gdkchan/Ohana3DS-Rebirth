@@ -31,6 +31,14 @@ namespace Ohana3DS_Rebirth.GUI
             g.DrawLine(new Pen(color2), new Point(rect.X + 1, (rect.Y + rect.Height) - 1), new Point((rect.X + rect.Width) - 2, (rect.Y + rect.Height) - 1));
         }
 
+        /// <summary>
+        ///     Clamp the text to fit on a limited space.
+        ///     Should be only used with single line Strings.
+        /// </summary>
+        /// <param name="text">The string with the text to be clamped</param>
+        /// <param name="font">The font that will be used to render the text</param>
+        /// <param name="maxWidth">The maximum space the text can use</param>
+        /// <returns></returns>
         public static String clampText(String text, Font font, int maxWidth)
         {
             String outText = text;

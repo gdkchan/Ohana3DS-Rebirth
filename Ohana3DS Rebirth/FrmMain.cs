@@ -48,12 +48,25 @@ namespace Ohana3DS_Rebirth
                 switch (format)
                 {
                     case FileIdentifier.fileFormat.H3D:
-                        GUI.OModelWindow window = new GUI.OModelWindow();
-                        window.Title = Path.GetFileNameWithoutExtension(openDlg.FileName + " :: Model");
-                        DockContainer.launch(window);
-                        WindowManager.addWindow(window);
+                        GUI.OModelWindow modelWindow = new GUI.OModelWindow();
+                        GUI.OTextureWindow textureWindow = new GUI.OTextureWindow();
+
+                        String fileName = Path.GetFileNameWithoutExtension(openDlg.FileName);
+                        modelWindow.Title = fileName + " :: Model";
+                        textureWindow.Title = fileName + " :: Texture";
+
+                        DockContainer.launch(modelWindow);
+                        DockContainer.launch(textureWindow, modelWindow.Width);
+
+                        WindowManager.addWindow(modelWindow);
+                        WindowManager.addWindow(textureWindow);
+
                         WindowManager.createGroup(Path.GetFileName(openDlg.FileName));
-                        window.initialize(Ohana.BCH.load(openDlg.FileName));
+                        RenderBase.OModelGroup model = Ohana.BCH.load(openDlg.FileName);
+
+                        textureWindow.initialize(model);
+                        modelWindow.initialize(model); //Always initialize the renderer at last, 'cause DirectX do weird stuff
+
                         break;
 
                     default:
