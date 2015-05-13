@@ -27,13 +27,14 @@ namespace Ohana3DS_Rebirth.GUI
         public event EventHandler ToggleDockable;
 
         private String title;
+        public Control container;
 
         public ODockWindow()
         {
-            Graphics gfx1 = Graphics.FromImage(hoverRed);
-            Graphics gfx2 = Graphics.FromImage(hoverBlue);
-            gfx1.FillRectangle(new SolidBrush(Color.FromArgb(0x7f, Color.Crimson)), new Rectangle(1, 1, hoverRed.Width - 2, hoverRed.Height - 2));
-            gfx2.FillRectangle(new SolidBrush(Color.FromArgb(0x7f, Color.FromArgb(15, 82, 186))), new Rectangle(1, 1, hoverBlue.Width - 2, hoverBlue.Height - 2));
+            Graphics g1 = Graphics.FromImage(hoverRed);
+            Graphics g2 = Graphics.FromImage(hoverBlue);
+            g1.FillRectangle(new SolidBrush(Color.FromArgb(0x7f, Color.Crimson)), new Rectangle(1, 1, hoverRed.Width - 2, hoverRed.Height - 2));
+            g2.FillRectangle(new SolidBrush(Color.FromArgb(0x7f, Color.FromArgb(15, 82, 186))), new Rectangle(1, 1, hoverBlue.Width - 2, hoverBlue.Height - 2));
             
             InitializeComponent();
         }
@@ -69,6 +70,11 @@ namespace Ohana3DS_Rebirth.GUI
             }
         }
 
+        public virtual void dispose()
+        {
+            //Dispose all unmanaged stuff here!
+        }
+
         private void WindowTop_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
@@ -83,7 +89,13 @@ namespace Ohana3DS_Rebirth.GUI
         {
             if (drag)
             {
-                this.Location = new Point(Cursor.Position.X - mouseX, Cursor.Position.Y - mouseY);
+                int x = Cursor.Position.X - mouseX;
+                int y = Cursor.Position.Y - mouseY;
+                if (x < 0) x = 0;
+                if (y < 0) y = 0;
+                if (x >= container.Width) x = container.Width - 1;
+                if (y >= container.Height) y = container.Height - 1;
+                this.Location = new Point(x, y);
                 this.BringToFront();
             }
         }

@@ -31,6 +31,12 @@ namespace Ohana3DS_Rebirth.Ohana
 
         private bool keepRendering;
 
+        /// <summary>
+        ///     Initialize the renderer at a given target.
+        /// </summary>
+        /// <param name="handler">Handler of the target</param>
+        /// <param name="width">Render width</param>
+        /// <param name="height">Render height</param>
         public void initialize(System.IntPtr handler, int width, int height)
         {
             pParams = new PresentParameters();
@@ -59,6 +65,17 @@ namespace Ohana3DS_Rebirth.Ohana
             device.RenderState.DestinationBlend = Blend.InvSourceAlpha;
             device.RenderState.BlendOperation = BlendOperation.Add;
             device.RenderState.AlphaFunction = Compare.GreaterEqual;
+        }
+
+        /// <summary>
+        ///     Release all resources used by DirectX.
+        ///     You MUST call this before closing the window the render target belongs.
+        ///     Otherwise you will end up with memory leaks.
+        /// </summary>
+        public void dispose()
+        {
+            keepRendering = false;
+            device.Dispose();
         }
 
         public void render()

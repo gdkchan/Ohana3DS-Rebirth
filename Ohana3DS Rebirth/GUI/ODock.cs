@@ -1,7 +1,9 @@
-﻿//Ohana3DS Dock Control made by gdkchan
-//
-//TODO:
-//- Some functions can be a bit optimized (+ reduce redundant code)
+﻿/* Ohana3DS Dock Control made by gdkchan
+
+   TODO:
+   - Some functions can be a bit optimized (+ reduce redundant code)
+   - Implement IContainer?
+*/
 
 using System;
 using System.Collections.Generic;
@@ -51,13 +53,11 @@ namespace Ohana3DS_Rebirth.GUI
         {
             public ODockWindow window;
             public Size originalSize;
-            public Point originalLocation;
             public SizeF windowProportions;
             public int index;
             public dockMode dock;
             public bool dockable;
             public bool hasGrip;
-            public bool denyDock;
         }
         List<windowInfoStruct> windowInfo = new List<windowInfoStruct>();
 
@@ -98,7 +98,7 @@ namespace Ohana3DS_Rebirth.GUI
         /// <param name="window">The Window (ODockWindow control)</param>
         /// <param name="x">Initial X position of the Window</param>
         /// <param name="y">Initial Y position of the Window</param>
-        public void launch(ODockWindow window, int x = 0, int y = 0)
+        public void launch(ODockWindow window)
         {
             this.Controls.Add(window);
             window.Move += new EventHandler(Window_Move);
@@ -108,16 +108,17 @@ namespace Ohana3DS_Rebirth.GUI
 
             int windowIndex = getAvailableIndex();
             if ((windowIndex & 0x80000000) != 0) throw new Exception("You added too many docks!");
+            
             windowInfoStruct info = new windowInfoStruct();
             info.index = windowIndex;
             info.dock = dockMode.Floating;
             info.window = window;
             info.originalSize = window.Size;
-            info.originalLocation = new Point(x, y);
             info.dockable = true;
+
             windowInfo.Add(info);
             window.Tag = windowIndex;
-            window.Location = new Point(x, y);
+            window.container = this;
             window.PerformLayout();
             window.BringToFront();
         }
@@ -766,12 +767,11 @@ namespace Ohana3DS_Rebirth.GUI
                 case dockMode.Center: windowDockRect = centerDock; break;
             }
 
-            if (!dockRect.IntersectsWith(windowDockRect) || windowInfo[infoIndex].denyDock)
+            if (!dockRect.IntersectsWith(windowDockRect))
             {
                 dockMode oldDock = windowInfo[infoIndex].dock;
                 windowInfo[infoIndex].dock = dockMode.Floating;
                 windowInfo[infoIndex].hasGrip = false;
-                windowInfo[infoIndex].denyDock = false;
                 windowInfo[infoIndex].window.Size = windowInfo[infoIndex].originalSize;
                 windowInfo[infoIndex].window.BringToFront();
                 autoArrange(oldDock, windowDockRect);
@@ -830,7 +830,6 @@ namespace Ohana3DS_Rebirth.GUI
 
             if (!windowInfo[infoIndex].dockable)
             {
-                windowInfo[infoIndex].denyDock = true;
                 dockMode oldDock = windowInfo[infoIndex].dock;
                 windowInfo[infoIndex].dock = dockMode.Floating;
                 windowInfo[infoIndex].window.Size = windowInfo[infoIndex].originalSize;
@@ -869,10 +868,6 @@ namespace Ohana3DS_Rebirth.GUI
                     windowInfo[infoIndex].hasGrip = false;
                     windowInfo[infoIndex].dock = dockMode.Center;
                 }
-                else
-                {
-                    windowInfo[infoIndex].denyDock = true;
-                }
             }
             else if (dockRect.IntersectsWith(rightDock) || dockRect.IntersectsWith(leftDock)) //Lados esquerdo e direito
             {
@@ -896,7 +891,6 @@ namespace Ohana3DS_Rebirth.GUI
                 {
                     if (!getSpaceToCreateDockSide(currentDock, currentDock == dockMode.Right ? rightDockWidth : leftDockWidth))
                     {
-                        windowInfo[infoIndex].denyDock = true;
                         deny = true;
                         window.BringToFront();
                     }
@@ -979,8 +973,7 @@ namespace Ohana3DS_Rebirth.GUI
                     }
                     else
                     {
-                        windowInfo[infoIndex].denyDock = true;
-                        window.BringToFront();
+                         window.BringToFront();
                     }
 
                     window.ResumeLayout();
@@ -1008,7 +1001,6 @@ namespace Ohana3DS_Rebirth.GUI
                 {
                     if (!getSpaceToCreateDockSide(currentDock, currentDock == dockMode.Bottom ? bottomDockHeight : topDockHeight))
                     {
-                        windowInfo[infoIndex].denyDock = true;
                         deny = true;
                         window.BringToFront();
                     }
@@ -1091,16 +1083,11 @@ namespace Ohana3DS_Rebirth.GUI
                     }
                     else
                     {
-                        windowInfo[infoIndex].denyDock = true;
                         window.BringToFront();
                     }
 
                     window.ResumeLayout();
                 }
-            }
-            else
-            {
-                windowInfo[infoIndex].denyDock = true;
             }
 
             autoArrangeAll();
@@ -1128,7 +1115,6 @@ namespace Ohana3DS_Rebirth.GUI
                 dockMode oldDock = windowInfo[infoIndex].dock;
                 windowInfo[infoIndex].dock = dockMode.Floating;
                 windowInfo[infoIndex].window.Size = windowInfo[infoIndex].originalSize;
-                windowInfo[infoIndex].window.Location = windowInfo[infoIndex].originalLocation;
                 windowInfo[infoIndex].window.BringToFront();
 
                 autoArrangeAll();
@@ -1147,25 +1133,33 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void arrangeCenter()
         {
-            Rectangle centerDock = getDockRect(dockMode.Center);
-
             if (windowCount(dockMode.Center) > 0)
             {
                 int centerWindowIndex = getCenterWindow();
-                centerDock = getDockRect(dockMode.Center);
+                Rectangle centerDock = getDockRect(dockMode.Center);
                 windowInfo[centerWindowIndex].window.Location = centerDock.Location;
                 windowInfo[centerWindowIndex].window.Size = centerDock.Size;
             }
         }
 
-        public void remove(int tagIndex)
+        /// <summary>
+        ///     Removes all windows.
+        /// </summary>
+        public void flush()
         {
-            int infoIndex = getWindowInfoIndex(tagIndex);
+            this.Controls.Clear();
+            windowInfo.Clear();
+        }
 
-            dockMode dock = windowInfo[infoIndex].dock;
-            if (dock != dockMode.Floating) autoArrange(dock, getDockRect(dock));
-            windowInfo[infoIndex].window.Dispose();
-            windowInfo.RemoveAt(infoIndex);
+        /// <summary>
+        ///     One of those very case-specific functions :P
+        ///     Basically, force the first Window to be docked on the center.
+        /// </summary>
+        public void dockMainWindow()
+        {
+            if (windowCount(dockMode.Center) > 0) return;
+            windowInfo[0].dock = dockMode.Center;
+            arrangeCenter();
         }
 
         /// <summary>

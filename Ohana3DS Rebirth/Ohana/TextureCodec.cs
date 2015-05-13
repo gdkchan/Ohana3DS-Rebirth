@@ -315,14 +315,14 @@ namespace Ohana3DS_Rebirth.Ohana
                     int[] etc1Order = etc1Scramble(width, height);
 
                     int i = 0;
-                    for (int tY = 0; tY <= (height / 4) - 1; tY++) {
-	                    for (int tX = 0; tX <= (width / 4) - 1; tX++) {
+                    for (int tY = 0; tY < height / 4; tY++) {
+	                    for (int tX = 0; tX < width / 4; tX++) {
                             int TX = etc1Order[i] % (width / 4);
                             int TY = (etc1Order[i] - TX) / (width / 4);
-		                    for (int y = 0; y <= 3; y++) {
-			                    for (int x = 0; x <= 3; x++) {
+		                    for (int y = 0; y < 4; y++) {
+			                    for (int x = 0; x < 4; x++) {
 				                    dataOffset = ((TX * 4) + x + (((TY * 4) + y) * width)) * 4;
-                                    long outputOffset = ((tX * 8) + x + (((tY * 8 + y)) * width)) * 8;
+                                    long outputOffset = ((tX * 4) + x + (((tY * 4 + y)) * width)) * 4;
 
                                     Buffer.BlockCopy(decodedData, (int)dataOffset, output, (int)outputOffset, 4);
 			                    }

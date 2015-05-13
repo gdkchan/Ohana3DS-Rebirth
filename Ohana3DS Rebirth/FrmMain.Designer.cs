@@ -103,6 +103,7 @@
             this.MinimumSize = new System.Drawing.Size(256, 128);
             this.Name = "FrmMain";
             this.Text = "Ohana3DS";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmMain_FormClosing);
             this.Controls.SetChildIndex(this.ContentContainer, 0);
             this.ContentContainer.ResumeLayout(false);
             this.MainMenu.ResumeLayout(false);

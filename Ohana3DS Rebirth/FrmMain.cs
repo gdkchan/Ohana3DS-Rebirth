@@ -17,11 +17,16 @@ namespace Ohana3DS_Rebirth
         public FrmMain()
         {
             InitializeComponent();
-            WindowManager.Initialize(DockContainer);
+            WindowManager.initialize(DockContainer);
 
             this.MaximumSize = Screen.PrimaryScreen.WorkingArea.Size;
             this.WindowState = FormWindowState.Maximized;
-            MainMenu.Renderer = new GUI.OMenuStrip();
+            MainMenu.Renderer = new GUI.OMenuStrip();           
+        }
+
+        private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            WindowManager.flush();
         }
 
         private void LblTitle_MouseEnter(object sender, EventArgs e)
@@ -44,6 +49,8 @@ namespace Ohana3DS_Rebirth
             openDlg.Filter = "Binary CTR H3D File|*.bch";
             if (openDlg.ShowDialog() == DialogResult.OK)
             {
+                WindowManager.flush();
+
                 FileIdentifier.fileFormat format = FileIdentifier.identify(openDlg.FileName);
                 switch (format)
                 {
@@ -55,13 +62,11 @@ namespace Ohana3DS_Rebirth
                         modelWindow.Title = fileName + " :: Model";
                         textureWindow.Title = fileName + " :: Texture";
 
-                        DockContainer.launch(modelWindow);
-                        DockContainer.launch(textureWindow, modelWindow.Width);
+                        launchWindow(modelWindow);
+                        launchWindow(textureWindow, false);
+                        WindowManager.Refresh();
+                        DockContainer.dockMainWindow();
 
-                        WindowManager.addWindow(modelWindow);
-                        WindowManager.addWindow(textureWindow);
-
-                        WindowManager.createGroup(Path.GetFileName(openDlg.FileName));
                         RenderBase.OModelGroup model = Ohana.BCH.load(openDlg.FileName);
 
                         textureWindow.initialize(model);
@@ -74,6 +79,13 @@ namespace Ohana3DS_Rebirth
                         break;
                 }
             }
+        }
+
+        private void launchWindow(GUI.ODockWindow window, bool visible = true)
+        {
+            window.Visible = visible;
+            DockContainer.launch(window);
+            WindowManager.addWindow(window);
         }
     }
 }

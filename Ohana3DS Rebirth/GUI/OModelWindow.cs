@@ -36,6 +36,13 @@ namespace Ohana3DS_Rebirth.GUI
             renderer.render();
         }
 
+        public override void dispose()
+        {
+            renderer.dispose();
+
+            base.dispose();
+        }
+
         private void Screen_MouseMove(object sender, MouseEventArgs e)
         {
             if (!Screen.Focused) Screen.Select();

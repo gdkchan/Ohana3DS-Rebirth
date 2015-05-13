@@ -171,12 +171,13 @@ namespace Ohana3DS_Rebirth.GUI
                 ListScroll.Visible = false;
             }
 
+            //Renderiza a parte do Header
             int columnX = 0;
             foreach (columnHeader header in columns)
             {
-                Rectangle rect = new Rectangle(columnX, startY, header.width, headerSize);
+                Rectangle rect = new Rectangle(columnX, startY, header.width - 1, headerSize);
                 e.Graphics.FillRectangle(new LinearGradientBrush(rect, Color.Transparent, Color.FromArgb(0x2f, 0x2f, 0x2f), LinearGradientMode.Vertical), rect);
-                e.Graphics.DrawLine(new Pen(Color.FromArgb(0x1f, 0x1f, 0x1f)), new Point(0, startY + headerSize), new Point(header.width - 1, startY + headerSize));
+                e.Graphics.DrawLine(new Pen(Color.FromArgb(0x1f, 0x1f, 0x1f)), new Point(columnX, startY + headerSize), new Point(columnX + (header.width - 2), startY + headerSize));
 
                 Font font = new Font(this.Font.FontFamily, this.Font.Size, FontStyle.Bold);
                 int textHeight = (int)e.Graphics.MeasureString(header.text, font).Height;
@@ -186,6 +187,7 @@ namespace Ohana3DS_Rebirth.GUI
             }
             startY += headerSize;
 
+            //Renderiza os itens da lista
             foreach (listItemGroup item in list)
             {
                 if (startY >= -tileSize)

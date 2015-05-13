@@ -1,5 +1,5 @@
 ﻿//OWindowManager made for Ohana3DS by gdkchan
-//This should help to manage (show/hide/close file) the Windows of the ODock control
+//This should help to manage (show/hide) the Windows of the ODock control
 
 using System;
 using System.Collections.Generic;
@@ -11,29 +11,15 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
+using Ohana3DS_Rebirth.Properties;
+
 namespace Ohana3DS_Rebirth.GUI
 {
     public partial class OWindowManager : Control
     {
-        const int groupWidth = 192;
+        const int windowWidth = 192;
 
-        private class windowGroup
-        {
-            public string title;
-            public ContextMenuStrip menu;
-            public List<ODockWindow> window;
-            public List<int> indexList;
-
-            public windowGroup()
-            {
-                menu = new ContextMenuStrip();
-                menu.Renderer = new OMenuStrip();
-                window = new List<ODockWindow>();
-                indexList = new List<int>();
-            }
-        }
-        private List<windowGroup> group = new List<windowGroup>();
-        private windowGroup currentGroup = new windowGroup();
+        public List<ODockWindow> windowList = new List<ODockWindow>();
 
         private ODock parentDock;
 
@@ -66,9 +52,23 @@ namespace Ohana3DS_Rebirth.GUI
             smoothScroll.Tick += new EventHandler(smoothScroll_Tick);
         }
 
-        public void Initialize(ODock dockWindow)
+        public void initialize(ODock dockWindow)
         {
             parentDock = dockWindow;
+        }
+
+        /// <summary>
+        ///     Closes all windows and release unmanaged resources.
+        /// </summary>
+        public void flush()
+        {
+            parentDock.flush();
+            foreach (ODockWindow window in windowList)
+            {
+                window.dispose();
+            }
+            windowList.Clear();
+            this.Refresh();
         }
 
         [Browsable(false)]
@@ -86,35 +86,14 @@ namespace Ohana3DS_Rebirth.GUI
         }
 
         /// <summary>
-        ///     Creates a new group with all the Windows on the temporary Dock Window buffer.
-        ///     The buffer is cleared after.
-        /// </summary>
-        /// <param name="groupName">The name of the group</param>
-        public void createGroup(string groupName)
-        {
-            currentGroup.title = groupName;
-            group.Add(currentGroup);
-            currentGroup = new windowGroup(); 
-            this.Refresh();
-        }
-
-        /// <summary>
-        ///     Add a Window to the temporary Dock Window buffer.
+        ///     Adds a Window to the bar.
         /// </summary>
         /// <param name="window">The Window to be added</param>
         public void addWindow(ODockWindow window)
         {
             window.VisibleChanged += new EventHandler(Window_VisibleChanged);
 
-            currentGroup.indexList.Add((int)window.Tag);
-            currentGroup.window.Add(window);
-
-            ToolStripMenuItem item = new ToolStripMenuItem();
-            item.Text = window.Title;
-            item.Click += new EventHandler(triggerVisibility);
-            item.Tag = window;
-            item.Checked = true;
-            currentGroup.menu.Items.Add(item);
+            windowList.Add(window);
         }
 
         private void triggerVisibility(Object sender, EventArgs e)
@@ -128,134 +107,74 @@ namespace Ohana3DS_Rebirth.GUI
             this.Refresh();
         }
 
-        private bool hasVisibleWindows(int groupIndex)
-        {
-            for (int i = 0; i < group[groupIndex].window.Count; i++)
-            {
-                if (group[groupIndex].window[i].Visible) return true;
-            }
-            return false;
-        }
-
-        private void setWindowsVisibility(int groupIndex, bool visible)
-        {
-            for (int i = 0; i < group[groupIndex].window.Count; i++)
-            {
-                group[groupIndex].window[i].Visible = visible;
-                ToolStripMenuItem item = (ToolStripMenuItem)group[groupIndex].menu.Items[i];
-                item.Checked = visible;
-            }
-        }
-
         protected override void OnPaint(PaintEventArgs e)
         {
             int left = scrollX * -1;
-            for (int i = 0; i < group.Count; i++)
+            foreach (ODockWindow window in windowList)
             {
-                Rectangle rect = new Rectangle(left, 4, groupWidth, this.Height - 4);
-                Rectangle rect2 = new Rectangle(rect.X + 1, rect.Y, rect.Width - 2, rect.Height - 1);
+                Rectangle rect = new Rectangle(left, 4, windowWidth, this.Height - 8);
+                Rectangle rectShadow = new Rectangle(rect.X, rect.Y + rect.Height, rect.Width, this.Height - (rect.Y + rect.Height));
 
-                Color baseColor;
-                if (hasVisibleWindows(i))
+                if (window.Visible)
                 {
-                    baseColor = Color.FromArgb(15, 82, 186);
-                    DrawingHelper.drawButtonFace(e.Graphics, rect, Color.FromArgb(0x7f, baseColor), Color.Black, Color.FromArgb(0x5f, baseColor), Color.FromArgb(0x7f, Color.Black));
+                    Color baseColor = Color.FromArgb(21, 46, 84);
+                    e.Graphics.FillRectangle(new SolidBrush(baseColor), rect);
+                    e.Graphics.FillRectangle(new LinearGradientBrush(rectShadow, baseColor, Color.Transparent, LinearGradientMode.Vertical), rectShadow);
                 }
                 else
                 {
-                    baseColor = Color.DarkGray;
-                    DrawingHelper.drawButtonFace(e.Graphics, rect, Color.FromArgb(0xdf, Color.Black), Color.FromArgb(0x1f, baseColor), Color.FromArgb(0x5f, Color.Black), Color.FromArgb(0x3f, baseColor));
+                    e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(0x3f, Color.Black)), new Rectangle(rect.X, rect.Y, rect.Width, rect.Height + 4));
                 }
                 
-                e.Graphics.DrawString(group[i].title, new Font("Segoe UI", 10), new SolidBrush(Color.White), new Point(rect.Left + 16, rect.Top));
-
-                Rectangle upArrowRect = new Rectangle(rect.X, rect.Y + (rect.Height / 2) - 8, 16, 16);
-                Rectangle closeRect = new Rectangle((rect.X + rect.Width) - 16, rect.Y + (rect.Height / 2) - 8, 16, 16);
-                Rectangle mouseRect = new Rectangle(this.PointToClient(Cursor.Position), new Size(1, 1));
-                Brush brush = new SolidBrush(Color.FromArgb(0x5f, baseColor));
-                if (mouseRect.IntersectsWith(upArrowRect)) e.Graphics.FillRectangle(brush, new Rectangle(upArrowRect.X + 1, upArrowRect.Y, upArrowRect.Width - 2, upArrowRect.Height));
-                if (mouseRect.IntersectsWith(closeRect)) e.Graphics.FillRectangle(brush, new Rectangle(closeRect.X + 1, closeRect.Y, closeRect.Width - 2, closeRect.Height));
-
-                e.Graphics.DrawImage(Ohana3DS_Rebirth.Properties.Resources.icn_wm_up_arrow, upArrowRect.Location);
-                e.Graphics.DrawImage(Ohana3DS_Rebirth.Properties.Resources.icn_wm_close, closeRect.Location);
-                
-                left += groupWidth + 4;
+                e.Graphics.DrawString(window.Title, new Font("Segoe UI", 10), new SolidBrush(Color.White), new Point(rect.Left + 16, rect.Top));
+                Rectangle iconRect = new Rectangle(rect.X, rect.Y + (rect.Height / 2) - 8, 16, 16);
+                left += windowWidth + 4;
             }
 
             maxScrollX = (scrollX + (left - 4)) - this.Width;
             Rectangle leftScrollRect = new Rectangle(0, ((this.Height / 2) - 8) + 2, 16, 16);
             Rectangle rightScrollRect = new Rectangle(this.Width - 16, ((this.Height / 2) - 8) + 2, 16, 16);
 
-            if (scrollX > 0) { e.Graphics.DrawImage(Ohana3DS_Rebirth.Properties.Resources.icn_wm_scroll_left, leftScrollRect); hasLeftScroll = true; } else { hasLeftScroll = false; }
-            if ((left - 4) > this.Width) { e.Graphics.DrawImage(Ohana3DS_Rebirth.Properties.Resources.icn_wm_scroll_right, rightScrollRect); hasRightScroll = true; } else { hasRightScroll = false; }
+            if (scrollX > 0) { e.Graphics.DrawImage(Resources.icn_wm_scroll_left, leftScrollRect); hasLeftScroll = true; } else { hasLeftScroll = false; }
+            if ((left - 4) > this.Width) { e.Graphics.DrawImage(Resources.icn_wm_scroll_right, rightScrollRect); hasRightScroll = true; } else { hasRightScroll = false; }
 
  	        base.OnPaint(e);
         }
 
         protected override void OnMouseDown(MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left || e.Button == MouseButtons.Right)
+            if (e.Button == MouseButtons.Left)
             {
                 Rectangle mouseRect = new Rectangle(this.PointToClient(Cursor.Position), new Size(1, 1));
+                Rectangle leftScrollRect = new Rectangle(0, ((this.Height / 2) - 8) + 2, 16, 16);
+                Rectangle rightScrollRect = new Rectangle(this.Width - 16, ((this.Height / 2) - 8) + 2, 16, 16);
 
-                if (e.Button == MouseButtons.Left)
+                if (hasLeftScroll && mouseRect.IntersectsWith(leftScrollRect))
                 {
-                    Rectangle leftScrollRect = new Rectangle(0, ((this.Height / 2) - 8) + 2, 16, 16);
-                    Rectangle rightScrollRect = new Rectangle(this.Width - 16, ((this.Height / 2) - 8) + 2, 16, 16);
+                    scrollGoal -= windowWidth / 8;
+                    smoothScroll.Enabled = true;
+                    return;
+                }
 
-                    if (hasLeftScroll && mouseRect.IntersectsWith(leftScrollRect))
-                    {
-                        scrollGoal -= groupWidth;
-                        smoothScroll.Enabled = true;
-                        return;
-                    }
-
-                    if (hasRightScroll && mouseRect.IntersectsWith(rightScrollRect))
-                    {
-                        scrollGoal += groupWidth;
-                        smoothScroll.Enabled = true;
-                        return;
-                    }
+                if (hasRightScroll && mouseRect.IntersectsWith(rightScrollRect))
+                {
+                    scrollGoal += windowWidth / 8;
+                    smoothScroll.Enabled = true;
+                    return;
                 }
 
                 int left = scrollX * -1;
-                for (int i = 0; i < group.Count; i++)
+                for (int i = 0; i < windowList.Count; i++)
                 {
-                    Rectangle rect = new Rectangle(left, 4, groupWidth, this.Height - 8);
+                    Rectangle rect = new Rectangle(left, 4, windowWidth, this.Height - 8);
                     
-                    if (e.Button == MouseButtons.Left)
+                    if (mouseRect.IntersectsWith(rect))
                     {
-                        Rectangle upArrowRect = new Rectangle(rect.X, rect.Y + (rect.Height / 2) - 8, 16, 16);
-                        Rectangle closeRect = new Rectangle((rect.X + rect.Width) - 16, rect.Y + (rect.Height / 2) - 8, 16, 16);
-                        
-                        if (mouseRect.IntersectsWith(upArrowRect))
-                        {
-                            Point position = this.PointToScreen(new Point(upArrowRect.X, upArrowRect.Y));
-                            group[i].menu.Show(position, ToolStripDropDownDirection.AboveRight);
-
-                            return;
-                        }
-
-                        if (mouseRect.IntersectsWith(closeRect))
-                        {
-                            for (int j = 0; j < group[i].indexList.Count; j++)
-                            {
-                                parentDock.remove(group[i].indexList[j]);
-                            }
-                            group.RemoveAt(i);
-                            this.Refresh();
-
-                            return;
-                        }
-                    }
-
-                    if (mouseRect.IntersectsWith(rect) && e.Button == MouseButtons.Right)
-                    {
-                        if (hasVisibleWindows(i)) setWindowsVisibility(i, false); else setWindowsVisibility(i, true);
+                        windowList[i].Visible = !windowList[i].Visible;
                         this.Refresh();
                     }
 
-                    left += groupWidth + 4;
+                    left += windowWidth + 4;
                 }
             }
 
@@ -290,14 +209,6 @@ namespace Ohana3DS_Rebirth.GUI
         private void Window_VisibleChanged(Object sender, EventArgs e)
         {
             this.Refresh();
-            for (int i = 0; i < group.Count; i++)
-            {
-                for (int j = 0; j < group[i].window.Count; j++)
-                {
-                    ToolStripMenuItem item = (ToolStripMenuItem)group[i].menu.Items[j];
-                    item.Checked = group[i].window[j].Visible;
-                }
-            }
         }
 
         private void smoothScroll_Tick(Object sender, EventArgs e)
