@@ -43,6 +43,8 @@
             this.ListScroll.Size = new System.Drawing.Size(8, 400);
             this.ListScroll.TabIndex = 0;
             this.ListScroll.Text = "ovScroll1";
+            this.ListScroll.Value = 0;
+            this.ListScroll.Visible = false;
             this.ListScroll.ScrollChanged += new System.EventHandler(this.ListScroll_ScrollChanged);
             // 
             // OList

@@ -157,13 +157,11 @@ namespace Ohana3DS_Rebirth.GUI
             int totalSize = (list.Count * tileSize) + headerSize;
             int startY = 0;
             int index = 0;
-            int scroll = 0;
             if (totalSize > this.Height)
             {
                 ListScroll.MaximumScroll = totalSize - this.Height;
                 ListScroll.Visible = true;
                 startY = ListScroll.Value * -1;
-                scroll = ListScroll.Value;
             }
             else
             {

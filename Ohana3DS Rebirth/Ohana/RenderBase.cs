@@ -15,7 +15,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public float y;
 
             /// <summary>
-            ///     Creates a new 2-D Vector.
+            ///     Creates a new <i>2-D</i> Vector.
             /// </summary>
             /// <param name="X">The X position</param>
             /// <param name="Y">The Y position</param>
@@ -26,7 +26,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Creates a new 2-D Vector.
+            ///     Creates a new <i>2-D Vector</i>.
             /// </summary>
             /// <param name="Vector">The 2-D Vector</param>
             public OVector2(OVector2 Vector)
@@ -36,7 +36,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Creates a new 2-D Vector.
+            ///     Creates a new <i>2-D Vector</i>.
             /// </summary>
             public OVector2()
             {
@@ -50,7 +50,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public float z;
 
             /// <summary>
-            ///     Creates a new 3-D Vector.
+            ///     Creates a new <i>3-D Vector</i>.
             /// </summary>
             /// <param name="X">The X position</param>
             /// <param name="Y">The Y position</param>
@@ -63,7 +63,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Creates a new 3-D Vector.
+            ///     Creates a new <i>3-D Vector</i>.
             /// </summary>
             /// <param name="Vector">The 3-D vector</param>
             public OVector3(OVector3 Vector)
@@ -74,7 +74,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Creates a new 3-D Vector.
+            ///     Creates a new <i>3-D Vector</i>.
             /// </summary>
             public OVector3()
             {
@@ -91,7 +91,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public uint diffuseColor;
 
             /// <summary>
-            ///     Creates a new Vertex.
+            ///     Creates a new <i>Vertex</i>.
             /// </summary>
             public OVertex()
             {
@@ -104,7 +104,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Creates a new Vertex.
+            ///     Creates a new <i>Vertex</i>.
             /// </summary>
             /// <param name="Position">The position of the Vertex on the 3-D space</param>
             /// <param name="Normal">The normal Vector (optional)</param>
@@ -122,7 +122,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Add a Node to the Vertex.
+            ///     Add a <i>Node</i> to the Vertex.
             ///     It may contain multiple nodes, and each node must be the Id of a Bone on the Skeleton.
             /// </summary>
             /// <param name="Node"></param>
@@ -132,7 +132,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Add weighting information of the Vertex.
+            ///     Add <i>Weighting</i> information of the Vertex.
             /// </summary>
             /// <param name="Weight"></param>
             public void addWeight(float Weight)
@@ -161,7 +161,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Add a new Vertex to the Object.
+            ///     Add a new <i>Vertex</i> to the Object.
             /// </summary>
             /// <param name="Vertex">The Vertex</param>
             public void addVertex(OVertex Vertex)
@@ -179,7 +179,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public String name = null;
 
             /// <summary>
-            ///     Creates a new bone.
+            ///     Creates a new <i>Bone</i>.
             /// </summary>
             public OBone()
             {
@@ -189,19 +189,38 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        public enum OTextureFilter
+        {
+            nearestMipmapNearest,
+            nearestMipmapLinear,
+            linearMipmapNearest,
+            linearMipmapLinear,
+            nearest,
+            linear
+        }
+
+        public class OTextureParameter
+        {
+            public String name;
+            public OTextureFilter filter;
+        }
+
         public class OModel
         {
             public List<OModelObject> modelObject;
             public List<OBone> skeleton;
+            public List<OTextureParameter> textureParameters;
+            public float height;
 
             public OModel()
             {
                 modelObject = new List<OModelObject>();
                 skeleton = new List<OBone>();
+                textureParameters = new List<OTextureParameter>();
             }
 
             /// <summary>
-            ///     Adds a Object to the model.
+            ///     Adds a <i>Object</i> to the model.
             /// </summary>
             /// <param name="obj">The Object</param>
             public void addObject(OModelObject obj)
@@ -210,12 +229,21 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Adds a Bone to the skeleton.
+            ///     Adds a <i>Bone</i> to the skeleton.
             /// </summary>
             /// <param name="bone">The Bone</param>
             public void addBone(OBone bone)
             {
                 skeleton.Add(bone);
+            }
+
+            /// <summary>
+            ///     Adds a <i>Texture Parameter</i> to the model
+            /// </summary>
+            /// <param name="param">The Parameter</param>
+            public void addTextureParameter(OTextureParameter param)
+            {
+                textureParameters.Add(param);
             }
         }
 
@@ -225,7 +253,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public String name;
 
             /// <summary>
-            ///     Creates a new Texture.
+            ///     Creates a new <i>Texture</i>.
             /// </summary>
             /// <param name="Texture">The texture, size must be a power of 2</param>
             /// <param name="Name">Texture name</param>
@@ -266,6 +294,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public List<OModel> model;
             public List<OTexture> texture;
             public List<OMaterial> material;
+            public float minimumY, maximumY;
 
             public OModelGroup()
             {
@@ -275,7 +304,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Adds a Model.
+            ///     Adds a <i>Model</i>.
             /// </summary>
             /// <param name="mdl">The Model</param>
             public void addModel(OModel mdl)
@@ -284,7 +313,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Adds a new Texture.
+            ///     Adds a new <i>Texture</i>.
             /// </summary>
             /// <param name="tex">The Texture</param>
             public void addTexture(OTexture tex)
@@ -293,7 +322,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Adds a new material.
+            ///     Adds a new <i>Material</i>.
             /// </summary>
             /// <param name="mat">The Material</param>
             public void addMaterial(OMaterial mat)

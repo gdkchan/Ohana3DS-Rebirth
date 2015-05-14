@@ -28,6 +28,11 @@ namespace Ohana3DS_Rebirth.GUI
             InitializeComponent();
         }
 
+        private void OModelWindow_Resize(object sender, EventArgs e)
+        {
+            if (renderer != null) renderer.resize(Screen.Width, Screen.Height);
+        }
+
         public void initialize(RenderBase.OModelGroup model)
         {
             renderer = new RenderEngine();
@@ -46,16 +51,19 @@ namespace Ohana3DS_Rebirth.GUI
         private void Screen_MouseMove(object sender, MouseEventArgs e)
         {
             if (!Screen.Focused) Screen.Select();
-            switch (e.Button)
+            if (renderer != null)
             {
-                case MouseButtons.Left:
-                    renderer.rotation.X = (initialRotation.x - MousePosition.X) + finalRotation.x;
-                    renderer.rotation.Y = (initialRotation.y - MousePosition.Y) + finalRotation.y;
-                    break;
-                case MouseButtons.Right:
-                    renderer.translation.X = (initialMovement.x - MousePosition.X) + finalMovement.x;
-                    renderer.translation.Y = (initialMovement.y - MousePosition.Y) + finalMovement.y;
-                    break;
+                switch (e.Button)
+                {
+                    case MouseButtons.Left:
+                        renderer.rotation.X = (initialRotation.x - MousePosition.X) + finalRotation.x;
+                        renderer.rotation.Y = (initialRotation.y - MousePosition.Y) + finalRotation.y;
+                        break;
+                    case MouseButtons.Right:
+                        renderer.translation.X = (initialMovement.x - MousePosition.X) + finalMovement.x;
+                        renderer.translation.Y = (initialMovement.y - MousePosition.Y) + finalMovement.y;
+                        break;
+                }
             }
         }
 

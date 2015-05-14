@@ -193,7 +193,7 @@ namespace Ohana3DS_Rebirth.GUI
                     else if (y > this.Height - scrollBarSize) y = this.Height - scrollBarSize;
                     scrollBarY = y;
 
-                    scrollY = (int)(((float)y / (this.Height - scrollBarSize)) * max);
+                    scrollY = (int)(((float)y / Math.Max((this.Height - scrollBarSize), 1)) * max);
                     if (this.ScrollChanged != null) this.ScrollChanged(this, EventArgs.Empty);
                     this.Refresh();
                 }

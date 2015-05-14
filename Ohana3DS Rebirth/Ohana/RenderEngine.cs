@@ -68,6 +68,25 @@ namespace Ohana3DS_Rebirth.Ohana
         }
 
         /// <summary>
+        ///     Resizes the Back Buffer.
+        /// </summary>
+        /// <param name="width">New width</param>
+        /// <param name="height">New height</param>
+        public void resize(int width, int height)
+        {
+            pParams.BackBufferWidth = width;
+            pParams.BackBufferHeight = height;
+            device.Reset(pParams);
+            setupViewPort();
+        }
+
+        private void setupViewPort()
+        {
+            device.Transform.Projection = Matrix.PerspectiveFovLH((float)Math.PI / 4, (float)pParams.BackBufferWidth / pParams.BackBufferHeight, 0.1f, 500.0f);
+            device.Transform.View = Matrix.LookAtLH(new Vector3(0.0f, 0.0f, 20.0f), new Vector3(0.0F, 0.0F, 0.0F), new Vector3(0.0f, 1.0f, 0.0f));
+        }
+
+        /// <summary>
         ///     Release all resources used by DirectX.
         ///     You MUST call this before closing the window the render target belongs.
         ///     Otherwise you will end up with memory leaks.
@@ -83,8 +102,7 @@ namespace Ohana3DS_Rebirth.Ohana
             fillRenderData();
             keepRendering = true;
 
-            device.Transform.Projection = Matrix.PerspectiveFovLH((float)Math.PI / 4, (float)(pParams.BackBufferWidth / pParams.BackBufferHeight), 0.1f, 500.0f);
-            device.Transform.View = Matrix.LookAtLH(new Vector3(0.0f, 0.0f, 20.0f), new Vector3(0.0F, 0.0F, 0.0F), new Vector3(0.0f, 1.0f, 0.0f));
+            setupViewPort();
 
             while (keepRendering)
             {
@@ -100,14 +118,17 @@ namespace Ohana3DS_Rebirth.Ohana
                 material.Ambient = Color.White;
                 device.Material = material;
 
-                VertexFormats vertexFormat = VertexFormats.Position | VertexFormats.Normal | VertexFormats.Texture1 | VertexFormats.Diffuse;
-                device.VertexFormat = vertexFormat;
-                VertexBuffer vertexBuffer = new VertexBuffer(typeof(CustomVertex), renderData.Count, device, Usage.None, vertexFormat, Pool.Managed);
-                vertexBuffer.SetData(renderData.ToArray(), 0, LockFlags.None);
-                device.SetStreamSource(0, vertexBuffer, 0);
+                if (renderData.Count > 0)
+                {
+                    VertexFormats vertexFormat = VertexFormats.Position | VertexFormats.Normal | VertexFormats.Texture1 | VertexFormats.Diffuse;
+                    device.VertexFormat = vertexFormat;
+                    VertexBuffer vertexBuffer = new VertexBuffer(typeof(CustomVertex), renderData.Count, device, Usage.None, vertexFormat, Pool.Managed);
+                    vertexBuffer.SetData(renderData.ToArray(), 0, LockFlags.None);
+                    device.SetStreamSource(0, vertexBuffer, 0);
 
-                device.DrawPrimitives(PrimitiveType.TriangleList, 0, renderData.Count / 3);
-                vertexBuffer.Dispose();
+                    device.DrawPrimitives(PrimitiveType.TriangleList, 0, renderData.Count / 3);
+                    vertexBuffer.Dispose();
+                }
 
                 device.EndScene();
                 device.Present();
@@ -119,6 +140,7 @@ namespace Ohana3DS_Rebirth.Ohana
         private void fillRenderData()
         {
             renderData = new List<CustomVertex>();
+            float scale = (10.0f / (model.maximumY - model.minimumY)); //Try to adjust to screen
             for (int i = 0; i < model.model.Count; i++)
             {
                 for (int j = 0; j < model.model[i].modelObject.Count; j++)
@@ -127,13 +149,13 @@ namespace Ohana3DS_Rebirth.Ohana
                     {
                         CustomVertex vertex;
 
-                        vertex.x = model.model[i].modelObject[j].obj[k].position.x;
-                        vertex.y = model.model[i].modelObject[j].obj[k].position.y;
-                        vertex.z = model.model[i].modelObject[j].obj[k].position.z;
+                        vertex.x = model.model[i].modelObject[j].obj[k].position.x * scale;
+                        vertex.y = model.model[i].modelObject[j].obj[k].position.y * scale;
+                        vertex.z = model.model[i].modelObject[j].obj[k].position.z * scale;
 
-                        vertex.nx = model.model[i].modelObject[j].obj[k].normal.x;
-                        vertex.ny = model.model[i].modelObject[j].obj[k].normal.y;
-                        vertex.nz = model.model[i].modelObject[j].obj[k].normal.z;
+                        vertex.nx = model.model[i].modelObject[j].obj[k].normal.x * scale;
+                        vertex.ny = model.model[i].modelObject[j].obj[k].normal.y * scale;
+                        vertex.nz = model.model[i].modelObject[j].obj[k].normal.z * scale;
 
                         vertex.u = model.model[i].modelObject[j].obj[k].texture.x;
                         vertex.v = model.model[i].modelObject[j].obj[k].texture.y;

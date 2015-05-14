@@ -342,7 +342,6 @@ namespace Ohana3DS_Rebirth.Ohana
                 models.addTexture(new RenderBase.OTexture(texture, textureName));
             }
 
-            uint objectExtendedOffset = header.relocatableTableOffset;
             for (int modelIndex = 0; modelIndex < contentHeader.modelsPointerTableEntries; modelIndex++)
             {
                 RenderBase.OModel model = new RenderBase.OModel();
@@ -389,6 +388,22 @@ namespace Ohana3DS_Rebirth.Ohana
                 objectsHeader.facesNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
                 input.ReadUInt32(); //0x0
                 objectsHeader.boundingBoxAndMeasuresPointerOffset = input.ReadUInt32() + header.mainHeaderOffset;
+
+                //Texture names table
+                for (int index = 0; index < objectsHeader.texturesTableEntries; index++)
+                {
+                    data.Seek(objectsHeader.texturesTableOffset + (index * 0x2c), SeekOrigin.Begin); //Take a look later!
+                    RenderBase.OTextureParameter parameter = new RenderBase.OTextureParameter();
+
+                    input.ReadUInt32();
+                    input.ReadUInt32();
+                    input.ReadUInt32();
+                    uint textureParametersOffset = input.ReadUInt32() + header.mainHeaderOffset;
+
+                    data.Seek(textureParametersOffset, SeekOrigin.Begin);
+
+                    model.addTextureParameter(parameter);
+                }
 
                 //Skeleton
                 data.Seek(objectsHeader.skeletonOffset, SeekOrigin.Begin);
@@ -448,7 +463,8 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                 }
 
-                RenderBase.OVector3 minimumVector, maximumVector;
+                RenderBase.OVector3 minimumVector = new RenderBase.OVector3();
+                RenderBase.OVector3 maximumVector = new RenderBase.OVector3();
                 if (measuresHeaderEntries > 0)
                 {
                     data.Seek(boundingBoxOffset, SeekOrigin.Begin);
@@ -484,19 +500,14 @@ namespace Ohana3DS_Rebirth.Ohana
                     RenderBase.OModelObject obj = new RenderBase.OModelObject();
 
                     //Vertices
-                    objectExtendedOffset += 4;
-                    data.Seek(objectExtendedOffset, SeekOrigin.Begin);
-                    uint vertexExtendedData = input.ReadUInt32();
-                    byte vertexDataLocation = (byte)(vertexExtendedData >> 24);
-                    objectExtendedOffset += 4;
-
                     data.Seek(objects[index].verticesHeaderOffset, SeekOrigin.Begin);
+                    uint vertexDataPointerOffset = 0;
                     uint vertexFlags = 0;
                     uint vertexDataOffset = 0;
                     byte vertexEntryLength = 0;
                     RenderBase.OVector3 positionOffset = new RenderBase.OVector3();
                     float objectScale;
-                    uint unknow = input.ReadUInt32();
+                    input.ReadUInt32(); //TODO: Figure out
                     for (int entry = 0; entry < objects[index].verticesHeaderEntries; entry++)
                     {
                         uint code = input.ReadUInt32();
@@ -505,13 +516,8 @@ namespace Ohana3DS_Rebirth.Ohana
                             case codeVerticeHeaderData:
                                 vertexFlags = input.ReadUInt32();
                                 input.ReadUInt32(); //TODO: Figure out what all this data is
+                                vertexDataPointerOffset = (uint)data.Position - header.descriptionOffset;
                                 vertexDataOffset = input.ReadUInt32();
-                                switch (vertexDataLocation)
-                                {
-                                    case 0x4c: vertexDataOffset += header.dataOffset; break;
-                                    case 0x56: vertexDataOffset += header.dataExtendedOffset; break;
-                                    default: throw new Exception("BCH: Unknow Vertex Data Location! STOP!");
-                                }
                                 input.ReadUInt32();
                                 input.ReadUInt16();
                                 vertexEntryLength = input.ReadByte();
@@ -536,6 +542,28 @@ namespace Ohana3DS_Rebirth.Ohana
                         }
                     }
 
+                    bool dbgVertexDataOffsetCheck = false;
+                    data.Seek(header.relocatableTableOffset, SeekOrigin.Begin);
+                    for (int i = 0; i < header.relocatableTableLength / 4; i++)
+                    {
+                        uint value = input.ReadUInt32();
+                        uint offset = (value & 0xffffff) * 4;
+                        byte flags = (byte)(value >> 24);
+
+                        if (offset == vertexDataPointerOffset)
+                        {
+                            dbgVertexDataOffsetCheck = true;
+                            switch (flags)
+                            {
+                                case 0x4c: vertexDataOffset += header.dataOffset; break;
+                                case 0x56: vertexDataOffset += header.dataExtendedOffset; break;
+                                default: throw new Exception("BCH: Unknow Vertex Data Location! STOP!");
+                            }
+                            break;
+                        }
+                    }
+                    if (!dbgVertexDataOffsetCheck) throw new Exception("BCH: Vertex Data Offset pointer not found on Relocatable Table! STOP!");
+
                     //Faces
                     List<ushort> nodeList = new List<ushort>();
                     for (int i = 0; i < objects[index].facesHeaderEntries; i++)
@@ -553,28 +581,19 @@ namespace Ohana3DS_Rebirth.Ohana
                         uint faceHeaderOffset = input.ReadUInt32() + header.descriptionOffset;
                         uint faceHeaderEntries = input.ReadUInt32();
 
-                        data.Seek(objectExtendedOffset, SeekOrigin.Begin);
-                        uint faceExtendedData = input.ReadUInt32();
-                        objectExtendedOffset += 4;
-                        byte faceDataFormat = (byte)(faceExtendedData >> 24);
-
                         data.Seek(faceHeaderOffset, SeekOrigin.Begin);
-                        uint flags = input.ReadUInt32();
+                        uint faceDataPointerOffset = 0;
                         uint faceDataOffset = 0;
                         uint faceDataEntries = 0;
+                        input.ReadUInt32(); //TODO: Figure out
                         for (int entry = 0; entry < faceHeaderEntries; entry++)
                         {
                             uint code = input.ReadUInt32();
                             switch (code)
                             {
                                 case codeFaceDataOffset:
+                                    faceDataPointerOffset = (uint)data.Position - header.descriptionOffset;
                                     faceDataOffset = input.ReadUInt32();
-                                    switch (faceDataFormat)
-                                    {
-                                        case 0x4e: case 0x50: faceDataOffset += header.dataOffset; break;
-                                        case 0x58: case 0x5a: faceDataOffset += header.dataExtendedOffset; break;
-                                        default: throw new Exception("BCH: Unknow Face Data Location/Format! STOP!");
-                                    }
                                     entry++; 
                                     break;
                                 case codeFaceDataLength: faceDataEntries = input.ReadUInt32(); entry++; break;
@@ -582,6 +601,30 @@ namespace Ohana3DS_Rebirth.Ohana
                                 default: input.ReadUInt32(); entry++; break;
                             }
                         }
+
+                        bool dbgFaceDataOffsetCheck = false;
+                        byte faceDataFormat = 0;
+                        data.Seek(header.relocatableTableOffset, SeekOrigin.Begin);
+                        for (int j = 0; j < header.relocatableTableLength / 4; j++)
+                        {
+                            uint value = input.ReadUInt32();
+                            uint offset = (value & 0xffffff) * 4;
+                            byte flags = (byte)(value >> 24);
+
+                            if (offset == faceDataPointerOffset)
+                            {
+                                dbgFaceDataOffsetCheck = true;
+                                faceDataFormat = flags;
+                                switch (flags)
+                                {
+                                    case 0x4e: case 0x50: faceDataOffset += header.dataOffset; break;
+                                    case 0x58: case 0x5a: faceDataOffset += header.dataExtendedOffset; break;
+                                    default: throw new Exception("BCH: Unknow Face Data Location/Format! STOP!");
+                                }
+                                break;
+                            }
+                        }
+                        if (!dbgFaceDataOffsetCheck) throw new Exception("BCH: Face Data Offset pointer not found on Relocatable Table! STOP!");
 
                         data.Seek(faceDataOffset, SeekOrigin.Begin);
                         for (int faceIndex = 0; faceIndex < faceDataEntries / 3; faceIndex++)
@@ -621,7 +664,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                         case 3: vertex.position = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle()); break;
                                     }
                                 }
-
+                                
                                 //Normal
                                 if ((vertexFlags & 0x80) != 0)
                                 {
@@ -645,6 +688,9 @@ namespace Ohana3DS_Rebirth.Ohana
                                 }
 
                                 vertex.diffuseColor = 0xffffffff;
+
+                                if (vertex.position.y < models.minimumY) models.minimumY = vertex.position.y;
+                                if (vertex.position.y > models.maximumY) models.maximumY = vertex.position.y;
 
                                 obj.addVertex(vertex);
                             }
