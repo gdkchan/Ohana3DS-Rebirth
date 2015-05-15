@@ -141,6 +141,34 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        public struct CustomVertex
+        {
+            public float x, y, z;
+            public float nx, ny, nz;
+            public uint color;
+            public float u, v;
+        }
+
+        public static CustomVertex convertVertex(OVertex input)
+        {
+            CustomVertex vertex;
+
+            vertex.x = input.position.x;
+            vertex.y = input.position.y;
+            vertex.z = input.position.z;
+
+            vertex.nx = input.normal.x;
+            vertex.ny = input.normal.y;
+            vertex.nz = input.normal.z;
+
+            vertex.u = input.texture.x;
+            vertex.v = input.texture.y;
+
+            vertex.color = input.diffuseColor;
+
+            return vertex;
+        }
+
         public class OMatrix
         { //4x4
             public float M11 = 1; public float M12 = 0; public float M13 = 0; public float M14 = 0;
@@ -152,6 +180,7 @@ namespace Ohana3DS_Rebirth.Ohana
         public class OModelObject
         {
             public List<OVertex> obj;
+            public CustomVertex[] renderBuffer;
             public int textureId = 0;
             public String objName = null;
 
@@ -207,9 +236,22 @@ namespace Ohana3DS_Rebirth.Ohana
             clampToBorder
         }
 
+        public enum OTextureProjection
+        {
+            uvMap,
+            cameraCubeMap,
+            cameraSphereMap,
+            projectionMap
+        }
+
         public class OTextureParameter
         {
-            public String name;
+            public String name1;
+            public String name2;
+            public String name3;
+            public String diffuseMapName;
+            public String secondaryMapName;
+            public String normalMapName;
             public OTextureFilter minFilter;
             public OTextureFilter magFilter;
             public OTextureWrap wrapU, wrapV;
@@ -218,7 +260,11 @@ namespace Ohana3DS_Rebirth.Ohana
             public Color borderColor;
 
             public OVector3 sourceCoordinate;
+            public OTextureProjection projection;
             public uint referenceCamera;
+            public float scaleU, scaleV;
+            public float rotate;
+            public float translateU, translateV;
         }
 
         public class OModel

@@ -389,24 +389,25 @@ namespace Ohana3DS_Rebirth.Ohana
                 input.ReadUInt32(); //0x0
                 objectsHeader.boundingBoxAndMeasuresPointerOffset = input.ReadUInt32() + header.mainHeaderOffset;
 
-                //MessageBox.Show(objectsHeader.texturesTableOffset.ToString("X8"));
                 //Texture names table
                 for (int index = 0; index < objectsHeader.texturesTableEntries; index++)
                 {
                     data.Seek(objectsHeader.texturesTableOffset + (index * 0x2c), SeekOrigin.Begin); //Take a look later!
                     RenderBase.OTextureParameter parameter = new RenderBase.OTextureParameter();
 
+                    uint textureCoordinatorOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                    input.ReadUInt32();
+                    input.ReadUInt32();
                     input.ReadUInt32();
                     input.ReadUInt32();
                     input.ReadUInt32();
                     uint textureParametersOffset = input.ReadUInt32() + header.mainHeaderOffset;
-                    input.ReadUInt32();
-                    input.ReadUInt32();
-                    input.ReadUInt32();
-                    input.ReadUInt32();
-                    input.ReadUInt32();
-                    input.ReadUInt32();
-                    uint textureCoordinatorOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                    parameter.name1 = IOUtils.readString(input, input.ReadUInt32() + header.stringTableOffset);
+                    parameter.name2 = IOUtils.readString(input, input.ReadUInt32() + header.stringTableOffset);
+                    parameter.name3 = IOUtils.readString(input, input.ReadUInt32() + header.stringTableOffset);
+                    //parameter.diffuseMapName = IOUtils.readString(input, input.ReadUInt32() + header.stringTableOffset);
+                    //parameter.secondaryMapName = IOUtils.readString(input, input.ReadUInt32() + header.stringTableOffset);
+                    //parameter.diffuseMapName = IOUtils.readString(input, input.ReadUInt32() + header.stringTableOffset);
 
                     //Parameters
                     data.Seek(textureParametersOffset, SeekOrigin.Begin);
@@ -444,12 +445,25 @@ namespace Ohana3DS_Rebirth.Ohana
                     parameter.LODBias = input.ReadSingle();
                     parameter.borderColor = RenderBase.getMaterialColor(input);
 
+                    //Coordinator
                     data.Seek(textureCoordinatorOffset, SeekOrigin.Begin);
                     input.ReadUInt32();
                     input.ReadUInt32();
                     parameter.sourceCoordinate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
-                    uint referenceCamera = input.ReadUInt32();
-                    parameter.referenceCamera = referenceCamera >> 24;
+                    uint projectionAndCamera = input.ReadUInt32();
+                    switch ((projectionAndCamera >> 16) & 0xff)
+                    {
+                        case 0: parameter.projection = RenderBase.OTextureProjection.uvMap; break;
+                        case 1: parameter.projection = RenderBase.OTextureProjection.cameraCubeMap; break;
+                        case 2: parameter.projection = RenderBase.OTextureProjection.cameraSphereMap; break;
+                        case 3: parameter.projection = RenderBase.OTextureProjection.projectionMap; break;
+                    }
+                    parameter.referenceCamera = projectionAndCamera >> 24;
+                    parameter.scaleU = input.ReadSingle();
+                    parameter.scaleV = input.ReadSingle();
+                    parameter.rotate = input.ReadSingle();
+                    parameter.translateU = input.ReadSingle();
+                    parameter.translateV = input.ReadSingle();
 
                     model.addTextureParameter(parameter);
                 }
@@ -547,6 +561,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 for (int index = 0; index < objects.Count; index++)
                 {
                     RenderBase.OModelObject obj = new RenderBase.OModelObject();
+                    obj.textureId = (int)objects[index].textureId;
 
                     //Vertices
                     data.Seek(objects[index].verticesHeaderOffset, SeekOrigin.Begin);
@@ -613,6 +628,8 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     if (!dbgVertexDataOffsetCheck) throw new Exception("BCH: Vertex Data Offset pointer not found on Relocatable Table! STOP!");
 
+                    List<RenderBase.CustomVertex> vertexBuffer = new List<RenderBase.CustomVertex>();
+                    
                     //Faces
                     List<ushort> nodeList = new List<ushort>();
                     for (int i = 0; i < objects[index].facesHeaderEntries; i++)
@@ -742,14 +759,15 @@ namespace Ohana3DS_Rebirth.Ohana
                                 if (vertex.position.y > models.maximumY) models.maximumY = vertex.position.y;
 
                                 obj.addVertex(vertex);
+                                vertexBuffer.Add(RenderBase.convertVertex(vertex));
                             }
 
                             data.Seek(position, SeekOrigin.Begin);
                         }
-
                         //MessageBox.Show(vertexFlags.ToString("X8") + " - " + vertexEntryLength.ToString() + " - " + nodeList.Count.ToString());
                     }
 
+                    obj.renderBuffer = vertexBuffer.ToArray();
                     model.addObject(obj);
                 }
 

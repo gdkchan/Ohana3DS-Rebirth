@@ -16,14 +16,12 @@ namespace Ohana3DS_Rebirth.Ohana
         private Device device;
 
         public RenderBase.OModelGroup model;
-        private struct CustomVertex
+        private struct CustomTexture
         {
-            public float x, y, z;
-            public float nx, ny, nz;
-            public uint color;
-            public float u, v;
+            public string name;
+            public Texture texture;
         }
-        private List<CustomVertex> renderData;
+        private List<CustomTexture> textures = new List<CustomTexture>();
 
         public Vector2 translation;
         public Vector2 rotation;
@@ -58,6 +56,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 MessageBox.Show("Failed to initialize Direct3D with Hardware Acceleration!" + Environment.NewLine + "Now trying to use Software processing... Expect poor performance!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 device = new Device(0, DeviceType.Reference, handler, CreateFlags.HardwareVertexProcessing, pParams);
             }
+            device.RenderState.Lighting = false;
             device.RenderState.CullMode = Cull.None;
             device.RenderState.ZBufferEnable = true;
             device.RenderState.AlphaBlendEnable = true;
@@ -65,6 +64,8 @@ namespace Ohana3DS_Rebirth.Ohana
             device.RenderState.DestinationBlend = Blend.InvSourceAlpha;
             device.RenderState.BlendOperation = BlendOperation.Add;
             device.RenderState.AlphaFunction = Compare.GreaterEqual;
+            device.SamplerState[0].MinFilter = TextureFilter.Linear;
+            device.SamplerState[0].MagFilter = TextureFilter.Linear;
         }
 
         /// <summary>
@@ -99,72 +100,62 @@ namespace Ohana3DS_Rebirth.Ohana
 
         public void render()
         {
-            fillRenderData();
-            keepRendering = true;
+            foreach (RenderBase.OTexture texture in model.texture)
+            {
+                CustomTexture tex;
+                tex.name = texture.name;
+                Bitmap bmp = new Bitmap(texture.texture);
+                bmp.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                tex.texture = new Texture(device, bmp, Usage.None, Pool.Managed);
+                textures.Add(tex);
+            }
 
             setupViewPort();
-
+            float scale = (10.0f / (model.maximumY - model.minimumY)); //Try to adjust to screen
+            keepRendering = true;
             while (keepRendering)
             {
                 device.Clear(ClearFlags.Target | ClearFlags.ZBuffer, 0x5f5f5f, 1.0f, 0);
                 device.BeginScene();
 
                 Matrix rotationMatrix = Matrix.RotationYawPitchRoll(-rotation.X / 200.0f, -rotation.Y / 200.0f, 0);
-                Matrix translationMatrix = Matrix.Translation(new Vector3(-translation.X / 50.0f, translation.Y / 50.0f, zoom));
-                device.Transform.World = rotationMatrix * translationMatrix * Matrix.Scaling(-1, 1, 1);
+                Matrix translationMatrix = Matrix.Translation(new Vector3((-translation.X / 50.0f) / scale, (translation.Y / 50.0f) / scale, zoom / scale));
+                device.Transform.World = rotationMatrix * translationMatrix * Matrix.Scaling(-scale, scale, scale);
 
                 Material material = new Material();
                 material.Diffuse = Color.White;
                 material.Ambient = Color.White;
                 device.Material = material;
 
-                if (renderData.Count > 0)
+                foreach (RenderBase.OModel mdl in model.model)
                 {
-                    VertexFormats vertexFormat = VertexFormats.Position | VertexFormats.Normal | VertexFormats.Texture1 | VertexFormats.Diffuse;
-                    device.VertexFormat = vertexFormat;
-                    VertexBuffer vertexBuffer = new VertexBuffer(typeof(CustomVertex), renderData.Count, device, Usage.None, vertexFormat, Pool.Managed);
-                    vertexBuffer.SetData(renderData.ToArray(), 0, LockFlags.None);
-                    device.SetStreamSource(0, vertexBuffer, 0);
+                    foreach (RenderBase.OModelObject obj in mdl.modelObject)
+                    {
+                        device.SetTexture(0, null);
+                        if (obj.textureId < mdl.textureParameters.Count)
+                        {
+                            RenderBase.OTextureParameter parameter = mdl.textureParameters[obj.textureId];
+                            foreach (CustomTexture texture in textures)
+                            {
+                                if (texture.name == parameter.name1) device.SetTexture(0, texture.texture);
+                            }
+                        }
 
-                    device.DrawPrimitives(PrimitiveType.TriangleList, 0, renderData.Count / 3);
-                    vertexBuffer.Dispose();
+                        VertexFormats vertexFormat = VertexFormats.Position | VertexFormats.Normal | VertexFormats.Texture1 | VertexFormats.Diffuse;
+                        device.VertexFormat = vertexFormat;
+                        VertexBuffer vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), obj.renderBuffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
+                        vertexBuffer.SetData(obj.renderBuffer, 0, LockFlags.None);
+                        device.SetStreamSource(0, vertexBuffer, 0);
+
+                        device.DrawPrimitives(PrimitiveType.TriangleList, 0, obj.renderBuffer.Length / 3);
+                        vertexBuffer.Dispose();
+                    }
                 }
 
                 device.EndScene();
                 device.Present();
 
                 Application.DoEvents();
-            }
-        }
-
-        private void fillRenderData()
-        {
-            renderData = new List<CustomVertex>();
-            float scale = (10.0f / (model.maximumY - model.minimumY)); //Try to adjust to screen
-            for (int i = 0; i < model.model.Count; i++)
-            {
-                for (int j = 0; j < model.model[i].modelObject.Count; j++)
-                {
-                    for (int k = 0; k < model.model[i].modelObject[j].obj.Count; k++)
-                    {
-                        CustomVertex vertex;
-
-                        vertex.x = model.model[i].modelObject[j].obj[k].position.x * scale;
-                        vertex.y = model.model[i].modelObject[j].obj[k].position.y * scale;
-                        vertex.z = model.model[i].modelObject[j].obj[k].position.z * scale;
-
-                        vertex.nx = model.model[i].modelObject[j].obj[k].normal.x * scale;
-                        vertex.ny = model.model[i].modelObject[j].obj[k].normal.y * scale;
-                        vertex.nz = model.model[i].modelObject[j].obj[k].normal.z * scale;
-
-                        vertex.u = model.model[i].modelObject[j].obj[k].texture.x;
-                        vertex.v = model.model[i].modelObject[j].obj[k].texture.y;
-
-                        vertex.color = model.model[i].modelObject[j].obj[k].diffuseColor;
-
-                        renderData.Add(vertex);
-                    }
-                }
             }
         }
     }
