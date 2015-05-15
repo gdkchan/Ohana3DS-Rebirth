@@ -171,17 +171,23 @@ namespace Ohana3DS_Rebirth.GUI
 
             //Renderiza a parte do Header
             int columnX = 0;
+            int i = 0;
             foreach (columnHeader header in columns)
             {
-                Rectangle rect = new Rectangle(columnX, startY, header.width - 1, headerSize);
+                int columnWidth = 0;
+                if (i == columns.Count - 1) columnWidth = this.Width - columnX; else columnWidth = header.width;
+                if (columnWidth < 2) break;
+
+                Rectangle rect = new Rectangle(columnX, startY, columnWidth - 1, headerSize);
                 e.Graphics.FillRectangle(new LinearGradientBrush(rect, Color.Transparent, Color.FromArgb(0x2f, 0x2f, 0x2f), LinearGradientMode.Vertical), rect);
-                e.Graphics.DrawLine(new Pen(Color.FromArgb(0x1f, 0x1f, 0x1f)), new Point(columnX, startY + headerSize), new Point(columnX + (header.width - 2), startY + headerSize));
+                e.Graphics.DrawLine(new Pen(Color.FromArgb(0x1f, 0x1f, 0x1f)), new Point(columnX, startY + headerSize), new Point(columnX + (columnWidth - 2), startY + headerSize));
 
                 Font font = new Font(this.Font.FontFamily, this.Font.Size, FontStyle.Bold);
                 int textHeight = (int)e.Graphics.MeasureString(header.text, font).Height;
-                e.Graphics.DrawString(DrawingHelper.clampText(header.text, font, header.width), font, new SolidBrush(this.ForeColor), new Point(columnX, startY + ((headerSize / 2) - (textHeight / 2))));
+                e.Graphics.DrawString(DrawingHelper.clampText(header.text, font, columnWidth), font, new SolidBrush(this.ForeColor), new Point(columnX, startY + ((headerSize / 2) - (textHeight / 2))));
 
-                columnX += header.width;
+                columnX += columnWidth;
+                i++;
             }
             startY += headerSize;
 
@@ -211,31 +217,35 @@ namespace Ohana3DS_Rebirth.GUI
                     }
 
                     //Textos e afins
-                    int i = 0;
+                    i = 0;
                     int x = 0;
                     foreach (listItem subItem in item.columns)
                     {
                         if (i >= columns.Count) break;
+                        int columnWidth = 0;
+                        if (i == columns.Count - 1) columnWidth = this.Width - x; else columnWidth = columns[i].width;
+                        if (columnWidth < 1) break;
 
                         int textX = x;
                         if (subItem.thumbnail != null)
                         {
                             float aspectRatio = subItem.thumbnail.Width / subItem.thumbnail.Height;
                             int width = (int)(tileSize * aspectRatio);
-                            if (width > columns[i].width)
+                            if (width > columnWidth)
                             {
-                                e.Graphics.DrawImage(subItem.thumbnail, new Rectangle(x, startY, columns[i].width, tileSize), new Rectangle((subItem.thumbnail.Width / 2) - (columns[i].width / 2), 0, columns[i].width, subItem.thumbnail.Height), GraphicsUnit.Pixel);
+                                e.Graphics.DrawImage(subItem.thumbnail, new Rectangle(x, startY, columnWidth, tileSize), new Rectangle((subItem.thumbnail.Width / 2) - (columnWidth / 2), 0, columnWidth, subItem.thumbnail.Height), GraphicsUnit.Pixel);
                             }
                             else
                             {
-                                e.Graphics.DrawImage(subItem.thumbnail, new Rectangle(x + ((columns[i].width / 2) - (width / 2)), startY, width, tileSize));
+                                e.Graphics.DrawImage(subItem.thumbnail, new Rectangle(x + ((columnWidth / 2) - (width / 2)), startY, width, tileSize));
                             }
                             textX += width;
                         }
                         int textHeight = (int)e.Graphics.MeasureString(subItem.text, this.Font).Height;
-                        e.Graphics.DrawString(subItem.text, this.Font, new SolidBrush(this.ForeColor), new Point(textX, startY + ((tileSize / 2) - (textHeight / 2))));
+                        e.Graphics.DrawString(DrawingHelper.clampText(subItem.text, this.Font, columnWidth), this.Font, new SolidBrush(this.ForeColor), new Point(textX, startY + ((tileSize / 2) - (textHeight / 2))));
 
-                        x += columns[i].width;
+                        x += columnWidth;
+                        i++;
                     }
                 }
 
@@ -263,7 +273,7 @@ namespace Ohana3DS_Rebirth.GUI
 
         protected override void OnMouseWheel(MouseEventArgs e)
         {
-            if (e.Delta > 0) ListScroll.Value = Math.Max(ListScroll.Value - 8, 0); else ListScroll.Value = Math.Min(ListScroll.Value + 8, ListScroll.MaximumScroll);
+            if (e.Delta > 0) ListScroll.Value = Math.Max(ListScroll.Value - 32, 0); else ListScroll.Value = Math.Min(ListScroll.Value + 32, ListScroll.MaximumScroll);
             
             base.OnMouseWheel(e);
         }

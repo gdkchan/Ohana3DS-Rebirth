@@ -45,6 +45,7 @@
             this.Screen.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Screen_MouseMove);
             this.Screen.MouseUp += new System.Windows.Forms.MouseEventHandler(this.Screen_MouseUp);
             this.Screen.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.Screen_MouseWheel);
+            this.Screen.Resize += new System.EventHandler(this.Screen_Resize);
             // 
             // OModelWindow
             // 
@@ -53,7 +54,6 @@
             this.Controls.Add(this.Screen);
             this.Name = "OModelWindow";
             this.Size = new System.Drawing.Size(640, 496);
-            this.Resize += new System.EventHandler(this.OModelWindow_Resize);
             this.Controls.SetChildIndex(this.Screen, 0);
             ((System.ComponentModel.ISupportInitialize)(this.Screen)).EndInit();
             this.ResumeLayout(false);

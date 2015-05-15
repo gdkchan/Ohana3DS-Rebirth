@@ -35,10 +35,12 @@
             // 
             this.TextureList.BackColor = System.Drawing.Color.Transparent;
             this.TextureList.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.TextureList.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.TextureList.HeaderHeight = 24;
+            this.TextureList.ItemHeight = 128;
             this.TextureList.Location = new System.Drawing.Point(0, 16);
             this.TextureList.Name = "TextureList";
             this.TextureList.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(15)))), ((int)(((byte)(82)))), ((int)(((byte)(186)))));
-            this.TextureList.ItemHeight = 128;
             this.TextureList.Size = new System.Drawing.Size(256, 384);
             this.TextureList.TabIndex = 1;
             // 

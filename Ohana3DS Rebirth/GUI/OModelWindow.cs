@@ -28,7 +28,7 @@ namespace Ohana3DS_Rebirth.GUI
             InitializeComponent();
         }
 
-        private void OModelWindow_Resize(object sender, EventArgs e)
+        private void Screen_Resize(object sender, EventArgs e)
         {
             if (renderer != null) renderer.resize(Screen.Width, Screen.Height);
         }

@@ -857,7 +857,7 @@ namespace Ohana3DS_Rebirth.GUI
             //Código que verifica se um Dock deve ocorrer, e posiciona caso isso ocorra
             Rectangle dockRect = new Rectangle(window.Location, window.Size);
 
-            if (windowCount(dockMode.Center) == 0 && dockRect.IntersectsWith(centerDock))
+            if (dockRect.IntersectsWith(centerDock) && (windowCount(dockMode.Center) == 0 | (windowCount(dockMode.Center) == 1 && windowInfo[infoIndex].dock == dockMode.Center)))
             {
                 if (centerDock.Width >= minimumWidth && centerDock.Height >= minimumHeight)
                 {

@@ -20,7 +20,6 @@ namespace Ohana3DS_Rebirth
             WindowManager.initialize(DockContainer);
 
             this.MaximumSize = Screen.PrimaryScreen.WorkingArea.Size;
-            this.WindowState = FormWindowState.Maximized;
             MainMenu.Renderer = new GUI.OMenuStrip();           
         }
 
@@ -59,8 +58,8 @@ namespace Ohana3DS_Rebirth
                         GUI.OTextureWindow textureWindow = new GUI.OTextureWindow();
 
                         String fileName = Path.GetFileNameWithoutExtension(openDlg.FileName);
-                        modelWindow.Title = fileName + " :: Model";
-                        textureWindow.Title = fileName + " :: Texture";
+                        modelWindow.Title = "Model [" + fileName + "]";
+                        textureWindow.Title = "Textures [" + fileName + "]";
 
                         launchWindow(modelWindow);
                         launchWindow(textureWindow, false);

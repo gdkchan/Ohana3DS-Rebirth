@@ -199,10 +199,26 @@ namespace Ohana3DS_Rebirth.Ohana
             linear
         }
 
+        public enum OTextureWrap
+        {
+            repeat,
+            mirroredRepeat,
+            clampToEdge,
+            clampToBorder
+        }
+
         public class OTextureParameter
         {
             public String name;
-            public OTextureFilter filter;
+            public OTextureFilter minFilter;
+            public OTextureFilter magFilter;
+            public OTextureWrap wrapU, wrapV;
+            public uint minLOD;
+            public float LODBias;
+            public Color borderColor;
+
+            public OVector3 sourceCoordinate;
+            public uint referenceCamera;
         }
 
         public class OModel

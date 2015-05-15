@@ -389,6 +389,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 input.ReadUInt32(); //0x0
                 objectsHeader.boundingBoxAndMeasuresPointerOffset = input.ReadUInt32() + header.mainHeaderOffset;
 
+                //MessageBox.Show(objectsHeader.texturesTableOffset.ToString("X8"));
                 //Texture names table
                 for (int index = 0; index < objectsHeader.texturesTableEntries; index++)
                 {
@@ -399,8 +400,56 @@ namespace Ohana3DS_Rebirth.Ohana
                     input.ReadUInt32();
                     input.ReadUInt32();
                     uint textureParametersOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                    input.ReadUInt32();
+                    input.ReadUInt32();
+                    input.ReadUInt32();
+                    input.ReadUInt32();
+                    input.ReadUInt32();
+                    input.ReadUInt32();
+                    uint textureCoordinatorOffset = input.ReadUInt32() + header.mainHeaderOffset;
 
+                    //Parameters
                     data.Seek(textureParametersOffset, SeekOrigin.Begin);
+                    uint wrapAndMagFilter = input.ReadUInt32();
+                    uint levelOfDetailAndMinFilter = input.ReadUInt32();
+
+                    switch ((wrapAndMagFilter >> 8) & 0xff)
+                    {
+                        case 0: parameter.wrapU = RenderBase.OTextureWrap.clampToEdge; break;
+                        case 1: parameter.wrapU = RenderBase.OTextureWrap.clampToBorder; break;
+                        case 2: parameter.wrapU = RenderBase.OTextureWrap.repeat; break;
+                        case 3: parameter.wrapU = RenderBase.OTextureWrap.mirroredRepeat; break;
+                    }
+                    switch ((wrapAndMagFilter >> 16) & 0xff)
+                    {
+                        case 0: parameter.wrapV = RenderBase.OTextureWrap.clampToEdge; break;
+                        case 1: parameter.wrapV = RenderBase.OTextureWrap.clampToBorder; break;
+                        case 2: parameter.wrapV = RenderBase.OTextureWrap.repeat; break;
+                        case 3: parameter.wrapV = RenderBase.OTextureWrap.mirroredRepeat; break;
+                    }
+                    switch (wrapAndMagFilter >> 24)
+                    {
+                        case 0: parameter.magFilter = RenderBase.OTextureFilter.nearest; break;
+                        case 1: parameter.magFilter = RenderBase.OTextureFilter.linear; break;
+                    }
+
+                    switch (levelOfDetailAndMinFilter & 0xff)
+                    {
+                        case 1: parameter.minFilter = RenderBase.OTextureFilter.nearestMipmapNearest; break;
+                        case 2: parameter.minFilter = RenderBase.OTextureFilter.nearestMipmapLinear; break;
+                        case 4: parameter.minFilter = RenderBase.OTextureFilter.linearMipmapNearest; break;
+                        case 5: parameter.minFilter = RenderBase.OTextureFilter.linearMipmapLinear; break;
+                    }
+                    parameter.minLOD = (levelOfDetailAndMinFilter >> 8) & 0xff; //max 232
+                    parameter.LODBias = input.ReadSingle();
+                    parameter.borderColor = RenderBase.getMaterialColor(input);
+
+                    data.Seek(textureCoordinatorOffset, SeekOrigin.Begin);
+                    input.ReadUInt32();
+                    input.ReadUInt32();
+                    parameter.sourceCoordinate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                    uint referenceCamera = input.ReadUInt32();
+                    parameter.referenceCamera = referenceCamera >> 24;
 
                     model.addTextureParameter(parameter);
                 }
