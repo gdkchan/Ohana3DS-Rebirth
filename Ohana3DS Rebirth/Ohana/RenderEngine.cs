@@ -56,16 +56,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 MessageBox.Show("Failed to initialize Direct3D with Hardware Acceleration!" + Environment.NewLine + "Now trying to use Software processing... Expect poor performance!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 device = new Device(0, DeviceType.Reference, handler, CreateFlags.HardwareVertexProcessing, pParams);
             }
-            device.RenderState.Lighting = false;
-            device.RenderState.CullMode = Cull.None;
-            device.RenderState.ZBufferEnable = true;
-            device.RenderState.AlphaBlendEnable = true;
-            device.RenderState.SourceBlend = Blend.SourceAlpha;
-            device.RenderState.DestinationBlend = Blend.InvSourceAlpha;
-            device.RenderState.BlendOperation = BlendOperation.Add;
-            device.RenderState.AlphaFunction = Compare.GreaterEqual;
-            device.SamplerState[0].MinFilter = TextureFilter.Linear;
-            device.SamplerState[0].MagFilter = TextureFilter.Linear;
+            setupViewPort();
         }
 
         /// <summary>
@@ -85,6 +76,15 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             device.Transform.Projection = Matrix.PerspectiveFovLH((float)Math.PI / 4, (float)pParams.BackBufferWidth / pParams.BackBufferHeight, 0.1f, 500.0f);
             device.Transform.View = Matrix.LookAtLH(new Vector3(0.0f, 0.0f, 20.0f), new Vector3(0.0F, 0.0F, 0.0F), new Vector3(0.0f, 1.0f, 0.0f));
+
+            device.RenderState.Lighting = false;
+            device.RenderState.CullMode = Cull.None;
+            device.RenderState.ZBufferEnable = true;
+            device.RenderState.AlphaBlendEnable = true;
+            device.RenderState.SourceBlend = Blend.SourceAlpha;
+            device.RenderState.DestinationBlend = Blend.InvSourceAlpha;
+            device.RenderState.BlendOperation = BlendOperation.Add;
+            device.RenderState.AlphaFunction = Compare.GreaterEqual;
         }
 
         /// <summary>
@@ -110,7 +110,6 @@ namespace Ohana3DS_Rebirth.Ohana
                 textures.Add(tex);
             }
 
-            setupViewPort();
             float scale = (10.0f / (model.maximumY - model.minimumY)); //Try to adjust to screen
             keepRendering = true;
             while (keepRendering)
@@ -129,16 +128,103 @@ namespace Ohana3DS_Rebirth.Ohana
 
                 foreach (RenderBase.OModel mdl in model.model)
                 {
-                    foreach (RenderBase.OModelObject obj in mdl.modelObject)
+                    for (int z = 0; z < mdl.modelObject.Count; z++)
                     {
+                        RenderBase.OModelObject obj = mdl.modelObject[z];
+
                         device.SetTexture(0, null);
+                        device.SetTexture(1, null);
+                        device.SetTexture(2, null); //Reset
+
                         if (obj.textureId < mdl.textureParameters.Count)
                         {
                             RenderBase.OTextureParameter parameter = mdl.textureParameters[obj.textureId];
+
                             foreach (CustomTexture texture in textures)
                             {
-                                if (texture.name == parameter.name1) device.SetTexture(0, texture.texture);
+                                if (texture.name == parameter.name0) device.SetTexture(0, texture.texture);
+                                if (texture.name == parameter.name1) device.SetTexture(0, texture.texture); //1
+                                if (texture.name == parameter.name2) device.SetTexture(0, texture.texture); //2
                             }
+
+                            for (int stage = 0; stage < 2; stage++) //Not working :/
+                            {
+                                //Filtering
+                                switch (parameter.coordinator[stage].minFilter) //Note: Inaccurate. DirectX lacks some OpenGL filters I guess...
+                                {
+                                    case RenderBase.OTextureFilter.nearest: device.SetSamplerState(stage, SamplerStageStates.MinFilter, (int)TextureFilter.None); break;
+                                    default: device.SetSamplerState(stage, SamplerStageStates.MinFilter, (int)TextureFilter.Linear); break;
+                                }
+                                switch (parameter.coordinator[stage].magFilter)
+                                {
+                                    case RenderBase.OTextureFilter.nearest: device.SetSamplerState(stage, SamplerStageStates.MagFilter, (int)TextureFilter.None); break;
+                                    default: device.SetSamplerState(stage, SamplerStageStates.MagFilter, (int)TextureFilter.Linear); break; 
+                                }
+
+                                //Addressing
+                                device.SetSamplerState(stage, SamplerStageStates.BorderColor, parameter.coordinator[stage].borderColor.ToArgb()); 
+                                switch (parameter.coordinator[stage].wrapU)
+                                {
+                                    case RenderBase.OTextureWrap.repeat: device.SetSamplerState(stage, SamplerStageStates.AddressU, (int)TextureAddress.Wrap); break;
+                                    case RenderBase.OTextureWrap.mirroredRepeat: device.SetSamplerState(stage, SamplerStageStates.AddressU, (int)TextureAddress.Mirror); break;
+                                    case RenderBase.OTextureWrap.clampToEdge: device.SetSamplerState(stage, SamplerStageStates.AddressU, (int)TextureAddress.Clamp); break;
+                                    case RenderBase.OTextureWrap.clampToBorder: device.SetSamplerState(stage, SamplerStageStates.AddressU, (int)TextureAddress.Border); break;
+                                }
+                                switch (parameter.coordinator[stage].wrapV)
+                                {
+                                    case RenderBase.OTextureWrap.repeat: device.SetSamplerState(stage, SamplerStageStates.AddressV, (int)TextureAddress.Wrap); break;
+                                    case RenderBase.OTextureWrap.mirroredRepeat: device.SetSamplerState(stage, SamplerStageStates.AddressV, (int)TextureAddress.Mirror); break;
+                                    case RenderBase.OTextureWrap.clampToEdge: device.SetSamplerState(stage, SamplerStageStates.AddressV, (int)TextureAddress.Clamp); break;
+                                    case RenderBase.OTextureWrap.clampToBorder: device.SetSamplerState(stage, SamplerStageStates.AddressV, (int)TextureAddress.Border); break;
+                                }
+
+                                //Blending
+                                Color constantColor = new Color();
+                                switch (parameter.constantColorIndex)
+                                {
+                                    case 0: constantColor = model.material[obj.textureId].constant0; break;
+                                    case 1: constantColor = model.material[obj.textureId].constant1; break;
+                                    case 2: constantColor = model.material[obj.textureId].constant2; break;
+                                    case 3: constantColor = model.material[obj.textureId].constant3; break;
+                                    case 4: constantColor = model.material[obj.textureId].constant4; break;
+                                    case 5: constantColor = model.material[obj.textureId].constant5; break;
+                                }
+                                device.SetTextureStageState(stage, TextureStageStates.Constant, constantColor.ToArgb());
+
+                                switch (parameter.combineRgb)
+                                {
+                                    case RenderBase.OCombine.add: device.SetTextureStageState(stage, TextureStageStates.ColorOperation, (int)TextureOperation.Add); break;
+                                    case RenderBase.OCombine.addSigned: device.SetTextureStageState(stage, TextureStageStates.ColorOperation, (int)TextureOperation.AddSigned); break;
+                                    case RenderBase.OCombine.dot3Rgb: device.SetTextureStageState(stage, TextureStageStates.ColorOperation, (int)TextureOperation.DotProduct3); break;
+                                    case RenderBase.OCombine.dot3Rgba: //???
+                                        device.SetTextureStageState(stage, TextureStageStates.ColorOperation, (int)TextureOperation.DotProduct3);
+                                        device.SetTextureStageState(stage, TextureStageStates.AlphaOperation, (int)TextureOperation.DotProduct3);
+                                        break;
+                                    case RenderBase.OCombine.interpolate: device.SetTextureStageState(stage, TextureStageStates.ColorOperation, (int)TextureOperation.Lerp); break;
+                                    case RenderBase.OCombine.modulate: device.SetTextureStageState(stage, TextureStageStates.ColorOperation, (int)TextureOperation.Modulate); break;
+                                    case RenderBase.OCombine.multiplyAdd: device.SetTextureStageState(stage, TextureStageStates.ColorOperation, (int)TextureOperation.MultiplyAdd); break;
+                                    case RenderBase.OCombine.subtract: device.SetTextureStageState(stage, TextureStageStates.ColorOperation, (int)TextureOperation.Subtract); break;
+                                    default: device.SetTextureStageState(stage, TextureStageStates.ColorOperation, (int)TextureOperation.Disable); break;
+                                }
+
+                                switch (parameter.combineAlpha)
+                                {
+                                    case RenderBase.OCombine.add: device.SetTextureStageState(stage, TextureStageStates.AlphaOperation, (int)TextureOperation.Add); break;
+                                    case RenderBase.OCombine.addSigned: device.SetTextureStageState(stage, TextureStageStates.AlphaOperation, (int)TextureOperation.AddSigned); break;
+                                    case RenderBase.OCombine.interpolate: device.SetTextureStageState(stage, TextureStageStates.AlphaOperation, (int)TextureOperation.Lerp); break;
+                                    case RenderBase.OCombine.modulate: device.SetTextureStageState(stage, TextureStageStates.AlphaOperation, (int)TextureOperation.Modulate); break;
+                                    case RenderBase.OCombine.multiplyAdd: device.SetTextureStageState(stage, TextureStageStates.AlphaOperation, (int)TextureOperation.MultiplyAdd); break;
+                                    case RenderBase.OCombine.subtract: device.SetTextureStageState(stage, TextureStageStates.AlphaOperation, (int)TextureOperation.Subtract); break;
+                                    default: device.SetTextureStageState(stage, TextureStageStates.AlphaOperation, (int)TextureOperation.Disable); break;
+                                }
+
+                                //TODO: Operands
+                            }
+
+                            device.SetTextureStageState(0, TextureStageStates.ColorArgument1, (int)TextureArgument.TextureColor);
+                            device.SetTextureStageState(0, TextureStageStates.ColorOperation, (int)TextureOperation.Modulate);
+                            device.SetTextureStageState(1, TextureStageStates.ColorArgument1, (int)TextureArgument.Current);
+                            device.SetTextureStageState(1, TextureStageStates.ColorArgument2, (int)TextureArgument.TextureColor);
                         }
 
                         VertexFormats vertexFormat = VertexFormats.Position | VertexFormats.Normal | VertexFormats.Texture1 | VertexFormats.Diffuse;

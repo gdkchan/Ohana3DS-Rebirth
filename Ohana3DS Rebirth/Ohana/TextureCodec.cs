@@ -473,13 +473,15 @@ namespace Ohana3DS_Rebirth.Ohana
                         Color color1 = getETC1Pixel(r1, g1, b1, x, y, blockBottom, table1);
                         Color color2 = getETC1Pixel(r2, g2, b2, x + 2, y, blockBottom, table2);
 
-                        output[(y * 4 + x) * 4] = color1.R;
-                        output[((y * 4 + x) * 4) + 1] = color1.G;
-                        output[((y * 4 + x) * 4) + 2] = color1.B;
+                        int offset1 = (y * 4 + x) * 4;
+                        output[offset1] = color1.B;
+                        output[offset1 + 1] = color1.G;
+                        output[offset1 + 2] = color1.R;
 
-                        output[(y * 4 + x + 2) * 4] = color2.R;
-                        output[((y * 4 + x + 2) * 4) + 1] = color2.G;
-                        output[((y * 4 + x + 2) * 4) + 2] = color2.B;
+                        int offset2 = (y * 4 + x + 2) * 4;
+                        output[offset2] = color2.B;
+                        output[offset2 + 1] = color2.G;
+                        output[offset2 + 2] = color2.R;
                     }
                 }
             }
@@ -492,13 +494,15 @@ namespace Ohana3DS_Rebirth.Ohana
                         Color color1 = getETC1Pixel(r1, g1, b1, x, y, blockBottom, table1);
                         Color color2 = getETC1Pixel(r2, g2, b2, x, y + 2, blockBottom, table2);
 
-                        output[(y * 4 + x) * 4] = color1.R;
-                        output[((y * 4 + x) * 4) + 1] = color1.G;
-                        output[((y * 4 + x) * 4) + 2] = color1.B;
+                        int offset1 = (y * 4 + x) * 4;
+                        output[offset1] = color1.B;
+                        output[offset1 + 1] = color1.G;
+                        output[offset1 + 2] = color1.R;
 
-                        output[((y + 2) * 4 + x) * 4] = color2.R;
-                        output[(((y + 2) * 4 + x) * 4) + 1] = color2.G;
-                        output[(((y + 2) * 4 + x) * 4) + 2] = color2.B;
+                        int offset2 = ((y + 2) * 4 + x) * 4;
+                        output[offset2] = color2.B;
+                        output[offset2 + 1] = color2.G;
+                        output[offset2 + 2] = color2.R;
                     }
                 }
             }

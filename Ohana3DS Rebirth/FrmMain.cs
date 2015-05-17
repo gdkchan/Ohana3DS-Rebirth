@@ -62,10 +62,10 @@ namespace Ohana3DS_Rebirth
                         textureWindow.Title = "Textures [" + fileName + "]";
 
                         launchWindow(modelWindow);
+                        DockContainer.dockMainWindow();
                         launchWindow(textureWindow, false);
                         WindowManager.Refresh();
-                        DockContainer.dockMainWindow();
-
+                        
                         RenderBase.OModelGroup model = Ohana.BCH.load(openDlg.FileName);
 
                         textureWindow.initialize(model);

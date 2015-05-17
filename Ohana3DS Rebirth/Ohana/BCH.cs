@@ -98,6 +98,18 @@ namespace Ohana3DS_Rebirth.Ohana
             //Dados das sub-tabelas
         }
 
+        const uint codeMaterialUnknow1 = 0x000f01d0;
+        const uint codeMaterialUnknow2 = 0x000f01d1;
+        const uint codeMaterialConstantColor = 0x000f01d2;
+
+        const uint codeTextureCombineOperand = 0x804f00c0;
+        const uint codeTextureCombineUnknow1 = 0x804f00c8;
+        const uint codeTextureCombineUnknow2 = 0x804f00d0;
+        const uint codeTextureCombineUnknow3 = 0x804f00d8;
+        const uint codeTextureCombineUnknow4 = 0x804f00f0;
+        const uint codeTextureCombineUnknow5 = 0x804f00f8;
+        //TODO: Lots of codes missing here!
+
         const uint codeTextureDataOffset = 0x000f0082;
         const uint codeTextureDataOffsetExtension = 0x00040084;
         const uint codeTextureFormatId = 0x000f0085;
@@ -112,17 +124,28 @@ namespace Ohana3DS_Rebirth.Ohana
         const uint codeFaceUnknow5 = 0x000f0231;
         const uint codeFaceUnknow6 = 0x0008025e;
 
-        const uint codeVerticeUnknow1 = 0x000b02b9;
-        const uint codeVerticeUnknow2 = 0x00010242; //Offset relativo ao data offset
-        const uint codeVerticeUnknow3 = 0x000f02bb;
-        const uint codeVerticeUnknow4 = 0x000f02bc;
+        const uint codeVerticeVectorsPerEntry = 0x000b02b9;
+        const uint codeVerticeVectorOrder = 0x00010242;
+        const uint codeVerticeUnknow1 = 0x000f02bb;
+        const uint codeVerticeUnknow2 = 0x000f02bc;
         const uint codeVerticeHeaderData = 0x805f0200;
         const uint codeVerticePositionOffset = 0x804f02c0;
-        const uint codeVerticeUnknow5 = 0x000f02c0;
+        const uint codeVerticeUnknow3 = 0x000f02c0;
         const uint codeVerticeScale = 0x007f02c1;
 
         const uint codeBlockEnd = 0x000f023d;
 
+        const byte quantizationByte = 0;
+        const byte quantizationUByte = 1;
+        const byte quantizationShort = 2;
+        const byte quantizationFloat = 3;
+
+        const byte vectorTypeNone = 0;
+        const byte vectorTypeVector2 = 1;
+        const byte vectorTypeVector3 = 2;
+        const byte vectorTypeVector4 = 3;
+
+        #region "Import"
         public static RenderBase.OModelGroup load(string fileName)
         {
             FileStream data = new FileStream(fileName, FileMode.Open);
@@ -235,14 +258,13 @@ namespace Ohana3DS_Rebirth.Ohana
                 for (int entry = 0; entry < textureHeaderEntries; entry++)
                 {
                     uint code = input.ReadUInt32();
+                    uint value = input.ReadUInt32();
+                    entry++;
+
                     switch (code)
                     {
-                        case codeTextureDataOffset:
-                        case codeTextureDataOffsetExtension:
-                            textureDataOffset = input.ReadUInt32() + header.dataOffset;
-                            entry++;
-                            break;
-                        case codeTextureFormatId: textureFormatId = input.ReadUInt32(); entry++; break;
+                        case codeTextureDataOffset: case codeTextureDataOffsetExtension: textureDataOffset = value + header.dataOffset; break;
+                        case codeTextureFormatId: textureFormatId = value; break;
                         case codeBlockEnd: entry = (int)textureHeaderEntries; break;
                         default: input.ReadUInt32(); entry++; break;
                     }
@@ -387,66 +409,30 @@ namespace Ohana3DS_Rebirth.Ohana
                 objectsHeader.facesNameEntries = input.ReadUInt32();
                 objectsHeader.facesNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
                 input.ReadUInt32(); //0x0
-                objectsHeader.boundingBoxAndMeasuresPointerOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                objectsHeader.boundingBoxAndMeasuresPointerOffset = input.ReadUInt32();
 
                 //Texture names table
                 for (int index = 0; index < objectsHeader.texturesTableEntries; index++)
                 {
-                    data.Seek(objectsHeader.texturesTableOffset + (index * 0x2c), SeekOrigin.Begin); //Take a look later!
+                    data.Seek(objectsHeader.texturesTableOffset + (index * 0x2c), SeekOrigin.Begin);
                     RenderBase.OTextureParameter parameter = new RenderBase.OTextureParameter();
 
-                    uint textureCoordinatorOffset = input.ReadUInt32() + header.mainHeaderOffset;
-                    input.ReadUInt32();
-                    input.ReadUInt32();
-                    input.ReadUInt32();
-                    input.ReadUInt32();
-                    input.ReadUInt32();
                     uint textureParametersOffset = input.ReadUInt32() + header.mainHeaderOffset;
-                    parameter.name1 = IOUtils.readString(input, input.ReadUInt32() + header.stringTableOffset);
-                    parameter.name2 = IOUtils.readString(input, input.ReadUInt32() + header.stringTableOffset);
-                    parameter.name3 = IOUtils.readString(input, input.ReadUInt32() + header.stringTableOffset);
-                    //parameter.diffuseMapName = IOUtils.readString(input, input.ReadUInt32() + header.stringTableOffset);
-                    //parameter.secondaryMapName = IOUtils.readString(input, input.ReadUInt32() + header.stringTableOffset);
-                    //parameter.diffuseMapName = IOUtils.readString(input, input.ReadUInt32() + header.stringTableOffset);
+                    input.ReadUInt32(); //TODO
+                    input.ReadUInt32();
+                    input.ReadUInt32();
+                    input.ReadUInt32();
+                    input.ReadUInt32();
+                    uint textureCoordinatorOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                    uint nameOffset0 = input.ReadUInt32();
+                    uint nameOffset1 = input.ReadUInt32();
+                    uint nameOffset2 = input.ReadUInt32();
+                    if (nameOffset0 != 0) parameter.name0 = IOUtils.readString(input, nameOffset0 + header.stringTableOffset);
+                    if (nameOffset1 != 0) parameter.name1 = IOUtils.readString(input, nameOffset1 + header.stringTableOffset);
+                    if (nameOffset2 != 0) parameter.name2 = IOUtils.readString(input, nameOffset2 + header.stringTableOffset);
 
                     //Parameters
                     data.Seek(textureParametersOffset, SeekOrigin.Begin);
-                    uint wrapAndMagFilter = input.ReadUInt32();
-                    uint levelOfDetailAndMinFilter = input.ReadUInt32();
-
-                    switch ((wrapAndMagFilter >> 8) & 0xff)
-                    {
-                        case 0: parameter.wrapU = RenderBase.OTextureWrap.clampToEdge; break;
-                        case 1: parameter.wrapU = RenderBase.OTextureWrap.clampToBorder; break;
-                        case 2: parameter.wrapU = RenderBase.OTextureWrap.repeat; break;
-                        case 3: parameter.wrapU = RenderBase.OTextureWrap.mirroredRepeat; break;
-                    }
-                    switch ((wrapAndMagFilter >> 16) & 0xff)
-                    {
-                        case 0: parameter.wrapV = RenderBase.OTextureWrap.clampToEdge; break;
-                        case 1: parameter.wrapV = RenderBase.OTextureWrap.clampToBorder; break;
-                        case 2: parameter.wrapV = RenderBase.OTextureWrap.repeat; break;
-                        case 3: parameter.wrapV = RenderBase.OTextureWrap.mirroredRepeat; break;
-                    }
-                    switch (wrapAndMagFilter >> 24)
-                    {
-                        case 0: parameter.magFilter = RenderBase.OTextureFilter.nearest; break;
-                        case 1: parameter.magFilter = RenderBase.OTextureFilter.linear; break;
-                    }
-
-                    switch (levelOfDetailAndMinFilter & 0xff)
-                    {
-                        case 1: parameter.minFilter = RenderBase.OTextureFilter.nearestMipmapNearest; break;
-                        case 2: parameter.minFilter = RenderBase.OTextureFilter.nearestMipmapLinear; break;
-                        case 4: parameter.minFilter = RenderBase.OTextureFilter.linearMipmapNearest; break;
-                        case 5: parameter.minFilter = RenderBase.OTextureFilter.linearMipmapLinear; break;
-                    }
-                    parameter.minLOD = (levelOfDetailAndMinFilter >> 8) & 0xff; //max 232
-                    parameter.LODBias = input.ReadSingle();
-                    parameter.borderColor = RenderBase.getMaterialColor(input);
-
-                    //Coordinator
-                    data.Seek(textureCoordinatorOffset, SeekOrigin.Begin);
                     input.ReadUInt32();
                     input.ReadUInt32();
                     parameter.sourceCoordinate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
@@ -464,6 +450,70 @@ namespace Ohana3DS_Rebirth.Ohana
                     parameter.rotate = input.ReadSingle();
                     parameter.translateU = input.ReadSingle();
                     parameter.translateV = input.ReadSingle();
+
+                    data.Seek(0x80, SeekOrigin.Current);
+                    for (int entry = 0; entry < 6; entry++)
+                    {
+                        uint code = input.ReadUInt32();
+                        uint value = input.ReadUInt32();
+                        entry++;
+
+                        switch (code)
+                        {
+                            case codeMaterialConstantColor: parameter.constantColorIndex = value; entry++; break;
+                            default: input.ReadUInt32(); entry++; break;
+                        }
+                    }
+                    input.ReadUInt32();
+                    uint textureBlendingParametersOffset = input.ReadUInt32() + header.descriptionOffset;
+                    uint textureBlendingParametersEntries = input.ReadUInt32();
+
+                    data.Seek(textureBlendingParametersOffset, SeekOrigin.Begin);
+                    byte source = input.ReadByte();
+                    parameter.rgbSource.Add(getCombineSource((byte)(source & 0xf)));
+                    parameter.rgbSource.Add(getCombineSource((byte)(source >> 4)));
+                    parameter.rgbSource.Add(getCombineSource((byte)(input.ReadByte() & 0xf)));
+                    source = input.ReadByte();
+                    parameter.alphaSource.Add(getCombineSource((byte)(source & 0xf)));
+                    parameter.alphaSource.Add(getCombineSource((byte)(source >> 4)));
+                    parameter.alphaSource.Add(getCombineSource((byte)(input.ReadByte() & 0xf)));
+
+                    for (int entry = 0; entry < textureBlendingParametersEntries; entry++)
+                    {
+                        uint code = input.ReadUInt32();
+                        uint value = input.ReadUInt32();
+                        entry++;
+
+                        switch (code)
+                        {
+                            case codeTextureCombineOperand:
+                                byte operand = (byte)(value >> 24);
+                                parameter.rgbOperand.Add(getCombineOperandColor((byte)(operand & 0xf)));
+                                parameter.rgbOperand.Add(getCombineOperandColor((byte)(operand >> 4)));
+                                parameter.rgbOperand.Add(getCombineOperandColor((byte)((value >> 16) & 0xf)));
+                                operand = (byte)(value >> 8);
+                                parameter.alphaOperand.Add(getCombineOperandAlpha((byte)(operand & 0xf)));
+                                parameter.alphaOperand.Add(getCombineOperandAlpha((byte)(operand >> 4)));
+                                parameter.alphaOperand.Add(getCombineOperandAlpha((byte)(value & 0xf)));
+
+                                parameter.combineRgb = getCombine(input.ReadUInt16());
+                                parameter.combineAlpha = getCombine(input.ReadUInt16());
+                                input.ReadUInt32();
+                                parameter.rgbScale = (ushort)(input.ReadUInt16() + 1);
+                                parameter.alphaScale = (ushort)(input.ReadUInt16() + 1);
+
+                                entry += 4;
+                    
+                                break;
+                            case codeBlockEnd: entry = (int)textureBlendingParametersEntries; break;
+                        }
+                    }
+
+                    //Coordinator
+                    data.Seek(textureCoordinatorOffset, SeekOrigin.Begin);
+                    parameter.coordinator.Add(getCoordinator(input));
+                    parameter.coordinator.Add(getCoordinator(input));
+                    parameter.coordinator.Add(getCoordinator(input));
 
                     model.addTextureParameter(parameter);
                 }
@@ -504,35 +554,38 @@ namespace Ohana3DS_Rebirth.Ohana
                 }
 
                 //Bounding box
-                data.Seek(objectsHeader.boundingBoxAndMeasuresPointerOffset, SeekOrigin.Begin);
-                uint measuresHeaderOffset = input.ReadUInt32() + header.mainHeaderOffset;
-                uint measuresHeaderEntries = input.ReadUInt32();
-
-                uint boundingBoxOffset = 0;
-                float heightCentimeters = 0;
-                float heightAdjustCentimeters = 0;
-                for (int index = 0; index < measuresHeaderEntries; index++)
-                {
-                    data.Seek(measuresHeaderOffset + (index * 0xc), SeekOrigin.Begin);
-                    uint nameOffset = input.ReadUInt32() + header.stringTableOffset;
-                    uint flags = input.ReadUInt32();
-                    uint dataOffset = input.ReadUInt32() + header.mainHeaderOffset;
-
-                    switch (index)
-                    {
-                        case 0: boundingBoxOffset = dataOffset; break;
-                        case 1: data.Seek(dataOffset, SeekOrigin.Begin); heightCentimeters = input.ReadSingle(); break;
-                        case 2: data.Seek(dataOffset, SeekOrigin.Begin); heightAdjustCentimeters = input.ReadSingle(); break;
-                    }
-                }
-
                 RenderBase.OVector3 minimumVector = new RenderBase.OVector3();
                 RenderBase.OVector3 maximumVector = new RenderBase.OVector3();
-                if (measuresHeaderEntries > 0)
+                float heightCentimeters = 0;
+                float heightAdjustCentimeters = 0;
+                if (objectsHeader.boundingBoxAndMeasuresPointerOffset != 0)
                 {
-                    data.Seek(boundingBoxOffset, SeekOrigin.Begin);
-                    minimumVector = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
-                    maximumVector = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                    data.Seek(objectsHeader.boundingBoxAndMeasuresPointerOffset + header.mainHeaderOffset, SeekOrigin.Begin);
+                    uint measuresHeaderOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                    uint measuresHeaderEntries = input.ReadUInt32();
+
+                    uint boundingBoxOffset = 0;
+                    for (int index = 0; index < measuresHeaderEntries; index++)
+                    {
+                        data.Seek(measuresHeaderOffset + (index * 0xc), SeekOrigin.Begin);
+                        uint nameOffset = input.ReadUInt32() + header.stringTableOffset;
+                        uint flags = input.ReadUInt32();
+                        uint dataOffset = input.ReadUInt32() + header.mainHeaderOffset;
+
+                        switch (index)
+                        {
+                            case 0: boundingBoxOffset = dataOffset; break;
+                            case 1: data.Seek(dataOffset, SeekOrigin.Begin); heightCentimeters = input.ReadSingle(); break;
+                            case 2: data.Seek(dataOffset, SeekOrigin.Begin); heightAdjustCentimeters = input.ReadSingle(); break;
+                        }
+                    }
+
+                    if (measuresHeaderEntries > 0)
+                    {
+                        data.Seek(boundingBoxOffset, SeekOrigin.Begin);
+                        minimumVector = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                        maximumVector = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                    }
                 }
 
                 //Vertices header
@@ -566,43 +619,46 @@ namespace Ohana3DS_Rebirth.Ohana
                     //Vertices
                     data.Seek(objects[index].verticesHeaderOffset, SeekOrigin.Begin);
                     uint vertexDataPointerOffset = 0;
+                    uint vertexVectorsPerEntry = 0;
+                    uint vertexVectorOrder = 0;
                     uint vertexFlags = 0;
                     uint vertexDataOffset = 0;
                     byte vertexEntryLength = 0;
                     RenderBase.OVector3 positionOffset = new RenderBase.OVector3();
                     float objectScale;
-                    input.ReadUInt32(); //TODO: Figure out
+                    uint vertexVectorFlags = input.ReadUInt32();
                     for (int entry = 0; entry < objects[index].verticesHeaderEntries; entry++)
                     {
                         uint code = input.ReadUInt32();
+                        uint value = input.ReadUInt32();
+                        entry++;
+
                         switch (code)
                         {
+                            case codeVerticeVectorsPerEntry: vertexVectorsPerEntry = value; break;
+                            case codeVerticeVectorOrder: vertexVectorOrder = value; break;
                             case codeVerticeHeaderData:
-                                vertexFlags = input.ReadUInt32();
+                                vertexFlags = value;
                                 input.ReadUInt32(); //TODO: Figure out what all this data is
                                 vertexDataPointerOffset = (uint)data.Position - header.descriptionOffset;
                                 vertexDataOffset = input.ReadUInt32();
                                 input.ReadUInt32();
-                                input.ReadUInt16();
-                                vertexEntryLength = input.ReadByte();
-                                input.ReadByte();
+                                vertexEntryLength = (byte)((input.ReadUInt32() >> 16) & 0xff);
                                 input.ReadUInt32();
-                                input.ReadUInt32();
-                                entry += 6;
+                                entry += 5;
                                 break;
                             case codeVerticePositionOffset:
-                                input.ReadUInt32();
                                 positionOffset.z = input.ReadSingle();
                                 positionOffset.y = input.ReadSingle();
                                 positionOffset.x = input.ReadSingle();
+                                entry += 3;
                                 break;
                             case codeVerticeScale:
                                 input.ReadUInt32();
-                                input.ReadUInt32();
                                 objectScale = input.ReadSingle();
+                                entry += 2;
                                 break;
                             case codeBlockEnd: entry = (int)objects[index].verticesHeaderEntries; break;
-                            default: input.ReadUInt32(); entry++; break;
                         }
                     }
 
@@ -655,16 +711,17 @@ namespace Ohana3DS_Rebirth.Ohana
                         for (int entry = 0; entry < faceHeaderEntries; entry++)
                         {
                             uint code = input.ReadUInt32();
+                            uint value = input.ReadUInt32();
+                            entry++;
+
                             switch (code)
                             {
                                 case codeFaceDataOffset:
-                                    faceDataPointerOffset = (uint)data.Position - header.descriptionOffset;
-                                    faceDataOffset = input.ReadUInt32();
-                                    entry++; 
+                                    faceDataPointerOffset = (uint)(data.Position - 4) - header.descriptionOffset;
+                                    faceDataOffset = value;
                                     break;
-                                case codeFaceDataLength: faceDataEntries = input.ReadUInt32(); entry++; break;
+                                case codeFaceDataLength: faceDataEntries = value; break;
                                 case codeBlockEnd: entry = (int)faceHeaderEntries; break;
-                                default: input.ReadUInt32(); entry++; break;
                             }
                         }
 
@@ -691,6 +748,74 @@ namespace Ohana3DS_Rebirth.Ohana
                             }
                         }
                         if (!dbgFaceDataOffsetCheck) throw new Exception("BCH: Face Data Offset pointer not found on Relocatable Table! STOP!");
+
+                        #region "Vertex types/quantizations"
+                        uint positionVectorQuantization = 0;
+                        uint normalVectorQuantization = 0;
+                        uint tangentVectorQuantization = 0;
+                        uint binormalVectorQuantization = 0; //Is this right?
+                        uint texture0VectorQuantization = 0;
+                        uint texture1VectorQuantization = 0;
+                        uint texture2VectorQuantization = 0;
+                        uint boneIndexQuantization = 0;
+                        uint boneWeightQuantization = 0;
+
+                        uint positionVectorType = 0;
+                        uint normalVectorType = 0;
+                        uint tangentVectorType = 0;
+                        uint binormalVectorType = 0;
+                        uint texture0VectorType = 0;
+                        uint texture1VectorType = 0;
+                        uint texture2VectorType = 0;
+                        uint boneIndexType = 0;
+                        uint boneWeightType = 0;
+
+                        for (int nibble = 0; nibble <= vertexVectorsPerEntry; nibble++)
+                        {
+                            byte value = (byte)((vertexVectorOrder >> (nibble * 4)) & 0xf);
+                            byte vectorFlags = (byte)((vertexFlags >> (nibble * 4)) & 0xf);
+
+                            switch (value)
+                            {
+                                case 0:
+                                    positionVectorType = (uint)(vectorFlags >> 2);
+                                    positionVectorQuantization = (uint)(vectorFlags & 3);
+                                    break;
+                                case 1:
+                                    normalVectorType = (uint)(vectorFlags >> 2);
+                                    normalVectorQuantization = (uint)(vectorFlags & 3);
+                                    break;
+                                case 2:
+                                    tangentVectorType = (uint)(vectorFlags >> 2);
+                                    tangentVectorQuantization = (uint)(vectorFlags & 3);
+                                    break;
+                                case 3:
+                                    binormalVectorType = (uint)(vectorFlags >> 2);
+                                    binormalVectorQuantization = (uint)(vectorFlags & 3);
+                                    break;
+                                case 4:
+                                    texture0VectorType = (uint)(vectorFlags >> 2);
+                                    texture0VectorQuantization = (uint)(vectorFlags & 3);
+                                    break;
+                                case 5:
+                                    texture1VectorType = (uint)(vectorFlags >> 2);
+                                    texture1VectorQuantization = (uint)(vectorFlags & 3);
+                                    break;
+                                case 6:
+                                    texture2VectorType = (uint)(vectorFlags >> 2);
+                                    texture2VectorQuantization = (uint)(vectorFlags & 3);
+                                    break;
+                                case 7:
+                                    boneIndexType = (uint)(vectorFlags >> 2);
+                                    boneIndexQuantization = (uint)(vectorFlags & 3);
+                                    break;
+                                case 8:
+                                    boneWeightType = (uint)(vectorFlags >> 2);
+                                    boneWeightQuantization = (uint)(vectorFlags & 3);
+                                    break;
+                            }
+                        }
+                        #endregion
 
                         data.Seek(faceDataOffset, SeekOrigin.Begin);
                         for (int faceIndex = 0; faceIndex < faceDataEntries / 3; faceIndex++)
@@ -721,35 +846,35 @@ namespace Ohana3DS_Rebirth.Ohana
                                 RenderBase.OVertex vertex = new RenderBase.OVertex();
 
                                 //Position
-                                if ((vertexFlags & 8) != 0)
+                                switch (positionVectorQuantization) //Note: Byte Vector3 seems to be aligned to 4 bytes, but Im not sure... hm...
                                 {
-                                    switch (((vertexFlags & 2) >> 1) | ((vertexFlags & 0x10) >> 3))
-                                    {
-                                        case 0: vertex.position = new RenderBase.OVector3(input.ReadByte(), input.ReadByte(), input.ReadByte()); break;
-                                        case 1: vertex.position = new RenderBase.OVector3(input.ReadInt16(), input.ReadInt16(), input.ReadInt16()); break;
-                                        case 3: vertex.position = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle()); break;
-                                    }
+                                    case quantizationByte: vertex.position = new RenderBase.OVector3((sbyte)input.ReadByte(), (sbyte)input.ReadByte(), (sbyte)input.ReadByte()); input.ReadByte(); break;
+                                    case quantizationUByte: vertex.position = new RenderBase.OVector3(input.ReadByte(), input.ReadByte(), input.ReadByte()); input.ReadByte(); break;
+                                    case quantizationShort: vertex.position = new RenderBase.OVector3(input.ReadInt16(), input.ReadInt16(), input.ReadInt16()); break;
+                                    case quantizationFloat: vertex.position = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle()); break;
                                 }
-                                
+
                                 //Normal
-                                if ((vertexFlags & 0x80) != 0)
+                                if (normalVectorType > 0)
                                 {
-                                    switch ((vertexFlags & 1) | ((vertexFlags & 0x20) >> 4))
+                                    switch (normalVectorQuantization)
                                     {
-                                        case 0: vertex.normal = new RenderBase.OVector3(input.ReadByte(), input.ReadByte(), input.ReadByte()); break;
-                                        case 1: vertex.normal = new RenderBase.OVector3(input.ReadInt16(), input.ReadInt16(), input.ReadInt16()); break;
-                                        case 3: vertex.normal = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle()); break;
+                                        case quantizationByte: vertex.normal = new RenderBase.OVector3((sbyte)input.ReadByte(), (sbyte)input.ReadByte(), (sbyte)input.ReadByte()); input.ReadByte(); break;
+                                        case quantizationUByte: vertex.normal = new RenderBase.OVector3(input.ReadByte(), input.ReadByte(), input.ReadByte()); input.ReadByte(); break;
+                                        case quantizationShort: vertex.normal = new RenderBase.OVector3(input.ReadInt16(), input.ReadInt16(), input.ReadInt16()); break;
+                                        case quantizationFloat: vertex.normal = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle()); break;
                                     }
                                 }
 
                                 //Texture U/V
-                                if ((vertexFlags & 0x400) != 0)
+                                if (texture0VectorType > 0)
                                 {
-                                    switch ((vertexFlags & 0x300) >> 8)
+                                    switch (texture0VectorQuantization)
                                     {
-                                        case 0: vertex.texture = new RenderBase.OVector2(input.ReadByte(), input.ReadByte()); break;
-                                        case 1: vertex.texture = new RenderBase.OVector2(input.ReadInt16(), input.ReadInt16()); break;
-                                        case 3: vertex.texture = new RenderBase.OVector2(input.ReadSingle(), input.ReadSingle()); break;
+                                        case quantizationByte: vertex.texture = new RenderBase.OVector2((sbyte)input.ReadByte() / sbyte.MaxValue, (sbyte)input.ReadByte() / sbyte.MaxValue); input.ReadByte(); break;
+                                        case quantizationUByte: vertex.texture = new RenderBase.OVector2(input.ReadByte() / byte.MaxValue, input.ReadByte() / byte.MaxValue); input.ReadByte(); break;
+                                        case quantizationShort: vertex.texture = new RenderBase.OVector2(input.ReadInt16() / short.MaxValue, input.ReadInt16() / short.MaxValue); break;
+                                        case quantizationFloat: vertex.texture = new RenderBase.OVector2(input.ReadSingle(), input.ReadSingle()); break;
                                     }
                                 }
 
@@ -764,7 +889,6 @@ namespace Ohana3DS_Rebirth.Ohana
 
                             data.Seek(position, SeekOrigin.Begin);
                         }
-                        //MessageBox.Show(vertexFlags.ToString("X8") + " - " + vertexEntryLength.ToString() + " - " + nodeList.Count.ToString());
                     }
 
                     obj.renderBuffer = vertexBuffer.ToArray();
@@ -777,5 +901,109 @@ namespace Ohana3DS_Rebirth.Ohana
             input.Close();
             return models;
         }
+
+        private static RenderBase.OCombine getCombine(ushort value)
+        {
+            switch (value)
+            {
+                case 1: return RenderBase.OCombine.modulate;
+                case 2: return RenderBase.OCombine.add;
+                case 3: return RenderBase.OCombine.addSigned;
+                case 4: return RenderBase.OCombine.interpolate;
+                case 5: return RenderBase.OCombine.subtract;
+                case 6: return RenderBase.OCombine.dot3Rgb;
+                case 7: return RenderBase.OCombine.dot3Rgba;
+                case 8: return RenderBase.OCombine.multiplyAdd;
+                case 9: return RenderBase.OCombine.addMultiply;
+                default: return RenderBase.OCombine.none;
+            }
+        }
+
+        private static RenderBase.OCombineSource getCombineSource(byte value)
+        {
+            switch (value)
+            {
+                case 0: return RenderBase.OCombineSource.primaryColor;
+                case 1: return RenderBase.OCombineSource.fragmentPrimaryColor;
+                case 2: return RenderBase.OCombineSource.fragmentSecondaryColor;
+                case 3: return RenderBase.OCombineSource.texture0;
+                case 4: return RenderBase.OCombineSource.texture1;
+                case 5: return RenderBase.OCombineSource.texture2;
+                case 6: return RenderBase.OCombineSource.texture3;
+                case 0xd: return RenderBase.OCombineSource.previousBuffer;
+                case 0xe: return RenderBase.OCombineSource.constant;
+                case 0xf: return RenderBase.OCombineSource.previous;
+                default: return RenderBase.OCombineSource.none;
+            }
+        }
+
+        private static RenderBase.OCombineOperand getCombineOperandColor(byte value)
+        {
+            switch (value)
+            {
+                case 0: return RenderBase.OCombineOperand.color;
+                case 1: return RenderBase.OCombineOperand.oneMinusColor;
+                case 4: return RenderBase.OCombineOperand.red;
+                case 5: return RenderBase.OCombineOperand.oneMinusRed;
+                case 8: return RenderBase.OCombineOperand.green;
+                case 9: return RenderBase.OCombineOperand.oneMinusGreen;
+                case 0xc: return RenderBase.OCombineOperand.blue;
+                case 0xd: return RenderBase.OCombineOperand.oneMinusBlue;
+                default: return RenderBase.OCombineOperand.none;
+            }
+        }
+
+        private static RenderBase.OCombineOperand getCombineOperandAlpha(byte value)
+        {
+            switch (value)
+            {
+                case 0: return RenderBase.OCombineOperand.alpha;
+                case 1: return RenderBase.OCombineOperand.oneMinusAlpha;
+                default: return RenderBase.OCombineOperand.none;
+            }
+        }
+
+        private static RenderBase.OCoordinator getCoordinator(BinaryReader input)
+        {
+            RenderBase.OCoordinator output = new RenderBase.OCoordinator();
+            uint wrapAndMagFilter = input.ReadUInt32();
+            uint levelOfDetailAndMinFilter = input.ReadUInt32();
+
+            switch ((wrapAndMagFilter >> 8) & 0xff)
+            {
+                case 0: output.wrapU = RenderBase.OTextureWrap.clampToEdge; break;
+                case 1: output.wrapU = RenderBase.OTextureWrap.clampToBorder; break;
+                case 2: output.wrapU = RenderBase.OTextureWrap.repeat; break;
+                case 3: output.wrapU = RenderBase.OTextureWrap.mirroredRepeat; break;
+            }
+            switch ((wrapAndMagFilter >> 16) & 0xff)
+            {
+                case 0: output.wrapV = RenderBase.OTextureWrap.clampToEdge; break;
+                case 1: output.wrapV = RenderBase.OTextureWrap.clampToBorder; break;
+                case 2: output.wrapV = RenderBase.OTextureWrap.repeat; break;
+                case 3: output.wrapV = RenderBase.OTextureWrap.mirroredRepeat; break;
+            }
+            switch (wrapAndMagFilter >> 24)
+            {
+                case 0: output.magFilter = RenderBase.OTextureFilter.nearest; break;
+                case 1: output.magFilter = RenderBase.OTextureFilter.linear; break;
+            }
+
+            switch (levelOfDetailAndMinFilter & 0xff)
+            {
+                case 1: output.minFilter = RenderBase.OTextureFilter.nearestMipmapNearest; break;
+                case 2: output.minFilter = RenderBase.OTextureFilter.nearestMipmapLinear; break;
+                case 4: output.minFilter = RenderBase.OTextureFilter.linearMipmapNearest; break;
+                case 5: output.minFilter = RenderBase.OTextureFilter.linearMipmapLinear; break;
+            }
+            output.minLOD = (levelOfDetailAndMinFilter >> 8) & 0xff; //max 232
+            output.LODBias = input.ReadSingle();
+            output.borderColor = RenderBase.getMaterialColor(input);
+
+            return output;
+        }
+
+        #endregion
+
     }
 }

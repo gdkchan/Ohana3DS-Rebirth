@@ -244,20 +244,64 @@ namespace Ohana3DS_Rebirth.Ohana
             projectionMap
         }
 
-        public class OTextureParameter
+        public enum OCombine
         {
-            public String name1;
-            public String name2;
-            public String name3;
-            public String diffuseMapName;
-            public String secondaryMapName;
-            public String normalMapName;
+            none,
+            modulate,
+            add,
+            addSigned,
+            interpolate,
+            subtract,
+            dot3Rgb,
+            dot3Rgba,
+            multiplyAdd,
+            addMultiply
+        }
+
+        public enum OCombineSource
+        {
+            none,
+            constant,
+            primaryColor,
+            fragmentPrimaryColor,
+            fragmentSecondaryColor,
+            previousBuffer,
+            previous,
+            texture0,
+            texture1,
+            texture2,
+            texture3
+        }
+
+        public enum OCombineOperand
+        {
+            none,
+            color,
+            oneMinusColor,
+            alpha,
+            oneMinusAlpha,
+            red,
+            oneMinusRed,
+            green,
+            oneMinusGreen,
+            blue,
+            oneMinusBlue
+        }
+
+        public class OCoordinator
+        {
             public OTextureFilter minFilter;
             public OTextureFilter magFilter;
             public OTextureWrap wrapU, wrapV;
             public uint minLOD;
             public float LODBias;
             public Color borderColor;
+        }
+
+        public class OTextureParameter
+        {
+            public String name0, name1, name2;
+            public List<OCoordinator> coordinator;
 
             public OVector3 sourceCoordinate;
             public OTextureProjection projection;
@@ -265,6 +309,23 @@ namespace Ohana3DS_Rebirth.Ohana
             public float scaleU, scaleV;
             public float rotate;
             public float translateU, translateV;
+
+            public uint constantColorIndex;
+            public ushort rgbScale, alphaScale;
+            public OCombine combineRgb, combineAlpha;
+            public List<OCombineSource> rgbSource;
+            public List<OCombineOperand> rgbOperand;
+            public List<OCombineSource> alphaSource;
+            public List<OCombineOperand> alphaOperand;
+
+            public OTextureParameter()
+            {
+                coordinator = new List<OCoordinator>();
+                rgbSource = new List<OCombineSource>();
+                rgbOperand = new List<OCombineOperand>();
+                alphaSource = new List<OCombineSource>();
+                alphaOperand = new List<OCombineOperand>();
+            }
         }
 
         public class OModel
