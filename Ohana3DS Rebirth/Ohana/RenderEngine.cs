@@ -128,17 +128,15 @@ namespace Ohana3DS_Rebirth.Ohana
 
                 foreach (RenderBase.OModel mdl in model.model)
                 {
-                    for (int z = 0; z < mdl.modelObject.Count; z++)
+                    foreach (RenderBase.OModelObject obj in mdl.modelObject)
                     {
-                        RenderBase.OModelObject obj = mdl.modelObject[z];
-
                         device.SetTexture(0, null);
                         device.SetTexture(1, null);
                         device.SetTexture(2, null); //Reset
 
-                        if (obj.textureId < mdl.textureParameters.Count)
+                        if (obj.materialId < mdl.textureParameters.Count)
                         {
-                            RenderBase.OTextureParameter parameter = mdl.textureParameters[obj.textureId];
+                            RenderBase.OTextureParameter parameter = mdl.textureParameters[obj.materialId];
 
                             foreach (CustomTexture texture in textures)
                             {
@@ -182,12 +180,12 @@ namespace Ohana3DS_Rebirth.Ohana
                                 Color constantColor = new Color();
                                 switch (parameter.constantColorIndex)
                                 {
-                                    case 0: constantColor = model.material[obj.textureId].constant0; break;
-                                    case 1: constantColor = model.material[obj.textureId].constant1; break;
-                                    case 2: constantColor = model.material[obj.textureId].constant2; break;
-                                    case 3: constantColor = model.material[obj.textureId].constant3; break;
-                                    case 4: constantColor = model.material[obj.textureId].constant4; break;
-                                    case 5: constantColor = model.material[obj.textureId].constant5; break;
+                                    case 0: constantColor = model.material[obj.materialId].constant0; break;
+                                    case 1: constantColor = model.material[obj.materialId].constant1; break;
+                                    case 2: constantColor = model.material[obj.materialId].constant2; break;
+                                    case 3: constantColor = model.material[obj.materialId].constant3; break;
+                                    case 4: constantColor = model.material[obj.materialId].constant4; break;
+                                    case 5: constantColor = model.material[obj.materialId].constant5; break;
                                 }
                                 device.SetTextureStageState(stage, TextureStageStates.Constant, constantColor.ToArgb());
 

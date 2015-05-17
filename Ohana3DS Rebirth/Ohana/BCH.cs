@@ -83,8 +83,8 @@ namespace Ohana3DS_Rebirth.Ohana
 
         private struct bchObjectEntry
         {
-            public uint textureId;
-            public uint renderPriority;
+            public ushort materialId;
+            public ushort renderPriority;
             public uint verticesHeaderOffset;
             public uint verticesHeaderEntries;
             public uint facesHeaderOffset;
@@ -595,8 +595,10 @@ namespace Ohana3DS_Rebirth.Ohana
                 for (int index = 0; index < objectsHeader.verticesTableEntries; index++)
                 {
                     bchObjectEntry objectEntry = new bchObjectEntry();
-                    objectEntry.textureId = input.ReadUInt32();
-                    objectEntry.renderPriority = input.ReadUInt32();
+                    objectEntry.materialId = input.ReadUInt16();
+                    input.ReadUInt16();
+                    objectEntry.renderPriority = input.ReadUInt16();
+                    input.ReadUInt16();
                     objectEntry.verticesHeaderOffset = input.ReadUInt32() + header.descriptionOffset;
                     objectEntry.verticesHeaderEntries = input.ReadUInt32();
                     objectEntry.facesHeaderOffset = input.ReadUInt32() + header.mainHeaderOffset;
@@ -614,7 +616,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 for (int index = 0; index < objects.Count; index++)
                 {
                     RenderBase.OModelObject obj = new RenderBase.OModelObject();
-                    obj.textureId = (int)objects[index].textureId;
+                    obj.materialId = objects[index].materialId;
 
                     //Vertices
                     data.Seek(objects[index].verticesHeaderOffset, SeekOrigin.Begin);

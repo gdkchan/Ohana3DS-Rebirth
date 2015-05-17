@@ -181,7 +181,7 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public List<OVertex> obj;
             public CustomVertex[] renderBuffer;
-            public int textureId = 0;
+            public ushort materialId = 0;
             public String objName = null;
 
             public OModelObject()
