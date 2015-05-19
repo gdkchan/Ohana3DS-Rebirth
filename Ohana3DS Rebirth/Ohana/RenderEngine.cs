@@ -85,6 +85,8 @@ namespace Ohana3DS_Rebirth.Ohana
             device.RenderState.DestinationBlend = Blend.InvSourceAlpha;
             device.RenderState.BlendOperation = BlendOperation.Add;
             device.RenderState.AlphaFunction = Compare.GreaterEqual;
+            device.RenderState.AlphaTestEnable = true;
+            device.RenderState.ReferenceAlpha = 0x7f;
         }
 
         /// <summary>
@@ -188,42 +190,44 @@ namespace Ohana3DS_Rebirth.Ohana
                                     case 5: constantColor = model.material[obj.materialId].constant5; break;
                                 }
                                 device.SetTextureStageState(stage, TextureStageStates.Constant, constantColor.ToArgb());
+                            }
 
-                                switch (parameter.combineRgb)
+                            /* int i = 0;
+                            foreach (RenderBase.OCombiner combiner in parameter.combiner)
+                            {
+                                switch (combiner.combineRgb)
                                 {
-                                    case RenderBase.OCombine.add: device.SetTextureStageState(stage, TextureStageStates.ColorOperation, (int)TextureOperation.Add); break;
-                                    case RenderBase.OCombine.addSigned: device.SetTextureStageState(stage, TextureStageStates.ColorOperation, (int)TextureOperation.AddSigned); break;
-                                    case RenderBase.OCombine.dot3Rgb: device.SetTextureStageState(stage, TextureStageStates.ColorOperation, (int)TextureOperation.DotProduct3); break;
+                                    case RenderBase.OCombine.add: device.SetTextureStageState(i, TextureStageStates.ColorOperation, (int)TextureOperation.Add); break;
+                                    case RenderBase.OCombine.addSigned: device.SetTextureStageState(i, TextureStageStates.ColorOperation, (int)TextureOperation.AddSigned); break;
+                                    case RenderBase.OCombine.dot3Rgb: device.SetTextureStageState(i, TextureStageStates.ColorOperation, (int)TextureOperation.DotProduct3); break;
                                     case RenderBase.OCombine.dot3Rgba: //???
-                                        device.SetTextureStageState(stage, TextureStageStates.ColorOperation, (int)TextureOperation.DotProduct3);
-                                        device.SetTextureStageState(stage, TextureStageStates.AlphaOperation, (int)TextureOperation.DotProduct3);
+                                        device.SetTextureStageState(i, TextureStageStates.ColorOperation, (int)TextureOperation.DotProduct3);
+                                        device.SetTextureStageState(i, TextureStageStates.AlphaOperation, (int)TextureOperation.DotProduct3);
                                         break;
-                                    case RenderBase.OCombine.interpolate: device.SetTextureStageState(stage, TextureStageStates.ColorOperation, (int)TextureOperation.Lerp); break;
-                                    case RenderBase.OCombine.modulate: device.SetTextureStageState(stage, TextureStageStates.ColorOperation, (int)TextureOperation.Modulate); break;
-                                    case RenderBase.OCombine.multiplyAdd: device.SetTextureStageState(stage, TextureStageStates.ColorOperation, (int)TextureOperation.MultiplyAdd); break;
-                                    case RenderBase.OCombine.subtract: device.SetTextureStageState(stage, TextureStageStates.ColorOperation, (int)TextureOperation.Subtract); break;
-                                    default: device.SetTextureStageState(stage, TextureStageStates.ColorOperation, (int)TextureOperation.Disable); break;
+                                    case RenderBase.OCombine.interpolate: device.SetTextureStageState(i, TextureStageStates.ColorOperation, (int)TextureOperation.Lerp); break;
+                                    case RenderBase.OCombine.modulate: device.SetTextureStageState(i, TextureStageStates.ColorOperation, (int)TextureOperation.Modulate); break;
+                                    case RenderBase.OCombine.multiplyAdd: device.SetTextureStageState(i, TextureStageStates.ColorOperation, (int)TextureOperation.MultiplyAdd); break;
+                                    case RenderBase.OCombine.subtract: device.SetTextureStageState(i, TextureStageStates.ColorOperation, (int)TextureOperation.Subtract); break;
+                                    default: device.SetTextureStageState(i, TextureStageStates.ColorOperation, (int)TextureOperation.Disable); break;
                                 }
 
-                                switch (parameter.combineAlpha)
+                                switch (combiner.combineAlpha)
                                 {
-                                    case RenderBase.OCombine.add: device.SetTextureStageState(stage, TextureStageStates.AlphaOperation, (int)TextureOperation.Add); break;
-                                    case RenderBase.OCombine.addSigned: device.SetTextureStageState(stage, TextureStageStates.AlphaOperation, (int)TextureOperation.AddSigned); break;
-                                    case RenderBase.OCombine.interpolate: device.SetTextureStageState(stage, TextureStageStates.AlphaOperation, (int)TextureOperation.Lerp); break;
-                                    case RenderBase.OCombine.modulate: device.SetTextureStageState(stage, TextureStageStates.AlphaOperation, (int)TextureOperation.Modulate); break;
-                                    case RenderBase.OCombine.multiplyAdd: device.SetTextureStageState(stage, TextureStageStates.AlphaOperation, (int)TextureOperation.MultiplyAdd); break;
-                                    case RenderBase.OCombine.subtract: device.SetTextureStageState(stage, TextureStageStates.AlphaOperation, (int)TextureOperation.Subtract); break;
-                                    default: device.SetTextureStageState(stage, TextureStageStates.AlphaOperation, (int)TextureOperation.Disable); break;
+                                    case RenderBase.OCombine.add: device.SetTextureStageState(i, TextureStageStates.AlphaOperation, (int)TextureOperation.Add); break;
+                                    case RenderBase.OCombine.addSigned: device.SetTextureStageState(i, TextureStageStates.AlphaOperation, (int)TextureOperation.AddSigned); break;
+                                    case RenderBase.OCombine.interpolate: device.SetTextureStageState(i, TextureStageStates.AlphaOperation, (int)TextureOperation.Lerp); break;
+                                    case RenderBase.OCombine.modulate: device.SetTextureStageState(i, TextureStageStates.AlphaOperation, (int)TextureOperation.Modulate); break;
+                                    case RenderBase.OCombine.multiplyAdd: device.SetTextureStageState(i, TextureStageStates.AlphaOperation, (int)TextureOperation.MultiplyAdd); break;
+                                    case RenderBase.OCombine.subtract: device.SetTextureStageState(i, TextureStageStates.AlphaOperation, (int)TextureOperation.Subtract); break;
+                                    default: device.SetTextureStageState(i, TextureStageStates.AlphaOperation, (int)TextureOperation.Disable); break;
                                 }
 
                                 //TODO: Operands
-                            }
 
-                            device.SetTextureStageState(0, TextureStageStates.ColorArgument1, (int)TextureArgument.TextureColor);
-                            device.SetTextureStageState(0, TextureStageStates.ColorOperation, (int)TextureOperation.Modulate);
-                            device.SetTextureStageState(1, TextureStageStates.ColorArgument1, (int)TextureArgument.Current);
-                            device.SetTextureStageState(1, TextureStageStates.ColorArgument2, (int)TextureArgument.TextureColor);
+                                i++;
+                            } */
                         }
+
 
                         VertexFormats vertexFormat = VertexFormats.Position | VertexFormats.Normal | VertexFormats.Texture1 | VertexFormats.Diffuse;
                         device.VertexFormat = vertexFormat;

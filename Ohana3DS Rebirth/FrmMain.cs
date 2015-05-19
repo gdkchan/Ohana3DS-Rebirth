@@ -72,7 +72,6 @@ namespace Ohana3DS_Rebirth
                         modelWindow.initialize(model); //Always initialize the renderer at last, 'cause DirectX do weird stuff
 
                         break;
-
                     default:
                         MessageBox.Show("Unsupported file format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                         break;

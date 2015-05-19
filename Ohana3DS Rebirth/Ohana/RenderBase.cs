@@ -15,7 +15,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public float y;
 
             /// <summary>
-            ///     Creates a new <i>2-D</i> Vector.
+            ///     Creates a new 2-D Vector.
             /// </summary>
             /// <param name="X">The X position</param>
             /// <param name="Y">The Y position</param>
@@ -26,7 +26,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Creates a new <i>2-D Vector</i>.
+            ///     Creates a new 2-D Vector.
             /// </summary>
             /// <param name="Vector">The 2-D Vector</param>
             public OVector2(OVector2 Vector)
@@ -36,7 +36,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Creates a new <i>2-D Vector</i>.
+            ///     Creates a new 2-D Vector.
             /// </summary>
             public OVector2()
             {
@@ -50,7 +50,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public float z;
 
             /// <summary>
-            ///     Creates a new <i>3-D Vector</i>.
+            ///     Creates a new 3-D Vector.
             /// </summary>
             /// <param name="X">The X position</param>
             /// <param name="Y">The Y position</param>
@@ -63,7 +63,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Creates a new <i>3-D Vector</i>.
+            ///     Creates a new 3-D Vector.
             /// </summary>
             /// <param name="Vector">The 3-D vector</param>
             public OVector3(OVector3 Vector)
@@ -74,9 +74,63 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Creates a new <i>3-D Vector</i>.
+            ///     Creates a new 3-D Vector.
             /// </summary>
             public OVector3()
+            {
+            }
+
+            /// <summary>
+            ///     Transform the 3-D Vector with a matrix.
+            /// </summary>
+            /// <param name="matrix">The matrix</param>
+            /// <returns></returns>
+            public void transform(OMatrix matrix)
+            {
+                x = x * matrix.M11 + y * matrix.M21 + z * matrix.M31 + matrix.M41;
+                y = x * matrix.M12 + y * matrix.M22 + z * matrix.M32 + matrix.M42;
+                z = x * matrix.M13 + y * matrix.M23 + z * matrix.M33 + matrix.M43;
+            }
+        }
+
+        public class OVector4
+        {
+            public float x;
+            public float y;
+            public float z;
+            public float w;
+
+            /// <summary>
+            ///     Creates a new 4-D Vector.
+            /// </summary>
+            /// <param name="X">The X position</param>
+            /// <param name="Y">The Y position</param>
+            /// <param name="Z">The Z position</param>
+            /// <param name="Z">The W position</param>
+            public OVector4(float X, float Y, float Z, float W)
+            {
+                x = X;
+                y = Y;
+                z = Z;
+                w = W;
+            }
+
+            /// <summary>
+            ///     Creates a new 4-D Vector.
+            /// </summary>
+            /// <param name="Vector">The 4-D vector</param>
+            public OVector4(OVector4 Vector)
+            {
+                x = Vector.x;
+                y = Vector.y;
+                z = Vector.z;
+                w = Vector.w;
+            }
+
+            /// <summary>
+            ///     Creates a new 4-D Vector.
+            /// </summary>
+            public OVector4()
             {
             }
         }
@@ -85,13 +139,16 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public OVector3 position;
             public OVector3 normal;
-            public OVector2 texture;
+            public OVector3 tangent;
+            public OVector2 texture0;
+            public OVector2 texture1;
+            public OVector2 texture2;
             public List<int> node;
             public List<float> weight;
             public uint diffuseColor;
 
             /// <summary>
-            ///     Creates a new <i>Vertex</i>.
+            ///     Creates a new Vertex.
             /// </summary>
             public OVertex()
             {
@@ -100,29 +157,32 @@ namespace Ohana3DS_Rebirth.Ohana
 
                 position = new OVector3();
                 normal = new OVector3();
-                texture = new OVector2();
+                tangent = new OVector3();
+                texture0 = new OVector2();
+                texture1 = new OVector2();
+                texture2 = new OVector2();
             }
 
             /// <summary>
-            ///     Creates a new <i>Vertex</i>.
+            ///     Creates a new Vertex.
             /// </summary>
             /// <param name="Position">The position of the Vertex on the 3-D space</param>
             /// <param name="Normal">The normal Vector (optional)</param>
             /// <param name="UV">The texture U/V coordinates (optional)</param>
             /// <param name="Color">The diffuse color (optional)</param>
-            public OVertex(OVector3 Position, OVector3 Normal, OVector2 UV, uint Color)
+            public OVertex(OVector3 Position, OVector3 Normal, OVector2 Texture0, uint Color)
             {
                 node = new List<int>();
                 weight = new List<float>();
 
                 position = new OVector3(Position);
                 normal = new OVector3(Normal);
-                texture = new OVector2(UV);
+                texture0 = new OVector2(Texture0);
                 diffuseColor = Color;
             }
 
             /// <summary>
-            ///     Add a <i>Node</i> to the Vertex.
+            ///     Add a Node to the Vertex.
             ///     It may contain multiple nodes, and each node must be the Id of a Bone on the Skeleton.
             /// </summary>
             /// <param name="Node"></param>
@@ -132,7 +192,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Add <i>Weighting</i> information of the Vertex.
+            ///     Add Weighting information of the Vertex.
             /// </summary>
             /// <param name="Weight"></param>
             public void addWeight(float Weight)
@@ -161,8 +221,8 @@ namespace Ohana3DS_Rebirth.Ohana
             vertex.ny = input.normal.y;
             vertex.nz = input.normal.z;
 
-            vertex.u = input.texture.x;
-            vertex.v = input.texture.y;
+            vertex.u = input.texture0.x;
+            vertex.v = input.texture0.y;
 
             vertex.color = input.diffuseColor;
 
@@ -171,10 +231,105 @@ namespace Ohana3DS_Rebirth.Ohana
 
         public class OMatrix
         { //4x4
-            public float M11 = 1; public float M12 = 0; public float M13 = 0; public float M14 = 0;
-            public float M21 = 0; public float M22 = 1; public float M23 = 0; public float M24 = 0;
-            public float M31 = 0; public float M32 = 0; public float M33 = 1; public float M34 = 0;
-            public float M41 = 0; public float M42 = 0; public float M43 = 0; public float M44 = 1;
+            float[,] matrix;
+
+            public OMatrix()
+            {
+                matrix = new float[4, 4];
+                matrix[0, 0] = 1.0f;
+                matrix[1, 1] = 1.0f;
+                matrix[2, 2] = 1.0f;
+                matrix[3, 3] = 1.0f;
+            }
+
+            public float M11 { get { return matrix[0, 0]; } set { matrix[0, 0] = value; } }
+            public float M12 { get { return matrix[0, 1]; } set { matrix[0, 1] = value; } }
+            public float M13 { get { return matrix[0, 2]; } set { matrix[0, 2] = value; } }
+            public float M14 { get { return matrix[0, 3]; } set { matrix[0, 3] = value; } }
+
+            public float M21 { get { return matrix[1, 0]; } set { matrix[1, 0] = value; } }
+            public float M22 { get { return matrix[1, 1]; } set { matrix[1, 1] = value; } }
+            public float M23 { get { return matrix[1, 2]; } set { matrix[1, 2] = value; } }
+            public float M24 { get { return matrix[1, 3]; } set { matrix[1, 3] = value; } }
+
+            public float M31 { get { return matrix[2, 0]; } set { matrix[2, 0] = value; } }
+            public float M32 { get { return matrix[2, 1]; } set { matrix[2, 1] = value; } }
+            public float M33 { get { return matrix[2, 2]; } set { matrix[2, 2] = value; } }
+            public float M34 { get { return matrix[2, 3]; } set { matrix[2, 3] = value; } }
+
+            public float M41 { get { return matrix[3, 0]; } set { matrix[3, 0] = value; } }
+            public float M42 { get { return matrix[3, 1]; } set { matrix[3, 1] = value; } }
+            public float M43 { get { return matrix[3, 2]; } set { matrix[3, 2] = value; } }
+            public float M44 { get { return matrix[3, 3]; } set { matrix[3, 3] = value; } }
+
+            public static OMatrix operator *(OMatrix a, OMatrix b)
+            {
+                OMatrix c = new OMatrix();
+
+                for (int i = 0; i < 4; i++)
+                {
+                    for (int j = 0; j < 4; j++)
+                    {
+                        float sum = 0;
+                        for (int k = 0; k < 4; k++)
+                        {
+                            sum += a.matrix[i, k] * b.matrix[k, j];
+                        }
+                        c.matrix[i, j] = sum;
+                    }
+                }
+
+                return c;
+            }
+
+            /// <summary>
+            ///     Creates a scaling Matrix with a given proportion size.
+            /// </summary>
+            /// <param name="scale">The scale proportions</param>
+            /// <returns></returns>
+            public static OMatrix scale(OVector3 scale)
+            {
+                OMatrix output = new OMatrix();
+
+                output.M11 = scale.x;
+                output.M22 = scale.y;
+                output.M33 = scale.z;
+
+                return output;
+            }
+
+            /// <summary>
+            ///     Creates a 2-D rotation Matrix. Only X and Y axis are affected.
+            /// </summary>
+            /// <param name="angle">Angle in PI radians (max 2 * PI)</param>
+            /// <returns></returns>
+            public static OMatrix rotate2D(double angle)
+            {
+                OMatrix output = new OMatrix();
+
+                output.M11 = (float)Math.Cos(angle);
+                output.M21 = (float)-Math.Sin(angle);
+                output.M12 = (float)Math.Sin(angle);
+                output.M22 = (float)Math.Cos(angle);
+
+                return output;
+            }
+
+            /// <summary>
+            ///     Creates a translation Matrix with the given position offset.
+            /// </summary>
+            /// <param name="position">The position offset</param>
+            /// <returns></returns>
+            public static OMatrix translate(OVector3 position)
+            {
+                OMatrix output = new OMatrix();
+
+                output.M41 = position.x;
+                output.M42 = position.y;
+                output.M43 = position.z;
+
+                return output;
+            }
         }
 
         public class OModelObject
@@ -190,7 +345,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Add a new <i>Vertex</i> to the Object.
+            ///     Add a new Vertex to the Object.
             /// </summary>
             /// <param name="Vertex">The Vertex</param>
             public void addVertex(OVertex Vertex)
@@ -208,7 +363,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public String name = null;
 
             /// <summary>
-            ///     Creates a new <i>Bone</i>.
+            ///     Creates a new Bone.
             /// </summary>
             public OBone()
             {
@@ -298,10 +453,30 @@ namespace Ohana3DS_Rebirth.Ohana
             public Color borderColor;
         }
 
+        public class OCombiner
+        {
+            public ushort rgbScale, alphaScale;
+            public OCombine combineRgb, combineAlpha;
+            public List<OCombineSource> rgbSource;
+            public List<OCombineOperand> rgbOperand;
+            public List<OCombineSource> alphaSource;
+            public List<OCombineOperand> alphaOperand;
+
+            public OCombiner()
+            {
+                rgbSource = new List<OCombineSource>();
+                rgbOperand = new List<OCombineOperand>();
+                alphaSource = new List<OCombineSource>();
+                alphaOperand = new List<OCombineOperand>();
+            }
+        }
+
         public class OTextureParameter
         {
             public String name0, name1, name2;
             public List<OCoordinator> coordinator;
+            public List<OCombiner> combiner;
+            public uint constantColorIndex;
 
             public OVector3 sourceCoordinate;
             public OTextureProjection projection;
@@ -310,21 +485,10 @@ namespace Ohana3DS_Rebirth.Ohana
             public float rotate;
             public float translateU, translateV;
 
-            public uint constantColorIndex;
-            public ushort rgbScale, alphaScale;
-            public OCombine combineRgb, combineAlpha;
-            public List<OCombineSource> rgbSource;
-            public List<OCombineOperand> rgbOperand;
-            public List<OCombineSource> alphaSource;
-            public List<OCombineOperand> alphaOperand;
-
             public OTextureParameter()
             {
                 coordinator = new List<OCoordinator>();
-                rgbSource = new List<OCombineSource>();
-                rgbOperand = new List<OCombineOperand>();
-                alphaSource = new List<OCombineSource>();
-                alphaOperand = new List<OCombineOperand>();
+                combiner = new List<OCombiner>();
             }
         }
 
@@ -343,7 +507,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Adds a <i>Object</i> to the model.
+            ///     Adds a Object to the model.
             /// </summary>
             /// <param name="obj">The Object</param>
             public void addObject(OModelObject obj)
@@ -352,7 +516,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Adds a <i>Bone</i> to the skeleton.
+            ///     Adds a Bone to the skeleton.
             /// </summary>
             /// <param name="bone">The Bone</param>
             public void addBone(OBone bone)
@@ -361,7 +525,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Adds a <i>Texture Parameter</i> to the model
+            ///     Adds a Texture Parameter to the model
             /// </summary>
             /// <param name="param">The Parameter</param>
             public void addTextureParameter(OTextureParameter param)
@@ -376,7 +540,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public String name;
 
             /// <summary>
-            ///     Creates a new <i>Texture</i>.
+            ///     Creates a new Texture.
             /// </summary>
             /// <param name="Texture">The texture, size must be a power of 2</param>
             /// <param name="Name">Texture name</param>
@@ -427,7 +591,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Adds a <i>Model</i>.
+            ///     Adds a Model.
             /// </summary>
             /// <param name="mdl">The Model</param>
             public void addModel(OModel mdl)
@@ -436,7 +600,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Adds a new <i>Texture</i>.
+            ///     Adds a new Texture.
             /// </summary>
             /// <param name="tex">The Texture</param>
             public void addTexture(OTexture tex)
@@ -445,7 +609,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Adds a new <i>Material</i>.
+            ///     Adds a new Material.
             /// </summary>
             /// <param name="mat">The Material</param>
             public void addMaterial(OMaterial mat)
