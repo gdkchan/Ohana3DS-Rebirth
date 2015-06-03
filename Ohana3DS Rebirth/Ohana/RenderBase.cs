@@ -106,7 +106,7 @@ namespace Ohana3DS_Rebirth.Ohana
             /// <param name="X">The X position</param>
             /// <param name="Y">The Y position</param>
             /// <param name="Z">The Z position</param>
-            /// <param name="Z">The W position</param>
+            /// <param name="W">The W position</param>
             public OVector4(float X, float Y, float Z, float W)
             {
                 x = X;
@@ -166,38 +166,38 @@ namespace Ohana3DS_Rebirth.Ohana
             /// <summary>
             ///     Creates a new Vertex.
             /// </summary>
-            /// <param name="Position">The position of the Vertex on the 3-D space</param>
-            /// <param name="Normal">The normal Vector (optional)</param>
-            /// <param name="UV">The texture U/V coordinates (optional)</param>
-            /// <param name="Color">The diffuse color (optional)</param>
-            public OVertex(OVector3 Position, OVector3 Normal, OVector2 Texture0, uint Color)
+            /// <param name="_position">The position of the Vertex on the 3-D space</param>
+            /// <param name="_normal">The normal Vector (optional)</param>
+            /// <param name="_texture0">The texture U/V coordinates (optional)</param>
+            /// <param name="_color">The diffuse color (optional)</param>
+            public OVertex(OVector3 _position, OVector3 _normal, OVector2 _texture0, uint _color)
             {
                 node = new List<int>();
                 weight = new List<float>();
 
-                position = new OVector3(Position);
-                normal = new OVector3(Normal);
-                texture0 = new OVector2(Texture0);
-                diffuseColor = Color;
+                position = new OVector3(_position);
+                normal = new OVector3(_normal);
+                texture0 = new OVector2(_texture0);
+                diffuseColor = _color;
             }
 
             /// <summary>
             ///     Add a Node to the Vertex.
             ///     It may contain multiple nodes, and each node must be the Id of a Bone on the Skeleton.
             /// </summary>
-            /// <param name="Node"></param>
-            public void addNode(int Node)
+            /// <param name="_node"></param>
+            public void addNode(int _node)
             {
-                node.Add(Node);
+                node.Add(_node);
             }
 
             /// <summary>
             ///     Add Weighting information of the Vertex.
             /// </summary>
-            /// <param name="Weight"></param>
-            public void addWeight(float Weight)
+            /// <param name="_weight"></param>
+            public void addWeight(float _weight)
             {
-                weight.Add(Weight);
+                weight.Add(_weight);
             }
         }
 
@@ -299,23 +299,6 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Creates a 2-D rotation Matrix. Only X and Y axis are affected.
-            /// </summary>
-            /// <param name="angle">Angle in PI radians (max 2 * PI)</param>
-            /// <returns></returns>
-            public static OMatrix rotate2D(double angle)
-            {
-                OMatrix output = new OMatrix();
-
-                output.M11 = (float)Math.Cos(angle);
-                output.M21 = (float)-Math.Sin(angle);
-                output.M12 = (float)Math.Sin(angle);
-                output.M22 = (float)Math.Cos(angle);
-
-                return output;
-            }
-
-            /// <summary>
             ///     Creates a translation Matrix with the given position offset.
             /// </summary>
             /// <param name="position">The position offset</param>
@@ -329,6 +312,18 @@ namespace Ohana3DS_Rebirth.Ohana
                 output.M43 = position.z;
 
                 return output;
+            }
+        }
+
+        public class OOrientedBoundingBox
+        {
+            public OVector3 centerPosition;
+            public OMatrix orientationMatrix;
+            public OVector3 size;
+
+            public OOrientedBoundingBox()
+            {
+                orientationMatrix = new OMatrix();
             }
         }
 
@@ -373,122 +368,381 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
-        public enum OTextureFilter
+        public struct OMaterialColor
         {
-            nearestMipmapNearest,
-            nearestMipmapLinear,
-            linearMipmapNearest,
-            linearMipmapLinear,
-            nearest,
-            linear
+            public Color emission;
+            public Color ambient;
+            public Color diffuse;
+            public Color specular0;
+            public Color specular1;
+            public Color constant0;
+            public Color constant1;
+            public Color constant2;
+            public Color constant3;
+            public Color constant4;
+            public Color constant5;
+
+            public float colorScale;
+        }
+
+        public static Color getColor(BinaryReader input)
+        {
+            byte r = (byte)input.ReadByte();
+            byte g = (byte)input.ReadByte();
+            byte b = (byte)input.ReadByte();
+            byte a = (byte)input.ReadByte();
+
+            return Color.FromArgb(a, r, g, b);
+        }
+
+        public enum OCullMode
+        {
+            frontFace = 0,
+            backFace = 1,
+            always = 2,
+            never = 3
+        }
+
+        public struct ORasterization
+        {
+            public OCullMode cullMode;
+            public bool isPolygonOffsetEnabled;
+            public float polygonOffsetUnit;
+        }
+
+        public enum OTextureMinFilter
+        {
+            nearestMipmapNearest = 1,
+            nearestMipmapLinear = 2,
+            linearMipmapNearest = 4,
+            linearMipmapLinear = 5
+        }
+
+        public enum OTextureMagFilter
+        {
+            nearest = 0,
+            linear = 1
         }
 
         public enum OTextureWrap
         {
-            repeat,
-            mirroredRepeat,
-            clampToEdge,
-            clampToBorder
+            clampToEdge = 0,
+            clampToBorder = 1,
+            repeat = 2,
+            mirroredRepeat = 3
         }
 
         public enum OTextureProjection
         {
-            uvMap,
-            cameraCubeMap,
-            cameraSphereMap,
-            projectionMap
+            uvMap = 0,
+            cameraCubeMap = 1,
+            cameraSphereMap = 2,
+            projectionMap = 3
         }
 
-        public enum OCombine
+        public enum OCombineOperator
         {
-            none,
-            modulate,
-            add,
-            addSigned,
-            interpolate,
-            subtract,
-            dot3Rgb,
-            dot3Rgba,
-            multiplyAdd,
-            addMultiply
+            replace = 0,
+            modulate = 1,
+            add = 2,
+            addSigned = 3,
+            interpolate = 4,
+            subtract = 5,
+            dot3Rgb = 6,
+            dot3Rgba = 7,
+            multiplyAdd = 8,
+            addMultiply = 9
         }
 
         public enum OCombineSource
         {
-            none,
-            constant,
-            primaryColor,
-            fragmentPrimaryColor,
-            fragmentSecondaryColor,
-            previousBuffer,
-            previous,
-            texture0,
-            texture1,
-            texture2,
-            texture3
+            
+            primaryColor = 0,
+            fragmentPrimaryColor = 1,
+            fragmentSecondaryColor = 2,
+            texture0 = 3,
+            texture1 = 4,
+            texture2 = 5,
+            texture3 = 6,
+            previousBuffer = 0xd,
+            constant = 0xe,
+            previous = 0xf
         }
 
-        public enum OCombineOperand
+        public enum OCombineOperandRgb
         {
-            none,
-            color,
-            oneMinusColor,
-            alpha,
-            oneMinusAlpha,
-            red,
-            oneMinusRed,
-            green,
-            oneMinusGreen,
-            blue,
-            oneMinusBlue
+            color = 0,
+            oneMinusColor = 1,
+            red = 4,
+            oneMinusRed = 5,
+            green = 8,
+            oneMinusGreen = 9,
+            blue = 0xc,
+            oneMinusBlue = 0xd
         }
 
-        public class OCoordinator
+        public enum OCombineOperandAlpha
         {
-            public OTextureFilter minFilter;
-            public OTextureFilter magFilter;
+            alpha = 0,
+            oneMinusAlpha = 1
+        }
+
+        public struct OTextureCoordinator
+        {
+            public OTextureProjection projection;
+            public uint referenceCamera;
+            public float scaleU, scaleV;
+            public float rotate;
+            public float translateU, translateV;
+        }
+
+        public struct OTextureMapper
+        {
+            public OTextureMinFilter minFilter;
+            public OTextureMagFilter magFilter;
             public OTextureWrap wrapU, wrapV;
             public uint minLOD;
             public float LODBias;
             public Color borderColor;
         }
 
-        public class OCombiner
+        public enum OBumpMode
+        {
+            notUsed = 0,
+            asBump = 1,
+            asTangent = 2
+        }
+
+        public struct OFragmentBump
+        {
+            public uint bumpTextureIndex;
+            public OBumpMode bumpMode;
+            public bool isBumpRenormalize;
+        }
+
+        public enum OFresnelConfig
+        {
+            none = 0,
+            primary = 1,
+            secondary = 2,
+            primarySecondary = 3
+        }
+
+        public enum OReflectanceSamplerInput
+        {
+            halfNormalCosine = 0,
+            halfViewCosine = 1,
+            viewNormalCosine = 2,
+            normalLightCosine = 3,
+            spotLightCosine = 4,
+            phiCosine = 5
+        }
+
+        public enum OReflectanceSamplerScale
+        {
+            one = 0,
+            two = 1,
+            four = 2,
+            eight = 3,
+            quarter = 6,
+            half = 7
+        }
+
+        public struct OReflectanceSampler
+        {
+            public OReflectanceSamplerInput input;
+            public OReflectanceSamplerScale scale;
+            public string samplerName;
+            public string materialLUTName; //LookUp Table
+        }
+
+        public struct OFragmentLighting
+        {
+            public OFresnelConfig fresnelConfig;
+            public bool isClampHighLight;
+            public bool isDistribution0Enabled;
+            public bool isDistribution1Enabled;
+            public bool isGeometryFactor0Enabled;
+            public bool isGeometryFactor1Enabled;
+            public bool isReflectionEnabled;
+
+            public OReflectanceSampler reflectanceRSampler;
+            public OReflectanceSampler reflectanceGSampler;
+            public OReflectanceSampler reflectanceBSampler;
+            public OReflectanceSampler distribution0Sampler;
+            public OReflectanceSampler distribution1Sampler;
+            public OReflectanceSampler fresnelSampler;
+        }
+
+        public class OTextureCombiner
         {
             public ushort rgbScale, alphaScale;
-            public OCombine combineRgb, combineAlpha;
+            public OCombineOperator combineRgb, combineAlpha;
             public List<OCombineSource> rgbSource;
-            public List<OCombineOperand> rgbOperand;
+            public List<OCombineOperandRgb> rgbOperand;
             public List<OCombineSource> alphaSource;
-            public List<OCombineOperand> alphaOperand;
+            public List<OCombineOperandAlpha> alphaOperand;
 
-            public OCombiner()
+            public OTextureCombiner()
             {
                 rgbSource = new List<OCombineSource>();
-                rgbOperand = new List<OCombineOperand>();
+                rgbOperand = new List<OCombineOperandRgb>();
                 alphaSource = new List<OCombineSource>();
-                alphaOperand = new List<OCombineOperand>();
+                alphaOperand = new List<OCombineOperandAlpha>();
             }
         }
 
-        public class OTextureParameter
+        public struct OAlphaTest
+        {
+            public bool isTestEnabled;
+            public OTestFunction testFunction;
+        }
+
+        public class OFragmentShader
+        {
+            public uint layerConfig;
+            public Color bufferColor;
+            public OFragmentBump fragmentBump;
+            public OFragmentLighting fragmentLighting;
+            public List<OTextureCombiner> textureCombiner;
+            public OAlphaTest alphaTest;
+
+            public OFragmentShader()
+            {
+                textureCombiner = new List<OTextureCombiner>();
+            }
+        }
+
+        public enum OTestFunction
+        {
+            never = 0,
+            always = 1,
+            equal = 2,
+            notEqual = 3,
+            less = 4,
+            lessOrEqual = 5,
+            greater = 6,
+            greaterOrEqual = 7
+        }
+
+        public struct ODepthOperation
+        {
+            public bool isTestEnabled;
+            public OTestFunction testFunction;
+            public bool isMaskEnabled;
+        }
+
+        public enum OBlendFunction
+        {
+            zero = 0,
+            one = 1,
+            sourceColor = 2,
+            oneMinusSourceColor = 3,
+            destinationColor = 4,
+            oneMinusDestinationColor = 5,
+            sourceAlpha = 6,
+            oneMinusSourceAlpha = 7,
+            destinationAlpha = 8,
+            oneMinusDestinationAlpha = 9,
+            constantColor = 0xa,
+            oneMinusConstantColor = 0xb,
+            constantAlpha = 0xc,
+            oneMinusConstantAlpha = 0xd,
+            sourceAlphaSaturate = 0xe
+        }
+
+        public enum OBlendEquation
+        {
+            add = 0,
+            subtract = 1,
+            reverseSubtract = 2,
+            min = 3,
+            max = 4
+        }
+
+        public enum OLogicalOperation
+        {
+            clear = 0,
+            and = 1,
+            andReverse = 2,
+            copy = 3,
+            set = 4,
+            copyInverted = 5,
+            noOperation = 6,
+            invert = 7,
+            notAnd = 8,
+            or = 9,
+            notOr = 0xa,
+            exclusiveOr = 0xb,
+            equiv = 0xc,
+            andInverted = 0xd,
+            orReverse = 0xe,
+            orInverted = 0xf
+        }
+
+        public struct OBlendOperation
+        {
+            public OLogicalOperation logicalOperation;
+            public OBlendFunction rgbFunctionSource, rgbFunctionDestination;
+            public OBlendEquation rgbBlendEquation;
+            public OBlendFunction alphaFunctionSource, alphaFunctionDestination;
+            public OBlendEquation alphaBlendEquation;
+            public Color blendColor;
+        }
+
+        public enum OStencilOperation
+        {
+            keep = 0,
+            zero = 1,
+            replace = 2,
+            increase = 3,
+            decrease = 4,
+            increaseWrap = 5,
+            decreaseWrap = 6
+        }
+
+        public struct OStencilTests
+        {
+            public bool isTestEnabled;
+            public OTestFunction testFunction;
+            public uint testReference;
+            public uint testMask;
+            public OStencilOperation failOperation;
+            public OStencilOperation zFailOperation;
+            public OStencilOperation passOperation;
+        }
+
+        public struct OFragmentOperation
+        {
+            public ODepthOperation depthOperation;
+            public OBlendOperation blendOperation;
+            public OStencilTests stencilOperation;
+        }
+
+        public class OMaterial
         {
             public String name0, name1, name2;
-            public List<OCoordinator> coordinator;
-            public List<OCombiner> combiner;
+
+            public OMaterialColor materialColor;
+            public ORasterization rasterization;
+            public OTextureCoordinator textureCoordinator;
+            public List<OTextureMapper> textureMapper;
+            public OFragmentShader fragmentShader;
+            public OFragmentOperation fragmentOperation;
             public uint constantColorIndex;
 
-            public OVector3 sourceCoordinate;
-            public OTextureProjection projection;
-            public uint referenceCamera;
-            public float scaleU, scaleV;
-            public float rotate;
-            public float translateU, translateV;
+            public uint lightSetIndex;
+            public uint fogIndex;
+            public bool isFragmentLightEnabled;
+            public bool isVertexLightEnabled;
+            public bool isHemiSphereLightEnabled;
+            public bool isHemiSphereOcclusionEnabled;
+            public bool isFogEnabled;
 
-            public OTextureParameter()
+            public OMaterial()
             {
-                coordinator = new List<OCoordinator>();
-                combiner = new List<OCombiner>();
+                textureMapper = new List<OTextureMapper>();
+                fragmentShader = new OFragmentShader();
             }
         }
 
@@ -496,14 +750,14 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public List<OModelObject> modelObject;
             public List<OBone> skeleton;
-            public List<OTextureParameter> textureParameters;
+            public List<OMaterial> material;
             public float height;
 
             public OModel()
             {
                 modelObject = new List<OModelObject>();
                 skeleton = new List<OBone>();
-                textureParameters = new List<OTextureParameter>();
+                material = new List<OMaterial>();
             }
 
             /// <summary>
@@ -525,12 +779,12 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Adds a Texture Parameter to the model
+            ///     Adds a Material to the model.
             /// </summary>
-            /// <param name="param">The Parameter</param>
-            public void addTextureParameter(OTextureParameter param)
+            /// <param name="mat">The Material</param>
+            public void addMaterial(OMaterial mat)
             {
-                textureParameters.Add(param);
+                material.Add(mat);
             }
         }
 
@@ -551,43 +805,16 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
-        public class OMaterial
-        {
-            public Color emission;
-            public Color ambient;
-            public Color diffuse;
-            public Color specular0;
-            public Color specular1;
-            public Color constant0;
-            public Color constant1;
-            public Color constant2;
-            public Color constant3;
-            public Color constant4;
-            public Color constant5;
-        }
-
-        public static Color getMaterialColor(BinaryReader input)
-        {
-            byte r = (byte)input.ReadByte();
-            byte g = (byte)input.ReadByte();
-            byte b = (byte)input.ReadByte();
-            byte a = (byte)input.ReadByte();
-
-            return Color.FromArgb(a, r, g, b);
-        }
-
         public class OModelGroup
         {
             public List<OModel> model;
             public List<OTexture> texture;
-            public List<OMaterial> material;
-            public float minimumY, maximumY;
+            public float minimumSize, maximumSize;
 
             public OModelGroup()
             {
                 model = new List<OModel>();
                 texture = new List<OTexture>();
-                material = new List<OMaterial>();
             }
 
             /// <summary>
@@ -606,15 +833,6 @@ namespace Ohana3DS_Rebirth.Ohana
             public void addTexture(OTexture tex)
             {
                 texture.Add(tex);
-            }
-
-            /// <summary>
-            ///     Adds a new Material.
-            /// </summary>
-            /// <param name="mat">The Material</param>
-            public void addMaterial(OMaterial mat)
-            {
-                material.Add(mat);
             }
         }
     }

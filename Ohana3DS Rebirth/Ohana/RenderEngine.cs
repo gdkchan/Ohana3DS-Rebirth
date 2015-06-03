@@ -112,7 +112,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 textures.Add(tex);
             }
 
-            float scale = (10.0f / (model.maximumY - model.minimumY)); //Try to adjust to screen
+            float scale = (10.0f / (model.maximumSize - model.minimumSize)); //Try to adjust to screen
             keepRendering = true;
             while (keepRendering)
             {
@@ -123,10 +123,10 @@ namespace Ohana3DS_Rebirth.Ohana
                 Matrix translationMatrix = Matrix.Translation(new Vector3((-translation.X / 50.0f) / scale, (translation.Y / 50.0f) / scale, zoom / scale));
                 device.Transform.World = rotationMatrix * translationMatrix * Matrix.Scaling(-scale, scale, scale);
 
-                Material material = new Material();
-                material.Diffuse = Color.White;
-                material.Ambient = Color.White;
-                device.Material = material;
+                Material mat = new Material();
+                mat.Diffuse = Color.White;
+                mat.Ambient = Color.White;
+                device.Material = mat;
 
                 foreach (RenderBase.OModel mdl in model.model)
                 {
@@ -136,41 +136,41 @@ namespace Ohana3DS_Rebirth.Ohana
                         device.SetTexture(1, null);
                         device.SetTexture(2, null); //Reset
 
-                        if (obj.materialId < mdl.textureParameters.Count)
+                        if (obj.materialId < mdl.material.Count)
                         {
-                            RenderBase.OTextureParameter parameter = mdl.textureParameters[obj.materialId];
+                            RenderBase.OMaterial material = mdl.material[obj.materialId];
 
                             foreach (CustomTexture texture in textures)
                             {
-                                if (texture.name == parameter.name0) device.SetTexture(0, texture.texture);
-                                if (texture.name == parameter.name1) device.SetTexture(0, texture.texture); //1
-                                if (texture.name == parameter.name2) device.SetTexture(0, texture.texture); //2
+                                if (texture.name == material.name0) device.SetTexture(0, texture.texture);
+                                if (texture.name == material.name1) device.SetTexture(0, texture.texture); //1
+                                if (texture.name == material.name2) device.SetTexture(0, texture.texture); //2
                             }
 
                             for (int stage = 0; stage < 2; stage++) //Not working :/
                             {
                                 //Filtering
-                                switch (parameter.coordinator[stage].minFilter) //Note: Inaccurate. DirectX lacks some OpenGL filters I guess...
+                                switch (material.textureMapper[stage].minFilter) //Note: Inaccurate. DirectX lacks some OpenGL filters I guess...
                                 {
-                                    case RenderBase.OTextureFilter.nearest: device.SetSamplerState(stage, SamplerStageStates.MinFilter, (int)TextureFilter.None); break;
+                                    case RenderBase.OTextureMinFilter.nearestMipmapNearest: device.SetSamplerState(stage, SamplerStageStates.MinFilter, (int)TextureFilter.None); break;
                                     default: device.SetSamplerState(stage, SamplerStageStates.MinFilter, (int)TextureFilter.Linear); break;
                                 }
-                                switch (parameter.coordinator[stage].magFilter)
+                                switch (material.textureMapper[stage].magFilter)
                                 {
-                                    case RenderBase.OTextureFilter.nearest: device.SetSamplerState(stage, SamplerStageStates.MagFilter, (int)TextureFilter.None); break;
+                                    case RenderBase.OTextureMagFilter.nearest: device.SetSamplerState(stage, SamplerStageStates.MagFilter, (int)TextureFilter.None); break;
                                     default: device.SetSamplerState(stage, SamplerStageStates.MagFilter, (int)TextureFilter.Linear); break; 
                                 }
 
                                 //Addressing
-                                device.SetSamplerState(stage, SamplerStageStates.BorderColor, parameter.coordinator[stage].borderColor.ToArgb()); 
-                                switch (parameter.coordinator[stage].wrapU)
+                                device.SetSamplerState(stage, SamplerStageStates.BorderColor, material.textureMapper[stage].borderColor.ToArgb());
+                                switch (material.textureMapper[stage].wrapU)
                                 {
                                     case RenderBase.OTextureWrap.repeat: device.SetSamplerState(stage, SamplerStageStates.AddressU, (int)TextureAddress.Wrap); break;
                                     case RenderBase.OTextureWrap.mirroredRepeat: device.SetSamplerState(stage, SamplerStageStates.AddressU, (int)TextureAddress.Mirror); break;
                                     case RenderBase.OTextureWrap.clampToEdge: device.SetSamplerState(stage, SamplerStageStates.AddressU, (int)TextureAddress.Clamp); break;
                                     case RenderBase.OTextureWrap.clampToBorder: device.SetSamplerState(stage, SamplerStageStates.AddressU, (int)TextureAddress.Border); break;
                                 }
-                                switch (parameter.coordinator[stage].wrapV)
+                                switch (material.textureMapper[stage].wrapV)
                                 {
                                     case RenderBase.OTextureWrap.repeat: device.SetSamplerState(stage, SamplerStageStates.AddressV, (int)TextureAddress.Wrap); break;
                                     case RenderBase.OTextureWrap.mirroredRepeat: device.SetSamplerState(stage, SamplerStageStates.AddressV, (int)TextureAddress.Mirror); break;
@@ -180,14 +180,14 @@ namespace Ohana3DS_Rebirth.Ohana
 
                                 //Blending
                                 Color constantColor = new Color();
-                                switch (parameter.constantColorIndex)
+                                switch (material.constantColorIndex)
                                 {
-                                    case 0: constantColor = model.material[obj.materialId].constant0; break;
-                                    case 1: constantColor = model.material[obj.materialId].constant1; break;
-                                    case 2: constantColor = model.material[obj.materialId].constant2; break;
-                                    case 3: constantColor = model.material[obj.materialId].constant3; break;
-                                    case 4: constantColor = model.material[obj.materialId].constant4; break;
-                                    case 5: constantColor = model.material[obj.materialId].constant5; break;
+                                    case 0: constantColor = material.materialColor.constant0; break;
+                                    case 1: constantColor = material.materialColor.constant1; break;
+                                    case 2: constantColor = material.materialColor.constant2; break;
+                                    case 3: constantColor = material.materialColor.constant3; break;
+                                    case 4: constantColor = material.materialColor.constant4; break;
+                                    case 5: constantColor = material.materialColor.constant5; break;
                                 }
                                 device.SetTextureStageState(stage, TextureStageStates.Constant, constantColor.ToArgb());
                             }
@@ -227,7 +227,6 @@ namespace Ohana3DS_Rebirth.Ohana
                                 i++;
                             } */
                         }
-
 
                         VertexFormats vertexFormat = VertexFormats.Position | VertexFormats.Normal | VertexFormats.Texture1 | VertexFormats.Diffuse;
                         device.VertexFormat = vertexFormat;

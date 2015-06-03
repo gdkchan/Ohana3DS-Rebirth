@@ -67,6 +67,7 @@ namespace Ohana3DS_Rebirth
                         WindowManager.Refresh();
                         
                         RenderBase.OModelGroup model = Ohana.BCH.load(openDlg.FileName);
+                        //Ohana.GenericFormats.SMD.export(model, "D:\\girl.smd");
 
                         textureWindow.initialize(model);
                         modelWindow.initialize(model); //Always initialize the renderer at last, 'cause DirectX do weird stuff

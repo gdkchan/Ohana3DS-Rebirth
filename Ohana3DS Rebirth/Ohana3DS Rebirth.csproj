@@ -145,6 +145,7 @@
     </Compile>
     <Compile Include="Ohana\BCH.cs" />
     <Compile Include="Ohana\FileIdentifier.cs" />
+    <Compile Include="Ohana\GenericFormats\SMD.cs" />
     <Compile Include="Ohana\IOUtils.cs" />
     <Compile Include="Ohana\RenderBase.cs" />
     <Compile Include="Ohana\RenderEngine.cs" />
@@ -235,6 +236,7 @@
   <ItemGroup>
     <None Include="Resources\icn_wm_scroll_right.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

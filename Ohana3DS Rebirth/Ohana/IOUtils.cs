@@ -22,7 +22,6 @@ namespace Ohana3DS_Rebirth.Ohana
             MemoryStream bytes = new MemoryStream();
             for (;;)
             {
-
                 byte b = input.ReadByte();
                 if (b == 0) break;
                 bytes.WriteByte(b);
