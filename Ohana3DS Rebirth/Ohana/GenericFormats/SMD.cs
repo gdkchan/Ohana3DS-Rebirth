@@ -32,6 +32,7 @@ namespace Ohana3DS_Rebirth.Ohana.GenericFormats
             output.AppendLine("skeleton");
             output.AppendLine("time 0");
             int index = 0;
+            RenderBase.OVector3[] skl = new RenderBase.OVector3[mdl.skeleton.Count];
             foreach (RenderBase.OBone bone in mdl.skeleton)
             {
                 string line = index.ToString();
@@ -43,6 +44,9 @@ namespace Ohana3DS_Rebirth.Ohana.GenericFormats
                 line += " " +  getString(bone.rotation.z);
                 output.AppendLine(line);
                 index++;
+
+                skl[index - 1] = new RenderBase.OVector3();
+                getSkl(mdl.skeleton, index - 1, ref skl[index - 1]);
             }
             output.AppendLine("end");
             output.AppendLine("triangles");
@@ -57,9 +61,18 @@ namespace Ohana3DS_Rebirth.Ohana.GenericFormats
                     if (triangleCount == 0) output.AppendLine(textureName);
 
                     string line = mdl.skeleton.Count.ToString();
-                    line += " " + getString(vertex.position.x);
-                    line += " " + getString(vertex.position.y);
-                    line += " " + getString(vertex.position.z);
+                    float x = vertex.position.x;
+                    float y = vertex.position.y;
+                    float z = vertex.position.z;
+                    for (int b = 0; b < vertex.node.Count; b++)
+                    {
+                        /*x += skl[vertex.node[b]].x;
+                        y += skl[vertex.node[b]].y;
+                        z += skl[vertex.node[b]].z;*/
+                    }
+                    line += " " + getString(x);
+                    line += " " + getString(y);
+                    line += " " + getString(z);
                     line += " " + getString(vertex.normal.x);
                     line += " " + getString(vertex.normal.y);
                     line += " " + getString(vertex.normal.z);
@@ -70,7 +83,10 @@ namespace Ohana3DS_Rebirth.Ohana.GenericFormats
                     for (int i = 0; i < vertex.node.Count; i++)
                     {
                         line += " " + vertex.node[i].ToString();
-                        line += " " + getString(vertex.weight[i]); //May cause exception on abnormal data
+                        if (i < vertex.weight.Count)
+                            line += " " + getString(vertex.weight[i]);
+                        else
+                            line += " 1";
                     }
 
                     output.AppendLine(line);
@@ -85,6 +101,15 @@ namespace Ohana3DS_Rebirth.Ohana.GenericFormats
         private static string getString(float value)
         {
             return value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private static void getSkl(List<RenderBase.OBone> skeleton, int index, ref RenderBase.OVector3 target)
+        {
+            target.x += skeleton[index].translation.x;
+            target.y += skeleton[index].translation.y;
+            target.z += skeleton[index].translation.z;
+
+            if (skeleton[index].parentId > -1) getSkl(skeleton, skeleton[index].parentId, ref target);
         }
     }
 }

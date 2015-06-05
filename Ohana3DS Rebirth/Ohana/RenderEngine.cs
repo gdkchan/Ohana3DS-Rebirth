@@ -45,7 +45,7 @@ namespace Ohana3DS_Rebirth.Ohana
             pParams.Windowed = true;
             pParams.SwapEffect = SwapEffect.Discard;
             pParams.EnableAutoDepthStencil = true;
-            pParams.AutoDepthStencilFormat = DepthFormat.D16;
+            pParams.AutoDepthStencilFormat = DepthFormat.D32;
 
             try
             {
@@ -78,15 +78,15 @@ namespace Ohana3DS_Rebirth.Ohana
             device.Transform.View = Matrix.LookAtLH(new Vector3(0.0f, 0.0f, 20.0f), new Vector3(0.0F, 0.0F, 0.0F), new Vector3(0.0f, 1.0f, 0.0f));
 
             device.RenderState.Lighting = false;
-            device.RenderState.CullMode = Cull.None;
-            device.RenderState.ZBufferEnable = true;
+            //device.RenderState.CullMode = Cull.None;
+            //device.RenderState.ZBufferEnable = true;
             device.RenderState.AlphaBlendEnable = true;
             device.RenderState.SourceBlend = Blend.SourceAlpha;
             device.RenderState.DestinationBlend = Blend.InvSourceAlpha;
             device.RenderState.BlendOperation = BlendOperation.Add;
-            device.RenderState.AlphaFunction = Compare.GreaterEqual;
-            device.RenderState.AlphaTestEnable = true;
-            device.RenderState.ReferenceAlpha = 0x7f;
+            //device.RenderState.AlphaFunction = Compare.GreaterEqual;
+            //device.RenderState.AlphaTestEnable = true;
+            //device.RenderState.ReferenceAlpha = 0x7f;
         }
 
         /// <summary>
@@ -139,6 +139,31 @@ namespace Ohana3DS_Rebirth.Ohana
                         if (obj.materialId < mdl.material.Count)
                         {
                             RenderBase.OMaterial material = mdl.material[obj.materialId];
+
+                            switch (material.rasterization.cullMode)
+                            {
+                                case RenderBase.OCullMode.backFace: device.RenderState.CullMode = Cull.Clockwise; break;
+                                case RenderBase.OCullMode.frontFace: device.RenderState.CullMode = Cull.CounterClockwise; break;
+                                case RenderBase.OCullMode.never: device.RenderState.CullMode = Cull.None; break;
+                            }
+
+                            RenderBase.OAlphaTest alpha = material.fragmentShader.alphaTest;
+                            device.RenderState.AlphaTestEnable = alpha.isTestEnabled;
+                            device.RenderState.AlphaFunction = getCompare(alpha.testFunction);
+
+                            RenderBase.ODepthOperation depth = material.fragmentOperation.depthOperation;
+                            device.RenderState.ZBufferEnable = depth.isTestEnabled;
+                            device.RenderState.ZBufferFunction = getCompare(depth.testFunction);
+                            device.RenderState.ZBufferWriteEnable = depth.isMaskEnabled;
+
+                            RenderBase.OStencilOperation stencil = material.fragmentOperation.stencilOperation;
+                            device.RenderState.StencilEnable = stencil.isTestEnabled;
+                            device.RenderState.StencilFunction = getCompare(stencil.testFunction);
+                            device.RenderState.ReferenceStencil = (int)stencil.testReference;
+                            device.RenderState.StencilWriteMask = (int)stencil.testMask;
+                            device.RenderState.StencilFail = getStencilOperation(stencil.failOperation);
+                            device.RenderState.StencilZBufferFail = getStencilOperation(stencil.zFailOperation);
+                            device.RenderState.StencilPass = getStencilOperation(stencil.passOperation);
 
                             foreach (CustomTexture texture in textures)
                             {
@@ -228,14 +253,17 @@ namespace Ohana3DS_Rebirth.Ohana
                             } */
                         }
 
-                        VertexFormats vertexFormat = VertexFormats.Position | VertexFormats.Normal | VertexFormats.Texture1 | VertexFormats.Diffuse;
-                        device.VertexFormat = vertexFormat;
-                        VertexBuffer vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), obj.renderBuffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
-                        vertexBuffer.SetData(obj.renderBuffer, 0, LockFlags.None);
-                        device.SetStreamSource(0, vertexBuffer, 0);
+                        if (obj.renderBuffer.Length > 0)
+                        {
+                            VertexFormats vertexFormat = VertexFormats.Position | VertexFormats.Normal | VertexFormats.Texture1 | VertexFormats.Diffuse;
+                            device.VertexFormat = vertexFormat;
+                            VertexBuffer vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), obj.renderBuffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
+                            vertexBuffer.SetData(obj.renderBuffer, 0, LockFlags.None);
+                            device.SetStreamSource(0, vertexBuffer, 0);
 
-                        device.DrawPrimitives(PrimitiveType.TriangleList, 0, obj.renderBuffer.Length / 3);
-                        vertexBuffer.Dispose();
+                            device.DrawPrimitives(PrimitiveType.TriangleList, 0, obj.renderBuffer.Length / 3);
+                            vertexBuffer.Dispose();
+                        }
                     }
                 }
 
@@ -244,6 +272,39 @@ namespace Ohana3DS_Rebirth.Ohana
 
                 Application.DoEvents();
             }
+        }
+
+        private Compare getCompare(RenderBase.OTestFunction function)
+        {
+            switch (function)
+            {
+                case RenderBase.OTestFunction.always: return Compare.Always;
+                case RenderBase.OTestFunction.equal: return Compare.Equal;
+                case RenderBase.OTestFunction.greater: return Compare.Greater;
+                case RenderBase.OTestFunction.greaterOrEqual: return Compare.GreaterEqual;
+                case RenderBase.OTestFunction.less: return Compare.Less;
+                case RenderBase.OTestFunction.lessOrEqual: return Compare.LessEqual;
+                case RenderBase.OTestFunction.never: return Compare.Never;
+                case RenderBase.OTestFunction.notEqual: return Compare.NotEqual;
+            }
+
+            return 0;
+        }
+
+        private StencilOperation getStencilOperation(RenderBase.OStencilOp operation)
+        {
+            switch (operation)
+            {
+                case RenderBase.OStencilOp.decrease: return StencilOperation.Decrement;
+                case RenderBase.OStencilOp.decreaseWrap: return StencilOperation.DecrementSaturation;
+                case RenderBase.OStencilOp.increase: return StencilOperation.Increment;
+                case RenderBase.OStencilOp.increaseWrap: return StencilOperation.IncrementSaturation;
+                case RenderBase.OStencilOp.keep: return StencilOperation.Keep;
+                case RenderBase.OStencilOp.replace: return StencilOperation.Replace;
+                case RenderBase.OStencilOp.zero: return StencilOperation.Zero;
+            }
+
+            return 0;
         }
     }
 }

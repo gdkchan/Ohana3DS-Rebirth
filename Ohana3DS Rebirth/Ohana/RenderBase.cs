@@ -17,22 +17,22 @@ namespace Ohana3DS_Rebirth.Ohana
             /// <summary>
             ///     Creates a new 2-D Vector.
             /// </summary>
-            /// <param name="X">The X position</param>
-            /// <param name="Y">The Y position</param>
-            public OVector2(float X, float Y)
+            /// <param name="_x">The X position</param>
+            /// <param name="_y">The Y position</param>
+            public OVector2(float _x, float _y)
             {
-                x = X;
-                y = Y;
+                x = _x;
+                y = _y;
             }
 
             /// <summary>
             ///     Creates a new 2-D Vector.
             /// </summary>
-            /// <param name="Vector">The 2-D Vector</param>
-            public OVector2(OVector2 Vector)
+            /// <param name="vector">The 2-D Vector</param>
+            public OVector2(OVector2 vector)
             {
-                x = Vector.x;
-                y = Vector.y;
+                x = vector.x;
+                y = vector.y;
             }
 
             /// <summary>
@@ -52,25 +52,25 @@ namespace Ohana3DS_Rebirth.Ohana
             /// <summary>
             ///     Creates a new 3-D Vector.
             /// </summary>
-            /// <param name="X">The X position</param>
-            /// <param name="Y">The Y position</param>
-            /// <param name="Z">The Z position</param>
-            public OVector3(float X, float Y, float Z)
+            /// <param name="_x">The X position</param>
+            /// <param name="_y">The Y position</param>
+            /// <param name="_z">The Z position</param>
+            public OVector3(float _x, float _y, float _z)
             {
-                x = X;
-                y = Y;
-                z = Z;
+                x = _x;
+                y = _y;
+                z = _z;
             }
 
             /// <summary>
             ///     Creates a new 3-D Vector.
             /// </summary>
-            /// <param name="Vector">The 3-D vector</param>
-            public OVector3(OVector3 Vector)
+            /// <param name="vector">The 3-D vector</param>
+            public OVector3(OVector3 vector)
             {
-                x = Vector.x;
-                y = Vector.y;
-                z = Vector.z;
+                x = vector.x;
+                y = vector.y;
+                z = vector.z;
             }
 
             /// <summary>
@@ -103,28 +103,28 @@ namespace Ohana3DS_Rebirth.Ohana
             /// <summary>
             ///     Creates a new 4-D Vector.
             /// </summary>
-            /// <param name="X">The X position</param>
-            /// <param name="Y">The Y position</param>
-            /// <param name="Z">The Z position</param>
-            /// <param name="W">The W position</param>
-            public OVector4(float X, float Y, float Z, float W)
+            /// <param name="_x">The X position</param>
+            /// <param name="_y">The Y position</param>
+            /// <param name="_z">The Z position</param>
+            /// <param name="_w">The W position</param>
+            public OVector4(float _x, float _y, float _z, float _w)
             {
-                x = X;
-                y = Y;
-                z = Z;
-                w = W;
+                x = _x;
+                y = _y;
+                z = _z;
+                w = _w;
             }
 
             /// <summary>
             ///     Creates a new 4-D Vector.
             /// </summary>
-            /// <param name="Vector">The 4-D vector</param>
-            public OVector4(OVector4 Vector)
+            /// <param name="vector">The 4-D vector</param>
+            public OVector4(OVector4 vector)
             {
-                x = Vector.x;
-                y = Vector.y;
-                z = Vector.z;
-                w = Vector.w;
+                x = vector.x;
+                y = vector.y;
+                z = vector.z;
+                w = vector.w;
             }
 
             /// <summary>
@@ -285,7 +285,7 @@ namespace Ohana3DS_Rebirth.Ohana
             /// <summary>
             ///     Creates a scaling Matrix with a given proportion size.
             /// </summary>
-            /// <param name="scale">The scale proportions</param>
+            /// <param name="scale">The Scale proportions</param>
             /// <returns></returns>
             public static OMatrix scale(OVector3 scale)
             {
@@ -299,9 +299,25 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
+            ///     Uniform scales the X/Y/Z axis with the same value.
+            /// </summary>
+            /// <param name="scale">The Scale proportion</param>
+            /// <returns></returns>
+            public static OMatrix scale(float scale)
+            {
+                OMatrix output = new OMatrix();
+
+                output.M11 = scale;
+                output.M22 = scale;
+                output.M33 = scale;
+
+                return output;
+            }
+
+            /// <summary>
             ///     Creates a translation Matrix with the given position offset.
             /// </summary>
-            /// <param name="position">The position offset</param>
+            /// <param name="position">The Position offset</param>
             /// <returns></returns>
             public static OMatrix translate(OVector3 position)
             {
@@ -327,11 +343,27 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        public enum OTranslucencyKind
+        {
+            opaque = 0,
+            translucent = 1,
+            subtractive = 2,
+            additive = 3
+        }
+
+        public enum OSkinningMode
+        {
+            none = 0,
+            smoothSkinning = 1,
+            rigidSkinning = 2
+        }
+
         public class OModelObject
         {
             public List<OVertex> obj;
             public CustomVertex[] renderBuffer;
-            public ushort materialId = 0;
+            public ushort materialId;
+            public ushort renderPriority;
             public String objName = null;
 
             public OModelObject()
@@ -385,22 +417,11 @@ namespace Ohana3DS_Rebirth.Ohana
             public float colorScale;
         }
 
-        public static Color getColor(BinaryReader input)
-        {
-            byte r = (byte)input.ReadByte();
-            byte g = (byte)input.ReadByte();
-            byte b = (byte)input.ReadByte();
-            byte a = (byte)input.ReadByte();
-
-            return Color.FromArgb(a, r, g, b);
-        }
-
         public enum OCullMode
         {
-            frontFace = 0,
-            backFace = 1,
-            always = 2,
-            never = 3
+            never = 0,
+            frontFace = 1,
+            backFace = 2
         }
 
         public struct ORasterization
@@ -456,7 +477,6 @@ namespace Ohana3DS_Rebirth.Ohana
 
         public enum OCombineSource
         {
-            
             primaryColor = 0,
             fragmentPrimaryColor = 1,
             fragmentSecondaryColor = 2,
@@ -690,7 +710,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public Color blendColor;
         }
 
-        public enum OStencilOperation
+        public enum OStencilOp
         {
             keep = 0,
             zero = 1,
@@ -701,22 +721,22 @@ namespace Ohana3DS_Rebirth.Ohana
             decreaseWrap = 6
         }
 
-        public struct OStencilTests
+        public struct OStencilOperation
         {
             public bool isTestEnabled;
             public OTestFunction testFunction;
             public uint testReference;
             public uint testMask;
-            public OStencilOperation failOperation;
-            public OStencilOperation zFailOperation;
-            public OStencilOperation passOperation;
+            public OStencilOp failOperation;
+            public OStencilOp zFailOperation;
+            public OStencilOp passOperation;
         }
 
         public struct OFragmentOperation
         {
             public ODepthOperation depthOperation;
             public OBlendOperation blendOperation;
-            public OStencilTests stencilOperation;
+            public OStencilOperation stencilOperation;
         }
 
         public class OMaterial
@@ -725,7 +745,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
             public OMaterialColor materialColor;
             public ORasterization rasterization;
-            public OTextureCoordinator textureCoordinator;
+            public List<OTextureCoordinator> textureCoordinator;
             public List<OTextureMapper> textureMapper;
             public OFragmentShader fragmentShader;
             public OFragmentOperation fragmentOperation;
@@ -741,6 +761,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
             public OMaterial()
             {
+                textureCoordinator = new List<OTextureCoordinator>();
                 textureMapper = new List<OTextureMapper>();
                 fragmentShader = new OFragmentShader();
             }

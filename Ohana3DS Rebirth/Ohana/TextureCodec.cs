@@ -512,17 +512,17 @@ namespace Ohana3DS_Rebirth.Ohana
 
         private static Color getETC1Pixel(uint r, uint g, uint b, int x, int y, uint block, uint table)
         {
-            uint index = (uint)(x * 4 + y);
+            int index = x * 4 + y;
             int pixel = 0;
             uint MSB = block << 1;
 
             if (index < 8)
             {
-                pixel = etc1LUT[table, ((block >> (int)(index + 24)) & 1) + ((MSB >> (int)(index + 8)) & 2)];
+                pixel = etc1LUT[table, ((block >> (index + 24)) & 1) + ((MSB >> (index + 8)) & 2)];
             }
             else
             {
-                pixel = etc1LUT[table, ((block >> (int)(index + 8)) & 1) + ((MSB >> (int)(index - 8)) & 2)];
+                pixel = etc1LUT[table, ((block >> (index + 8)) & 1) + ((MSB >> (index - 8)) & 2)];
             }
 
             r = clamp((int)(r + pixel));

@@ -94,6 +94,7 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public ushort materialId;
             public ushort renderPriority;
+            public RenderBase.OTranslucencyKind translucencyKind;
             public uint verticesHeaderOffset;
             public uint verticesHeaderEntries;
             public uint facesHeaderOffset;
@@ -186,20 +187,19 @@ namespace Ohana3DS_Rebirth.Ohana
             header.backwardCompatibility = input.ReadByte();
             header.forwardCompatibility = input.ReadByte();
             header.version = input.ReadUInt16();
-            int majorVersion = header.version / 1000;
 
             header.mainHeaderOffset = input.ReadUInt32();
             header.stringTableOffset = input.ReadUInt32();
             header.descriptionOffset = input.ReadUInt32();
             header.dataOffset = input.ReadUInt32();
-            if (majorVersion > 41) header.dataExtendedOffset = input.ReadUInt32();
+            if (header.backwardCompatibility > 0x20) header.dataExtendedOffset = input.ReadUInt32();
             header.relocatableTableOffset = input.ReadUInt32();
 
             header.mainHeaderLength = input.ReadUInt32();
             header.stringTableLength = input.ReadUInt32();
             header.descriptionLength = input.ReadUInt32();
             header.dataLength = input.ReadUInt32();
-            if (majorVersion > 41) header.dataExtendedLength = input.ReadUInt32();
+            if (header.backwardCompatibility > 0x20) header.dataExtendedLength = input.ReadUInt32();
             header.relocatableTableLength = input.ReadUInt32();
             header.uninitializedDataSectionLength = input.ReadUInt32();
             header.uninitializedDescriptionSectionLength = input.ReadUInt32();
@@ -415,27 +415,14 @@ namespace Ohana3DS_Rebirth.Ohana
                 {
                     //Nota: As versões mais antigas tinham o Coordinator já no header do material.
                     //As versões mais recentes tem uma seção reservada só pra ele, por isso possuem tamanho do header menor.
-                    switch (majorVersion)
+                    switch (header.backwardCompatibility)
                     {
-                        case 41: data.Seek(objectsHeader.texturesTableOffset + (index * 0x58), SeekOrigin.Begin); break; //r41xxx
-                        case 42: case 43: data.Seek(objectsHeader.texturesTableOffset + (index * 0x2c), SeekOrigin.Begin); break; //r42xxx
+                        case 0x20: data.Seek(objectsHeader.texturesTableOffset + (index * 0x58), SeekOrigin.Begin); break;
+                        case 0x21: case 0x22: data.Seek(objectsHeader.texturesTableOffset + (index * 0x2c), SeekOrigin.Begin); break;
                         default: throw new Exception(String.Format("BCH: Unknow BCH version r{0}, can't parse Material texture header! STOP!", header.version.ToString()));
                     }
 
                     RenderBase.OMaterial material = new RenderBase.OMaterial();
-
-                    RenderBase.OMaterialColor materialColor = material.materialColor;
-
-                    RenderBase.OFragmentOperation fragmentOperation = material.fragmentOperation;
-                    RenderBase.ODepthOperation depthOperation = fragmentOperation.depthOperation;
-                    RenderBase.OBlendOperation blendOperation = fragmentOperation.blendOperation;
-                    RenderBase.OStencilTests stencilOperation = fragmentOperation.stencilOperation;
-
-                    RenderBase.OFragmentShader fragmentShader = material.fragmentShader;
-                    RenderBase.OFragmentBump fragmentBump = fragmentShader.fragmentBump;
-                    RenderBase.OFragmentLighting fragmentLighting = fragmentShader.fragmentLighting;
-                    List<RenderBase.OTextureCombiner> textureCombiner = fragmentShader.textureCombiner;
-                    RenderBase.OAlphaTest alphaTest = fragmentShader.alphaTest;
 
                     uint materialParametersOffset = input.ReadUInt32() + header.mainHeaderOffset;
                     input.ReadUInt32(); //TODO
@@ -445,18 +432,18 @@ namespace Ohana3DS_Rebirth.Ohana
                     uint textureHeaderEntries = input.ReadUInt32();
 
                     uint materialCoordinatorOffset = 0;
-                    switch (majorVersion)
+                    switch (header.backwardCompatibility)
                     {
-                        case 41: //r41xxx
+                        case 0x20:
                             materialCoordinatorOffset = (uint)data.Position;
                             data.Seek(0x30, SeekOrigin.Current);
                             break;
-                        case 42: case 43: materialCoordinatorOffset = input.ReadUInt32() + header.mainHeaderOffset; break; //r42xxx/r43xxx
+                        case 0x21: case 0x22: materialCoordinatorOffset = input.ReadUInt32() + header.mainHeaderOffset; break;
                     }
 
-                    material.name0 = readString(input, input.ReadUInt32(), header.stringTableOffset);
-                    material.name1 = readString(input, input.ReadUInt32(), header.stringTableOffset);
-                    material.name2 = readString(input, input.ReadUInt32(), header.stringTableOffset);
+                    material.name0 = readString(input, header);
+                    material.name1 = readString(input, header);
+                    material.name2 = readString(input, header);
 
                     //Parameters
                     //Same pointer of Materials section. Why?
@@ -473,41 +460,46 @@ namespace Ohana3DS_Rebirth.Ohana
                     material.rasterization.isPolygonOffsetEnabled = (materialFlags & 0x20) > 0;
 
                     ushort fragmentFlags = input.ReadUInt16();
-                    fragmentBump.isBumpRenormalize = (fragmentFlags & 1) > 0;
-                    fragmentLighting.isClampHighLight = (fragmentFlags & 2) > 0;
-                    fragmentLighting.isDistribution0Enabled = (fragmentFlags & 4) > 0;
-                    fragmentLighting.isDistribution1Enabled = (fragmentFlags & 8) > 0;
-                    fragmentLighting.isGeometryFactor0Enabled = (fragmentFlags & 0x10) > 0;
-                    fragmentLighting.isGeometryFactor1Enabled = (fragmentFlags & 0x20) > 0;
-                    fragmentLighting.isReflectionEnabled = (fragmentFlags & 0x40) > 0;
+                    material.fragmentShader.fragmentBump.isBumpRenormalize = (fragmentFlags & 1) > 0;
+                    material.fragmentShader.fragmentLighting.isClampHighLight = (fragmentFlags & 2) > 0;
+                    material.fragmentShader.fragmentLighting.isDistribution0Enabled = (fragmentFlags & 4) > 0;
+                    material.fragmentShader.fragmentLighting.isDistribution1Enabled = (fragmentFlags & 8) > 0;
+                    material.fragmentShader.fragmentLighting.isGeometryFactor0Enabled = (fragmentFlags & 0x10) > 0;
+                    material.fragmentShader.fragmentLighting.isGeometryFactor1Enabled = (fragmentFlags & 0x20) > 0;
+                    material.fragmentShader.fragmentLighting.isReflectionEnabled = (fragmentFlags & 0x40) > 0;
 
                     input.ReadUInt32();
-                    uint projectionAndCamera = input.ReadUInt32();
-                    material.textureCoordinator.projection = (RenderBase.OTextureProjection)((projectionAndCamera >> 16) & 0xff);
-                    material.textureCoordinator.referenceCamera = projectionAndCamera >> 24;
-                    material.textureCoordinator.scaleU = input.ReadSingle();
-                    material.textureCoordinator.scaleV = input.ReadSingle();
-                    material.textureCoordinator.rotate = input.ReadSingle();
-                    material.textureCoordinator.translateU = input.ReadSingle();
-                    material.textureCoordinator.translateV = input.ReadSingle();
+                    for (int i = 0; i < 3; i++)
+                    {
+                        RenderBase.OTextureCoordinator coordinator;
+                        uint projectionAndCamera = input.ReadUInt32();
+                        coordinator.projection = (RenderBase.OTextureProjection)((projectionAndCamera >> 16) & 0xff);
+                        coordinator.referenceCamera = projectionAndCamera >> 24;
+                        coordinator.scaleU = input.ReadSingle();
+                        coordinator.scaleV = input.ReadSingle();
+                        coordinator.rotate = input.ReadSingle();
+                        coordinator.translateU = input.ReadSingle();
+                        coordinator.translateV = input.ReadSingle();
 
-                    data.Seek(0x30, SeekOrigin.Current);
+                        material.textureCoordinator.Add(coordinator);
+                    }
+
                     material.lightSetIndex = input.ReadUInt16();
                     material.fogIndex = input.ReadUInt16();
 
-                    materialColor.emission = RenderBase.getColor(input);
-                    materialColor.ambient = RenderBase.getColor(input);
-                    materialColor.diffuse = RenderBase.getColor(input);
-                    materialColor.specular0 = RenderBase.getColor(input);
-                    materialColor.specular1 = RenderBase.getColor(input);
-                    materialColor.constant0 = RenderBase.getColor(input);
-                    materialColor.constant1 = RenderBase.getColor(input);
-                    materialColor.constant2 = RenderBase.getColor(input);
-                    materialColor.constant3 = RenderBase.getColor(input);
-                    materialColor.constant4 = RenderBase.getColor(input);
-                    materialColor.constant5 = RenderBase.getColor(input);
-                    blendOperation.blendColor = RenderBase.getColor(input);
-                    materialColor.colorScale = input.ReadSingle();
+                    material.materialColor.emission = getColor(input);
+                    material.materialColor.ambient = getColor(input);
+                    material.materialColor.diffuse = getColor(input);
+                    material.materialColor.specular0 = getColor(input);
+                    material.materialColor.specular1 = getColor(input);
+                    material.materialColor.constant0 = getColor(input);
+                    material.materialColor.constant1 = getColor(input);
+                    material.materialColor.constant2 = getColor(input);
+                    material.materialColor.constant3 = getColor(input);
+                    material.materialColor.constant4 = getColor(input);
+                    material.materialColor.constant5 = getColor(input);
+                    material.fragmentOperation.blendOperation.blendColor = getColor(input);
+                    material.materialColor.colorScale = input.ReadSingle();
 
                     input.ReadUInt32(); //TODO: Figure out
                     input.ReadUInt32();
@@ -517,9 +509,9 @@ namespace Ohana3DS_Rebirth.Ohana
                     input.ReadUInt32();
 
                     uint fragmentData = input.ReadUInt32();
-                    fragmentBump.bumpTextureIndex = fragmentData >> 24;
-                    fragmentBump.bumpMode = (RenderBase.OBumpMode)((fragmentData >> 16) & 0xff);
-                    fragmentLighting.fresnelConfig = (RenderBase.OFresnelConfig)((fragmentData >> 8) & 0xff);
+                    material.fragmentShader.fragmentBump.bumpTextureIndex = fragmentData >> 24;
+                    material.fragmentShader.fragmentBump.bumpMode = (RenderBase.OBumpMode)((fragmentData >> 16) & 0xff);
+                    material.fragmentShader.fragmentLighting.fresnelConfig = (RenderBase.OFresnelConfig)((fragmentData >> 8) & 0xff);
                     material.fragmentShader.layerConfig = fragmentData & 0xff;
                     input.ReadUInt32();
                     for (int entry = 0; entry < 6; entry++)
@@ -531,22 +523,22 @@ namespace Ohana3DS_Rebirth.Ohana
                         {
                             case codeMaterialReflectanceSamplerInput:
                                 value = input.ReadUInt32();
-                                fragmentLighting.reflectanceRSampler.input = (RenderBase.OReflectanceSamplerInput)((value >> 24) & 0xf);
-                                fragmentLighting.reflectanceGSampler.input = (RenderBase.OReflectanceSamplerInput)((value >> 20) & 0xf);
-                                fragmentLighting.reflectanceBSampler.input = (RenderBase.OReflectanceSamplerInput)((value >> 16) & 0xf);
-                                fragmentLighting.distribution0Sampler.input = (RenderBase.OReflectanceSamplerInput)(value & 0xf);
-                                fragmentLighting.distribution1Sampler.input = (RenderBase.OReflectanceSamplerInput)((value >> 4) & 0xf);
-                                fragmentLighting.fresnelSampler.input = (RenderBase.OReflectanceSamplerInput)((value >> 12) & 0xf);
+                                material.fragmentShader.fragmentLighting.reflectanceRSampler.input = (RenderBase.OReflectanceSamplerInput)((value >> 24) & 0xf);
+                                material.fragmentShader.fragmentLighting.reflectanceGSampler.input = (RenderBase.OReflectanceSamplerInput)((value >> 20) & 0xf);
+                                material.fragmentShader.fragmentLighting.reflectanceBSampler.input = (RenderBase.OReflectanceSamplerInput)((value >> 16) & 0xf);
+                                material.fragmentShader.fragmentLighting.distribution0Sampler.input = (RenderBase.OReflectanceSamplerInput)(value & 0xf);
+                                material.fragmentShader.fragmentLighting.distribution1Sampler.input = (RenderBase.OReflectanceSamplerInput)((value >> 4) & 0xf);
+                                material.fragmentShader.fragmentLighting.fresnelSampler.input = (RenderBase.OReflectanceSamplerInput)((value >> 12) & 0xf);
                                 entry++;
                                 break;
                             case codeMaterialReflectanceSamplerScale:
                                 value = input.ReadUInt32();
-                                fragmentLighting.reflectanceRSampler.scale = (RenderBase.OReflectanceSamplerScale)((value >> 24) & 0xf);
-                                fragmentLighting.reflectanceGSampler.scale = (RenderBase.OReflectanceSamplerScale)((value >> 20) & 0xf);
-                                fragmentLighting.reflectanceBSampler.scale = (RenderBase.OReflectanceSamplerScale)((value >> 16) & 0xf);
-                                fragmentLighting.distribution0Sampler.scale = (RenderBase.OReflectanceSamplerScale)(value & 0xf);
-                                fragmentLighting.distribution1Sampler.scale = (RenderBase.OReflectanceSamplerScale)((value >> 4) & 0xf);
-                                fragmentLighting.fresnelSampler.scale = (RenderBase.OReflectanceSamplerScale)((value >> 12) & 0xf);
+                                material.fragmentShader.fragmentLighting.reflectanceRSampler.scale = (RenderBase.OReflectanceSamplerScale)((value >> 24) & 0xf);
+                                material.fragmentShader.fragmentLighting.reflectanceGSampler.scale = (RenderBase.OReflectanceSamplerScale)((value >> 20) & 0xf);
+                                material.fragmentShader.fragmentLighting.reflectanceBSampler.scale = (RenderBase.OReflectanceSamplerScale)((value >> 16) & 0xf);
+                                material.fragmentShader.fragmentLighting.distribution0Sampler.scale = (RenderBase.OReflectanceSamplerScale)(value & 0xf);
+                                material.fragmentShader.fragmentLighting.distribution1Sampler.scale = (RenderBase.OReflectanceSamplerScale)((value >> 4) & 0xf);
+                                material.fragmentShader.fragmentLighting.fresnelSampler.scale = (RenderBase.OReflectanceSamplerScale)((value >> 12) & 0xf);
                                 entry++;
                                 break;
                             case codeMaterialConstantColor: material.constantColorIndex = input.ReadUInt32(); entry++; break;
@@ -557,19 +549,19 @@ namespace Ohana3DS_Rebirth.Ohana
                     uint textureCombinerEntries = input.ReadUInt32();
                     input.ReadUInt32();
 
-                    fragmentLighting.distribution0Sampler.materialLUTName = readString(input, input.ReadUInt32(), header.stringTableOffset);
-                    fragmentLighting.distribution1Sampler.materialLUTName = readString(input, input.ReadUInt32(), header.stringTableOffset);
-                    fragmentLighting.fresnelSampler.materialLUTName = readString(input, input.ReadUInt32(), header.stringTableOffset);
-                    fragmentLighting.reflectanceRSampler.materialLUTName = readString(input, input.ReadUInt32(), header.stringTableOffset);
-                    fragmentLighting.reflectanceGSampler.materialLUTName = readString(input, input.ReadUInt32(), header.stringTableOffset);
-                    fragmentLighting.reflectanceBSampler.materialLUTName = readString(input, input.ReadUInt32(), header.stringTableOffset);
+                    material.fragmentShader.fragmentLighting.distribution0Sampler.materialLUTName = readString(input, header);
+                    material.fragmentShader.fragmentLighting.distribution1Sampler.materialLUTName = readString(input, header);
+                    material.fragmentShader.fragmentLighting.fresnelSampler.materialLUTName = readString(input, header);
+                    material.fragmentShader.fragmentLighting.reflectanceRSampler.materialLUTName = readString(input, header);
+                    material.fragmentShader.fragmentLighting.reflectanceGSampler.materialLUTName = readString(input, header);
+                    material.fragmentShader.fragmentLighting.reflectanceBSampler.materialLUTName = readString(input, header);
 
-                    fragmentLighting.distribution0Sampler.samplerName = readString(input, input.ReadUInt32(), header.stringTableOffset);
-                    fragmentLighting.distribution1Sampler.samplerName = readString(input, input.ReadUInt32(), header.stringTableOffset);
-                    fragmentLighting.fresnelSampler.samplerName = readString(input, input.ReadUInt32(), header.stringTableOffset);
-                    fragmentLighting.reflectanceRSampler.samplerName = readString(input, input.ReadUInt32(), header.stringTableOffset);
-                    fragmentLighting.reflectanceGSampler.samplerName = readString(input, input.ReadUInt32(), header.stringTableOffset);
-                    fragmentLighting.reflectanceBSampler.samplerName = readString(input, input.ReadUInt32(), header.stringTableOffset);
+                    material.fragmentShader.fragmentLighting.distribution0Sampler.samplerName = readString(input, header);
+                    material.fragmentShader.fragmentLighting.distribution1Sampler.samplerName = readString(input, header);
+                    material.fragmentShader.fragmentLighting.fresnelSampler.samplerName = readString(input, header);
+                    material.fragmentShader.fragmentLighting.reflectanceRSampler.samplerName = readString(input, header);
+                    material.fragmentShader.fragmentLighting.reflectanceGSampler.samplerName = readString(input, header);
+                    material.fragmentShader.fragmentLighting.reflectanceBSampler.samplerName = readString(input, header);
 
                     data.Seek(textureCombinerOffset, SeekOrigin.Begin);
                     for (int entry = 0; entry < textureCombinerEntries; entry++)
@@ -585,53 +577,95 @@ namespace Ohana3DS_Rebirth.Ohana
                             case codeMaterialCombiner3:
                             case codeMaterialCombiner4:
                             case codeMaterialCombiner5:
-                                textureCombiner.Add(getCombiner(input));
+                                RenderBase.OTextureCombiner combiner = new RenderBase.OTextureCombiner();
+                                input.BaseStream.Seek(-8, SeekOrigin.Current);
+
+                                //Source
+                                byte rgbSourceLow = input.ReadByte();
+                                byte rgbSourceHigh = input.ReadByte();
+                                byte alphaSourceLow = input.ReadByte();
+                                byte alphaSourceHigh = input.ReadByte();
+
+                                combiner.rgbSource.Add((RenderBase.OCombineSource)(rgbSourceLow & 0xf));
+                                combiner.rgbSource.Add((RenderBase.OCombineSource)(rgbSourceLow >> 4));
+                                combiner.rgbSource.Add((RenderBase.OCombineSource)(rgbSourceHigh & 0xf));
+
+                                combiner.alphaSource.Add((RenderBase.OCombineSource)(alphaSourceLow & 0xf));
+                                combiner.alphaSource.Add((RenderBase.OCombineSource)(alphaSourceLow >> 4));
+                                combiner.alphaSource.Add((RenderBase.OCombineSource)(alphaSourceHigh & 0xf));
+
+                                input.BaseStream.Seek(4, SeekOrigin.Current);
+
+                                //Operand
+                                byte rgbOperandLow = input.ReadByte();
+                                byte rgbOperandHigh = input.ReadByte();
+                                byte alphaOperandLow = input.ReadByte();
+                                byte alphaOperandHigh = input.ReadByte();
+
+                                combiner.rgbOperand.Add((RenderBase.OCombineOperandRgb)(rgbOperandLow & 0xf));
+                                combiner.rgbOperand.Add((RenderBase.OCombineOperandRgb)(rgbOperandLow >> 4));
+                                combiner.rgbOperand.Add((RenderBase.OCombineOperandRgb)(rgbOperandHigh & 0xf));
+
+                                combiner.alphaOperand.Add((RenderBase.OCombineOperandAlpha)(alphaOperandLow & 0xf));
+                                combiner.alphaOperand.Add((RenderBase.OCombineOperandAlpha)(alphaOperandLow >> 4));
+                                combiner.alphaOperand.Add((RenderBase.OCombineOperandAlpha)(alphaOperandHigh & 0xf));
+
+                                //Operator
+                                combiner.combineRgb = (RenderBase.OCombineOperator)input.ReadUInt16();
+                                combiner.combineAlpha = (RenderBase.OCombineOperator)input.ReadUInt16();
+
+                                //Scale
+                                input.ReadUInt32();
+                                combiner.rgbScale = (ushort)(input.ReadUInt16() + 1);
+                                combiner.alphaScale = (ushort)(input.ReadUInt16() + 1);
+
+                                material.fragmentShader.textureCombiner.Add(combiner);
                                 entry += 4;
                                 break;
                             case codeMaterialFragmentBufferColor:
-                                fragmentShader.bufferColor = RenderBase.getColor(input);
+                                material.fragmentShader.bufferColor = getColor(input);
                                 entry++;
                                 break;
                             case codeMaterialDepthOperation:
                                 value = input.ReadUInt32();
-                                depthOperation.isTestEnabled = (value & 1) > 0;
-                                depthOperation.testFunction = (RenderBase.OTestFunction)((value >> 4) & 0xf);
-                                depthOperation.isMaskEnabled = (value & 0x1000) > 0;
+                                material.fragmentOperation.depthOperation.isTestEnabled = (value & 1) > 0;
+                                material.fragmentOperation.depthOperation.testFunction = (RenderBase.OTestFunction)((value >> 4) & 0xf);
+                                material.fragmentOperation.depthOperation.isMaskEnabled = (value & 0x1000) > 0;
                                 break;
                             case codeMaterialBlendFunction:
                                 //Note: Only Separate Blend have unique Alpha functions.
                                 value = input.ReadUInt32();
-                                blendOperation.rgbFunctionSource = (RenderBase.OBlendFunction)((value >> 16) & 0xf);
-                                blendOperation.rgbFunctionDestination = (RenderBase.OBlendFunction)((value >> 20) & 0xf);
-                                blendOperation.alphaFunctionSource = (RenderBase.OBlendFunction)((value >> 24) & 0xf);
-                                blendOperation.alphaFunctionDestination = (RenderBase.OBlendFunction)((value >> 28) & 0xf);
-                                blendOperation.rgbBlendEquation = (RenderBase.OBlendEquation)(value & 0xff);
-                                blendOperation.alphaBlendEquation = (RenderBase.OBlendEquation)((value >> 8) & 0xff);
+                                material.fragmentOperation.blendOperation.rgbFunctionSource = (RenderBase.OBlendFunction)((value >> 16) & 0xf);
+                                material.fragmentOperation.blendOperation.rgbFunctionDestination = (RenderBase.OBlendFunction)((value >> 20) & 0xf);
+                                material.fragmentOperation.blendOperation.alphaFunctionSource = (RenderBase.OBlendFunction)((value >> 24) & 0xf);
+                                material.fragmentOperation.blendOperation.alphaFunctionDestination = (RenderBase.OBlendFunction)((value >> 28) & 0xf);
+                                material.fragmentOperation.blendOperation.rgbBlendEquation = (RenderBase.OBlendEquation)(value & 0xff);
+                                material.fragmentOperation.blendOperation.alphaBlendEquation = (RenderBase.OBlendEquation)((value >> 8) & 0xff);
                                 entry++;
                                 break;
                             case codeMaterialLogicalOperation:
-                                blendOperation.logicalOperation = (RenderBase.OLogicalOperation)(input.ReadUInt32() & 0xf);
+                                material.fragmentOperation.blendOperation.logicalOperation = (RenderBase.OLogicalOperation)(input.ReadUInt32() & 0xf);
                                 entry++;
                                 break;
                             case codeMaterialAlphaTest:
                                 value = input.ReadUInt32();
-                                alphaTest.isTestEnabled = (value & 1) > 0;
-                                alphaTest.testFunction = (RenderBase.OTestFunction)((value >> 4) & 0xf);
+                                material.fragmentShader.alphaTest.isTestEnabled = (value & 1) > 0;
+                                material.fragmentShader.alphaTest.testFunction = (RenderBase.OTestFunction)((value >> 4) & 0xf);
                                 entry++;
                                 break;
                             case codeMaterialStencilOperationTests:
                                 value = input.ReadUInt32();
-                                stencilOperation.isTestEnabled = (value & 1) > 0;
-                                stencilOperation.testFunction = (RenderBase.OTestFunction)((value >> 4) & 0xf);
-                                stencilOperation.testReference = (value >> 16) & 0xff;
-                                stencilOperation.testMask = (value >> 24);
+                                material.fragmentOperation.stencilOperation.isTestEnabled = (value & 1) > 0;
+                                material.fragmentOperation.stencilOperation.testFunction = (RenderBase.OTestFunction)((value >> 4) & 0xf);
+                                material.fragmentOperation.stencilOperation.testReference = (value >> 16) & 0xff;
+                                material.fragmentOperation.stencilOperation.testMask = (value >> 24);
                                 entry++;
                                 break;
                             case codeMaterialStencilOperationOperations:
                                 value = input.ReadUInt32();
-                                stencilOperation.failOperation = (RenderBase.OStencilOperation)(value & 0xf);
-                                stencilOperation.zFailOperation = (RenderBase.OStencilOperation)((value >> 4) & 0xf);
-                                stencilOperation.passOperation = (RenderBase.OStencilOperation)((value >> 8) & 0xf);
+                                material.fragmentOperation.stencilOperation.failOperation = (RenderBase.OStencilOp)(value & 0xf);
+                                material.fragmentOperation.stencilOperation.zFailOperation = (RenderBase.OStencilOp)((value >> 4) & 0xf);
+                                material.fragmentOperation.stencilOperation.passOperation = (RenderBase.OStencilOp)((value >> 8) & 0xf);
                                 entry++;
                                 break;
                             case codeMaterialRasterization:
@@ -645,9 +679,21 @@ namespace Ohana3DS_Rebirth.Ohana
 
                     //Coordinator
                     data.Seek(materialCoordinatorOffset, SeekOrigin.Begin);
-                    material.textureMapper.Add(getMapper(input));
-                    material.textureMapper.Add(getMapper(input));
-                    material.textureMapper.Add(getMapper(input));
+                    for (int i = 0; i < 3; i++)
+                    {
+                        RenderBase.OTextureMapper mapper;
+                        uint wrapAndMagFilter = input.ReadUInt32();
+                        uint levelOfDetailAndMinFilter = input.ReadUInt32();
+                        mapper.wrapU = (RenderBase.OTextureWrap)((wrapAndMagFilter >> 8) & 0xff);
+                        mapper.wrapV = (RenderBase.OTextureWrap)((wrapAndMagFilter >> 16) & 0xff);
+                        mapper.magFilter = (RenderBase.OTextureMagFilter)(wrapAndMagFilter >> 24);
+                        mapper.minFilter = (RenderBase.OTextureMinFilter)(levelOfDetailAndMinFilter & 0xff);
+                        mapper.minLOD = (levelOfDetailAndMinFilter >> 8) & 0xff; //max 232
+                        mapper.LODBias = input.ReadSingle();
+                        mapper.borderColor = getColor(input);
+
+                        material.textureMapper.Add(mapper);
+                    }
 
                     model.addMaterial(material);
                 }
@@ -733,7 +779,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     objectEntry.materialId = input.ReadUInt16();
                     input.ReadUInt16();
                     objectEntry.renderPriority = input.ReadUInt16();
-                    input.ReadUInt16();
+                    objectEntry.translucencyKind = (RenderBase.OTranslucencyKind)input.ReadUInt16();
                     objectEntry.verticesHeaderOffset = input.ReadUInt32() + header.descriptionOffset;
                     objectEntry.verticesHeaderEntries = input.ReadUInt32();
                     objectEntry.facesHeaderOffset = input.ReadUInt32() + header.mainHeaderOffset;
@@ -752,6 +798,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 {
                     RenderBase.OModelObject obj = new RenderBase.OModelObject();
                     obj.materialId = objects[index].materialId;
+                    obj.renderPriority = objects[index].renderPriority;
 
                     //Vertices
                     data.Seek(objects[index].verticesHeaderOffset, SeekOrigin.Begin);
@@ -841,10 +888,10 @@ namespace Ohana3DS_Rebirth.Ohana
                         if (offset == vertexDataPointerOffset)
                         {
                             dbgVertexDataOffsetCheck = true;
-                            switch (majorVersion)
+                            switch (header.backwardCompatibility)
                             {
-                                case 41: vertexDataOffset += header.dataOffset; break; //r41xxx
-                                case 42: case 43: //r42xxx/r43xxx
+                                case 0x20: vertexDataOffset += header.dataOffset; break;
+                                case 0x21: case 0x22:
                                     switch (flags)
                                     {
                                         case 0x4c: vertexDataOffset += header.dataOffset; break;
@@ -866,7 +913,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     {
                         uint baseOffset = objects[index].facesHeaderOffset + ((uint)i * 0x34);
                         data.Seek(baseOffset, SeekOrigin.Begin);
-                        ushort nodeIdFlags = input.ReadUInt16();
+                        RenderBase.OSkinningMode skinningMode = (RenderBase.OSkinningMode)input.ReadUInt16();
                         ushort nodeIdEntries = input.ReadUInt16();
                         List<ushort> nodeList = new List<ushort>();
                         for (int j = 0; j < nodeIdEntries; j++)
@@ -912,10 +959,10 @@ namespace Ohana3DS_Rebirth.Ohana
                             {
                                 dbgFaceDataOffsetCheck = true;
                                 faceDataFormat = flags;
-                                switch (majorVersion)
+                                switch (header.backwardCompatibility)
                                 {
-                                    case 41: faceDataOffset += header.dataOffset; break;//r41xxx
-                                    case 42: case 43: //r42xxx/r43xxx
+                                    case 0x20: faceDataOffset += header.dataOffset; break;
+                                    case 0x21: case 0x22:
                                         switch (flags)
                                         {
                                             case 0x4e: case 0x50: faceDataOffset += header.dataOffset; break;
@@ -1004,9 +1051,9 @@ namespace Ohana3DS_Rebirth.Ohana
                         {
                             ushort[] indices = new ushort[3];
 
-                            switch (majorVersion)
+                            switch (header.backwardCompatibility)
                             {
-                                case 41: //r41xxx
+                                case 0x20:
                                     switch (faceDataFormat)
                                     {
                                         case 0x50:
@@ -1022,17 +1069,15 @@ namespace Ohana3DS_Rebirth.Ohana
                                         default: throw new Exception("BCH: Unknow Face Data Format! STOP!");
                                     }
                                     break;
-                                case 42: case 43: //r42xxx/r43xxx
+                                case 0x21: case 0x22:
                                     switch (faceDataFormat)
                                     {
-                                        case 0x4e:
-                                        case 0x58:
+                                        case 0x4e: case 0x58:
                                             indices[0] = input.ReadUInt16();
                                             indices[1] = input.ReadUInt16();
                                             indices[2] = input.ReadUInt16();
                                             break;
-                                        case 0x50:
-                                        case 0x5a:
+                                        case 0x50: case 0x5a:
                                             indices[0] = input.ReadByte();
                                             indices[1] = input.ReadByte();
                                             indices[2] = input.ReadByte();
@@ -1058,18 +1103,18 @@ namespace Ohana3DS_Rebirth.Ohana
                                     {
                                         case 0: //Position
                                             RenderBase.OVector4 positionVector = getVector(input, (quantization)positionQuantization, (vectorType)positionType);
-                                            vertex.position = new RenderBase.OVector3(positionVector.x * positionScale, positionVector.y * positionScale, positionVector.z * positionScale);
-                                            vertex.position.transform(RenderBase.OMatrix.translate(positionOffset));
+                                            float x = (positionVector.x * positionScale) + positionOffset.x;
+                                            float y = (positionVector.y * positionScale) + positionOffset.y;
+                                            float z = (positionVector.z * positionScale) + positionOffset.z;
+                                            vertex.position = new RenderBase.OVector3(x, y, z);
                                             break;
                                         case 1: //Normal
                                             RenderBase.OVector4 normalVector = getVector(input, (quantization)normalQuantization, (vectorType)normalType);
                                             vertex.normal = new RenderBase.OVector3(normalVector.x * normalScale, normalVector.y * normalScale, normalVector.z * normalScale);
-                                            vertex.normal.transform(RenderBase.OMatrix.translate(positionOffset));
                                             break;
                                         case 2: //Tangent
                                             RenderBase.OVector4 tangentVector = getVector(input, (quantization)tangentQuantization, (vectorType)tangentType);
                                             vertex.tangent = new RenderBase.OVector3(tangentVector.x * tangentScale, tangentVector.y * tangentScale, tangentVector.z * tangentScale);
-                                            vertex.tangent.transform(RenderBase.OMatrix.translate(positionOffset));
                                             break;
                                         case 3: //Color
                                             RenderBase.OVector4 color = getVector(input, (quantization)colorQuantization, (vectorType)colorType);
@@ -1087,17 +1132,24 @@ namespace Ohana3DS_Rebirth.Ohana
                                             vertex.texture2 = new RenderBase.OVector2(tex2Vector.x * texture2Scale, tex2Vector.y * texture2Scale);
                                             break;
                                         case 7: //Bone Index
-                                            for (int b = 0; b < 4; b++) 
+                                            for (int b = 0; b < boneIndexType + 1; b++) 
                                             {
-                                                byte boneIndex = input.ReadByte();
-                                                if (b < boneIndexType) vertex.addNode(nodeList[boneIndex]);
+                                                if ((quantization)boneIndexQuantization == quantization.qUByte)
+                                                {
+                                                    byte boneIndex = input.ReadByte();
+                                                    if (!vertex.node.Contains(nodeList[boneIndex])) vertex.addNode(nodeList[boneIndex]);
+                                                }
+                                                else
+                                                {
+                                                    vertex.addNode(nodeList[0]); //???
+                                                }
                                             }
                                             break;
                                         case 8: //Bone Weight
-                                            for (int b = 0; b < 4; b++)
+                                            for (int b = 0; b < boneWeightType + 1; b++)
                                             {
                                                 float boneWeight = (float)input.ReadByte() * weightScale;
-                                                if (b < boneWeightType) vertex.addWeight(boneWeight);
+                                                vertex.addWeight(boneWeight);
                                             }
                                             break;
                                     }
@@ -1165,79 +1217,22 @@ namespace Ohana3DS_Rebirth.Ohana
             return output;
         }
 
-        #region "Materials helper functions"
-
-        private static RenderBase.OTextureCombiner getCombiner(BinaryReader input)
+        private static Color getColor(BinaryReader input)
         {
-            RenderBase.OTextureCombiner output = new RenderBase.OTextureCombiner();
-            input.BaseStream.Seek(-8, SeekOrigin.Current);
+            byte r = (byte)input.ReadByte();
+            byte g = (byte)input.ReadByte();
+            byte b = (byte)input.ReadByte();
+            byte a = (byte)input.ReadByte();
 
-            //Source
-            byte rgbSourceHigh = input.ReadByte();
-            byte rgbSourceLow = input.ReadByte();
-            byte alphaSourceHigh = input.ReadByte();
-            byte alphaSourceLow = input.ReadByte();
-
-            output.rgbSource.Add((RenderBase.OCombineSource)(rgbSourceHigh & 0xf));
-            output.rgbSource.Add((RenderBase.OCombineSource)(rgbSourceHigh >> 4));
-            output.rgbSource.Add((RenderBase.OCombineSource)(rgbSourceLow & 0xf));
-
-            output.alphaSource.Add((RenderBase.OCombineSource)(alphaSourceHigh & 0xf));
-            output.alphaSource.Add((RenderBase.OCombineSource)(alphaSourceHigh >> 4));
-            output.alphaSource.Add((RenderBase.OCombineSource)(alphaSourceLow & 0xf));
-
-            input.BaseStream.Seek(4, SeekOrigin.Current);
-
-            //Operand
-            byte rgbOperandHigh = input.ReadByte();
-            byte rgbOperandLow = input.ReadByte();
-            byte alphaOperandHigh = input.ReadByte();
-            byte alphaOperandLow = input.ReadByte();
-
-            output.rgbOperand.Add((RenderBase.OCombineOperandRgb)(rgbOperandHigh & 0xf));
-            output.rgbOperand.Add((RenderBase.OCombineOperandRgb)(rgbOperandHigh >> 4));
-            output.rgbOperand.Add((RenderBase.OCombineOperandRgb)(rgbOperandLow & 0xf));
-
-            output.alphaOperand.Add((RenderBase.OCombineOperandAlpha)(alphaOperandHigh & 0xf));
-            output.alphaOperand.Add((RenderBase.OCombineOperandAlpha)(alphaOperandHigh >> 4));
-            output.alphaOperand.Add((RenderBase.OCombineOperandAlpha)(alphaOperandLow & 0xf));
-
-            //Operator
-            output.combineRgb = (RenderBase.OCombineOperator)input.ReadUInt16();
-            output.combineAlpha = (RenderBase.OCombineOperator)input.ReadUInt16();
-
-            //Misc.
-            input.ReadUInt32();
-            output.rgbScale = (ushort)(input.ReadUInt16() + 1);
-            output.alphaScale = (ushort)(input.ReadUInt16() + 1);
-
-            return output;
+            return Color.FromArgb(a, r, g, b);
         }
 
-        private static RenderBase.OTextureMapper getMapper(BinaryReader input)
+        private static string readString(BinaryReader input, bchHeader header)
         {
-            RenderBase.OTextureMapper output = new RenderBase.OTextureMapper();
-            uint wrapAndMagFilter = input.ReadUInt32();
-            uint levelOfDetailAndMinFilter = input.ReadUInt32();
-
-            output.wrapU = (RenderBase.OTextureWrap)((wrapAndMagFilter >> 8) & 0xff);
-            output.wrapV = (RenderBase.OTextureWrap)((wrapAndMagFilter >> 16) & 0xff);
-            output.magFilter = (RenderBase.OTextureMagFilter)(wrapAndMagFilter >> 24);
-            output.minFilter = (RenderBase.OTextureMinFilter)(levelOfDetailAndMinFilter & 0xff);
-            output.minLOD = (levelOfDetailAndMinFilter >> 8) & 0xff; //max 232
-            output.LODBias = input.ReadSingle();
-            output.borderColor = RenderBase.getColor(input);
-
-            return output;
-        }
-
-        private static string readString(BinaryReader input, uint offset, uint stringTableOffset)
-        {
+            uint offset = input.ReadUInt32();
             if (offset == 0) return null;
-            return IOUtils.readString(input, offset + stringTableOffset);
+            return IOUtils.readString(input, offset + header.stringTableOffset);
         }
-
-        #endregion
 
         #endregion
 
