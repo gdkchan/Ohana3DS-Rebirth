@@ -1723,7 +1723,7 @@ namespace Ohana3DS_Rebirth.GUI
         }
 
         /// <summary>
-        ///     Calculate the proportions of all windows and Dock Sides relative to the size of this control.
+        ///     Calculate the proportions of all windows and dock sides relative to the size of this control.
         ///     It is used when the control is resized.
         /// </summary>
         /// <param name="ignoreSize">Set this to true if you want to update the proportions even if the width/height is too small or equal 0</param>

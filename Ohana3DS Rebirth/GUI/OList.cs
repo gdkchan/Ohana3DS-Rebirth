@@ -127,6 +127,7 @@ namespace Ohana3DS_Rebirth.GUI
         public void addItem(listItemGroup item)
         {
             list.Add(item);
+            recalcScroll();
         }
 
         /// <summary>
@@ -146,8 +147,22 @@ namespace Ohana3DS_Rebirth.GUI
             list.Clear();
             columns.Clear();
             selectedIndex = 0;
-            ListScroll.Value = 0;
-            ListScroll.Visible = false;
+            recalcScroll();
+        }
+
+        private void recalcScroll()
+        {
+            int totalSize = (list.Count * tileSize) + headerSize;
+            if (totalSize > this.Height)
+            {
+                ListScroll.MaximumScroll = totalSize - this.Height;
+                ListScroll.Visible = true;
+            }
+            else
+            {
+                ListScroll.Value = 0;
+                ListScroll.Visible = false;
+            }
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -156,18 +171,8 @@ namespace Ohana3DS_Rebirth.GUI
 
             int totalSize = (list.Count * tileSize) + headerSize;
             int startY = 0;
+            if (totalSize > this.Height) startY = ListScroll.Value * -1;
             int index = 0;
-            if (totalSize > this.Height)
-            {
-                ListScroll.MaximumScroll = totalSize - this.Height;
-                ListScroll.Visible = true;
-                startY = ListScroll.Value * -1;
-            }
-            else
-            {
-                ListScroll.Value = 0;
-                ListScroll.Visible = false;
-            }
 
             //Renderiza a parte do Header
             int columnX = 0;
@@ -273,15 +278,18 @@ namespace Ohana3DS_Rebirth.GUI
 
         protected override void OnMouseWheel(MouseEventArgs e)
         {
-            if (e.Delta > 0) ListScroll.Value = Math.Max(ListScroll.Value - 32, 0); else ListScroll.Value = Math.Min(ListScroll.Value + 32, ListScroll.MaximumScroll);
-            
+            if (ListScroll.Visible)
+            {
+                if (e.Delta > 0) ListScroll.Value = Math.Max(ListScroll.Value - 32, 0); else ListScroll.Value = Math.Min(ListScroll.Value + 32, ListScroll.MaximumScroll);
+                this.Refresh();
+            }
+
             base.OnMouseWheel(e);
         }
 
         protected override void OnLayout(LayoutEventArgs e)
         {
-            int totalSize = (list.Count * tileSize) + headerSize;
-            if (totalSize > this.Height) ListScroll.MaximumScroll = totalSize - this.Height;
+            recalcScroll();
 
             base.OnLayout(e);
         }

@@ -34,7 +34,6 @@
             // 
             // Screen
             // 
-            this.Screen.BackColor = System.Drawing.Color.Black;
             this.Screen.Dock = System.Windows.Forms.DockStyle.Fill;
             this.Screen.Location = new System.Drawing.Point(0, 16);
             this.Screen.Name = "Screen";
@@ -63,5 +62,9 @@
         #endregion
 
         private System.Windows.Forms.PictureBox Screen;
+
+
+
+
     }
 }

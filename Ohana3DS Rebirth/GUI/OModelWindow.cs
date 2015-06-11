@@ -17,6 +17,7 @@ namespace Ohana3DS_Rebirth.GUI
 
         RenderBase.OVector2 initialRotation, initialMovement;
         RenderBase.OVector2 finalRotation, finalMovement;
+        bool clicked;
 
         public OModelWindow()
         {
@@ -56,8 +57,10 @@ namespace Ohana3DS_Rebirth.GUI
                 switch (e.Button)
                 {
                     case MouseButtons.Left:
-                        renderer.rotation.X = (initialRotation.x - MousePosition.X) + finalRotation.x;
-                        renderer.rotation.Y = (initialRotation.y - MousePosition.Y) + finalRotation.y;
+                        float rX = (float)(((e.X - initialRotation.x) / Screen.Width) * Math.PI);
+                        float rY = (float)(((e.Y - initialRotation.y) / Screen.Height) * Math.PI);
+                        renderer.setRotation(rX, rY);
+                        initialRotation = new RenderBase.OVector2(e.X, e.Y);
                         break;
                     case MouseButtons.Right:
                         renderer.translation.X = (initialMovement.x - MousePosition.X) + finalMovement.x;
@@ -69,19 +72,24 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void Screen_MouseDown(object sender, MouseEventArgs e)
         {
+            clicked = true;
             switch (e.Button)
             {
-                case MouseButtons.Left: initialRotation = new RenderBase.OVector2(MousePosition.X, MousePosition.Y); break;
+                case MouseButtons.Left: initialRotation = new RenderBase.OVector2(e.X, e.Y); break;
                 case MouseButtons.Right: initialMovement = new RenderBase.OVector2(MousePosition.X, MousePosition.Y); break;
             }
         }
 
         private void Screen_MouseUp(object sender, MouseEventArgs e)
         {
-            switch (e.Button)
+            if (clicked)
             {
-                case MouseButtons.Left: finalRotation = new RenderBase.OVector2(finalRotation.x + (initialRotation.x - MousePosition.X), finalRotation.y + (initialRotation.y - MousePosition.Y)); break;
-                case MouseButtons.Right: finalMovement = new RenderBase.OVector2(finalMovement.x + (initialMovement.x - MousePosition.X), finalMovement.y + (initialMovement.y - MousePosition.Y)); break;
+                switch (e.Button)
+                {
+                    case MouseButtons.Left: finalRotation = new RenderBase.OVector2(finalRotation.x + (initialRotation.x - MousePosition.X), finalRotation.y + (initialRotation.y - MousePosition.Y)); break;
+                    case MouseButtons.Right: finalMovement = new RenderBase.OVector2(finalMovement.x + (initialMovement.x - MousePosition.X), finalMovement.y + (initialMovement.y - MousePosition.Y)); break;
+                }
+                clicked = false;
             }
         }
 

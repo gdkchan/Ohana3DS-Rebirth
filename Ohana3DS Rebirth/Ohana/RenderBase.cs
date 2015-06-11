@@ -206,7 +206,9 @@ namespace Ohana3DS_Rebirth.Ohana
             public float x, y, z;
             public float nx, ny, nz;
             public uint color;
-            public float u, v;
+            public float u0, v0;
+            public float u1, v1;
+            public float u2, v2;
         }
 
         public static CustomVertex convertVertex(OVertex input)
@@ -221,8 +223,14 @@ namespace Ohana3DS_Rebirth.Ohana
             vertex.ny = input.normal.y;
             vertex.nz = input.normal.z;
 
-            vertex.u = input.texture0.x;
-            vertex.v = input.texture0.y;
+            vertex.u0 = input.texture0.x;
+            vertex.v0 = input.texture0.y;
+
+            vertex.u1 = input.texture1.x;
+            vertex.v1 = input.texture1.y;
+
+            vertex.u2 = input.texture2.x;
+            vertex.v2 = input.texture2.y;
 
             vertex.color = input.diffuseColor;
 
@@ -362,6 +370,7 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public List<OVertex> obj;
             public CustomVertex[] renderBuffer;
+            public int texUVCount;
             public ushort materialId;
             public ushort renderPriority;
             public String objName = null;
@@ -461,6 +470,21 @@ namespace Ohana3DS_Rebirth.Ohana
             projectionMap = 3
         }
 
+        public enum OConstantColor
+        {
+            constant0 = 0,
+            constant1 = 1,
+            constant2 = 2,
+            constant3 = 3,
+            constant4 = 4,
+            constant5 = 5,
+            emission = 6,
+            ambient = 7,
+            diffuse = 8,
+            specular0 = 9,
+            specular1 = 0xa,
+        }
+
         public enum OCombineOperator
         {
             replace = 0,
@@ -493,6 +517,8 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             color = 0,
             oneMinusColor = 1,
+            alpha = 2,
+            oneMinusAlpha = 3,
             red = 4,
             oneMinusRed = 5,
             green = 8,
@@ -504,7 +530,13 @@ namespace Ohana3DS_Rebirth.Ohana
         public enum OCombineOperandAlpha
         {
             alpha = 0,
-            oneMinusAlpha = 1
+            oneMinusAlpha = 1,
+            red = 2,
+            oneMinusRed = 3,
+            green = 4,
+            oneMinusGreen = 5,
+            blue = 6,
+            oneMinusBlue = 7
         }
 
         public struct OTextureCoordinator
@@ -526,6 +558,14 @@ namespace Ohana3DS_Rebirth.Ohana
             public Color borderColor;
         }
 
+        public enum OBumpTexture
+        {
+            texture0 = 0,
+            texture1 = 1,
+            texture2 = 2,
+            texture3 = 3
+        }
+
         public enum OBumpMode
         {
             notUsed = 0,
@@ -535,7 +575,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
         public struct OFragmentBump
         {
-            public uint bumpTextureIndex;
+            public OBumpTexture bumpTexture;
             public OBumpMode bumpMode;
             public bool isBumpRenormalize;
         }
@@ -548,17 +588,17 @@ namespace Ohana3DS_Rebirth.Ohana
             primarySecondary = 3
         }
 
-        public enum OReflectanceSamplerInput
+        public enum OFragmentSamplerInput
         {
-            halfNormalCosine = 0,
-            halfViewCosine = 1,
-            viewNormalCosine = 2,
-            normalLightCosine = 3,
-            spotLightCosine = 4,
-            phiCosine = 5
+            halfNormalCosine = 0, //N·H
+            halfViewCosine = 1, //V·H
+            viewNormalCosine = 2, //N·V
+            normalLightCosine = 3, //L·N
+            spotLightCosine = 4, //-L·P
+            phiCosine = 5 //cosϕ
         }
 
-        public enum OReflectanceSamplerScale
+        public enum OFragmentSamplerScale
         {
             one = 0,
             two = 1,
@@ -568,10 +608,10 @@ namespace Ohana3DS_Rebirth.Ohana
             half = 7
         }
 
-        public struct OReflectanceSampler
+        public struct OFragmentSampler
         {
-            public OReflectanceSamplerInput input;
-            public OReflectanceSamplerScale scale;
+            public OFragmentSamplerInput input;
+            public OFragmentSamplerScale scale;
             public string samplerName;
             public string materialLUTName; //LookUp Table
         }
@@ -586,17 +626,18 @@ namespace Ohana3DS_Rebirth.Ohana
             public bool isGeometryFactor1Enabled;
             public bool isReflectionEnabled;
 
-            public OReflectanceSampler reflectanceRSampler;
-            public OReflectanceSampler reflectanceGSampler;
-            public OReflectanceSampler reflectanceBSampler;
-            public OReflectanceSampler distribution0Sampler;
-            public OReflectanceSampler distribution1Sampler;
-            public OReflectanceSampler fresnelSampler;
+            public OFragmentSampler reflectanceRSampler;
+            public OFragmentSampler reflectanceGSampler;
+            public OFragmentSampler reflectanceBSampler;
+            public OFragmentSampler distribution0Sampler;
+            public OFragmentSampler distribution1Sampler;
+            public OFragmentSampler fresnelSampler;
         }
 
         public class OTextureCombiner
         {
             public ushort rgbScale, alphaScale;
+            public OConstantColor constantColor;
             public OCombineOperator combineRgb, combineAlpha;
             public List<OCombineSource> rgbSource;
             public List<OCombineOperandRgb> rgbOperand;
@@ -616,14 +657,15 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public bool isTestEnabled;
             public OTestFunction testFunction;
+            public uint testReference; 
         }
 
         public class OFragmentShader
         {
             public uint layerConfig;
             public Color bufferColor;
-            public OFragmentBump fragmentBump;
-            public OFragmentLighting fragmentLighting;
+            public OFragmentBump bump;
+            public OFragmentLighting lighting;
             public List<OTextureCombiner> textureCombiner;
             public OAlphaTest alphaTest;
 
@@ -650,6 +692,33 @@ namespace Ohana3DS_Rebirth.Ohana
             public bool isTestEnabled;
             public OTestFunction testFunction;
             public bool isMaskEnabled;
+        }
+
+        public enum OBlendMode
+        {
+            logical = 0,
+            notUsed = 2,
+            blend = 3
+        }
+
+        public enum OLogicalOperation
+        {
+            clear = 0,
+            and = 1,
+            andReverse = 2,
+            copy = 3,
+            set = 4,
+            copyInverted = 5,
+            noOperation = 6,
+            invert = 7,
+            notAnd = 8,
+            or = 9,
+            notOr = 0xa,
+            exclusiveOr = 0xb,
+            equiv = 0xc,
+            andInverted = 0xd,
+            orReverse = 0xe,
+            orInverted = 0xf
         }
 
         public enum OBlendFunction
@@ -680,28 +749,9 @@ namespace Ohana3DS_Rebirth.Ohana
             max = 4
         }
 
-        public enum OLogicalOperation
-        {
-            clear = 0,
-            and = 1,
-            andReverse = 2,
-            copy = 3,
-            set = 4,
-            copyInverted = 5,
-            noOperation = 6,
-            invert = 7,
-            notAnd = 8,
-            or = 9,
-            notOr = 0xa,
-            exclusiveOr = 0xb,
-            equiv = 0xc,
-            andInverted = 0xd,
-            orReverse = 0xe,
-            orInverted = 0xf
-        }
-
         public struct OBlendOperation
         {
+            public OBlendMode blendMode;
             public OLogicalOperation logicalOperation;
             public OBlendFunction rgbFunctionSource, rgbFunctionDestination;
             public OBlendEquation rgbBlendEquation;
@@ -734,14 +784,14 @@ namespace Ohana3DS_Rebirth.Ohana
 
         public struct OFragmentOperation
         {
-            public ODepthOperation depthOperation;
-            public OBlendOperation blendOperation;
-            public OStencilOperation stencilOperation;
+            public ODepthOperation depth;
+            public OBlendOperation blend;
+            public OStencilOperation stencil;
         }
 
         public class OMaterial
         {
-            public String name0, name1, name2;
+            public String name0, name1, name2, name3;
 
             public OMaterialColor materialColor;
             public ORasterization rasterization;
@@ -749,7 +799,6 @@ namespace Ohana3DS_Rebirth.Ohana
             public List<OTextureMapper> textureMapper;
             public OFragmentShader fragmentShader;
             public OFragmentOperation fragmentOperation;
-            public uint constantColorIndex;
 
             public uint lightSetIndex;
             public uint fogIndex;
@@ -830,12 +879,14 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public List<OModel> model;
             public List<OTexture> texture;
-            public float minimumSize, maximumSize;
+            public OVector3 minVector, maxVector;
 
             public OModelGroup()
             {
                 model = new List<OModel>();
                 texture = new List<OTexture>();
+                minVector = new OVector3();
+                maxVector = new OVector3();
             }
 
             /// <summary>

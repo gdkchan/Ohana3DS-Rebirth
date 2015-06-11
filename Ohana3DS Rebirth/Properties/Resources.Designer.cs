@@ -199,5 +199,44 @@ namespace Ohana3DS_Rebirth.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a //Ohana3DS PICA200 Fragment Shader simulator by gdkchan
+        ///float4x4 world;
+        ///float4x4 view;
+        ///float4x4 projection;
+        ///
+        ///texture texture0;
+        ///texture texture1;
+        ///texture texture2;
+        ///texture texture3;
+        ///
+        ///sampler tex0 = sampler_state
+        ///{
+        ///	Texture = &lt;texture0&gt;;
+        ///	MinFilter = Linear;
+        ///	MagFilter = Linear;
+        ///};
+        ///
+        ///sampler tex1 = sampler_state
+        ///{
+        ///	Texture = &lt;texture1&gt;;
+        ///	MinFilter = Linear;
+        ///	MagFilter = Linear;
+        ///};
+        ///
+        ///sampler tex2 = sampler_state
+        ///{
+        ///	Texture = &lt;texture2&gt;;
+        ///	MinFilter = Linear;
+        ///	MagFilter = Linear;
+        ///};
+        ///        /// [o restante da cadeia de caracteres foi truncado]&quot;;.
+        /// </summary>
+        internal static string OFragmentShader {
+            get {
+                return ResourceManager.GetString("OFragmentShader", resourceCulture);
+            }
+        }
     }
 }

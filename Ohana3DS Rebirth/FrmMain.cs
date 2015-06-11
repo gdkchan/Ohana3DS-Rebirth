@@ -67,6 +67,7 @@ namespace Ohana3DS_Rebirth
                         WindowManager.Refresh();
                         
                         RenderBase.OModelGroup model = Ohana.BCH.load(openDlg.FileName);
+                        Application.DoEvents(); //Call this to avoid clicks on the OpenDialog going to ViewPort
                         //Ohana.GenericFormats.SMD.export(model, "D:\\girl.smd");
 
                         textureWindow.initialize(model);

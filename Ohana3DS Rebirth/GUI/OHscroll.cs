@@ -14,8 +14,7 @@ namespace Ohana3DS_Rebirth.GUI
         private int scrollX;
         private int scrollBarX;
 
-        const float scrollBarSpace = 0.25f; //Total space used of available space on scroll bar (0.25 = 25%)
-        private int scrollBarSize;
+        private int scrollBarSize = 32;
         private int scroll;
         private bool mouseDrag;
         private Color foreColor;
@@ -48,7 +47,6 @@ namespace Ohana3DS_Rebirth.GUI
             SetStyle(ControlStyles.AllPaintingInWmPaint, true);
             SetStyle(ControlStyles.DoubleBuffer, true);
             foreColor = barColor;
-            scrollBarSize = (int)(scrollBarSpace * this.Width);
         }
 
         [Browsable(false)]
@@ -107,6 +105,7 @@ namespace Ohana3DS_Rebirth.GUI
             set
             {
                 max = value;
+                recalcSize();
                 if (scrollX > value)
                 {
                     scrollX = value;
@@ -131,7 +130,6 @@ namespace Ohana3DS_Rebirth.GUI
                 if (value < 0) throw new Exception("OHscroll: Value can't be less than 0!");
                 scrollX = value;
                 scrollBarX = (int)(((float)scrollX / max) * (this.Width - scrollBarSize));
-                if (this.ScrollChanged != null) this.ScrollChanged(this, EventArgs.Empty);
                 this.Refresh();
             }
         }
@@ -213,11 +211,16 @@ namespace Ohana3DS_Rebirth.GUI
 
         protected override void OnLayout(LayoutEventArgs levent)
         {
-            scrollBarSize = (int)(scrollBarSpace * this.Width);
-            scrollBarX = (int)(((float)scrollX / max) * (this.Width - scrollBarSize));
-            this.Refresh();
+            recalcSize();
 
             base.OnLayout(levent);
+        }
+
+        private void recalcSize()
+        {
+            scrollBarSize = Math.Max(32, this.Width - max);
+            scrollBarX = (int)(((float)scrollX / max) * (this.Width - scrollBarSize));
+            this.Refresh();
         }
     }
 }

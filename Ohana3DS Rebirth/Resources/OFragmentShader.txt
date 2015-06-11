@@ -1,0 +1,281 @@
+//Ohana3DS PICA200 Fragment Shader simulator by gdkchan
+float4x4 world;
+float4x4 view;
+float4x4 projection;
+
+texture texture0;
+texture texture1;
+texture texture2;
+texture texture3;
+
+sampler tex0 = sampler_state
+{
+	Texture = <texture0>;
+	MinFilter = Linear;
+	MagFilter = Linear;
+};
+
+sampler tex1 = sampler_state
+{
+	Texture = <texture1>;
+	MinFilter = Linear;
+	MagFilter = Linear;
+};
+
+sampler tex2 = sampler_state
+{
+	Texture = <texture2>;
+	MinFilter = Linear;
+	MagFilter = Linear;
+};
+
+sampler tex3 = sampler_state
+{
+	Texture = <texture3>;
+};
+
+struct COMBINER
+{
+	int colorCombine;
+	int alphaCombine;
+
+	int colorArg[3];
+	int colorOp[3];
+	int alphaArg[3];
+	int alphaOp[3];
+
+	float4 constant;
+};
+
+struct LIGHT
+{
+	float4 pos;
+	float4 ambient;
+	float4 diffuse;
+	float4 specular;
+};
+
+COMBINER combiners[6];
+LIGHT lights[8];
+int numLights;
+
+bool hasTextures;
+int uvCount;
+
+float4 mEmissive;
+float4 mAmbient;
+float4 mDiffuse;
+float4 mSpecular;
+
+int bumpIndex;
+int bumpMode; //0 = NotUsed, 1 = AsBump, 2 = AsTangent
+
+struct VS_INPUT
+{
+	float4 pos : POSITION0;
+	float4 vColor : COLOR0;
+	float3 normal : NORMAL0;
+	float2 uv0 : TEXCOORD0;
+	float2 uv1 : TEXCOORD1;
+	float2 uv2 : TEXCOORD2;
+};
+
+struct VS_OUTPUT
+{
+	float4 pos : POSITION0;
+	float4 vColor : COLOR0;
+	float2 uv0 : TEXCOORD0;
+	float2 uv1 : TEXCOORD1;
+	float2 uv2 : TEXCOORD2;
+	float3 normal : TEXCOORD3;
+	float4 posWorld : TEXCOORD4;
+};
+
+VS_OUTPUT VertexShaderFunction(VS_INPUT input)
+{
+	VS_OUTPUT output;
+
+	float4x4 viewProjection = mul(view, projection);
+	float4 posWorld = mul(input.pos, world);
+	output.pos = mul(posWorld, viewProjection);
+	output.posWorld = posWorld;
+	output.vColor = input.vColor;
+	output.normal = normalize(mul(input.normal, (float3x3)world));
+
+	output.uv0 = input.uv0;
+	output.uv1 = input.uv1;
+	output.uv2 = input.uv2;
+
+	return output;
+}
+
+float4 PixelShaderFunction(VS_OUTPUT input) : COLOR0
+{
+	float4 output = float4(0, 0, 0, 0);
+	float4 temp = float4(0, 0, 0, 0);
+	float4 buffer = float4(0, 0, 0, 0);
+	float4 color0 = tex2D(tex0, input.uv0);
+	float4 color1 = tex2D(tex1, uvCount > 1 ? input.uv1 : input.uv0);
+	float4 color2 = tex2D(tex2, uvCount > 2 ? input.uv2 : input.uv0);
+	float4 color3 = tex2D(tex3, input.uv0); //Deve usar o primeiro UV lel
+
+	float4 primaryColor = float4(0, 0, 0, 0);
+	float4 fragmentPrimaryColor;
+	float4 fragmentSecondaryColor = float4(0.5f, 0.5f, 0.5f, 0.5f);
+
+	float4 ambient = float4(0, 0, 0, 0);
+	fragmentPrimaryColor = mEmissive + mAmbient * ambient;
+	for (int i = 0; i < numLights; i++)
+	{
+		float4 bumpColor = float4(1, 1, 1, 1);
+		if (bumpMode == 1)
+		{
+			if (bumpIndex == 0) bumpColor = color0;
+			else if (bumpIndex == 1) bumpColor = color1;
+			else if (bumpIndex == 2) bumpColor = color2;
+			else if (bumpIndex == 3) bumpColor = color3;
+		}
+
+		float4 baseColor = mAmbient * lights[i].ambient + mDiffuse * lights[i].diffuse;
+		float4 lambertian = saturate(dot(-normalize(lights[i].pos - input.posWorld), input.normal));
+		fragmentPrimaryColor += max(0,  bumpColor * (baseColor * lambertian));
+		float4 pCol = ((lights[i].ambient + (input.vColor * lambertian)) * lights[i].diffuse);
+		primaryColor += float4(pCol.x, pCol.y, pCol.z, 1);
+	}
+
+	if (hasTextures)
+	{
+		float4 arg = float4(0, 0, 0, 0);
+		float3 rgbArg[3];
+		float alphaArg[3];
+		for (int i = 0; i < 6; i++)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				//Color Source
+				if (combiners[i].colorArg[j] == 0) arg = primaryColor;
+				else if (combiners[i].colorArg[j] == 1) arg = fragmentPrimaryColor;
+				else if (combiners[i].colorArg[j] == 2) arg = fragmentSecondaryColor;
+				else if (combiners[i].colorArg[j] == 3) arg = color0;
+				else if (combiners[i].colorArg[j] == 4) arg = color1;
+				else if (combiners[i].colorArg[j] == 5) arg = color2;
+				else if (combiners[i].colorArg[j] == 13) arg = buffer;
+				else if (combiners[i].colorArg[j] == 14) arg = combiners[i].constant;
+				else if (combiners[i].colorArg[j] == 15) arg = output;
+
+				//Color Operand
+				if (combiners[i].colorOp[j] == 0) rgbArg[j] = float3(arg.r, arg.g, arg.b);
+				else if (combiners[i].colorOp[j] == 1) rgbArg[j] = float3(1 - arg.r, 1 - arg.g, 1 - arg.b);
+				else if (combiners[i].colorOp[j] == 2) rgbArg[j] = float3(arg.a, arg.a, arg.a);
+				else if (combiners[i].colorOp[j] == 3) rgbArg[j] = float3(1 - arg.a, 1 - arg.a, 1 - arg.a);
+				else if (combiners[i].colorOp[j] == 4) rgbArg[j] = float3(arg.r, arg.r, arg.r);
+				else if (combiners[i].colorOp[j] == 5) rgbArg[j] = float3(1 - arg.r, 1 - arg.r, 1 - arg.r);
+				else if (combiners[i].colorOp[j] == 8) rgbArg[j] = float3(arg.g, arg.g, arg.g);
+				else if (combiners[i].colorOp[j] == 9) rgbArg[j] = float3(1 - arg.g, 1 - arg.g, 1 - arg.g);
+				else if (combiners[i].colorOp[j] == 12) rgbArg[j] = float3(arg.b, arg.b, arg.b);
+				else if (combiners[i].colorOp[j] == 13) rgbArg[j] = float3(1 - arg.b, 1 - arg.b, 1 - arg.b);
+
+				//Alpha Source
+				if (combiners[i].alphaArg[j] == 0) arg = primaryColor;
+				else if (combiners[i].alphaArg[j] == 1) arg = fragmentPrimaryColor;
+				else if (combiners[i].alphaArg[j] == 2) arg = fragmentSecondaryColor;
+				else if (combiners[i].alphaArg[j] == 3) arg = color0;
+				else if (combiners[i].alphaArg[j] == 4) arg = color1;
+				else if (combiners[i].alphaArg[j] == 5) arg = color2;
+				else if (combiners[i].alphaArg[j] == 13) arg = buffer;
+				else if (combiners[i].alphaArg[j] == 14) arg = combiners[i].constant;
+				else if (combiners[i].alphaArg[j] == 15) arg = output;
+
+				//Alpha Operand
+				if (combiners[i].alphaOp[j] == 0) alphaArg[j] = arg.a;
+				else if (combiners[i].alphaOp[j] == 1) alphaArg[j] = 1 - arg.a;
+				else if (combiners[i].alphaOp[j] == 2) alphaArg[j] = arg.r;
+				else if (combiners[i].alphaOp[j] == 3) alphaArg[j] = 1 - arg.r;
+				else if (combiners[i].alphaOp[j] == 4) alphaArg[j] = arg.g;
+				else if (combiners[i].alphaOp[j] == 5) alphaArg[j] = 1 - arg.g;
+				else if (combiners[i].alphaOp[j] == 6) alphaArg[j] = arg.b;
+				else if (combiners[i].alphaOp[j] == 7) alphaArg[j] = 1 - arg.b;
+			}
+
+			//Operation
+			if (combiners[i].colorCombine == 0) output = float4(rgbArg[0].r, rgbArg[0].g, rgbArg[0].b, 1); //Replace
+			else if (combiners[i].colorCombine == 1) //Modulate
+			{
+				output.r = rgbArg[0].r * rgbArg[1].r;
+				output.g = rgbArg[0].g * rgbArg[1].g;
+				output.b = rgbArg[0].b * rgbArg[1].b;
+			}
+			else if (combiners[i].colorCombine == 2) //Add
+			{
+				output.r = min(1, rgbArg[0].r + rgbArg[1].r);
+				output.g = min(1, rgbArg[0].g + rgbArg[1].g);
+				output.b = min(1, rgbArg[0].b + rgbArg[1].b);
+			}
+			else if (combiners[i].colorCombine == 3) //Add Signed
+			{
+				output.r = min(1, rgbArg[0].r + rgbArg[1].r - 0.5f);
+				output.g = min(1, rgbArg[0].g + rgbArg[1].g - 0.5f);
+				output.b = min(1, rgbArg[0].b + rgbArg[1].b - 0.5f);
+			}
+			else if (combiners[i].colorCombine == 4) //Interpolate
+			{
+				output.r = min(1, rgbArg[0].r * rgbArg[2].r + rgbArg[1].r * (1 - rgbArg[2].r));
+				output.g = min(1, rgbArg[0].g * rgbArg[2].g + rgbArg[1].g * (1 - rgbArg[2].g));
+				output.b = min(1, rgbArg[0].b * rgbArg[2].b + rgbArg[1].b * (1 - rgbArg[2].b));
+			}
+			else if (combiners[i].colorCombine == 5) //Subtract
+			{
+				output.r = max(0, rgbArg[0].r - rgbArg[1].r);
+				output.g = max(0, rgbArg[0].g - rgbArg[1].g);
+				output.b = max(0, rgbArg[0].b - rgbArg[1].b);
+			}
+			else if (combiners[i].colorCombine == 6 || combiners[i].colorCombine == 7) //Dot3
+			{
+				float dot3 = min(1, rgbArg[0].r * rgbArg[1].r + rgbArg[0].g * rgbArg[1].g + rgbArg[0].b * rgbArg[1].b);
+				output.r = dot3;
+				output.g = dot3;
+				output.b = dot3;
+				if (combiners[i].colorCombine == 7) output.a = dot3;
+			}
+			else if (combiners[i].colorCombine == 8) //Multiply then add
+			{
+				output.r = min(1, rgbArg[0].r * rgbArg[1].r + rgbArg[2].r);
+				output.g = min(1, rgbArg[0].g * rgbArg[1].g + rgbArg[2].g);
+				output.b = min(1, rgbArg[0].b * rgbArg[1].b + rgbArg[2].b);
+			}
+			else if (combiners[i].colorCombine == 9) //Add then multiply
+			{
+				output.r = min(1, (rgbArg[0].r + rgbArg[1].r) * rgbArg[2].r);
+				output.g = min(1, (rgbArg[0].g + rgbArg[1].g) * rgbArg[2].g);
+				output.b = min(1, (rgbArg[0].b + rgbArg[1].b) * rgbArg[2].b);
+			}
+
+			if (combiners[i].alphaCombine == 0) output.a = alphaArg[0]; //Replace
+			else if (combiners[i].alphaCombine == 1) output.a = alphaArg[0] * alphaArg[1]; //Modulate
+			else if (combiners[i].alphaCombine == 2) output.a = min(1, alphaArg[0] + alphaArg[1]); //Add
+			else if (combiners[i].alphaCombine == 3) output.a = min(1, alphaArg[0] + alphaArg[1] - 0.5f); //Add Signed
+			else if (combiners[i].alphaCombine == 4) output.a = min(1, alphaArg[0] * alphaArg[2] + alphaArg[1] * (1 - alphaArg[2])); //Interpolate
+			else if (combiners[i].alphaCombine == 5) output.a = max(0, alphaArg[0] - alphaArg[1]); //Subtract
+			else if (combiners[i].alphaCombine == 8) output.a = min(1, alphaArg[0] * alphaArg[1] + alphaArg[2]); //Multiply then add
+			else if (combiners[i].alphaCombine == 9) output.a = min(1, (alphaArg[0] + alphaArg[1]) * alphaArg[2]); //Add then multiply
+
+			buffer = temp;
+			temp = output;
+		}
+	}
+	else
+	{
+		output = primaryColor;
+	}
+
+    return output;
+}
+
+technique Combiner
+{
+    pass Pass1
+    {
+		VertexShader = compile vs_3_0 VertexShaderFunction();
+        PixelShader = compile ps_3_0 PixelShaderFunction();
+    }
+}

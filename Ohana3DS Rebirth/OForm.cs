@@ -181,6 +181,7 @@ namespace Ohana3DS_Rebirth
                     BtnMinMax.Image = Ohana3DS_Rebirth.Properties.Resources.btnnormal;
                     this.MaximumSize = Screen.PrimaryScreen.WorkingArea.Size;
                     this.WindowState = FormWindowState.Maximized;
+                    this.Invalidate(true);
                 }
             }
 

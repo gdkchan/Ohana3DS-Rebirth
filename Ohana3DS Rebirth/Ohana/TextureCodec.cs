@@ -3,44 +3,42 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
-using System.Runtime.InteropServices;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
     class TextureCodec
     {
-        public enum textureFormat
+        public enum OTextureFormat
         {
-            rgba8,
-            rgb8,
-            rgba5551,
-            rgb565,
-            rgba4,
-            la8,
-            hilo8,
-            l8,
-            a8,
-            la4,
-            l4,
-            a4,
-            etc1,
-            etc1a4
+            rgba8 = 0,
+            rgb8 = 1,
+            rgba5551 = 2,
+            rgb565 = 3,
+            rgba4 = 4,
+            la8 = 5,
+            hilo8 = 6,
+            l8 = 7,
+            a8 = 8,
+            la4 = 9,
+            l4 = 0xa,
+            a4 = 0xb,
+            etc1 = 0xc,
+            etc1a4 = 0xd
         }
 
         private static int[] tileOrder = { 0, 1, 8, 9, 2, 3, 10, 11, 16, 17, 24, 25, 18, 19, 26, 27, 4, 5, 12, 13, 6, 7, 14, 15, 20, 21, 28, 29, 22, 23, 30, 31, 32, 33, 40, 41, 34, 35, 42, 43, 48, 49, 56, 57, 50, 51, 58, 59, 36, 37, 44, 45, 38, 39, 46, 47, 52, 53, 60, 61, 54, 55, 62, 63 };
         private static int[,] etc1LUT = { { 2, 8, -2, -8 }, { 5, 17, -5, -17 }, { 9, 29, -9, -29 }, { 13, 42, -13, -42 }, { 18, 60, -18, -60 }, { 24, 80, -24, -80 }, { 33, 106, -33, -106 }, { 47, 183, -47, -183 } };
 
         #region "Decode"
-        public static Bitmap decode(byte[] data, int width, int height, textureFormat format)
+        public static Bitmap decode(byte[] data, int width, int height, OTextureFormat format)
         {
             byte[] output = new byte[width * height * 4];
             long dataOffset = 0;
 
             switch (format)
             {
-                case textureFormat.rgba8:
+                case OTextureFormat.rgba8:
                     for (int tY = 0; tY < height / 8; tY++)
                     {
                         for (int tX = 0; tX < width / 8; tX++)
@@ -60,7 +58,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     break;
 
-                case textureFormat.rgb8:
+                case OTextureFormat.rgb8:
                     for (int tY = 0; tY < height / 8; tY++)
                     {
                         for (int tX = 0; tX < width / 8; tX++)
@@ -80,7 +78,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     break;
 
-                case textureFormat.rgba5551:
+                case OTextureFormat.rgba5551:
                     for (int tY = 0; tY < height / 8; tY++)
                     {
                         for (int tX = 0; tX < width / 8; tX++)
@@ -109,7 +107,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     break;
 
-                case textureFormat.rgb565:
+                case OTextureFormat.rgb565:
                     for (int tY = 0; tY < height / 8; tY++)
                     {
                         for (int tX = 0; tX < width / 8; tX++)
@@ -137,7 +135,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     break;
 
-                case textureFormat.rgba4:
+                case OTextureFormat.rgba4:
                     for (int tY = 0; tY < height / 8; tY++)
                     {
                         for (int tX = 0; tX < width / 8; tX++)
@@ -166,8 +164,8 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     break;
 
-                case textureFormat.la8:
-                case textureFormat.hilo8:
+                case OTextureFormat.la8:
+                case OTextureFormat.hilo8:
                     for (int tY = 0; tY < height / 8; tY++)
                     {
                         for (int tX = 0; tX < width / 8; tX++)
@@ -189,7 +187,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     break;
 
-                case textureFormat.l8:
+                case OTextureFormat.l8:
                     for (int tY = 0; tY < height / 8; tY++)
                     {
                         for (int tX = 0; tX < width / 8; tX++)
@@ -211,7 +209,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     break;
 
-                case textureFormat.a8:
+                case OTextureFormat.a8:
                     for (int tY = 0; tY < height / 8; tY++)
                     {
                         for (int tX = 0; tX < width / 8; tX++)
@@ -233,7 +231,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     break;
 
-                case textureFormat.la4:
+                case OTextureFormat.la4:
                     for (int tY = 0; tY < height / 8; tY++)
                     {
                         for (int tX = 0; tX < width / 8; tX++)
@@ -255,7 +253,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     break;
 
-                case textureFormat.l4:
+                case OTextureFormat.l4:
                     for (int tY = 0; tY < height / 8; tY++)
                     {
                         for (int tX = 0; tX < width / 8; tX++)
@@ -282,7 +280,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     break;
 
-                case textureFormat.a4:
+                case OTextureFormat.a4:
                     for (int tY = 0; tY < height / 8; tY++)
                     {
                         for (int tX = 0; tX < width / 8; tX++)
@@ -309,9 +307,9 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     break;
 
-                case textureFormat.etc1:
-                case textureFormat.etc1a4:
-                    byte[] decodedData = etc1Decode(data, width, height, format == textureFormat.etc1a4);
+                case OTextureFormat.etc1:
+                case OTextureFormat.etc1a4:
+                    byte[] decodedData = etc1Decode(data, width, height, format == OTextureFormat.etc1a4);
                     int[] etc1Order = etc1Scramble(width, height);
 
                     int i = 0;
@@ -334,16 +332,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     break;
             }
 
-            return getBitmap(output.ToArray(), width, height);
-        }
-
-        private static Bitmap getBitmap(byte[] array, int width, int height)
-        {
-            Bitmap img = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            BitmapData imgData = img.LockBits(new Rectangle(0, 0, img.Width, img.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-            Marshal.Copy(array, 0, imgData.Scan0, array.Length);
-            img.UnlockBits(imgData);
-            return img;
+            return TextureHelper.getBitmap(output.ToArray(), width, height);
         }
 
         #region "ETC1"
@@ -470,8 +459,8 @@ namespace Ohana3DS_Rebirth.Ohana
                 {
                     for (int x = 0; x <= 1; x++)
                     {
-                        Color color1 = getETC1Pixel(r1, g1, b1, x, y, blockBottom, table1);
-                        Color color2 = getETC1Pixel(r2, g2, b2, x + 2, y, blockBottom, table2);
+                        Color color1 = etc1Pixel(r1, g1, b1, x, y, blockBottom, table1);
+                        Color color2 = etc1Pixel(r2, g2, b2, x + 2, y, blockBottom, table2);
 
                         int offset1 = (y * 4 + x) * 4;
                         output[offset1] = color1.B;
@@ -491,8 +480,8 @@ namespace Ohana3DS_Rebirth.Ohana
                 {
                     for (int x = 0; x <= 3; x++)
                     {
-                        Color color1 = getETC1Pixel(r1, g1, b1, x, y, blockBottom, table1);
-                        Color color2 = getETC1Pixel(r2, g2, b2, x, y + 2, blockBottom, table2);
+                        Color color1 = etc1Pixel(r1, g1, b1, x, y, blockBottom, table1);
+                        Color color2 = etc1Pixel(r2, g2, b2, x, y + 2, blockBottom, table2);
 
                         int offset1 = (y * 4 + x) * 4;
                         output[offset1] = color1.B;
@@ -510,7 +499,7 @@ namespace Ohana3DS_Rebirth.Ohana
             return output;
         }
 
-        private static Color getETC1Pixel(uint r, uint g, uint b, int x, int y, uint block, uint table)
+        private static Color etc1Pixel(uint r, uint g, uint b, int x, int y, uint block, uint table)
         {
             int index = x * 4 + y;
             int pixel = 0;
