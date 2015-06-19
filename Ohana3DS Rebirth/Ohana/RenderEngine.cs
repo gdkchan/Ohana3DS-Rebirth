@@ -34,10 +34,13 @@ namespace Ohana3DS_Rebirth.Ohana
 
         private bool useLegacyTexturing = false; //Set to True to disable Fragment Shader
 
-        float animationStep = 0.5f;
-        int currentAnimation;
+        float animationStep = 1.0f;
+        int currentAnimation = -1;
         int frame = 0;
         bool animate = false;
+        bool paused = false;
+
+        bool showGrid = true;
 
         /// <summary>
         ///     Initialize the renderer at a given target.
@@ -85,24 +88,38 @@ namespace Ohana3DS_Rebirth.Ohana
 
         private void setupViewPort()
         {
-            device.Transform.Projection = Matrix.PerspectiveFovLH((float)Math.PI / 4, (float)pParams.BackBufferWidth / pParams.BackBufferHeight, 0.1f, 100.0f);
+            device.Transform.Projection = Matrix.PerspectiveFovLH((float)Math.PI / 4, (float)pParams.BackBufferWidth / pParams.BackBufferHeight, 0.1f, 500.0f);
             device.Transform.View = Matrix.LookAtLH(new Vector3(0.0f, 0.0f, 20.0f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 0.0f));
 
             device.RenderState.Lighting = false;
         }
 
         /// <summary>
-        ///     Release all resources used by DirectX.
-        ///     You MUST call this before closing the window the render target belongs.
-        ///     Otherwise you will end up with memory leaks.
+        ///     Releases all resources used by DirectX.
         /// </summary>
         public void dispose()
         {
             keepRendering = false;
+            
             foreach (CustomTexture texture in textures) texture.texture.Dispose();
             foreach (RenderBase.OTexture texture in model.texture) texture.texture.Dispose();
+            textures.Clear();
             if (!useLegacyTexturing) fragmentShader.Dispose();
             device.Dispose();
+            foreach (RenderBase.OModel mdl in model.model)
+            {
+                foreach (RenderBase.OModelObject obj in mdl.modelObject)
+                {
+                    obj.animatedRenderBuffer.Clear();
+                }
+            }
+            model.model.Clear();
+            model.texture.Clear();
+            model.lookUpTable.Clear();
+            model.camera.Clear();
+            model.fog.Clear();
+            model.skeletalAnimation.Clear();
+            model = null;
         }
 
         public void render()
@@ -126,17 +143,46 @@ namespace Ohana3DS_Rebirth.Ohana
                 bmp.Dispose();
             }
 
-            //loadAnimation(3);
+            float minSize = Math.Min(Math.Min(model.minVector.x, model.minVector.y), model.minVector.z);
+            float maxSize = Math.Max(Math.Max(model.maxVector.x, model.maxVector.y), model.maxVector.z);
+            float scale = (10.0f / (maxSize - minSize)); //Try to adjust to screen
+
+            //Creates buffer with grid that appears below the model
+            CustomVertex.PositionColored[] gridBuffer = new CustomVertex.PositionColored[204];
+            int bufferIndex = 0;
+            for (float i = -50.0f; i <= 50.0f; i += 2.0f)
+            {
+                int color = Color.White.ToArgb();
+                if (i == 0) color = Color.FromArgb(0x7f, 0xff, 0x7f).ToArgb(); //Green
+                gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(-50.0f / scale, 0, i / scale, color);
+                gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(50.0f / scale, 0, i / scale, color);
+                if (i == 0) color = Color.FromArgb(0xff, 0x7f, 0x7f).ToArgb(); //Red
+                gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, -50.0f / scale, color);
+                gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, 50.0f / scale, color);
+            }
+
+            //loadAnimation(33);
             //playAnimation();
             keepRendering = true;
             while (keepRendering)
             {
                 device.Clear(ClearFlags.Stencil | ClearFlags.Target | ClearFlags.ZBuffer, 0x5f5f5f, 1.0f, 0);
+                device.SetTexture(0, null);
                 device.BeginScene();
 
-                float minSize = Math.Min(Math.Min(model.minVector.x, model.minVector.y), model.minVector.z);
-                float maxSize = Math.Max(Math.Max(model.maxVector.x, model.maxVector.y), model.maxVector.z);
-                float scale = (10.0f / (maxSize - minSize)); //Try to adjust to screen
+                //Grid
+                device.RenderState.CullMode = Cull.None;
+                if (showGrid)
+                {
+                    device.VertexFormat = CustomVertex.PositionColored.Format;
+                    VertexBuffer lineBuffer = new VertexBuffer(typeof(CustomVertex.PositionColored), gridBuffer.Length, device, Usage.None, CustomVertex.PositionColored.Format, Pool.Managed);
+                    lineBuffer.SetData(gridBuffer, 0, LockFlags.None);
+                    device.SetStreamSource(0, lineBuffer, 0);
+                    device.DrawPrimitives(PrimitiveType.LineList, 0, gridBuffer.Length / 2);
+                    lineBuffer.Dispose();
+                }
+
+                //View
                 Matrix centerMatrix = Matrix.Translation(
                     -(model.minVector.x + model.maxVector.x) / 2,
                     -(model.minVector.y + model.maxVector.y) / 2,
@@ -298,7 +344,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
                         //Alpha blending
                         RenderBase.OBlendOperation blend = material.fragmentOperation.blend;
-                        device.RenderState.AlphaBlendEnable = blend.blendMode == RenderBase.OBlendMode.blend;
+                        device.RenderState.AlphaBlendEnable = blend.mode == RenderBase.OBlendMode.blend;
                         device.RenderState.SeparateAlphaBlendEnabled = true;
                         device.RenderState.SourceBlend = getBlend(blend.rgbFunctionSource);
                         device.RenderState.DestinationBlend = getBlend(blend.rgbFunctionDestination);
@@ -320,24 +366,20 @@ namespace Ohana3DS_Rebirth.Ohana
 
                         //Vertex rendering
                         if (!useLegacyTexturing) fragmentShader.BeginPass(0);
-                        if (obj.renderBuffer.Length > 0)
+                        VertexFormats vertexFormat = VertexFormats.Position | VertexFormats.Normal | VertexFormats.Texture3 | VertexFormats.Diffuse;
+                        device.VertexFormat = vertexFormat;
+                        VertexBuffer vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), obj.renderBuffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
+                        if (animate)
                         {
-                            VertexFormats vertexFormat = VertexFormats.Position | VertexFormats.Normal | VertexFormats.Texture3 | VertexFormats.Diffuse;
-                            device.VertexFormat = vertexFormat;
-                            VertexBuffer vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), obj.renderBuffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
-                            if (animate)
-                            {
-                                vertexBuffer.SetData(obj.animatedRenderBuffer[frame], 0, LockFlags.None);
-                            }
-                            else
-                            {
-                                vertexBuffer.SetData(obj.renderBuffer, 0, LockFlags.None);
-                            }
-                            device.SetStreamSource(0, vertexBuffer, 0);
-
-                            device.DrawPrimitives(PrimitiveType.TriangleList, 0, obj.renderBuffer.Length / 3);
-                            vertexBuffer.Dispose();
+                            vertexBuffer.SetData(obj.animatedRenderBuffer[frame], 0, LockFlags.None);
                         }
+                        else
+                        {
+                            vertexBuffer.SetData(obj.renderBuffer, 0, LockFlags.None);
+                        }
+                        device.SetStreamSource(0, vertexBuffer, 0);
+                        device.DrawPrimitives(PrimitiveType.TriangleList, 0, obj.renderBuffer.Length / 3);
+                        vertexBuffer.Dispose();
                         if (!useLegacyTexturing) fragmentShader.EndPass();
                     }
                 }
@@ -346,7 +388,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 device.EndScene();
                 device.Present();
 
-                if (animate) frame = (frame + 1) % (int)((model.skeletalAnimation[currentAnimation].frameSize / animationStep) + 1);
+                if (!paused && animate) frame = (frame + 1) % (int)(model.skeletalAnimation[currentAnimation].frameSize / animationStep);
 
                 Application.DoEvents();
             }
@@ -481,8 +523,9 @@ namespace Ohana3DS_Rebirth.Ohana
                     b = key.value;
                 }
             }
+            if (minFrame == maxFrame) return a;
 
-            float mu = (minFrame != maxFrame) ? (frame - minFrame) / (maxFrame - minFrame) : 0;
+            float mu = (frame - minFrame) / (maxFrame - minFrame);
             return (a * (1 - mu) + b * mu);
         }
 
@@ -526,22 +569,24 @@ namespace Ohana3DS_Rebirth.Ohana
                     b.outSlope = key.outSlope;
                 }
             }
+            if (minFrame == maxFrame) return a.value;
 
-            float y1 = a.value;
-            float y2 = b.value;
-
-            float mu, mu2, mu3;
+            float mu, m0, m1, mu2, mu3;
             float a0, a1, a2, a3;
 
-            mu = (minFrame != maxFrame) ? (frame - minFrame) / (maxFrame - minFrame) : 0;
+            mu = (frame - minFrame) / (maxFrame - minFrame);
             mu2 = mu * mu;
             mu3 = mu2 * mu;
+            m0 = a.inSlope / 2;
+            m0 += (b.value - a.value) / 2;
+            m1 = (b.value - a.value) / 2;
+            m1 += b.outSlope / 2;
             a0 = 2 * mu3 - 3 * mu2 + 1;
             a1 = mu3 - 2 * mu2 + mu;
             a2 = mu3 - mu2;
             a3 = -2 * mu3 + 3 * mu2;
 
-            return (a0 * y1 + a1 * a.inSlope + a2 * b.inSlope + a3 * y2);
+            return (a0 * a.value + a1 * m0 + a2 * m1 + a3 * b.value);
         }
 
         private void preAnimate(int animationIndex)
@@ -679,11 +724,13 @@ namespace Ohana3DS_Rebirth.Ohana
 
         /// <summary>
         ///     Load the animation at the given index on the model Skeletal Animation.
+        ///     It will have no effect if the index is invalid.
         /// </summary>
         /// <param name="animationIndex">The index where the animation is located</param>
         /// <param name="step">The step speed to load the animation. Smaller steps have very high RAM usage</param>
-        public void loadAnimation(int animationIndex, float step = 0.5f)
+        public void loadAnimation(int animationIndex, float step = 0.25f)
         {
+            if (animationIndex >= model.skeletalAnimation.Count) return;
             animationStep = step;
             frame = 0;
             preAnimate(animationIndex);
@@ -705,11 +752,11 @@ namespace Ohana3DS_Rebirth.Ohana
         /// </summary>
         public void pauseAnimation()
         {
-            animate = false;
+            paused = true;
         }
 
         /// <summary>
-        ///     Stops the animation, going back to the beggining.
+        ///     Stops the animation, and render the still model.
         /// </summary>
         public void stopAnimation()
         {
@@ -722,6 +769,7 @@ namespace Ohana3DS_Rebirth.Ohana
         /// </summary>
         public void playAnimation()
         {
+            paused = false;
             animate = true;
         }
 
@@ -731,6 +779,15 @@ namespace Ohana3DS_Rebirth.Ohana
         public List<RenderBase.OSkeletalAnimation> animations
         {
             get { return model.skeletalAnimation; }
+        }
+
+        /// <summary>
+        ///     Get the current animation index.
+        ///     It will return -1 if no animations have been loaded yet.
+        /// </summary>
+        public int currentAnimationIndex
+        {
+            get { return currentAnimation; }
         }
         #endregion
 

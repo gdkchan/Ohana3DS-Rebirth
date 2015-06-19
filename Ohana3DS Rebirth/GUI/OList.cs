@@ -239,7 +239,8 @@ namespace Ohana3DS_Rebirth.GUI
                             int width = (int)(tileSize * aspectRatio);
                             if (width > columnWidth)
                             {
-                                e.Graphics.DrawImage(subItem.thumbnail, new Rectangle(x, startY, columnWidth, tileSize), new Rectangle((subItem.thumbnail.Width / 2) - (columnWidth / 2), 0, columnWidth, subItem.thumbnail.Height), GraphicsUnit.Pixel);
+                                int height = Math.Min(tileSize, subItem.thumbnail.Height);
+                                e.Graphics.DrawImage(subItem.thumbnail, new Rectangle(x, startY + ((tileSize / 2) - (height / 2)), columnWidth, height), new Rectangle((subItem.thumbnail.Width / 2) - (columnWidth / 2), 0, columnWidth, subItem.thumbnail.Height), GraphicsUnit.Pixel);
                             }
                             else
                             {
@@ -291,6 +292,7 @@ namespace Ohana3DS_Rebirth.GUI
         protected override void OnLayout(LayoutEventArgs e)
         {
             recalcScroll();
+            this.Refresh();
 
             base.OnLayout(e);
         }

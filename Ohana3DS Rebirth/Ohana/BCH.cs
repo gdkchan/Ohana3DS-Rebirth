@@ -716,7 +716,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     material.fragmentShader.lighting.isGeometryFactor0Enabled = (fragmentFlags & 0x10) > 0;
                     material.fragmentShader.lighting.isGeometryFactor1Enabled = (fragmentFlags & 0x20) > 0;
                     material.fragmentShader.lighting.isReflectionEnabled = (fragmentFlags & 0x40) > 0;
-                    material.fragmentOperation.blend.blendMode = (RenderBase.OBlendMode)((fragmentFlags >> 10) & 3);
+                    material.fragmentOperation.blend.mode = (RenderBase.OBlendMode)((fragmentFlags >> 10) & 3);
 
                     input.ReadUInt32();
                     for (int i = 0; i < 3; i++)
@@ -910,7 +910,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             case codeMaterialLogicalOperation:
                             case codeMaterialAlphaTest:
                                 value = input.ReadUInt32();
-                                if (code == codeMaterialLogicalOperation && material.fragmentOperation.blend.blendMode == RenderBase.OBlendMode.logical)
+                                if (code == codeMaterialLogicalOperation && material.fragmentOperation.blend.mode == RenderBase.OBlendMode.logical)
                                 {
                                     material.fragmentOperation.blend.logicalOperation = (RenderBase.OLogicalOperation)(input.ReadUInt32() & 0xf);
                                 }
@@ -1438,14 +1438,19 @@ namespace Ohana3DS_Rebirth.Ohana
                                         case 8: //Bone Weight
                                             for (int b = 0; b < boneWeightType + 1; b++)
                                             {
-                                                if ((quantization)boneWeightQuantization == quantization.qUByte)
+                                                float boneWeight;
+                                                switch ((quantization)boneWeightQuantization)
                                                 {
-                                                    float boneWeight = (float)input.ReadByte() * weightScale;
-                                                    vertex.addWeight(boneWeight);
-                                                }
-                                                else
-                                                {
-                                                    vertex.addWeight(1.0f);
+                                                    case quantization.qUByte:
+                                                        boneWeight = (float)input.ReadByte() * weightScale;
+                                                        vertex.addWeight(boneWeight);
+                                                        break;
+                                                    case quantization.qShort:
+                                                        boneWeight = (float)input.ReadInt16() * weightScale;
+                                                        vertex.addWeight(boneWeight);
+                                                        break;
+                                                    case quantization.qFloat: vertex.addWeight(input.ReadSingle()); break;
+                                                    default: vertex.addWeight(1.0f); break;
                                                 }
                                             }
                                             break;

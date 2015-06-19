@@ -66,7 +66,7 @@ namespace Ohana3DS_Rebirth
                         launchWindow(textureWindow, false);
                         WindowManager.Refresh();
 
-                        //RenderBase.OModelGroup anim = Ohana.BCH.load("D:\\Senran Kagura\\player_1\\pl00_mot_B_M00.bch");
+                        //RenderBase.OModelGroup anim = Ohana.BCH.load("D:\\Senran Kagura\\player_1\\pl00_mot_CB00.bch");
                         RenderBase.OModelGroup model = Ohana.BCH.load(openDlg.FileName);
                         //model.skeletalAnimation = anim.skeletalAnimation;
                         Application.DoEvents(); //Call this to avoid clicks on the OpenDialog going to ViewPort

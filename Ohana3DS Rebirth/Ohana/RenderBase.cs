@@ -768,7 +768,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
         public struct OBlendOperation
         {
-            public OBlendMode blendMode;
+            public OBlendMode mode;
             public OLogicalOperation logicalOperation;
             public OBlendFunction rgbFunctionSource, rgbFunctionDestination;
             public OBlendEquation rgbBlendEquation;
