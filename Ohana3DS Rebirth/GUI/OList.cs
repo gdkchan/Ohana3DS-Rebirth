@@ -190,6 +190,7 @@ namespace Ohana3DS_Rebirth.GUI
                 Font font = new Font(this.Font.FontFamily, this.Font.Size, FontStyle.Bold);
                 int textHeight = (int)e.Graphics.MeasureString(header.text, font).Height;
                 e.Graphics.DrawString(DrawingHelper.clampText(header.text, font, columnWidth), font, new SolidBrush(this.ForeColor), new Point(columnX, startY + ((headerSize / 2) - (textHeight / 2))));
+                font.Dispose();
 
                 columnX += columnWidth;
                 i++;

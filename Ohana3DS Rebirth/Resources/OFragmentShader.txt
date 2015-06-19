@@ -1,4 +1,15 @@
 //Ohana3DS PICA200 Fragment Shader simulator by gdkchan
+
+/*
+ * TODO:
+ * - Finish Fragment Primary Color and add support for Fragment Secondary Color
+ * - Make sure that Dot Product operations are correct
+ *
+ * Formulas:
+ * - fragmentPrimaryColor = mat_emissive + mat_ambient * scene_ambient + ((for int n = 0; n < numLights; n++) LUT_S[i0] * shadowMap[u, v] * (mat_ambient * light[n].ambient + mat_diffuse * light[n].diffuse * (lightDir * normalVec)))
+ * - fragmentSecondaryColor = ((for int n = 0; n < numLights; n++) LUT_S[i0] * shadowMap[u, v] * (mat_specular * LUT_D0[i1] * GF0 + LUT_REFLECTANCE[i2] * LUT_D1[i3] * GF1) * light[n].specular)
+ */
+
 float4x4 world;
 float4x4 view;
 float4x4 projection;
@@ -12,21 +23,18 @@ sampler tex0 = sampler_state
 {
 	Texture = <texture0>;
 	MinFilter = Linear;
-	MagFilter = Linear;
 };
 
 sampler tex1 = sampler_state
 {
 	Texture = <texture1>;
 	MinFilter = Linear;
-	MagFilter = Linear;
 };
 
 sampler tex2 = sampler_state
 {
 	Texture = <texture2>;
 	MinFilter = Linear;
-	MagFilter = Linear;
 };
 
 sampler tex3 = sampler_state
@@ -38,6 +46,8 @@ struct COMBINER
 {
 	int colorCombine;
 	int alphaCombine;
+	float colorScale;
+	float alphaScale;
 
 	int colorArg[3];
 	int colorOp[3];
@@ -69,6 +79,10 @@ float4 mSpecular;
 
 int bumpIndex;
 int bumpMode; //0 = NotUsed, 1 = AsBump, 2 = AsTangent
+
+bool isD0Enabled, isD1Enabled; //Fragment Secondary Color
+bool isG0Enabled, isG1Enabled;
+bool isREnabled;
 
 struct VS_INPUT
 {
@@ -121,7 +135,7 @@ float4 PixelShaderFunction(VS_OUTPUT input) : COLOR0
 
 	float4 primaryColor = float4(0, 0, 0, 0);
 	float4 fragmentPrimaryColor;
-	float4 fragmentSecondaryColor = float4(0.5f, 0.5f, 0.5f, 0.5f);
+	float4 fragmentSecondaryColor = float4(0, 0, 0, 0);
 
 	float4 ambient = float4(0, 0, 0, 0);
 	fragmentPrimaryColor = mEmissive + mAmbient * ambient;
@@ -152,6 +166,20 @@ float4 PixelShaderFunction(VS_OUTPUT input) : COLOR0
 		{
 			for (int j = 0; j < 3; j++)
 			{
+				if (combiners[i].colorCombine == 1 || combiners[i].colorCombine == 9)
+				{
+					//Until I add proper lighting, just give the combiner what it would expect
+					//Basically, multiply by 0 = we lost our texture D: So force it to be 1
+					fragmentSecondaryColor = float4(1, 1, 1, 1);
+				}
+				else
+				{
+					//On the other side of the coin, some models expect it to have a low value
+					//(when it is *actually* used to do some kind of lighting), so using 1 would
+					//make 'em too bright
+					fragmentSecondaryColor = float4(0, 0, 0, 0);
+				}
+
 				//Color Source
 				if (combiners[i].colorArg[j] == 0) arg = primaryColor;
 				else if (combiners[i].colorArg[j] == 1) arg = fragmentPrimaryColor;
@@ -229,13 +257,20 @@ float4 PixelShaderFunction(VS_OUTPUT input) : COLOR0
 				output.g = max(0, rgbArg[0].g - rgbArg[1].g);
 				output.b = max(0, rgbArg[0].b - rgbArg[1].b);
 			}
-			else if (combiners[i].colorCombine == 6 || combiners[i].colorCombine == 7) //Dot3
+			else if (combiners[i].colorCombine == 6) //Dot3 RGB
 			{
-				float dot3 = min(1, rgbArg[0].r * rgbArg[1].r + rgbArg[0].g * rgbArg[1].g + rgbArg[0].b * rgbArg[1].b);
-				output.r = dot3;
-				output.g = dot3;
-				output.b = dot3;
-				if (combiners[i].colorCombine == 7) output.a = dot3;
+				float dot3rgb = min(1, rgbArg[0].r * rgbArg[1].r + rgbArg[0].g * rgbArg[1].g + rgbArg[0].b * rgbArg[1].b);
+				output.r = dot3rgb;
+				output.g = dot3rgb;
+				output.b = dot3rgb;
+			}
+			else if (combiners[i].colorCombine == 7) //Dot3 RGBA
+			{
+				float dot3rgba = min(1, rgbArg[0].r * rgbArg[1].r + rgbArg[0].g * rgbArg[1].g + rgbArg[0].b * rgbArg[1].b);
+				output.r = dot3rgba;
+				output.g = dot3rgba;
+				output.b = dot3rgba;
+				output.a = dot3rgba;
 			}
 			else if (combiners[i].colorCombine == 8) //Multiply then add
 			{
@@ -256,8 +291,28 @@ float4 PixelShaderFunction(VS_OUTPUT input) : COLOR0
 			else if (combiners[i].alphaCombine == 3) output.a = min(1, alphaArg[0] + alphaArg[1] - 0.5f); //Add Signed
 			else if (combiners[i].alphaCombine == 4) output.a = min(1, alphaArg[0] * alphaArg[2] + alphaArg[1] * (1 - alphaArg[2])); //Interpolate
 			else if (combiners[i].alphaCombine == 5) output.a = max(0, alphaArg[0] - alphaArg[1]); //Subtract
+			else if (combiners[i].colorCombine == 6) //Dot3 RGB
+			{
+				float dot3rgb = min(1, alphaArg[0] * alphaArg[1]);
+				output.r = dot3rgb;
+				output.g = dot3rgb;
+				output.b = dot3rgb;
+			}
+			else if (combiners[i].colorCombine == 7) //Dot3 RGBA
+			{
+				float dot3rgba = min(1, alphaArg[0] * alphaArg[1]);
+				output.r = dot3rgba;
+				output.g = dot3rgba;
+				output.b = dot3rgba;
+				output.a = dot3rgba;
+			}
 			else if (combiners[i].alphaCombine == 8) output.a = min(1, alphaArg[0] * alphaArg[1] + alphaArg[2]); //Multiply then add
 			else if (combiners[i].alphaCombine == 9) output.a = min(1, (alphaArg[0] + alphaArg[1]) * alphaArg[2]); //Add then multiply
+
+			output.r *= combiners[i].colorScale;
+			output.g *= combiners[i].colorScale;
+			output.b *= combiners[i].colorScale;
+			output.a *= combiners[i].alphaScale;
 
 			buffer = temp;
 			temp = output;

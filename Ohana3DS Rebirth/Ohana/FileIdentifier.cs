@@ -20,6 +20,7 @@ namespace Ohana3DS_Rebirth.Ohana
             BinaryReader input = new BinaryReader(data);
             String magic = IOUtils.readString(input, 0);
             input.Close();
+            data.Dispose();
 
             switch (magic)
             {

@@ -1,5 +1,4 @@
 ﻿//A bunch of functions to help drawing of the other controls
-
 using System;
 using System.Collections.Generic;
 using System.Linq;

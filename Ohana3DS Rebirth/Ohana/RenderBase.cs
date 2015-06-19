@@ -41,6 +41,11 @@ namespace Ohana3DS_Rebirth.Ohana
             public OVector2()
             {
             }
+
+            public override string ToString()
+            {
+                return String.Format("X:{0}; Y:{1}", x.ToString(), y.ToString());
+            }
         }
 
         public class OVector3
@@ -91,6 +96,11 @@ namespace Ohana3DS_Rebirth.Ohana
                 y = x * matrix.M12 + y * matrix.M22 + z * matrix.M32 + matrix.M42;
                 z = x * matrix.M13 + y * matrix.M23 + z * matrix.M33 + matrix.M43;
             }
+
+            public override string ToString()
+            {
+                return String.Format("X:{0}; Y:{1}; Z:{2}", x.ToString(), y.ToString(), z.ToString());
+            }
         }
 
         public class OVector4
@@ -132,6 +142,11 @@ namespace Ohana3DS_Rebirth.Ohana
             /// </summary>
             public OVector4()
             {
+            }
+
+            public override string ToString()
+            {
+                return String.Format("X:{0}; Y:{1}; Z:{2}; W:{3}", x.ToString(), y.ToString(), z.ToString(), w.ToString());
             }
         }
 
@@ -370,6 +385,7 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public List<OVertex> obj;
             public CustomVertex[] renderBuffer;
+            public List<CustomVertex[]> animatedRenderBuffer; //Add pre-animated buffers here
             public int texUVCount;
             public ushort materialId;
             public ushort renderPriority;
@@ -378,6 +394,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public OModelObject()
             {
                 obj = new List<OVertex>();
+                animatedRenderBuffer = new List<CustomVertex[]>();
             }
 
             /// <summary>
@@ -575,8 +592,8 @@ namespace Ohana3DS_Rebirth.Ohana
 
         public struct OFragmentBump
         {
-            public OBumpTexture bumpTexture;
-            public OBumpMode bumpMode;
+            public OBumpTexture texture;
+            public OBumpMode mode;
             public bool isBumpRenormalize;
         }
 
@@ -866,12 +883,194 @@ namespace Ohana3DS_Rebirth.Ohana
             /// <summary>
             ///     Creates a new Texture.
             /// </summary>
-            /// <param name="Texture">The texture, size must be a power of 2</param>
-            /// <param name="Name">Texture name</param>
-            public OTexture(Bitmap Texture, String Name)
+            /// <param name="_texture">The texture, size must be a power of 2</param>
+            /// <param name="_name">Texture name</param>
+            public OTexture(Bitmap _texture, String _name)
             {
-                texture = new Bitmap(Texture);
-                name = Name;
+                texture = new Bitmap(_texture);
+                _texture.Dispose();
+                name = _name;
+            }
+        }
+
+        public class OLookUpTableSampler
+        {
+            public string name;
+            public float[] table;
+
+            public OLookUpTableSampler()
+            {
+                table = new float[256];
+            }
+        }
+
+        public class OLookUpTable
+        {
+            public string name;
+            public List<OLookUpTableSampler> sampler;
+
+            public OLookUpTable()
+            {
+                sampler = new List<OLookUpTableSampler>();
+            }
+        }
+
+        public class OCamera
+        {
+            public string name;
+
+            public OVector3 transformScale;
+            public OVector3 transformRotate;
+            public OVector3 transformTranslate;
+            public OVector3 lookAtTarget;
+            public OVector3 lookAtUpVector;
+            public float zNear, zFar;
+            public float fieldOfViewY;
+            public float aspectRatio;
+
+            public bool isInheritingTargetRotate;
+            public bool isInheritingTargetTranslate;
+            public bool isInheritingUpRotate;
+        }
+
+        public class OFog
+        {
+            public string name;
+
+            public OVector3 transformScale;
+            public OVector3 transformRotate;
+            public OVector3 transformTranslate;
+
+            public Color fogColor;
+
+            public float minFogDepth, maxFogDepth;
+            public float fogDensity;
+
+            public bool isZFlip;
+            public bool isAttenuateDistance;
+        }
+
+        public enum ORepeatMethod
+        {
+            none = 0,
+            repeat = 1,
+            mirror = 2,
+            relativeRepeat = 3
+        }
+
+        public class OHermiteFloat
+        {
+            public float value;
+            public float inSlope;
+            public float outSlope;
+            public float frame;
+
+            /// <summary>
+            ///     Creates a new Hermite Float.
+            /// </summary>
+            /// <param name="_value">The point value</param>
+            /// <param name="_inSlope">The input slope</param>
+            /// <param name="_outSlope">The output slope</param>
+            /// <param name="_frame">The frame number</param>
+            public OHermiteFloat(float _value, float _inSlope, float _outSlope, float _frame)
+            {
+                value = _value;
+                inSlope = _inSlope;
+                outSlope = _outSlope;
+                frame = _frame;
+            }
+
+            /// <summary>
+            ///     Creates a new Hermite Float.
+            /// </summary>
+            public OHermiteFloat()
+            {
+            }
+        }
+
+        public class OLinearFloat
+        {
+            public float value;
+            public float frame;
+
+            /// <summary>
+            ///     Creates a new Linear Float.
+            /// </summary>
+            /// <param name="_value">The point value</param>
+            /// <param name="_frame">The frame number</param>
+            public OLinearFloat(float _value, float _frame)
+            {
+                value = _value;
+                frame = _frame;
+            }
+
+            /// <summary>
+            ///     Creates a new Linear Float.
+            /// </summary>
+            public OLinearFloat()
+            {
+            }
+        }
+
+        public enum OInterpolationMode
+        {
+            step = 0,
+            linear = 1,
+            hermite = 2
+        }
+
+        public class OSkeletalAnimationFrame
+        {
+            public List<OHermiteFloat> hermiteFrame;
+            public List<OLinearFloat> linearFrame;
+            public OInterpolationMode interpolation;
+            public float startFrame, endFrame;
+            public bool exists;
+
+            public ORepeatMethod preRepeat;
+            public ORepeatMethod postRepeat;
+
+            public OSkeletalAnimationFrame()
+            {
+                hermiteFrame = new List<OHermiteFloat>();
+                linearFrame = new List<OLinearFloat>();
+            }
+        }
+
+        public class OSkeletalAnimationBone
+        {
+            
+            public string name;
+            public OSkeletalAnimationFrame rotationX, rotationY, rotationZ;
+            public OSkeletalAnimationFrame translationX, translationY, translationZ;
+
+            public OSkeletalAnimationBone()
+            {
+                rotationX = new OSkeletalAnimationFrame();
+                rotationY = new OSkeletalAnimationFrame();
+                rotationZ = new OSkeletalAnimationFrame();
+                translationX = new OSkeletalAnimationFrame();
+                translationY = new OSkeletalAnimationFrame();
+                translationZ = new OSkeletalAnimationFrame();
+            }
+        }
+
+        public enum OLoopMode
+        {
+            oneTime = 0,
+            loop = 1
+        }
+
+        public class OSkeletalAnimation
+        {
+            public string name;
+            public float frameSize;
+            public OLoopMode loopMode;
+            public List<OSkeletalAnimationBone> bone;
+
+            public OSkeletalAnimation()
+            {
+                bone = new List<OSkeletalAnimationBone>();
             }
         }
 
@@ -879,12 +1078,20 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public List<OModel> model;
             public List<OTexture> texture;
+            public List<OLookUpTable> lookUpTable;
+            public List<OCamera> camera;
+            public List<OFog> fog;
+            public List<OSkeletalAnimation> skeletalAnimation;
             public OVector3 minVector, maxVector;
 
             public OModelGroup()
             {
                 model = new List<OModel>();
                 texture = new List<OTexture>();
+                lookUpTable = new List<OLookUpTable>();
+                camera = new List<OCamera>();
+                fog = new List<OFog>();
+                skeletalAnimation = new List<OSkeletalAnimation>();
                 minVector = new OVector3();
                 maxVector = new OVector3();
             }
@@ -892,19 +1099,55 @@ namespace Ohana3DS_Rebirth.Ohana
             /// <summary>
             ///     Adds a Model.
             /// </summary>
-            /// <param name="mdl">The Model</param>
-            public void addModel(OModel mdl)
+            /// <param name="_model">The Model</param>
+            public void addModel(OModel _model)
             {
-                model.Add(mdl);
+                model.Add(_model);
             }
 
             /// <summary>
             ///     Adds a new Texture.
             /// </summary>
-            /// <param name="tex">The Texture</param>
-            public void addTexture(OTexture tex)
+            /// <param name="_texture">The Texture</param>
+            public void addTexture(OTexture _texture)
             {
-                texture.Add(tex);
+                texture.Add(_texture);
+            }
+
+            /// <summary>
+            ///     Adds a new LookUp Table.
+            /// </summary>
+            /// <param name="_lookUpTable">The LUT</param>
+            public void addLUT(OLookUpTable _lookUpTable)
+            {
+                lookUpTable.Add(_lookUpTable);
+            }
+
+            /// <summary>
+            ///     Adds a new Camera.
+            /// </summary>
+            /// <param name="_camera">The Camera</param>
+            public void addCamera(OCamera _camera)
+            {
+                camera.Add(_camera);
+            }
+
+            /// <summary>
+            ///     Adds a new Fog.
+            /// </summary>
+            /// <param name="_fog">The Fog</param>
+            public void addFog(OFog _fog)
+            {
+                fog.Add(_fog);
+            }
+
+            /// <summary>
+            ///     Adds a new Skeletal Animation.
+            /// </summary>
+            /// <param name="_skeletalAnimation">The Skeletal Animation</param>
+            public void addSekeletalAnimaton(OSkeletalAnimation _skeletalAnimation)
+            {
+                skeletalAnimation.Add(_skeletalAnimation);
             }
         }
     }

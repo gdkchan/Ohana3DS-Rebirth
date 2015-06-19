@@ -31,11 +31,15 @@ namespace Ohana3DS_Rebirth.GUI
 
         public ODockWindow()
         {
-            Graphics g1 = Graphics.FromImage(hoverRed);
-            Graphics g2 = Graphics.FromImage(hoverBlue);
-            g1.FillRectangle(new SolidBrush(Color.FromArgb(0x7f, Color.Crimson)), new Rectangle(1, 1, hoverRed.Width - 2, hoverRed.Height - 2));
-            g2.FillRectangle(new SolidBrush(Color.FromArgb(0x7f, Color.FromArgb(15, 82, 186))), new Rectangle(1, 1, hoverBlue.Width - 2, hoverBlue.Height - 2));
-            
+            using (Graphics g1 = Graphics.FromImage(hoverRed))
+            {
+                using (Graphics g2 = Graphics.FromImage(hoverBlue))
+                {
+                    g1.FillRectangle(new SolidBrush(Color.FromArgb(0x7f, Color.Crimson)), new Rectangle(1, 1, hoverRed.Width - 2, hoverRed.Height - 2));
+                    g2.FillRectangle(new SolidBrush(Color.FromArgb(0x7f, Color.FromArgb(15, 82, 186))), new Rectangle(1, 1, hoverBlue.Width - 2, hoverBlue.Height - 2));
+                }
+            }
+
             InitializeComponent();
         }
 
@@ -73,6 +77,8 @@ namespace Ohana3DS_Rebirth.GUI
         public virtual void dispose()
         {
             //Dispose all unmanaged stuff here!
+            hoverRed.Dispose();
+            hoverBlue.Dispose();
         }
 
         private void WindowTop_MouseDown(object sender, MouseEventArgs e)
@@ -89,12 +95,8 @@ namespace Ohana3DS_Rebirth.GUI
         {
             if (drag)
             {
-                int x = Cursor.Position.X - mouseX;
-                int y = Cursor.Position.Y - mouseY;
-                if (x < 0) x = 0;
-                if (y < 0) y = 0;
-                if (x >= container.Width) x = container.Width - 1;
-                if (y >= container.Height) y = container.Height - 1;
+                int x = Math.Max(0, Math.Min(container.Width - 1, Cursor.Position.X - mouseX));
+                int y = Math.Max(0, Math.Min(container.Height - 1, Cursor.Position.Y - mouseY));
                 this.Location = new Point(x, y);
                 this.BringToFront();
             }

@@ -125,9 +125,13 @@ namespace Ohana3DS_Rebirth.GUI
                 {
                     e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(0x3f, Color.Black)), new Rectangle(rect.X, rect.Y, rect.Width, rect.Height + 4));
                 }
-                
-                e.Graphics.DrawString(window.Title, new Font("Segoe UI", 10), new SolidBrush(Color.White), new Point(rect.Left + 16, rect.Top));
+
+                Font font = new Font("Segoe UI", 10);
+                e.Graphics.DrawString(window.Title, font, new SolidBrush(Color.White), new Point(rect.Left + 16, rect.Top));
+                font.Dispose();
+
                 Rectangle iconRect = new Rectangle(rect.X, rect.Y + (rect.Height / 2) - 8, 16, 16);
+                
                 left += windowWidth + 4;
             }
 

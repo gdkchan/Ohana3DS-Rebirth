@@ -16,6 +16,7 @@ using System.Text;
 using System.IO;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Diagnostics;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
@@ -33,14 +34,14 @@ namespace Ohana3DS_Rebirth.Ohana
             public uint descriptionOffset;
             public uint dataOffset;
             public uint dataExtendedOffset;
-            public uint relocatableTableOffset;
+            public uint relocationTableOffset;
 
             public uint mainHeaderLength;
             public uint stringTableLength;
             public uint descriptionLength;
             public uint dataLength;
             public uint dataExtendedLength;
-            public uint relocatableTableLength;
+            public uint relocationTableLength;
             public uint uninitializedDataSectionLength;
             public uint uninitializedDescriptionSectionLength;
 
@@ -62,9 +63,18 @@ namespace Ohana3DS_Rebirth.Ohana
             public uint texturesPointerTableOffset;
             public uint texturesPointerTableEntries;
             public uint texturesNameOffset;
-            public uint materialsLUTTableOffset;
-            public uint materialsLUTTableEntries;
+            public uint materialsLUTPointerTableOffset;
+            public uint materialsLUTPointerTableEntries;
             public uint materialsLUTNameOffset;
+            public uint camerasPointerTableOffset;
+            public uint camerasPointerTableEntries;
+            public uint camerasNameOffset;
+            public uint fogsPointerTableOffset;
+            public uint fogsPointerTableEntries;
+            public uint fogsNameOffset;
+            public uint skeletalAnimationsPointerTableOffset;
+            public uint skeletalAnimationsPointerTableEntries;
+            public uint skeletalAnimationsNameOffset;
         }
 
         private struct bchObjectsHeader
@@ -104,14 +114,14 @@ namespace Ohana3DS_Rebirth.Ohana
             public RenderBase.OVector3 centerVector;
             public uint flagsOffset;
             public uint boundingBoxOffset;
-
-            //Dados das sub-tabelas
         }
 
         const uint codeMaterialReflectanceSamplerInput = 0x000f01d0;
         const uint codeMaterialReflectanceSamplerScale = 0x000f01d1;
         const uint codeMaterialConstantColor = 0x000f01d2;
 
+        const uint codeMaterialUnknow1 = 0x000f02c0;
+        const uint codeMaterialUnknow2 = 0x01ff02c1;
         const uint codeMaterialCombiner0 = 0x804f00c0;
         const uint codeMaterialCombiner1 = 0x804f00c8;
         const uint codeMaterialCombiner2 = 0x804f00d0;
@@ -119,7 +129,7 @@ namespace Ohana3DS_Rebirth.Ohana
         const uint codeMaterialCombiner4 = 0x804f00f0;
         const uint codeMaterialCombiner5 = 0x804f00f8;
         const uint codeMaterialFragmentBufferColor = 0x000200e0;
-        const uint codeMaterialUnknow1 = 0x000f00fd;
+        const uint codeMaterialUnknow3 = 0x000f00fd;
         const uint codeMaterialBlendFunction = 0x00030100;
         const uint codeMaterialLogicalOperation = 0x000f0101;
         const uint codeMaterialAlphaTest = 0x000f0102;
@@ -127,12 +137,21 @@ namespace Ohana3DS_Rebirth.Ohana
         const uint codeMaterialStencilOperationOperations = 0x000f0105;
         const uint codeMaterialDepthOperation = 0x000f0106;
         const uint codeMaterialRasterization = 0x000f0107;
-        //TODO: Lots of codes missing here!
+        const uint codeMaterialUnknow4 = 0x000f0040;
+        const uint codeMaterialUnknow5 = 0x000f0111;
+        const uint codeMaterialUnknow6 = 0x000f0110;
+        const uint codeMaterialUnknow7 = 0x00010112;
+        const uint codeMaterialUnknow8 = 0x00010113;
+        const uint codeMaterialUnknow9 = 0x00010114;
+        const uint codeMaterialUnknow10 = 0x00010115;
+        const uint codeMaterialUnknow11 = 0x804f02c0;
 
         const uint codeTextureMipmaps = 0x000f0082;
         const uint codeTextureDataOffset = 0x00040084;
         const uint codeTextureFormatId = 0x000f0085;
         const uint codeTextureUnknow1 = 0x000f008e;
+
+        const uint codeLookUpTable = 0x0fff01c8;
 
         const uint codeFaceUnknow1 = 0x000f02b0;
         const uint codeFaceDataOffset = 0x000f025f;
@@ -192,14 +211,14 @@ namespace Ohana3DS_Rebirth.Ohana
             header.descriptionOffset = input.ReadUInt32();
             header.dataOffset = input.ReadUInt32();
             if (header.backwardCompatibility > 0x20) header.dataExtendedOffset = input.ReadUInt32();
-            header.relocatableTableOffset = input.ReadUInt32();
+            header.relocationTableOffset = input.ReadUInt32();
 
             header.mainHeaderLength = input.ReadUInt32();
             header.stringTableLength = input.ReadUInt32();
             header.descriptionLength = input.ReadUInt32();
             header.dataLength = input.ReadUInt32();
             if (header.backwardCompatibility > 0x20) header.dataExtendedLength = input.ReadUInt32();
-            header.relocatableTableLength = input.ReadUInt32();
+            header.relocationTableLength = input.ReadUInt32();
             header.uninitializedDataSectionLength = input.ReadUInt32();
             header.uninitializedDescriptionSectionLength = input.ReadUInt32();
 
@@ -221,9 +240,21 @@ namespace Ohana3DS_Rebirth.Ohana
             contentHeader.texturesPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
             contentHeader.texturesPointerTableEntries = input.ReadUInt32();
             contentHeader.texturesNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.materialsLUTTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.materialsLUTTableEntries = input.ReadUInt32();
+            contentHeader.materialsLUTPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
+            contentHeader.materialsLUTPointerTableEntries = input.ReadUInt32();
             contentHeader.materialsLUTNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
+            input.ReadUInt32();
+            input.ReadUInt32();
+            input.ReadUInt32();
+            contentHeader.camerasPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
+            contentHeader.camerasPointerTableEntries = input.ReadUInt32();
+            contentHeader.camerasNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
+            contentHeader.fogsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
+            contentHeader.fogsPointerTableEntries = input.ReadUInt32();
+            contentHeader.fogsNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
+            contentHeader.skeletalAnimationsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
+            contentHeader.skeletalAnimationsPointerTableEntries = input.ReadUInt32();
+            contentHeader.skeletalAnimationsNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
             //Note: 15 entries total, all have the same pattern: Table Offset/Table Entries/Name Offset
 
             //Shaders
@@ -247,7 +278,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 uint textureHeaderOffset = input.ReadUInt32() + header.descriptionOffset;
                 uint textureHeaderEntries = input.ReadUInt32();
                 data.Seek(0x14, SeekOrigin.Current);
-                String textureName = IOUtils.readString(input, input.ReadUInt32() + header.stringTableOffset);
+                String textureName = readString(input, header);
 
                 data.Seek(textureHeaderOffset, SeekOrigin.Begin);
                 ushort textureHeight = input.ReadUInt16();
@@ -264,6 +295,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         case codeTextureMipmaps: input.ReadUInt16(); textureMipmaps = input.ReadUInt16(); entry++; break;
                         case codeTextureDataOffset: textureDataOffset = input.ReadUInt32() + header.dataOffset; entry++; break;
                         case codeTextureFormatId: textureFormatId = input.ReadUInt32(); entry++; break;
+                        case codeTextureUnknow1: input.ReadUInt32(); entry++; break;
                         case codeBlockEnd: entry = (int)textureHeaderEntries; break;
                     }
                 }
@@ -277,6 +309,309 @@ namespace Ohana3DS_Rebirth.Ohana
                 models.addTexture(new RenderBase.OTexture(texture, textureName));
             }
 
+            //LookUp Tables
+            for (int index = 0; index < contentHeader.materialsLUTPointerTableEntries; index++)
+            {
+                data.Seek(contentHeader.materialsLUTPointerTableOffset + (index * 4), SeekOrigin.Begin);
+                uint dataOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                data.Seek(dataOffset, SeekOrigin.Begin);
+
+                input.ReadUInt32();
+                uint samplersCount = input.ReadUInt32();
+                string name = readString(input, header);
+
+                RenderBase.OLookUpTable table = new RenderBase.OLookUpTable();
+                table.name = name;
+                for (int i = 0; i < samplersCount; i++)
+                {
+                    input.ReadUInt32();
+                    uint tableOffset = input.ReadUInt32() + header.descriptionOffset;
+                    uint tableEntries = input.ReadUInt32();
+                    string tableName = readString(input, header);
+
+                    long dataPosition = data.Position;
+                    data.Seek(tableOffset, SeekOrigin.Begin);
+                    for (int entry = 0; entry < tableEntries; entry++)
+                    {
+                        uint code = input.ReadUInt32();
+
+                        switch (code)
+                        {
+                            case codeLookUpTable:
+                                RenderBase.OLookUpTableSampler sampler = new RenderBase.OLookUpTableSampler();
+                                sampler.name = tableName;
+                                for (int t = 0; t < 256; t++) sampler.table[t] = input.ReadSingle();
+                                table.sampler.Add(sampler);
+                                break;
+                            case codeBlockEnd: entry = (int)tableEntries; break;
+                        }
+                    }
+
+                    data.Seek(dataPosition, SeekOrigin.Begin);
+                }
+
+                models.addLUT(table);
+            }
+
+            //Cameras
+            for (int index = 0; index < contentHeader.camerasPointerTableEntries; index++)
+            {
+                data.Seek(contentHeader.camerasPointerTableOffset + (index * 4), SeekOrigin.Begin);
+                uint dataOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                data.Seek(dataOffset, SeekOrigin.Begin);
+
+                RenderBase.OCamera camera = new RenderBase.OCamera();
+                camera.name = readString(input, header);
+                camera.transformScale = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                camera.transformRotate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                camera.transformTranslate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+
+                uint cameraFlags = input.ReadUInt32() >> 16;
+                camera.isInheritingTargetRotate = (cameraFlags & 1) > 0;
+                camera.isInheritingTargetTranslate = (cameraFlags & 2) > 0;
+                camera.isInheritingUpRotate = (cameraFlags & 4) > 0;
+
+                input.ReadUInt32();
+                uint lookAtOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                uint projectionOffset = input.ReadUInt32() + header.mainHeaderOffset;
+
+                data.Seek(lookAtOffset, SeekOrigin.Begin);
+                camera.lookAtTarget = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                camera.lookAtUpVector = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+
+                data.Seek(projectionOffset, SeekOrigin.Begin);
+                camera.zNear = input.ReadSingle();
+                camera.zFar = input.ReadSingle();
+                camera.aspectRatio = input.ReadSingle();
+                camera.fieldOfViewY = input.ReadSingle();
+
+                models.addCamera(camera);
+            }
+
+            //Fogs
+            for (int index = 0; index < contentHeader.fogsPointerTableEntries; index++)
+            {
+                data.Seek(contentHeader.fogsPointerTableOffset + (index * 4), SeekOrigin.Begin);
+                uint dataOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                data.Seek(dataOffset, SeekOrigin.Begin);
+
+                RenderBase.OFog fog = new RenderBase.OFog();
+                fog.name = readString(input, header);
+                fog.transformScale = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                fog.transformRotate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                fog.transformTranslate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+
+                uint fogFlags = input.ReadUInt32() >> 8;
+                fog.isZFlip = (fogFlags & 1) > 0;
+                fog.isAttenuateDistance = (fogFlags & 2) > 0;
+
+                fog.fogColor = getColor(input);
+
+                fog.minFogDepth = input.ReadSingle();
+                fog.maxFogDepth = input.ReadSingle();
+                fog.fogDensity = input.ReadSingle();
+
+                models.addFog(fog);
+            }
+
+            //Skeletal Animations
+            byte[] shiftTable = { 1, 2, 3, 5, 6, 7 };
+            for (int index = 0; index < contentHeader.skeletalAnimationsPointerTableEntries; index++)
+            {
+                data.Seek(contentHeader.skeletalAnimationsPointerTableOffset + (index * 4), SeekOrigin.Begin);
+                uint dataOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                data.Seek(dataOffset, SeekOrigin.Begin);
+
+                RenderBase.OSkeletalAnimation skeletalAnimation = new RenderBase.OSkeletalAnimation();
+
+                skeletalAnimation.name = readString(input, header);
+                uint animationFlags = input.ReadUInt32();
+                skeletalAnimation.loopMode = (RenderBase.OLoopMode)(animationFlags & 1);
+                skeletalAnimation.frameSize = input.ReadSingle();
+                uint boneTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                uint boneTableEntries = input.ReadUInt32();
+
+                for (int i = 0; i < boneTableEntries; i++)
+                {
+                    data.Seek(boneTableOffset + (i * 4), SeekOrigin.Begin);
+                    uint offset = input.ReadUInt32() + header.mainHeaderOffset;
+
+                    RenderBase.OSkeletalAnimationBone bone = new RenderBase.OSkeletalAnimationBone();
+
+                    data.Seek(offset, SeekOrigin.Begin);
+                    bone.name = readString(input, header);
+                    uint animationTypeFlags = input.ReadUInt32();
+                    uint flags = input.ReadUInt32();
+
+                    switch ((animationTypeFlags >> 16) & 0xf)
+                    {
+                        case 4:
+                            for (int j = 0; j < 6; j++)
+                            {
+                                RenderBase.OSkeletalAnimationFrame frame = new RenderBase.OSkeletalAnimationFrame();
+
+                                data.Seek(offset + 0x18 + (j * 4), SeekOrigin.Begin);
+
+                                bool inline = ((flags >> 8) & (1 << shiftTable[j])) > 0;
+                                if (inline)
+                                {
+                                    frame.interpolation = RenderBase.OInterpolationMode.linear;
+                                    frame.linearFrame.Add(new RenderBase.OLinearFloat(input.ReadSingle(), 0.0f));
+                                    frame.exists = true;
+                                }
+                                else
+                                {
+                                    uint frameOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                                    data.Seek(frameOffset, SeekOrigin.Begin);
+                                    frame.startFrame = input.ReadSingle();
+                                    frame.endFrame = input.ReadSingle();
+
+                                    uint frameFlags = input.ReadUInt32();
+                                    frame.preRepeat = (RenderBase.ORepeatMethod)(frameFlags & 0xf);
+                                    frame.postRepeat = (RenderBase.ORepeatMethod)((frameFlags >> 8) & 0xf);
+
+                                    frameFlags = input.ReadUInt32();
+                                    frame.interpolation = (RenderBase.OInterpolationMode)(frameFlags & 0xf);
+                                    uint entryFormat = (frameFlags >> 8) & 0xff;
+                                    uint entries = frameFlags >> 16;
+                                    frame.exists = entries > 0;
+
+                                    float minValue = 0, maxValue = 0;
+                                    uint value0 = input.ReadUInt32();
+                                    float value1 = input.ReadSingle();
+                                    float value2 = input.ReadSingle();
+                                    float value3 = input.ReadSingle();
+
+                                    switch (entryFormat)
+                                    {
+                                        case 1: case 7: maxValue = getCustomFloat(value0, 107); break;
+                                        case 2: case 4: maxValue = getCustomFloat(value0, 111); break;
+                                        case 5: maxValue = getCustomFloat(value0, 115); break;
+                                    }
+                                    minValue = value1;
+                                    maxValue = minValue + maxValue;
+
+                                    float interpolation;
+                                    uint value;
+                                    uint rawDataOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                                    data.Seek(rawDataOffset, SeekOrigin.Begin);
+                                    for (int k = 0; k < entries; k++)
+                                    {
+                                        switch (frame.interpolation)
+                                        {
+                                            case RenderBase.OInterpolationMode.step:
+                                                //TODO
+                                                break;
+                                            case RenderBase.OInterpolationMode.linear:
+                                                RenderBase.OLinearFloat linearPoint = new RenderBase.OLinearFloat();
+                                                switch (entryFormat)
+                                                {
+                                                    case 6:
+                                                        linearPoint.frame = input.ReadSingle();
+                                                        linearPoint.value = input.ReadSingle();
+                                                        break;
+                                                    case 7:
+                                                        value = input.ReadUInt32();
+                                                        interpolation = (float)(value >> 12) / 0x100000;
+                                                        linearPoint.frame = (float)(value & 0xfff);
+                                                        linearPoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
+                                                        break;
+                                                    default:
+                                                        Debug.WriteLine(String.Format("[BCH] Skeletal Animation: Unsupported bone quantization format {0} on Linear, disabling bone {1}...", entryFormat.ToString(), bone.name));
+                                                        frame.exists = false;
+                                                        break;
+                                                }
+                                                frame.linearFrame.Add(linearPoint);
+                                                break;
+                                            case RenderBase.OInterpolationMode.hermite:
+                                                RenderBase.OHermiteFloat hermitePoint = new RenderBase.OHermiteFloat();
+                                                switch (entryFormat)
+                                                {
+                                                    case 0:
+                                                        hermitePoint.frame = input.ReadSingle();
+                                                        hermitePoint.value = input.ReadSingle();
+                                                        hermitePoint.inSlope = input.ReadSingle();
+                                                        hermitePoint.outSlope = input.ReadSingle();
+                                                        break;
+                                                    case 1:
+                                                        value = input.ReadUInt32();
+                                                        hermitePoint.frame = (float)(value & 0xfff);
+                                                        interpolation = (float)(value >> 12) / 0x100000;
+                                                        hermitePoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
+                                                        hermitePoint.inSlope = (float)input.ReadInt16() / 256;
+                                                        hermitePoint.outSlope = (float)input.ReadInt16() / 256;
+                                                        break;
+                                                    case 2:
+                                                        value = input.ReadUInt32();
+                                                        uint inSlopeLow = value >> 24;
+                                                        hermitePoint.frame = (float)(value & 0xff);
+                                                        interpolation = (float)((value >> 8) & 0xffff) / 0x10000;
+                                                        hermitePoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
+                                                        value = input.ReadUInt16();
+                                                        hermitePoint.inSlope = get12bValue((int)(((value & 0xf) << 8) | inSlopeLow));
+                                                        hermitePoint.outSlope = get12bValue((int)((value >> 4) & 0xfff));
+                                                        break;
+                                                    case 3:
+                                                        hermitePoint.frame = input.ReadSingle();
+                                                        hermitePoint.value = input.ReadSingle();
+                                                        hermitePoint.inSlope = input.ReadSingle();
+                                                        hermitePoint.outSlope = hermitePoint.inSlope;
+                                                        break;
+                                                    case 4:
+                                                        //TODO: Implement support for different inSlope and outSlope
+                                                        //Note: they are added with another frame with same number, but the inSlope is actually the outSlope
+                                                        hermitePoint.frame = (float)input.ReadInt16() / 32;
+                                                        interpolation = (float)input.ReadUInt16() / 0x10000;
+                                                        hermitePoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
+                                                        hermitePoint.inSlope = (float)input.ReadInt16() / 256;
+                                                        hermitePoint.outSlope = hermitePoint.inSlope;
+                                                        break;
+                                                    case 5:
+                                                        value = input.ReadUInt32();
+                                                        hermitePoint.frame = (float)(value & 0xff);
+                                                        interpolation = (float)((value >> 8) & 0xfff) / 0x1000;
+                                                        hermitePoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
+                                                        hermitePoint.inSlope = get12bValue((int)(value >> 20));
+                                                        hermitePoint.outSlope = hermitePoint.inSlope;
+                                                        break;
+                                                    default:
+                                                        Debug.WriteLine(String.Format("[BCH] Skeletal Animation: Unsupported bone quantization format {0} on Hermite, disabling bone {1}...", entryFormat.ToString(), bone.name));
+                                                        frame.exists = false;
+                                                        break;
+                                                }
+                                                frame.hermiteFrame.Add(hermitePoint);
+                                                break;
+                                        }
+                                    }
+                                }
+
+                                switch (j)
+                                {
+                                    case 0: bone.rotationX = frame; break;
+                                    case 1: bone.rotationY = frame; break;
+                                    case 2: bone.rotationZ = frame; break;
+                                    case 3: bone.translationX = frame; break;
+                                    case 4: bone.translationY = frame; break;
+                                    case 5: bone.translationZ = frame; break;
+                                }
+                            }
+                            break;
+                        case 7:
+                            Debug.WriteLine("[BCH] TODO: Skeletal Animation Frame format");
+                            break;
+                        case 9:
+                            Debug.WriteLine("[BCH] TODO: Skeletal Animation Full Baked format");
+                            break;
+                        default: throw new Exception(String.Format("BCH: Unknow flag {0} on Skeletal Animation bone {1}! STOP!", flags.ToString("X8"), bone.name));
+                    }
+
+                    skeletalAnimation.bone.Add(bone);
+                }
+
+                models.addSekeletalAnimaton(skeletalAnimation);
+            }
+
+            //Model
             for (int modelIndex = 0; modelIndex < contentHeader.modelsPointerTableEntries; modelIndex++)
             {
                 RenderBase.OModel model = new RenderBase.OModel();
@@ -318,7 +653,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 objectsHeader.skeletonNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
                 objectsHeader.objectsNodeVisibilityOffset = input.ReadUInt32() + header.mainHeaderOffset;
                 objectsHeader.objectsNodeCount = input.ReadUInt32();
-                objectsHeader.modelName = IOUtils.readString(input, input.ReadUInt32() + header.stringTableOffset);
+                objectsHeader.modelName = readString(input, header);
                 objectsHeader.objectsNodeNameEntries = input.ReadUInt32();
                 objectsHeader.objectsNodeNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
                 input.ReadUInt32(); //0x0
@@ -424,8 +759,8 @@ namespace Ohana3DS_Rebirth.Ohana
                     input.ReadUInt32();
 
                     uint fragmentData = input.ReadUInt32();
-                    material.fragmentShader.bump.bumpTexture = (RenderBase.OBumpTexture)(fragmentData >> 24);
-                    material.fragmentShader.bump.bumpMode = (RenderBase.OBumpMode)((fragmentData >> 16) & 0xff);
+                    material.fragmentShader.bump.texture = (RenderBase.OBumpTexture)(fragmentData >> 24);
+                    material.fragmentShader.bump.mode = (RenderBase.OBumpMode)((fragmentData >> 16) & 0xff);
                     material.fragmentShader.lighting.fresnelConfig = (RenderBase.OFresnelConfig)((fragmentData >> 8) & 0xff);
                     material.fragmentShader.layerConfig = fragmentData & 0xff;
                     input.ReadUInt32();
@@ -485,6 +820,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     material.fragmentShader.lighting.reflectanceBSampler.samplerName = readString(input, header);
 
                     data.Seek(textureCombinerOffset, SeekOrigin.Begin);
+                    input.ReadUInt32();
                     for (int entry = 0; entry < textureCombinerEntries; entry++)
                     {
                         uint code = input.ReadUInt32();
@@ -492,6 +828,8 @@ namespace Ohana3DS_Rebirth.Ohana
 
                         switch (code)
                         {
+                            case codeMaterialUnknow1: input.ReadUInt32(); entry++; break;
+                            case codeMaterialUnknow2: data.Seek(0x80, SeekOrigin.Current); entry += 0x20; break;
                             case codeMaterialCombiner0:
                             case codeMaterialCombiner1:
                             case codeMaterialCombiner2:
@@ -543,7 +881,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                     case codeMaterialCombiner4: combiner.constantColor = constantList[4]; break;
                                     case codeMaterialCombiner5: combiner.constantColor = constantList[5]; break;
                                 }
-                                
+
                                 material.fragmentShader.textureCombiner.Add(combiner);
                                 entry += 4;
                                 break;
@@ -551,6 +889,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                 material.fragmentShader.bufferColor = getColor(input);
                                 entry++;
                                 break;
+                            case codeMaterialUnknow3: input.ReadUInt32(); entry++; break;
                             case codeMaterialDepthOperation:
                                 value = input.ReadUInt32();
                                 material.fragmentOperation.depth.isTestEnabled = (value & 1) > 0;
@@ -604,6 +943,14 @@ namespace Ohana3DS_Rebirth.Ohana
                                 material.rasterization.cullMode = (RenderBase.OCullMode)(value & 0xf);
                                 entry++;
                                 break;
+                            case codeMaterialUnknow4: input.ReadUInt32(); entry++; break;
+                            case codeMaterialUnknow5: input.ReadUInt32(); entry++; break;
+                            case codeMaterialUnknow6: input.ReadUInt32(); entry++; break;
+                            case codeMaterialUnknow7: input.ReadUInt32(); entry++; break;
+                            case codeMaterialUnknow8: input.ReadUInt32(); entry++; break;
+                            case codeMaterialUnknow9: input.ReadUInt32(); entry++; break;
+                            case codeMaterialUnknow10: input.ReadUInt32(); entry++; break;
+                            case codeMaterialUnknow11: data.Seek(0x10, SeekOrigin.Current); entry += 4; break;
                             case codeBlockEnd: entry = (int)textureCombinerEntries; break;
                         }
                     }
@@ -658,7 +1005,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     boneMatrix.M33 = input.ReadSingle();
                     boneMatrix.M34 = input.ReadSingle();
 
-                    bone.name = IOUtils.readString(input, input.ReadUInt32() + header.stringTableOffset);
+                    bone.name = readString(input, header);
                     input.ReadUInt32(); //TODO: Figure out
 
                     model.addBone(bone);
@@ -809,8 +1156,8 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
 
                     bool dbgVertexDataOffsetCheck = false;
-                    data.Seek(header.relocatableTableOffset, SeekOrigin.Begin);
-                    for (int i = 0; i < header.relocatableTableLength / 4; i++)
+                    data.Seek(header.relocationTableOffset, SeekOrigin.Begin);
+                    for (int i = 0; i < header.relocationTableLength / 4; i++)
                     {
                         uint value = input.ReadUInt32();
                         uint offset = (value & 0xffffff) * 4;
@@ -867,20 +1214,26 @@ namespace Ohana3DS_Rebirth.Ohana
 
                             switch (code)
                             {
+                                case codeFaceUnknow1: input.ReadUInt32(); entry++; break;
                                 case codeFaceDataOffset:
                                     faceDataPointerOffset = (uint)data.Position - header.descriptionOffset;
                                     faceDataOffset = input.ReadUInt32();
                                     entry++;
                                     break;
                                 case codeFaceDataLength: faceDataEntries = input.ReadUInt32(); entry++; break;
+                                case codeFaceUnknow2: input.ReadUInt32(); entry++; break;
+                                case codeFaceUnknow3: input.ReadUInt32(); entry++; break;
+                                case codeFaceUnknow4: input.ReadUInt32(); entry++; break;
+                                case codeFaceUnknow5: input.ReadUInt32(); entry++; break;
+                                case codeFaceUnknow6: input.ReadUInt32(); entry++; break;
                                 case codeBlockEnd: entry = (int)faceHeaderEntries; break;
                             }
                         }
 
                         bool dbgFaceDataOffsetCheck = false;
                         byte faceDataFormat = 0;
-                        data.Seek(header.relocatableTableOffset, SeekOrigin.Begin);
-                        for (int j = 0; j < header.relocatableTableLength / 4; j++)
+                        data.Seek(header.relocationTableOffset, SeekOrigin.Begin);
+                        for (int j = 0; j < header.relocationTableLength / 4; j++)
                         {
                             uint value = input.ReadUInt32();
                             uint offset = (value & 0xffffff) * 4;
@@ -1074,8 +1427,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                             {
                                                 if ((quantization)boneIndexQuantization == quantization.qUByte)
                                                 {
-                                                    byte boneIndex = input.ReadByte();
-                                                    if (!vertex.node.Contains(nodeList[boneIndex])) vertex.addNode(nodeList[boneIndex]);
+                                                    vertex.addNode(nodeList[input.ReadByte()]);
                                                 }
                                                 else
                                                 {
@@ -1086,8 +1438,15 @@ namespace Ohana3DS_Rebirth.Ohana
                                         case 8: //Bone Weight
                                             for (int b = 0; b < boneWeightType + 1; b++)
                                             {
-                                                float boneWeight = (float)input.ReadByte() * weightScale;
-                                                vertex.addWeight(boneWeight);
+                                                if ((quantization)boneWeightQuantization == quantization.qUByte)
+                                                {
+                                                    float boneWeight = (float)input.ReadByte() * weightScale;
+                                                    vertex.addWeight(boneWeight);
+                                                }
+                                                else
+                                                {
+                                                    vertex.addWeight(1.0f);
+                                                }
                                             }
                                             break;
                                     }
@@ -1117,6 +1476,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             input.Close();
+            data.Dispose();
             return models;
         }
 
@@ -1167,9 +1527,46 @@ namespace Ohana3DS_Rebirth.Ohana
 
         private static string readString(BinaryReader input, bchHeader header)
         {
-            uint offset = input.ReadUInt32();
-            if (offset == 0) return null;
-            return IOUtils.readString(input, offset + header.stringTableOffset);
+            long dataPosition = input.BaseStream.Position;
+            uint stringOffset = input.ReadUInt32();
+            input.BaseStream.Seek(header.relocationTableOffset, SeekOrigin.Begin);
+            for (int i = 0; i < header.relocationTableLength / 4; i++)
+            {
+                uint value = input.ReadUInt32();
+                uint offset = value & 0xffffff;
+                byte flags = (byte)(value >> 24);
+
+                if (flags == 2 && offset == (dataPosition - header.mainHeaderOffset))
+                {
+                    input.BaseStream.Seek(dataPosition + 4, SeekOrigin.Begin);
+                    return IOUtils.readString(input, stringOffset + header.stringTableOffset);
+                }
+            }
+            input.BaseStream.Seek(dataPosition + 4, SeekOrigin.Begin);
+            return null;
+        }
+
+        private static float getCustomFloat(uint value, int exponentBias)
+        {
+            float mantissa = 1.0f;
+            float m = 0.5f;
+
+            uint rawMantissa = value & 0x7fffff;
+            int rawExponent = (int)(value >> 23) - exponentBias;
+
+            for (int bit = 22; bit >= 0; --bit)
+            {
+                if ((rawMantissa & (1 << bit)) > 0) mantissa += m;
+                m *= 0.5f;
+            }
+
+            return (float)(Math.Pow(2, rawExponent) * mantissa);
+        }
+
+        private static float get12bValue(int value)
+        {
+            if ((value & 0x800) > 0) value -= 0x1000;
+            return (float)value / 32;
         }
 
         #endregion

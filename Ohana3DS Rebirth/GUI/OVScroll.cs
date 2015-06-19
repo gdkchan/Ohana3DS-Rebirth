@@ -45,7 +45,7 @@ namespace Ohana3DS_Rebirth.GUI
             SetStyle(ControlStyles.SupportsTransparentBackColor, true);
             SetStyle(ControlStyles.UserPaint, true);
             SetStyle(ControlStyles.AllPaintingInWmPaint, true);
-            SetStyle(ControlStyles.DoubleBuffer, true);
+            SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
             foreColor = barColor;
         }
 

@@ -44,11 +44,13 @@ namespace Ohana3DS_Rebirth.GUI
             Bottom,
             Center
         }
+
         public enum resizeMode
         {
             windowOnly,
             entireSide
         }
+
         private class windowInfoStruct
         {
             public ODockWindow window;
@@ -1147,7 +1149,8 @@ namespace Ohana3DS_Rebirth.GUI
         /// </summary>
         public void flush()
         {
-            this.Controls.Clear();
+            for (int i = Controls.Count - 1; i >= 0; --i) Controls[i].Dispose();
+            Controls.Clear();
             windowInfo.Clear();
         }
 

@@ -20,7 +20,7 @@ namespace Ohana3DS_Rebirth
             WindowManager.initialize(DockContainer);
 
             this.MaximumSize = Screen.PrimaryScreen.WorkingArea.Size;
-            MainMenu.Renderer = new GUI.OMenuStrip();           
+            MainMenu.Renderer = new GUI.OMenuStrip();
         }
 
         private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
@@ -65,13 +65,15 @@ namespace Ohana3DS_Rebirth
                         DockContainer.dockMainWindow();
                         launchWindow(textureWindow, false);
                         WindowManager.Refresh();
-                        
+
+                        //RenderBase.OModelGroup anim = Ohana.BCH.load("D:\\Senran Kagura\\player_1\\pl00_mot_B_M00.bch");
                         RenderBase.OModelGroup model = Ohana.BCH.load(openDlg.FileName);
+                        //model.skeletalAnimation = anim.skeletalAnimation;
                         Application.DoEvents(); //Call this to avoid clicks on the OpenDialog going to ViewPort
-                        //Ohana.GenericFormats.SMD.export(model, "D:\\girl.smd");
+                        //Ohana.GenericFormats.SMD.export(model, "D:\\mo.smd");
 
                         textureWindow.initialize(model);
-                        modelWindow.initialize(model); //Always initialize the renderer at last, 'cause DirectX do weird stuff
+                        modelWindow.initialize(model);
 
                         break;
                     default:

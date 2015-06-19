@@ -231,7 +231,8 @@ namespace Ohana3DS_Rebirth.Properties {
         ///	MinFilter = Linear;
         ///	MagFilter = Linear;
         ///};
-        ///        /// [o restante da cadeia de caracteres foi truncado]&quot;;.
+        ///
+        /// [o restante da cadeia de caracteres foi truncado]&quot;;.
         /// </summary>
         internal static string OFragmentShader {
             get {

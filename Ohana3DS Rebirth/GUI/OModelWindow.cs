@@ -16,14 +16,13 @@ namespace Ohana3DS_Rebirth.GUI
         RenderEngine renderer;
 
         RenderBase.OVector2 initialRotation, initialMovement;
-        RenderBase.OVector2 finalRotation, finalMovement;
+        RenderBase.OVector2 finalMovement;
         bool clicked;
 
         public OModelWindow()
         {
             initialRotation = new RenderBase.OVector2();
             initialMovement = new RenderBase.OVector2();
-            finalRotation = new RenderBase.OVector2();
             finalMovement = new RenderBase.OVector2();
 
             InitializeComponent();
@@ -57,9 +56,9 @@ namespace Ohana3DS_Rebirth.GUI
                 switch (e.Button)
                 {
                     case MouseButtons.Left:
-                        float rX = (float)(((e.X - initialRotation.x) / Screen.Width) * Math.PI);
-                        float rY = (float)(((e.Y - initialRotation.y) / Screen.Height) * Math.PI);
-                        renderer.setRotation(rX, rY);
+                        float rY = (float)(((e.X - initialRotation.x) / Screen.Width) * Math.PI);
+                        float rX = (float)(((e.Y - initialRotation.y) / Screen.Height) * Math.PI);
+                        renderer.setRotation(rY, rX);
                         initialRotation = new RenderBase.OVector2(e.X, e.Y);
                         break;
                     case MouseButtons.Right:
@@ -86,7 +85,6 @@ namespace Ohana3DS_Rebirth.GUI
             {
                 switch (e.Button)
                 {
-                    case MouseButtons.Left: finalRotation = new RenderBase.OVector2(finalRotation.x + (initialRotation.x - MousePosition.X), finalRotation.y + (initialRotation.y - MousePosition.Y)); break;
                     case MouseButtons.Right: finalMovement = new RenderBase.OVector2(finalMovement.x + (initialMovement.x - MousePosition.X), finalMovement.y + (initialMovement.y - MousePosition.Y)); break;
                 }
                 clicked = false;
@@ -95,7 +93,7 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void Screen_MouseWheel(object sender, MouseEventArgs e)
         {
-            if (e.Delta > 0) renderer.zoom += 1.0f; else renderer.zoom -= 1.0f;
+            if (renderer != null && e.Delta > 0) renderer.zoom += 1.0f; else renderer.zoom -= 1.0f;
         }
     }
 }
