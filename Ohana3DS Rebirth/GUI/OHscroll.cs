@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
 
@@ -109,8 +105,8 @@ namespace Ohana3DS_Rebirth.GUI
                 if (scrollX > value)
                 {
                     scrollX = value;
-                    scrollBarX = (int)(((float)scrollX / max) * (this.Width - scrollBarSize));
-                    this.Refresh();
+                    scrollBarX = (int)(((float)scrollX / max) * (Width - scrollBarSize));
+                    Refresh();
                 }
             }
         }
@@ -129,14 +125,14 @@ namespace Ohana3DS_Rebirth.GUI
                 if (value > max) throw new Exception("OHscroll: The Value set is greater than the maximum value!");
                 if (value < 0) throw new Exception("OHscroll: Value can't be less than 0!");
                 scrollX = value;
-                scrollBarX = (int)(((float)scrollX / max) * (this.Width - scrollBarSize));
-                this.Refresh();
+                scrollBarX = (int)(((float)scrollX / max) * (Width - scrollBarSize));
+                Refresh();
             }
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            e.Graphics.FillRectangle(new SolidBrush(foreColor), new Rectangle(scrollBarX, 0, scrollBarSize, this.Height));
+            e.Graphics.FillRectangle(new SolidBrush(foreColor), new Rectangle(scrollBarX, 0, scrollBarSize, Height));
             base.OnPaint(e);
         }
 
@@ -144,7 +140,7 @@ namespace Ohana3DS_Rebirth.GUI
         {
             if (e.Button == MouseButtons.Left)
             {
-                Rectangle scrollRect = new Rectangle(scrollBarX, 0, scrollBarSize, this.Height);
+                Rectangle scrollRect = new Rectangle(scrollBarX, 0, scrollBarSize, Height);
                 Rectangle mouseRect = new Rectangle(e.X, e.Y, 1, 1);
                 if (scrollRect.IntersectsWith(mouseRect))
                 {
@@ -158,21 +154,21 @@ namespace Ohana3DS_Rebirth.GUI
 
         protected override void OnMouseUp(MouseEventArgs e)
         {
-            this.Focus();
+            Focus();
             if (e.Button == MouseButtons.Left) mouseDrag = false;
             base.OnMouseUp(e);
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
         {
-            Rectangle scrollRect = new Rectangle(scrollBarX, 0, scrollBarSize, this.Height);
+            Rectangle scrollRect = new Rectangle(scrollBarX, 0, scrollBarSize, Height);
             Rectangle mouseRect = new Rectangle(e.X, e.Y, 1, 1);
             if (scrollRect.IntersectsWith(mouseRect))
             {
                 if (foreColor != barColorHover)
                 {
                     foreColor = barColorHover;
-                    this.Refresh();
+                    Refresh();
                 }
             }
             else if (!mouseDrag)
@@ -180,7 +176,7 @@ namespace Ohana3DS_Rebirth.GUI
                 if (foreColor != barColor)
                 {
                     foreColor = barColor;
-                    this.Refresh();
+                    Refresh();
                 }
             }
 
@@ -190,12 +186,12 @@ namespace Ohana3DS_Rebirth.GUI
                 {
                     int x = e.X - scroll;
                     if (x < 0) x = 0;
-                    else if (x > this.Width - scrollBarSize) x = this.Width - scrollBarSize;
+                    else if (x > Width - scrollBarSize) x = Width - scrollBarSize;
                     scrollBarX = x;
 
-                    scrollX = (int)(((float)x / Math.Max((this.Width - scrollBarSize), 1)) * max);
-                    if (this.ScrollChanged != null) this.ScrollChanged(this, EventArgs.Empty);
-                    this.Refresh();
+                    scrollX = (int)(((float)x / Math.Max((Width - scrollBarSize), 1)) * max);
+                    if (ScrollChanged != null) ScrollChanged(this, EventArgs.Empty);
+                    Refresh();
                 }
             }
 
@@ -205,7 +201,7 @@ namespace Ohana3DS_Rebirth.GUI
         protected override void OnMouseLeave(EventArgs e)
         {
             if (!mouseDrag) foreColor = barColor;
-            this.Refresh();
+            Refresh();
             base.OnMouseLeave(e);
         }
 
@@ -218,9 +214,9 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void recalcSize()
         {
-            scrollBarSize = Math.Max(32, this.Width - max);
-            scrollBarX = (int)(((float)scrollX / max) * (this.Width - scrollBarSize));
-            this.Refresh();
+            scrollBarSize = Math.Max(32, Width - max);
+            scrollBarX = (int)(((float)scrollX / max) * (Width - scrollBarSize));
+            Refresh();
         }
     }
 }

@@ -2,11 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
-using System.Runtime.InteropServices;
-
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 
@@ -33,14 +30,13 @@ namespace Ohana3DS_Rebirth.Ohana
         private bool keepRendering;
 
         private bool useLegacyTexturing = false; //Set to True to disable Fragment Shader
+        private const bool showGrid = true;
 
         float animationStep = 1.0f;
         int currentAnimation = -1;
-        int frame = 0;
-        bool animate = false;
-        bool paused = false;
-
-        bool showGrid = true;
+        int frame;
+        bool animate;
+        bool paused;
 
         /// <summary>
         ///     Initialize the renderer at a given target.
@@ -48,17 +44,19 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="handle">Memory pointer to the control rendering buffer</param>
         /// <param name="width">Render width</param>
         /// <param name="height">Render height</param>
-        public void initialize(System.IntPtr handle, int width, int height)
+        public void initialize(IntPtr handle, int width, int height)
         {
-            pParams = new PresentParameters();
-            pParams.BackBufferCount = 1;
-            pParams.BackBufferFormat = Manager.Adapters[0].CurrentDisplayMode.Format;
-            pParams.BackBufferWidth = width;
-            pParams.BackBufferHeight = height;
-            pParams.Windowed = true;
-            pParams.SwapEffect = SwapEffect.Discard;
-            pParams.EnableAutoDepthStencil = true;
-            pParams.AutoDepthStencilFormat = DepthFormat.D24S8;
+            pParams = new PresentParameters
+            {
+                BackBufferCount = 1,
+                BackBufferFormat = Manager.Adapters[0].CurrentDisplayMode.Format,
+                BackBufferWidth = width,
+                BackBufferHeight = height,
+                Windowed = true,
+                SwapEffect = SwapEffect.Discard,
+                EnableAutoDepthStencil = true,
+                AutoDepthStencilFormat = DepthFormat.D24S8
+            };
 
             try
             {
@@ -106,12 +104,9 @@ namespace Ohana3DS_Rebirth.Ohana
             textures.Clear();
             if (!useLegacyTexturing) fragmentShader.Dispose();
             device.Dispose();
-            foreach (RenderBase.OModel mdl in model.model)
+            foreach (RenderBase.OModelObject obj in model.model.SelectMany(mdl => mdl.modelObject))
             {
-                foreach (RenderBase.OModelObject obj in mdl.modelObject)
-                {
-                    obj.animatedRenderBuffer.Clear();
-                }
+                obj.animatedRenderBuffer.Clear();
             }
             model.model.Clear();
             model.texture.Clear();
@@ -126,8 +121,8 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             if (!useLegacyTexturing)
             {
-                string compilationErros = null;
-                fragmentShader = Effect.FromString(device, Ohana3DS_Rebirth.Properties.Resources.OFragmentShader, null, null, ShaderFlags.SkipOptimization, null, out compilationErros);
+                string compilationErros;
+                fragmentShader = Effect.FromString(device, Properties.Resources.OFragmentShader, null, null, ShaderFlags.SkipOptimization, null, out compilationErros);
                 if (compilationErros != "") MessageBox.Show("Failed to compile Fragment Shader!" + Environment.NewLine + compilationErros, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 fragmentShader.Technique = "Combiner";
             }
@@ -153,13 +148,11 @@ namespace Ohana3DS_Rebirth.Ohana
             int bufferIndex = 0;
             for (float i = -50.0f; i <= 50.0f; i += 2.0f)
             {
-                if (i != 0)
-                {
-                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(-50.0f / scale, 0, i / scale, Color.White.ToArgb());
-                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(50.0f / scale, 0, i / scale, Color.White.ToArgb());
-                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, -50.0f / scale, Color.White.ToArgb());
-                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, 50.0f / scale, Color.White.ToArgb());
-                }
+                if (i == 0) continue;
+                gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(-50.0f / scale, 0, i / scale, Color.White.ToArgb());
+                gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(50.0f / scale, 0, i / scale, Color.White.ToArgb());
+                gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, -50.0f / scale, Color.White.ToArgb());
+                gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, 50.0f / scale, Color.White.ToArgb());
             }
             gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(0, 0, -50.0f / scale, Color.FromArgb(0xff, 0x7f, 0x7f).ToArgb());
             gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(0, 0, 50.0f / scale, Color.FromArgb(0xff, 0x7f, 0x7f).ToArgb());
@@ -247,18 +240,18 @@ namespace Ohana3DS_Rebirth.Ohana
                             {
                                 RenderBase.OTextureCombiner textureCombiner = material.fragmentShader.textureCombiner[i];
 
-                                fragmentShader.SetValue(String.Format("combiners[{0}].colorCombine", i.ToString()), (int)textureCombiner.combineRgb);
-                                fragmentShader.SetValue(String.Format("combiners[{0}].alphaCombine", i.ToString()), (int)textureCombiner.combineAlpha);
+                                fragmentShader.SetValue(String.Format("combiners[{0}].colorCombine", i), (int)textureCombiner.combineRgb);
+                                fragmentShader.SetValue(String.Format("combiners[{0}].alphaCombine", i), (int)textureCombiner.combineAlpha);
 
-                                fragmentShader.SetValue(String.Format("combiners[{0}].colorScale", i.ToString()), (float)textureCombiner.rgbScale);
-                                fragmentShader.SetValue(String.Format("combiners[{0}].alphaScale", i.ToString()), (float)textureCombiner.alphaScale);
+                                fragmentShader.SetValue(String.Format("combiners[{0}].colorScale", i), (float)textureCombiner.rgbScale);
+                                fragmentShader.SetValue(String.Format("combiners[{0}].alphaScale", i), (float)textureCombiner.alphaScale);
 
                                 for (int j = 0; j < 3; j++)
                                 {
-                                    fragmentShader.SetValue(String.Format("combiners[{0}].colorArg[{1}]", i.ToString(), j.ToString()), (int)textureCombiner.rgbSource[j]);
-                                    fragmentShader.SetValue(String.Format("combiners[{0}].colorOp[{1}]", i.ToString(), j.ToString()), (int)textureCombiner.rgbOperand[j]);
-                                    fragmentShader.SetValue(String.Format("combiners[{0}].alphaArg[{1}]", i.ToString(), j.ToString()), (int)textureCombiner.alphaSource[j]);
-                                    fragmentShader.SetValue(String.Format("combiners[{0}].alphaOp[{1}]", i.ToString(), j.ToString()), (int)textureCombiner.alphaOperand[j]);
+                                    fragmentShader.SetValue(String.Format("combiners[{0}].colorArg[{1}]", i, j), (int)textureCombiner.rgbSource[j]);
+                                    fragmentShader.SetValue(String.Format("combiners[{0}].colorOp[{1}]", i, j), (int)textureCombiner.rgbOperand[j]);
+                                    fragmentShader.SetValue(String.Format("combiners[{0}].alphaArg[{1}]", i, j), (int)textureCombiner.alphaSource[j]);
+                                    fragmentShader.SetValue(String.Format("combiners[{0}].alphaOp[{1}]", i, j), (int)textureCombiner.alphaOperand[j]);
                                 }
 
                                 Color constantColor = Color.White;
@@ -277,7 +270,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                     case RenderBase.OConstantColor.specular1: constantColor = material.materialColor.specular1; break;
                                 }
 
-                                fragmentShader.SetValue(String.Format("combiners[{0}].constant", i.ToString()), new Vector4(
+                                fragmentShader.SetValue(String.Format("combiners[{0}].constant", i), new Vector4(
                                     (float)constantColor.R / 0xff,
                                     (float)constantColor.G / 0xff,
                                     (float)constantColor.B / 0xff,
@@ -378,17 +371,13 @@ namespace Ohana3DS_Rebirth.Ohana
                         if (obj.renderBuffer.Length > 0)
                         {
                             if (!useLegacyTexturing) fragmentShader.BeginPass(0);
-                            VertexFormats vertexFormat = VertexFormats.Position | VertexFormats.Normal | VertexFormats.Texture3 | VertexFormats.Diffuse;
+                            const VertexFormats vertexFormat = VertexFormats.Position | VertexFormats.Normal | VertexFormats.Texture3 | VertexFormats.Diffuse;
                             device.VertexFormat = vertexFormat;
                             VertexBuffer vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), obj.renderBuffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
-                            if (animate)
-                            {
-                                vertexBuffer.SetData(obj.animatedRenderBuffer[frame], 0, LockFlags.None);
-                            }
-                            else
-                            {
-                                vertexBuffer.SetData(obj.renderBuffer, 0, LockFlags.None);
-                            }
+                            vertexBuffer.SetData(animate 
+                                ? obj.animatedRenderBuffer[frame] 
+                                : obj.renderBuffer, 0,
+                                LockFlags.None);
                             device.SetStreamSource(0, vertexBuffer, 0);
                             device.DrawPrimitives(PrimitiveType.TriangleList, 0, obj.renderBuffer.Length / 3);
                             vertexBuffer.Dispose();
@@ -426,7 +415,7 @@ namespace Ohana3DS_Rebirth.Ohana
         private float wrap(float value)
         {
             if (value < 0.0f) return (float)((Math.PI * 2) + value);
-            else return (float)(value % (Math.PI * 2));
+            return (float)(value % (Math.PI * 2));
         }
 
         #region "Materials helper functions"
@@ -584,20 +573,17 @@ namespace Ohana3DS_Rebirth.Ohana
             }
             if (minFrame == maxFrame) return a.value;
 
-            float mu, m0, m1, mu2, mu3;
-            float a0, a1, a2, a3;
-
-            mu = (frame - minFrame) / (maxFrame - minFrame);
-            mu2 = mu * mu;
-            mu3 = mu2 * mu;
-            m0 = a.inSlope / 2;
+            float mu = (frame - minFrame) / (maxFrame - minFrame);
+            float mu2 = mu * mu;
+            float mu3 = mu2 * mu;
+            float m0 = a.inSlope / 2;
             m0 += (b.value - a.value) / 2;
-            m1 = (b.value - a.value) / 2;
+            float m1 = (b.value - a.value) / 2;
             m1 += b.outSlope / 2;
-            a0 = 2 * mu3 - 3 * mu2 + 1;
-            a1 = mu3 - 2 * mu2 + mu;
-            a2 = mu3 - mu2;
-            a3 = -2 * mu3 + 3 * mu2;
+            float a0 = 2 * mu3 - 3 * mu2 + 1;
+            float a1 = mu3 - 2 * mu2 + mu;
+            float a2 = mu3 - mu2;
+            float a3 = -2 * mu3 + 3 * mu2;
 
             return (a0 * a.value + a1 * m0 + a2 * m1 + a3 * b.value);
         }
@@ -624,10 +610,12 @@ namespace Ohana3DS_Rebirth.Ohana
 
                     for (int b2 = 0; b2 < skeleton.Count; b2++)
                     {
-                        frameAnimationSkeleton[b2] = new RenderBase.OBone();
-                        frameAnimationSkeleton[b2].parentId = skeleton[b2].parentId;
-                        frameAnimationSkeleton[b2].rotation = new RenderBase.OVector3(skeleton[b2].rotation);
-                        frameAnimationSkeleton[b2].translation = new RenderBase.OVector3(skeleton[b2].translation);
+                        frameAnimationSkeleton[b2] = new RenderBase.OBone
+                        {
+                            parentId = skeleton[b2].parentId,
+                            rotation = new RenderBase.OVector3(skeleton[b2].rotation),
+                            translation = new RenderBase.OVector3(skeleton[b2].translation)
+                        };
                         foreach (RenderBase.OSkeletalAnimationBone b in bone)
                         {
                             if (b.name == skeleton[b2].name)
@@ -661,7 +649,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 {
                     obj.animatedRenderBuffer.Clear();
 
-                    for (int frame = 0; frame < animationSkeleton.Count; frame++)
+                    foreach (Matrix[] m in animationSkeleton)
                     {
                         RenderBase.CustomVertex[] buffer = new RenderBase.CustomVertex[obj.renderBuffer.Length];
 
@@ -678,7 +666,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             {
                                 float weight = 1.0f;
                                 if (weightIndex < input.weight.Count) weight = input.weight[weightIndex++];
-                                p += Vector3.Transform(position, animationSkeleton[frame][boneIndex]) * weight;
+                                p += Vector3.Transform(position, m[boneIndex]) * weight;
                             }
                             if (input.node.Count == 0) p = new Vector4(position.X, position.Y, position.Z, 0);
 

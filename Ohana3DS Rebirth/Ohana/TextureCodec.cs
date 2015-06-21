@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Drawing;
-using System.IO;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
@@ -89,7 +86,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                 int y = (tileOrder[pixel] - x) / 8;
                                 long outputOffset = ((tX * 8) + x + (((tY * 8 + y)) * width)) * 4;
 
-                                ushort pixelData = (ushort)(data[dataOffset] | ((ushort)data[dataOffset + 1] << 8));
+                                ushort pixelData = (ushort)(data[dataOffset] | (data[dataOffset + 1] << 8));
 
                                 byte r = (byte)(((pixelData >> 1) & 0x1f) << 3);
                                 byte g = (byte)(((pixelData >> 6) & 0x1f) << 3);
@@ -118,7 +115,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                 int y = (tileOrder[pixel] - x) / 8;
                                 long outputOffset = ((tX * 8) + x + (((tY * 8 + y)) * width)) * 4;
 
-                                ushort pixelData = (ushort)(data[dataOffset] | ((ushort)data[dataOffset + 1] << 8));
+                                ushort pixelData = (ushort)(data[dataOffset] | (data[dataOffset + 1] << 8));
 
                                 byte r = (byte)((pixelData & 0x1f) << 3);
                                 byte g = (byte)(((pixelData >> 5) & 0x3f) << 2);
@@ -146,7 +143,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                 int y = (tileOrder[pixel] - x) / 8;
                                 long outputOffset = ((tX * 8) + x + (((tY * 8 + y)) * width)) * 4;
 
-                                ushort pixelData = (ushort)(data[dataOffset] | ((ushort)data[dataOffset + 1] << 8));
+                                ushort pixelData = (ushort)(data[dataOffset] | (data[dataOffset + 1] << 8));
 
                                 byte r = (byte)((pixelData >> 4) & 0xf);
                                 byte g = (byte)((pixelData >> 8) & 0xf);
@@ -378,16 +375,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             int blockOffset = (tX + (tY * 4)) * 4;
                             Buffer.BlockCopy(colorBlock, blockOffset, output, outputOffset, 3);
 
-                            byte a = 0;
-                            if (toggle)
-                            {
-                                a = (byte)((alphaBlock[alphaOffset] & 0xf0) >> 4);
-                                alphaOffset++;
-                            }
-                            else
-                            {
-                                a = (byte)(alphaBlock[alphaOffset] & 0xf);
-                            }
+                            byte a = toggle ? (byte)((alphaBlock[alphaOffset++] & 0xf0) >> 4) : (byte)(alphaBlock[alphaOffset] & 0xf);
                             toggle = !toggle;
                             output[outputOffset + 3] = (byte)((a << 4) | a);
                         }
@@ -406,13 +394,13 @@ namespace Ohana3DS_Rebirth.Ohana
             bool flip = (blockTop & 0x1000000) != 0;
             bool difference = (blockTop & 0x2000000) != 0;
 
-            uint r1 = 0;
-            uint g1 = 0;
-            uint b1 = 0;
+            uint r1;
+            uint g1;
+            uint b1;
 
-            uint r2 = 0;
-            uint g2 = 0;
-            uint b2 = 0;
+            uint r2;
+            uint g2;
+            uint b2;
 
             if (difference)
             {
@@ -502,17 +490,11 @@ namespace Ohana3DS_Rebirth.Ohana
         private static Color etc1Pixel(uint r, uint g, uint b, int x, int y, uint block, uint table)
         {
             int index = x * 4 + y;
-            int pixel = 0;
             uint MSB = block << 1;
 
-            if (index < 8)
-            {
-                pixel = etc1LUT[table, ((block >> (index + 24)) & 1) + ((MSB >> (index + 8)) & 2)];
-            }
-            else
-            {
-                pixel = etc1LUT[table, ((block >> (index + 8)) & 1) + ((MSB >> (index - 8)) & 2)];
-            }
+            int pixel = index < 8 
+                ? etc1LUT[table, ((block >> (index + 24)) & 1) + ((MSB >> (index + 8)) & 2)] 
+                : etc1LUT[table, ((block >> (index + 8)) & 1) + ((MSB >> (index - 8)) & 2)];
 
             r = clamp((int)(r + pixel));
             g = clamp((int)(g + pixel));
@@ -524,8 +506,8 @@ namespace Ohana3DS_Rebirth.Ohana
         private static byte clamp(int value)
         {
             if (value > 0xff) return 0xff;
-            else if (value < 0) return 0;
-            else return (byte)(value & 0xff);
+            if (value < 0) return 0;
+            return (byte)(value & 0xff);
         }
 
         private static int[] etc1Scramble(int width, int height)

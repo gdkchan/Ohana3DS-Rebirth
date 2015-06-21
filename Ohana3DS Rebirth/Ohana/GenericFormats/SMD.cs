@@ -1,12 +1,9 @@
 ﻿//Ohana3DS Source Model Importer/Exporter by gdkchan
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.IO;
 using System.Globalization;
-using System.Windows.Forms;
 
 namespace Ohana3DS_Rebirth.Ohana.GenericFormats
 {
@@ -26,7 +23,7 @@ namespace Ohana3DS_Rebirth.Ohana.GenericFormats
             output.AppendLine("nodes");
             for (int i = 0; i < mdl.skeleton.Count; i++)
             {
-                output.AppendLine(i.ToString() + " \"" + mdl.skeleton[i].name + "\" " + mdl.skeleton[i].parentId.ToString());
+                output.AppendLine(i + " \"" + mdl.skeleton[i].name + "\" " + mdl.skeleton[i].parentId);
             }
             output.AppendLine("end");
             output.AppendLine("skeleton");
@@ -53,8 +50,7 @@ namespace Ohana3DS_Rebirth.Ohana.GenericFormats
             uint triangleCount = 0;
             foreach (RenderBase.OModelObject obj in mdl.modelObject)
             {
-                string textureName = mdl.material[obj.materialId].name0;
-                if (textureName == null) textureName = "dummy";
+                string textureName = mdl.material[obj.materialId].name0 ?? "dummy";
 
                 foreach (RenderBase.OVertex vertex in obj.obj)
                 {
@@ -64,12 +60,12 @@ namespace Ohana3DS_Rebirth.Ohana.GenericFormats
                     float x = vertex.position.x;
                     float y = vertex.position.y;
                     float z = vertex.position.z;
-                    for (int b = 0; b < vertex.node.Count; b++)
-                    {
-                        /*x += skl[vertex.node[b]].x;
-                        y += skl[vertex.node[b]].y;
-                        z += skl[vertex.node[b]].z;*/
-                    }
+                    //for (int b = 0; b < vertex.node.Count; b++)
+                    //{
+                    //    /*x += skl[vertex.node[b]].x;
+                    //    y += skl[vertex.node[b]].y;
+                    //    z += skl[vertex.node[b]].z;*/
+                    //}
                     line += " " + getString(x);
                     line += " " + getString(y);
                     line += " " + getString(z);
@@ -79,10 +75,10 @@ namespace Ohana3DS_Rebirth.Ohana.GenericFormats
                     line += " " + getString(vertex.texture0.x);
                     line += " " + getString(vertex.texture0.y);
 
-                    line += " " + vertex.node.Count.ToString();
+                    line += " " + vertex.node.Count;
                     for (int i = 0; i < vertex.node.Count; i++)
                     {
-                        line += " " + vertex.node[i].ToString();
+                        line += " " + vertex.node[i];
                         if (i < vertex.weight.Count)
                             line += " " + getString(vertex.weight[i]);
                         else

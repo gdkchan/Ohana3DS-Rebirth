@@ -2,13 +2,9 @@
 //Inherit from this control to make any window you want to be dockable.
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
+using Ohana3DS_Rebirth.Properties;
 
 namespace Ohana3DS_Rebirth.GUI
 {
@@ -18,7 +14,7 @@ namespace Ohana3DS_Rebirth.GUI
         private int mouseX;
         private int mouseY;
 
-        private bool dockSwitch = false;
+        private bool dockSwitch;
 
         private Bitmap hoverRed = new Bitmap(16, 16);
         private Bitmap hoverBlue = new Bitmap(16, 16);
@@ -50,7 +46,7 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void updateTitle()
         {
-            LblTitle.Text = DrawingHelper.clampText(title, LblTitle.Font, this.Width - 32);
+            LblTitle.Text = DrawingHelper.clampText(title, LblTitle.Font, Width - 32);
         }
 
         public string Title
@@ -86,8 +82,8 @@ namespace Ohana3DS_Rebirth.GUI
             if (e.Button == MouseButtons.Left)
             {
                 drag = true;
-                mouseX = Cursor.Position.X - this.Left;
-                mouseY = Cursor.Position.Y - this.Top;
+                mouseX = Cursor.Position.X - Left;
+                mouseY = Cursor.Position.Y - Top;
             }
         }
 
@@ -97,8 +93,8 @@ namespace Ohana3DS_Rebirth.GUI
             {
                 int x = Math.Max(0, Math.Min(container.Width - 1, Cursor.Position.X - mouseX));
                 int y = Math.Max(0, Math.Min(container.Height - 1, Cursor.Position.Y - mouseY));
-                this.Location = new Point(x, y);
-                this.BringToFront();
+                Location = new Point(x, y);
+                BringToFront();
             }
         }
 
@@ -107,7 +103,7 @@ namespace Ohana3DS_Rebirth.GUI
             if (e.Button == MouseButtons.Left)
             {
                 drag = false;
-                this.MoveEnded(this, EventArgs.Empty);
+                MoveEnded(this, EventArgs.Empty);
             }
         }
 
@@ -122,7 +118,7 @@ namespace Ohana3DS_Rebirth.GUI
             }
             private void BtnClose_MouseDown(object sender, MouseEventArgs e)
             {
-                if (e.Button == MouseButtons.Left) this.Visible = false;
+                if (e.Button == MouseButtons.Left) Visible = false;
             }
 
             private void BtnPin_MouseEnter(object sender, EventArgs e)
@@ -138,15 +134,10 @@ namespace Ohana3DS_Rebirth.GUI
                 if (e.Button == MouseButtons.Left)
                 {
                     dockSwitch = !dockSwitch;
-                    this.ToggleDockable(this, EventArgs.Empty);
-                    if (dockSwitch)
-                    {
-                        BtnPin.Image = Ohana3DS_Rebirth.Properties.Resources.icn_locked;
-                    }
-                    else
-                    {
-                        BtnPin.Image = Ohana3DS_Rebirth.Properties.Resources.icn_dockable;
-                    }
+                    ToggleDockable(this, EventArgs.Empty);
+                    BtnPin.Image = dockSwitch 
+                        ? Resources.icn_locked 
+                        : Resources.icn_dockable;
                     BtnPin.BackgroundImage = hoverBlue;
                 }
             }
