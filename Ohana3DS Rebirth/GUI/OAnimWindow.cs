@@ -14,10 +14,13 @@ namespace Ohana3DS_Rebirth.GUI
     public partial class OAnimWindow : ODockWindow
     {
         RenderEngine renderer;
+        private bool pause = false;
 
         public OAnimWindow()
         {
             InitializeComponent();
+            oButtonPause.BackgroundImage = Properties.Resources.play;
+            oButtonStop.BackgroundImage = Properties.Resources.stop;
         }
 
         public void initialize(RenderEngine renderEngine)
@@ -27,12 +30,31 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void oButtonPlay_Click(object sender, EventArgs e)
         {
+            oButtonPause.BackgroundImage = Properties.Resources.pause;
+            renderer.loadAnimation((int)animNumBox.Value);
             renderer.playAnimation();
         }
 
-        private void animNumBox_ValueChanged(object sender, EventArgs e)
+        private void oButtonPause_Click(object sender, EventArgs e)
         {
-            renderer.loadAnimation((int)animNumBox.Value);
+            if(pause){
+                oButtonPause.BackgroundImage = Properties.Resources.pause;
+                pause = false;
+                renderer.playAnimation();
+            }
+            else
+            {
+                oButtonPause.BackgroundImage = Properties.Resources.play;
+                pause = true;
+                renderer.pauseAnimation();
+            }
+        }
+
+        private void oButtonStop_Click(object sender, EventArgs e)
+        {
+            oButtonPause.BackgroundImage = Properties.Resources.play;
+            pause = true;
+            renderer.stopAnimation();
         }
 
         private void oButtonLoad_Click(object sender, EventArgs e)
@@ -42,6 +64,8 @@ namespace Ohana3DS_Rebirth.GUI
                 RenderBase.OModelGroup animation = Ohana.BCH.load(openAnimDialog.FileName);
                 renderer.model.skeletalAnimation = animation.skeletalAnimation;
                 oButtonPlay.Enabled = true;
+                oButtonPause.Enabled = true;
+                oButtonStop.Enabled = true;
                 animNumBox.Enabled = true;
             }
         }
