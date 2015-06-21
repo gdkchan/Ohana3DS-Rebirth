@@ -1,8 +1,5 @@
 ﻿//A bunch of functions to help drawing of the other controls
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
 using System.Drawing.Drawing2D;

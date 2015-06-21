@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 using System.IO;
 
 namespace Ohana3DS_Rebirth.Ohana
@@ -12,8 +9,8 @@ namespace Ohana3DS_Rebirth.Ohana
         ///     Read an ASCII String from a given Reader at a given address.
         ///     Note that the text MUST end with a Null Terminator (0x0).
         /// </summary>
-        /// <param name="Input">The Reader of the file Stream</param>
-        /// <param name="Address">Address where the text begins</param>
+        /// <param name="input">The Reader of the file Stream</param>
+        /// <param name="address">Address where the text begins</param>
         /// <returns></returns>
         public static string readString(BinaryReader input, uint address)
         {

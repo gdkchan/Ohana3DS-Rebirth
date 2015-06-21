@@ -4,9 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -49,7 +46,7 @@ namespace Ohana3DS_Rebirth.GUI
             SetStyle(ControlStyles.AllPaintingInWmPaint, true);
             SetStyle(ControlStyles.DoubleBuffer, true);
             smoothScroll.Interval = 10;
-            smoothScroll.Tick += new EventHandler(smoothScroll_Tick);
+            smoothScroll.Tick += smoothScroll_Tick;
         }
 
         public void initialize(ODock dockWindow)
@@ -68,7 +65,7 @@ namespace Ohana3DS_Rebirth.GUI
                 window.dispose();
             }
             windowList.Clear();
-            this.Refresh();
+            Refresh();
         }
 
         [Browsable(false)]
@@ -91,7 +88,7 @@ namespace Ohana3DS_Rebirth.GUI
         /// <param name="window">The Window to be added</param>
         public void addWindow(ODockWindow window)
         {
-            window.VisibleChanged += new EventHandler(Window_VisibleChanged);
+            window.VisibleChanged += Window_VisibleChanged;
 
             windowList.Add(window);
         }
@@ -104,7 +101,7 @@ namespace Ohana3DS_Rebirth.GUI
             window.Visible = !window.Visible;
             item.Checked = window.Visible;
 
-            this.Refresh();
+            Refresh();
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -112,8 +109,8 @@ namespace Ohana3DS_Rebirth.GUI
             int left = scrollX * -1;
             foreach (ODockWindow window in windowList)
             {
-                Rectangle rect = new Rectangle(left, 4, windowWidth, this.Height - 8);
-                Rectangle rectShadow = new Rectangle(rect.X, rect.Y + rect.Height, rect.Width, this.Height - (rect.Y + rect.Height));
+                Rectangle rect = new Rectangle(left, 4, windowWidth, Height - 8);
+                Rectangle rectShadow = new Rectangle(rect.X, rect.Y + rect.Height, rect.Width, Height - (rect.Y + rect.Height));
 
                 if (window.Visible)
                 {
@@ -130,17 +127,17 @@ namespace Ohana3DS_Rebirth.GUI
                 e.Graphics.DrawString(window.Title, font, new SolidBrush(Color.White), new Point(rect.Left + 16, rect.Top));
                 font.Dispose();
 
-                Rectangle iconRect = new Rectangle(rect.X, rect.Y + (rect.Height / 2) - 8, 16, 16);
+                // Rectangle iconRect = new Rectangle(rect.X, rect.Y + (rect.Height / 2) - 8, 16, 16);
                 
                 left += windowWidth + 4;
             }
 
-            maxScrollX = (scrollX + (left - 4)) - this.Width;
-            Rectangle leftScrollRect = new Rectangle(0, ((this.Height / 2) - 8) + 2, 16, 16);
-            Rectangle rightScrollRect = new Rectangle(this.Width - 16, ((this.Height / 2) - 8) + 2, 16, 16);
+            maxScrollX = (scrollX + (left - 4)) - Width;
+            Rectangle leftScrollRect = new Rectangle(0, ((Height / 2) - 8) + 2, 16, 16);
+            Rectangle rightScrollRect = new Rectangle(Width - 16, ((Height / 2) - 8) + 2, 16, 16);
 
             if (scrollX > 0) { e.Graphics.DrawImage(Resources.icn_wm_scroll_left, leftScrollRect); hasLeftScroll = true; } else { hasLeftScroll = false; }
-            if ((left - 4) > this.Width) { e.Graphics.DrawImage(Resources.icn_wm_scroll_right, rightScrollRect); hasRightScroll = true; } else { hasRightScroll = false; }
+            if ((left - 4) > Width) { e.Graphics.DrawImage(Resources.icn_wm_scroll_right, rightScrollRect); hasRightScroll = true; } else { hasRightScroll = false; }
 
  	        base.OnPaint(e);
         }
@@ -149,9 +146,9 @@ namespace Ohana3DS_Rebirth.GUI
         {
             if (e.Button == MouseButtons.Left)
             {
-                Rectangle mouseRect = new Rectangle(this.PointToClient(Cursor.Position), new Size(1, 1));
-                Rectangle leftScrollRect = new Rectangle(0, ((this.Height / 2) - 8) + 2, 16, 16);
-                Rectangle rightScrollRect = new Rectangle(this.Width - 16, ((this.Height / 2) - 8) + 2, 16, 16);
+                Rectangle mouseRect = new Rectangle(PointToClient(Cursor.Position), new Size(1, 1));
+                Rectangle leftScrollRect = new Rectangle(0, ((Height / 2) - 8) + 2, 16, 16);
+                Rectangle rightScrollRect = new Rectangle(Width - 16, ((Height / 2) - 8) + 2, 16, 16);
 
                 if (hasLeftScroll && mouseRect.IntersectsWith(leftScrollRect))
                 {
@@ -168,14 +165,14 @@ namespace Ohana3DS_Rebirth.GUI
                 }
 
                 int left = scrollX * -1;
-                for (int i = 0; i < windowList.Count; i++)
+                foreach (ODockWindow w in windowList)
                 {
-                    Rectangle rect = new Rectangle(left, 4, windowWidth, this.Height - 8);
+                    Rectangle rect = new Rectangle(left, 4, windowWidth, Height - 8);
                     
                     if (mouseRect.IntersectsWith(rect))
                     {
-                        windowList[i].Visible = !windowList[i].Visible;
-                        this.Refresh();
+                        w.Visible = !w.Visible;
+                        Refresh();
                     }
 
                     left += windowWidth + 4;
@@ -187,14 +184,14 @@ namespace Ohana3DS_Rebirth.GUI
 
         protected override void OnMouseMove(MouseEventArgs e)
         {
-            this.Refresh();
+            Refresh();
      
             base.OnMouseMove(e);
         }
 
         protected override void OnMouseLeave(EventArgs e)
         {
-            this.Refresh();
+            Refresh();
 
             base.OnMouseLeave(e);
         }
@@ -205,14 +202,14 @@ namespace Ohana3DS_Rebirth.GUI
             scrollX = 0;
             scrollGoal = 0;
 
-            this.Refresh();
+            Refresh();
 
             base.OnResize(e);
         }
 
         private void Window_VisibleChanged(Object sender, EventArgs e)
         {
-            this.Refresh();
+            Refresh();
         }
 
         private void smoothScroll_Tick(Object sender, EventArgs e)
@@ -229,7 +226,7 @@ namespace Ohana3DS_Rebirth.GUI
                     scrollGoal--;
                     scrollX = Math.Min(scrollX + 8, maxScrollX);
                 }
-                this.Refresh();
+                Refresh();
             }
             else
             {
