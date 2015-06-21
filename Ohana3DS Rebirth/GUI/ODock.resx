@@ -117,31 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="LblTitle.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAACwwAAAsMAT9AIsgAAAAHdElNRQffBBkVFBWus+iqAAADzklEQVQ4Tx2SW1DUBRTG
-        /0ONL/XSONn4QEQlSgONwIjEAA0KoqaCuYxcZbnfZFdQXNZYdnECnEC5i7qgwJJc5LKAi1rQqi0sJKCm
-        2KACcRWYRAQyx6xff3v6Hs75vnO+7xyhrzI1cvlXLYvGbGaaFax0ZbFgSGeuVcl82zFmW9JY7FCxfFXN
-        8jU18wYVf7yp6dMYrZHfE4YaM4YWzIVMi41PjHnMdhcy16Fm9komc10nmDZomGo6yoIxh0VR5Pntc9w/
-        F8tzUz6j9UdfC7NtCgbPRvHwUgpzNwoYKk/gVkkco62ZPDOdoq84jh8yAvitXsVE/RGe9pbQ+V0Ik63p
-        jF5WI3RfjaKtej83TRE8rEikryiOhvQYOjQH+L06Cf2xEAyqYFpSJNwti2OgKJJ2fSA9F6WYWsIRrrQE
-        U1K5g+ZaUSQ7jM5COTculdJdlUVd4h7M51V05stpUkehT5PQKPflvM6PvDJvrhlDEXrqIlCnulN5fA9n
-        EoIo/zaJihwFpsYyKo7E8NNZDZeLVRhErEuPpzZ6N9kpnnwjc6Xm1F7RQr6U+uN+XEjYRe7BcML378Vl
-        /ToaSrMZut7AY3MTRapDBPh4ckopp8jfh4KIrVwvPkDGdmeEWnHNLk0AJ/d5Uq45hDxCipezIw96Wvlr
-        /havF27ToM3jXYu3kH7tR6l0B0pXBx5XJFEWuBXBmBXCndMxqLe6YqzK5+cGLc3lJ1maMLMyc4sXTwYY
-        6TegiJXS9f1pqo8EE239KWM1csz5YoiPxKSHtIno4nwxFGbzcryHxZGbIrmXxXEzS5Nv0MTMQAcrw0aO
-        ++/mkKOd+EQyhisTxQxypTzQJtB8eB/VGQdZGu/lz+l+lkXi8qSZ5SkRp37h1fwgffoKlF5ulARuYfSi
-        THyoeAR9mj/qLzdR6OtBQ7KE9nwNrxbu/T99/tFNno318HJukIk711C4e5Bsb4cxK5Qb4sl1cr/XgmKb
-        a2/uTrd/E61tqIreiczOHl1aMk9HTKL/fjHIAcxNWpQuboStsaLtsASZrS1Sy4//1iUHxgnbbR0/SPX5
-        Qpbi9DmRn6x76rvasjvJdiM6WTym6mIMJ1SkODn/E/S+1cqW99aMnAvzRrL2Q71k/Wdno7w8Ngvudl4W
-        uzZscFJu2Ty2bbVVgecmB7+MwK96axLCuRAaRI00lFg3lzHvjQ5uVm+/E6zxcnnhZW0Z6e3qsBawEBTR
-        yr0+lparfG3sQ8IiY3O1LRXD5vYc7reW0ppxFENmMh2VKgoaK4eDU5OdJTYf/Rib7bPKoK+3eTBwN+c/
-        6oWU4f9fcNIAAAAASUVORK5CYII=
-</value>
-  </data>
-  <metadata name="MainMenu.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
+  <metadata name="$this.TrayLargeIcon" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>False</value>
   </metadata>
 </root>

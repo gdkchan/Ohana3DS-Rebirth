@@ -59,6 +59,7 @@
             // 
             // DockContainer
             // 
+            this.DockContainer.AllowDrop = true;
             this.DockContainer.BackColor = System.Drawing.Color.Transparent;
             this.DockContainer.Dock = System.Windows.Forms.DockStyle.Fill;
             this.DockContainer.Location = new System.Drawing.Point(0, 20);
@@ -100,10 +101,13 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.ClientSize = new System.Drawing.Size(640, 480);
+            this.Cursor = System.Windows.Forms.Cursors.Default;
             this.MinimumSize = new System.Drawing.Size(256, 128);
             this.Name = "FrmMain";
             this.Text = "Ohana3DS";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmMain_FormClosing);
+            this.DragDrop += new System.Windows.Forms.DragEventHandler(this.FrmMain_DragDrop);
+            this.DragEnter += new System.Windows.Forms.DragEventHandler(this.FrmMain_DragEnter);
             this.Controls.SetChildIndex(this.ContentContainer, 0);
             this.ContentContainer.ResumeLayout(false);
             this.MainMenu.ResumeLayout(false);

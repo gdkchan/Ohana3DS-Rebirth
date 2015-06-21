@@ -14,6 +14,7 @@ namespace Ohana3DS_Rebirth
 {
     public partial class FrmMain : Ohana3DS_Rebirth.OForm
     {
+
         public FrmMain()
         {
             InitializeComponent();
@@ -21,6 +22,7 @@ namespace Ohana3DS_Rebirth
 
             this.MaximumSize = Screen.PrimaryScreen.WorkingArea.Size;
             MainMenu.Renderer = new GUI.OMenuStrip();
+            this.AllowDrop = true;
         }
 
         private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
@@ -48,9 +50,16 @@ namespace Ohana3DS_Rebirth
             openDlg.Filter = "Binary CTR H3D File|*.bch";
             if (openDlg.ShowDialog() == DialogResult.OK)
             {
+                openBCH(openDlg.FileName);
+            }
+        }
+
+        private void openBCH(string filename)
+        {
+            
                 WindowManager.flush();
 
-                FileIdentifier.fileFormat format = FileIdentifier.identify(openDlg.FileName);
+                FileIdentifier.fileFormat format = FileIdentifier.identify(filename);
                 switch (format)
                 {
                     case FileIdentifier.fileFormat.H3D:
@@ -58,7 +67,7 @@ namespace Ohana3DS_Rebirth
                         GUI.OTextureWindow textureWindow = new GUI.OTextureWindow();
                         GUI.OAnimWindow animWindow = new GUI.OAnimWindow();
 
-                        String fileName = Path.GetFileNameWithoutExtension(openDlg.FileName);
+                        String fileName = Path.GetFileNameWithoutExtension(filename);
                         modelWindow.Title = "Model [" + fileName + "]";
                         textureWindow.Title = "Textures [" + fileName + "]";
                         animWindow.Title = "Animations [" + fileName + "]";
@@ -70,8 +79,8 @@ namespace Ohana3DS_Rebirth
                         WindowManager.Refresh();
 
                         RenderEngine renderer = new RenderEngine();
-                        
-                        RenderBase.OModelGroup model = Ohana.BCH.load(openDlg.FileName);
+
+                        RenderBase.OModelGroup model = Ohana.BCH.load(filename);
                         renderer.model = model;
                         Application.DoEvents(); //Call this to avoid clicks on the OpenDialog going to ViewPort
 
@@ -84,7 +93,6 @@ namespace Ohana3DS_Rebirth
                         MessageBox.Show("Unsupported file format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                         break;
                 }
-            }
         }
 
         private void launchWindow(GUI.ODockWindow window, bool visible = true)
@@ -92,6 +100,16 @@ namespace Ohana3DS_Rebirth
             window.Visible = visible;
             DockContainer.launch(window);
             WindowManager.addWindow(window);
+        }
+
+        private void FrmMain_DragDrop(object sender, DragEventArgs e)
+        {
+            //stubbed
+        }
+
+        private void FrmMain_DragEnter(object sender, DragEventArgs e)
+        {
+            //stubbed
         }
     }
 }

@@ -180,6 +180,9 @@
     <EmbeddedResource Include="GUI\OAnimWindow.resx">
       <DependentUpon>OAnimWindow.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GUI\ODock.resx">
+      <DependentUpon>ODock.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\ODockWindow.resx">
       <DependentUpon>ODockWindow.cs</DependentUpon>
     </EmbeddedResource>

@@ -15,6 +15,7 @@ namespace Ohana3DS_Rebirth.GUI
     {
         RenderEngine renderer;
         private bool pause = false;
+        private bool animLoaded = false;
 
         public OAnimWindow()
         {
@@ -33,10 +34,12 @@ namespace Ohana3DS_Rebirth.GUI
             oButtonPause.BackgroundImage = Properties.Resources.pause;
             renderer.loadAnimation((int)animNumBox.Value);
             renderer.playAnimation();
+            animLoaded = true;
         }
 
         private void oButtonPause_Click(object sender, EventArgs e)
         {
+            if (!animLoaded) return;
             if(pause){
                 oButtonPause.BackgroundImage = Properties.Resources.pause;
                 pause = false;
@@ -52,6 +55,7 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void oButtonStop_Click(object sender, EventArgs e)
         {
+            if (!animLoaded) return;
             oButtonPause.BackgroundImage = Properties.Resources.play;
             pause = true;
             renderer.stopAnimation();

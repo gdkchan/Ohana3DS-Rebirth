@@ -139,7 +139,7 @@
             this.Controls.Add(this.oButtonLoad);
             this.Controls.Add(this.groupBox1);
             this.Name = "OAnimWindow";
-            this.Size = new System.Drawing.Size(191, 222);
+            this.Size = new System.Drawing.Size(191, 206);
             this.Controls.SetChildIndex(this.groupBox1, 0);
             this.Controls.SetChildIndex(this.oButtonLoad, 0);
             this.groupBox1.ResumeLayout(false);
