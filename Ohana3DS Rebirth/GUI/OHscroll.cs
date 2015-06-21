@@ -9,7 +9,7 @@ using System.Drawing;
 
 namespace Ohana3DS_Rebirth.GUI
 {
-    public partial class OHscroll : Control
+    public partial class OHScroll : Control
     {
         private int scrollX;
         private int scrollBarX;
@@ -26,13 +26,13 @@ namespace Ohana3DS_Rebirth.GUI
 
         public event EventHandler ScrollChanged;
 
-        public OHscroll()
+        public OHScroll()
         {
             init();
             InitializeComponent();
         }
 
-        public OHscroll(IContainer container)
+        public OHScroll(IContainer container)
         {
             container.Add(this);
 

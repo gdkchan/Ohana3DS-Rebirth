@@ -1,6 +1,6 @@
 ﻿namespace Ohana3DS_Rebirth.GUI
 {
-    partial class OHscroll
+    partial class OHScroll
     {
         /// <summary>
         /// Variável de designer necessária.

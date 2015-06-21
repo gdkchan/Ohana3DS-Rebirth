@@ -66,6 +66,9 @@ namespace Ohana3DS_Rebirth.Ohana
             public uint materialsLUTPointerTableOffset;
             public uint materialsLUTPointerTableEntries;
             public uint materialsLUTNameOffset;
+            public uint lightsPointerTableOffset;
+            public uint lightsPointerTableEntries;
+            public uint lightsNameOffset;
             public uint camerasPointerTableOffset;
             public uint camerasPointerTableEntries;
             public uint camerasNameOffset;
@@ -243,9 +246,9 @@ namespace Ohana3DS_Rebirth.Ohana
             contentHeader.materialsLUTPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
             contentHeader.materialsLUTPointerTableEntries = input.ReadUInt32();
             contentHeader.materialsLUTNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            input.ReadUInt32();
-            input.ReadUInt32();
-            input.ReadUInt32();
+            contentHeader.lightsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
+            contentHeader.lightsPointerTableEntries = input.ReadUInt32();
+            contentHeader.lightsNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
             contentHeader.camerasPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
             contentHeader.camerasPointerTableEntries = input.ReadUInt32();
             contentHeader.camerasNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
@@ -255,7 +258,7 @@ namespace Ohana3DS_Rebirth.Ohana
             contentHeader.skeletalAnimationsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
             contentHeader.skeletalAnimationsPointerTableEntries = input.ReadUInt32();
             contentHeader.skeletalAnimationsNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            //Note: 15 entries total, all have the same pattern: Table Offset/Table Entries/Name Offset
+            //Note: 15 enntries total, all have the same pattern: Table Offset/Table Entries/Name Offset
 
             //Shaders
             for (int index = 0; index < contentHeader.shadersPointerTableEntries; index++)
@@ -351,6 +354,46 @@ namespace Ohana3DS_Rebirth.Ohana
                 }
 
                 models.addLUT(table);
+            }
+
+            //Lights
+            for (int index = 0; index < contentHeader.lightsPointerTableEntries; index++)
+            {
+                data.Seek(contentHeader.lightsPointerTableOffset + (index * 4), SeekOrigin.Begin);
+                uint dataOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                data.Seek(dataOffset, SeekOrigin.Begin);
+
+                RenderBase.OLight light = new RenderBase.OLight();
+                light.name = readString(input, header);
+                light.transformScale = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                light.transformRotate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                light.transformTranslate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+
+                uint lightFlags = input.ReadUInt32();
+                light.isLightEnabled = (lightFlags & 0x100) > 0;
+                light.isTwoSideDiffuse = (lightFlags & 0x10000) > 0;
+                light.lightType = (RenderBase.OLightType)((lightFlags >> 16) & 0xf);
+                light.angleSampler.input = (RenderBase.OFragmentSamplerInput)((lightFlags >> 24) & 0xf);
+                light.angleSampler.scale = (RenderBase.OFragmentSamplerScale)((lightFlags >> 28) & 0xf);
+
+                input.ReadUInt32();
+                light.ambient = getColor(input);
+                light.diffuse = getColor(input);
+                light.specular0 = getColor(input);
+                light.specular1 = getColor(input);
+                light.direction = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                input.ReadUInt32();
+                input.ReadUInt32();
+                light.attenuationStart = input.ReadSingle();
+                light.attenuationEnd = input.ReadSingle();
+
+                input.ReadUInt32();
+                input.ReadUInt32();
+
+                light.angleSampler.materialLUTName = readString(input, header);
+                light.angleSampler.samplerName = readString(input, header);
+
+                models.addLight(light);
             }
 
             //Cameras
@@ -1427,7 +1470,8 @@ namespace Ohana3DS_Rebirth.Ohana
                                             {
                                                 if ((quantization)boneIndexQuantization == quantization.qUByte)
                                                 {
-                                                    vertex.addNode(nodeList[input.ReadByte()]);
+                                                    byte nodeIndex = input.ReadByte();
+                                                    if (nodeIndex < nodeList.Count) vertex.addNode(nodeList[nodeIndex]);
                                                 }
                                                 else
                                                 {
@@ -1482,7 +1526,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
             input.Close();
             data.Dispose();
-            ModelData.inst.model = models; //I'm lazy
+
             return models;
         }
 

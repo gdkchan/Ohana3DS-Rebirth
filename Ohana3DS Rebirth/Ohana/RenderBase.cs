@@ -915,6 +915,39 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        public enum OLightType
+        {
+            directional = 0,
+            point = 1,
+            spot = 2
+        }
+
+        public class OLight
+        {
+            public string name;
+
+            public OVector3 transformScale;
+            public OVector3 transformRotate;
+            public OVector3 transformTranslate;
+
+            public Color ambient;
+            public Color diffuse;
+            public Color specular0;
+            public Color specular1;
+            public OVector3 direction;
+
+            public float attenuationStart;
+            public float attenuationEnd;
+
+            public bool isLightEnabled;
+            public bool isTwoSideDiffuse;
+            public bool isDistanceAttenuationEnabled;
+            public OLightType lightType;
+
+            public OFragmentSampler angleSampler;
+
+        }
+
         public class OCamera
         {
             public string name;
@@ -1079,6 +1112,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public List<OModel> model;
             public List<OTexture> texture;
             public List<OLookUpTable> lookUpTable;
+            public List<OLight> light;
             public List<OCamera> camera;
             public List<OFog> fog;
             public List<OSkeletalAnimation> skeletalAnimation;
@@ -1089,6 +1123,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 model = new List<OModel>();
                 texture = new List<OTexture>();
                 lookUpTable = new List<OLookUpTable>();
+                light = new List<OLight>();
                 camera = new List<OCamera>();
                 fog = new List<OFog>();
                 skeletalAnimation = new List<OSkeletalAnimation>();
@@ -1121,6 +1156,15 @@ namespace Ohana3DS_Rebirth.Ohana
             public void addLUT(OLookUpTable _lookUpTable)
             {
                 lookUpTable.Add(_lookUpTable);
+            }
+
+            /// <summary>
+            ///     Adds a new Light.
+            /// </summary>
+            /// <param name="_light">The Light</param>
+            public void addLight(OLight _light)
+            {
+                light.Add(_light);
             }
 
             /// <summary>

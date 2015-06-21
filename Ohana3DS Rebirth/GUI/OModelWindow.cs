@@ -33,11 +33,10 @@ namespace Ohana3DS_Rebirth.GUI
             if (renderer != null) renderer.resize(Screen.Width, Screen.Height);
         }
 
-        public void initialize(RenderBase.OModelGroup model)
+        public void initialize(RenderEngine renderEngine)
         {
-            renderer = new RenderEngine();
+            renderer = renderEngine;
             renderer.initialize(Screen.Handle, Screen.Width, Screen.Height);
-            renderer.model = model;
             renderer.render();
         }
 

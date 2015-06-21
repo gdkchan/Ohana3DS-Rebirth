@@ -12,7 +12,7 @@ using Microsoft.DirectX.Direct3D;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
-    class RenderEngine
+    public class RenderEngine
     {
         private Effect fragmentShader;
         private PresentParameters pParams;
@@ -147,22 +147,26 @@ namespace Ohana3DS_Rebirth.Ohana
             float maxSize = Math.Max(Math.Max(model.maxVector.x, model.maxVector.y), model.maxVector.z);
             float scale = (10.0f / (maxSize - minSize)); //Try to adjust to screen
 
+            #region "Grid buffer creation"
             //Creates buffer with grid that appears below the model
             CustomVertex.PositionColored[] gridBuffer = new CustomVertex.PositionColored[204];
             int bufferIndex = 0;
             for (float i = -50.0f; i <= 50.0f; i += 2.0f)
             {
-                int color = Color.White.ToArgb();
-                if (i == 0) color = Color.FromArgb(0x7f, 0xff, 0x7f).ToArgb(); //Green
-                gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(-50.0f / scale, 0, i / scale, color);
-                gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(50.0f / scale, 0, i / scale, color);
-                if (i == 0) color = Color.FromArgb(0xff, 0x7f, 0x7f).ToArgb(); //Red
-                gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, -50.0f / scale, color);
-                gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, 50.0f / scale, color);
+                if (i != 0)
+                {
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(-50.0f / scale, 0, i / scale, Color.White.ToArgb());
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(50.0f / scale, 0, i / scale, Color.White.ToArgb());
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, -50.0f / scale, Color.White.ToArgb());
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, 50.0f / scale, Color.White.ToArgb());
+                }
             }
+            gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(0, 0, -50.0f / scale, Color.FromArgb(0xff, 0x7f, 0x7f).ToArgb());
+            gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(0, 0, 50.0f / scale, Color.FromArgb(0xff, 0x7f, 0x7f).ToArgb());
+            gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(-50.0f / scale, 0, 0, Color.FromArgb(0x7f, 0xff, 0x7f).ToArgb());
+            gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(50.0f / scale, 0, 0, Color.FromArgb(0x7f, 0xff, 0x7f).ToArgb());
+            #endregion
 
-            //loadAnimation(33);
-            //playAnimation();
             keepRendering = true;
             while (keepRendering)
             {
@@ -171,6 +175,11 @@ namespace Ohana3DS_Rebirth.Ohana
                 device.BeginScene();
 
                 //Grid
+                device.RenderState.AlphaTestEnable = false;
+                device.RenderState.ZBufferEnable = true;
+                device.RenderState.ZBufferWriteEnable = true;
+                device.RenderState.AlphaBlendEnable = false;
+                device.RenderState.StencilEnable = false;
                 device.RenderState.CullMode = Cull.None;
                 if (showGrid)
                 {
@@ -188,7 +197,8 @@ namespace Ohana3DS_Rebirth.Ohana
                     -(model.minVector.y + model.maxVector.y) / 2,
                     -(model.minVector.z + model.maxVector.z) / 2);
                 Matrix translationMatrix = Matrix.Translation(new Vector3((-translation.X / 50.0f) / scale, (translation.Y / 50.0f) / scale, zoom / scale));
-                device.Transform.World = centerMatrix * Matrix.RotationY(rotation.Y) * Matrix.RotationX(rotation.X) * translationMatrix * Matrix.Scaling(-scale, scale, scale);
+                device.Transform.World = Matrix.RotationY(rotation.Y) * Matrix.RotationX(rotation.X);
+                device.Transform.World *= centerMatrix * translationMatrix * Matrix.Scaling(-scale, scale, scale);
 
                 if (!useLegacyTexturing)
                 {
@@ -365,22 +375,25 @@ namespace Ohana3DS_Rebirth.Ohana
                         device.RenderState.StencilPass = getStencilOperation(stencil.passOperation);
 
                         //Vertex rendering
-                        if (!useLegacyTexturing) fragmentShader.BeginPass(0);
-                        VertexFormats vertexFormat = VertexFormats.Position | VertexFormats.Normal | VertexFormats.Texture3 | VertexFormats.Diffuse;
-                        device.VertexFormat = vertexFormat;
-                        VertexBuffer vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), obj.renderBuffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
-                        if (animate)
+                        if (obj.renderBuffer.Length > 0)
                         {
-                            vertexBuffer.SetData(obj.animatedRenderBuffer[frame], 0, LockFlags.None);
+                            if (!useLegacyTexturing) fragmentShader.BeginPass(0);
+                            VertexFormats vertexFormat = VertexFormats.Position | VertexFormats.Normal | VertexFormats.Texture3 | VertexFormats.Diffuse;
+                            device.VertexFormat = vertexFormat;
+                            VertexBuffer vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), obj.renderBuffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
+                            if (animate)
+                            {
+                                vertexBuffer.SetData(obj.animatedRenderBuffer[frame], 0, LockFlags.None);
+                            }
+                            else
+                            {
+                                vertexBuffer.SetData(obj.renderBuffer, 0, LockFlags.None);
+                            }
+                            device.SetStreamSource(0, vertexBuffer, 0);
+                            device.DrawPrimitives(PrimitiveType.TriangleList, 0, obj.renderBuffer.Length / 3);
+                            vertexBuffer.Dispose();
+                            if (!useLegacyTexturing) fragmentShader.EndPass();
                         }
-                        else
-                        {
-                            vertexBuffer.SetData(obj.renderBuffer, 0, LockFlags.None);
-                        }
-                        device.SetStreamSource(0, vertexBuffer, 0);
-                        device.DrawPrimitives(PrimitiveType.TriangleList, 0, obj.renderBuffer.Length / 3);
-                        vertexBuffer.Dispose();
-                        if (!useLegacyTexturing) fragmentShader.EndPass();
                     }
                 }
                 if (!useLegacyTexturing) fragmentShader.End();

@@ -112,11 +112,11 @@
     <Compile Include="GUI\ODockWindow.Designer.cs">
       <DependentUpon>ODockWindow.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\OHscroll.cs">
+    <Compile Include="GUI\OHScroll.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="GUI\OHscroll.Designer.cs">
-      <DependentUpon>OHscroll.cs</DependentUpon>
+    <Compile Include="GUI\OHScroll.Designer.cs">
+      <DependentUpon>OHScroll.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\OLabel.cs">
       <SubType>Component</SubType>
@@ -168,7 +168,6 @@
     <Compile Include="Ohana\FileIdentifier.cs" />
     <Compile Include="Ohana\GenericFormats\SMD.cs" />
     <Compile Include="Ohana\IOUtils.cs" />
-    <Compile Include="Ohana\ModelData.cs" />
     <Compile Include="Ohana\RenderBase.cs" />
     <Compile Include="Ohana\RenderEngine.cs" />
     <Compile Include="Ohana\TextureCodec.cs" />

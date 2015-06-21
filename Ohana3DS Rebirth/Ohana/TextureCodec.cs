@@ -69,7 +69,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                 int y = (tileOrder[pixel] - x) / 8;
                                 long outputOffset = ((tX * 8) + x + (((tY * 8 + y)) * width)) * 4;
 
-                                Buffer.BlockCopy(data, (int)dataOffset + 1, output, (int)outputOffset, 3);
+                                Buffer.BlockCopy(data, (int)dataOffset, output, (int)outputOffset, 3);
                                 output[outputOffset + 3] = 0xff;
 
                                 dataOffset += 3;
