@@ -56,14 +56,17 @@ namespace Ohana3DS_Rebirth
                     case FileIdentifier.fileFormat.H3D:
                         GUI.OModelWindow modelWindow = new GUI.OModelWindow();
                         GUI.OTextureWindow textureWindow = new GUI.OTextureWindow();
+                        GUI.OAnimWindow animWindow = new GUI.OAnimWindow();
 
                         String fileName = Path.GetFileNameWithoutExtension(openDlg.FileName);
                         modelWindow.Title = "Model [" + fileName + "]";
                         textureWindow.Title = "Textures [" + fileName + "]";
+                        animWindow.Title = "Animations [" + fileName + "]";
 
                         launchWindow(modelWindow);
                         DockContainer.dockMainWindow();
                         launchWindow(textureWindow, false);
+                        launchWindow(animWindow, false);
                         WindowManager.Refresh();
 
                         //RenderBase.OModelGroup anim = Ohana.BCH.load("D:\\Senran Kagura\\player_1\\pl00_mot_CB00.bch");

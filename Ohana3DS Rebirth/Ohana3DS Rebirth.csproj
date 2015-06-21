@@ -88,6 +88,18 @@
       <DependentUpon>FrmMain.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\DrawingHelper.cs" />
+    <Compile Include="GUI\OAnimWindow.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\OAnimWindow.Designer.cs">
+      <DependentUpon>OAnimWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OButton.Designer.cs">
+      <DependentUpon>OButton.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\ODock.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -156,6 +168,7 @@
     <Compile Include="Ohana\FileIdentifier.cs" />
     <Compile Include="Ohana\GenericFormats\SMD.cs" />
     <Compile Include="Ohana\IOUtils.cs" />
+    <Compile Include="Ohana\ModelData.cs" />
     <Compile Include="Ohana\RenderBase.cs" />
     <Compile Include="Ohana\RenderEngine.cs" />
     <Compile Include="Ohana\TextureCodec.cs" />
@@ -164,6 +177,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="FrmMain.resx">
       <DependentUpon>FrmMain.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\OAnimWindow.resx">
+      <DependentUpon>OAnimWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\ODockWindow.resx">
       <DependentUpon>ODockWindow.cs</DependentUpon>

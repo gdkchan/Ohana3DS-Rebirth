@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ohana3DS Rebirth", "Ohana3DS Rebirth\Ohana3DS Rebirth.csproj", "{79753E74-1271-4C63-8249-0391F761CBCC}"
 EndProject
 Global
@@ -11,8 +13,8 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{79753E74-1271-4C63-8249-0391F761CBCC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{79753E74-1271-4C63-8249-0391F761CBCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{79753E74-1271-4C63-8249-0391F761CBCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{79753E74-1271-4C63-8249-0391F761CBCC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79753E74-1271-4C63-8249-0391F761CBCC}.Release|Any CPU.ActiveCfg = Release|x86
+		{79753E74-1271-4C63-8249-0391F761CBCC}.Release|Any CPU.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

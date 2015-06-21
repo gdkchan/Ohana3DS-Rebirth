@@ -1482,6 +1482,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
             input.Close();
             data.Dispose();
+            ModelData.inst.model = models; //I'm lazy
             return models;
         }
 
