@@ -85,13 +85,26 @@ namespace Ohana3DS_Rebirth.Ohana
             /// <summary>
             ///     Transform the 3-D Vector with a matrix.
             /// </summary>
+            /// <param name="input">Input vector</param>
             /// <param name="matrix">The matrix</param>
             /// <returns></returns>
-            public void transform(OMatrix matrix)
+            public static OVector3 transform(OVector3 input, OMatrix matrix)
             {
-                x = x * matrix.M11 + y * matrix.M21 + z * matrix.M31 + matrix.M41;
-                y = x * matrix.M12 + y * matrix.M22 + z * matrix.M32 + matrix.M42;
-                z = x * matrix.M13 + y * matrix.M23 + z * matrix.M33 + matrix.M43;
+                OVector3 output = new OVector3();
+                output.x = input.x * matrix.M11 + input.y * matrix.M21 + input.z * matrix.M31 + matrix.M41;
+                output.y = input.x * matrix.M12 + input.y * matrix.M22 + input.z * matrix.M32 + matrix.M42;
+                output.z = input.x * matrix.M13 + input.y * matrix.M23 + input.z * matrix.M33 + matrix.M43;
+                return output;
+            }
+
+            public static OVector3 operator +(OVector3 a, OVector3 b)
+            {
+                return new OVector3(a.x + b.x, a.y + b.y, a.z + b.z);
+            }
+
+            public static OVector3 operator *(OVector3 a, OVector3 b)
+            {
+                return new OVector3(a.x * b.x, a.y * b.y, a.z * b.z);
             }
 
             public override string ToString()
@@ -385,7 +398,6 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public List<OVertex> obj;
             public CustomVertex[] renderBuffer;
-            public List<CustomVertex[]> animatedRenderBuffer; //Add pre-animated buffers here
             public int texUVCount;
             public ushort materialId;
             public ushort renderPriority;
@@ -394,7 +406,6 @@ namespace Ohana3DS_Rebirth.Ohana
             public OModelObject()
             {
                 obj = new List<OVertex>();
-                animatedRenderBuffer = new List<CustomVertex[]>();
             }
 
             /// <summary>

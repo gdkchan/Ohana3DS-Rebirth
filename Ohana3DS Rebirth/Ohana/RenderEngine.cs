@@ -34,9 +34,17 @@ namespace Ohana3DS_Rebirth.Ohana
 
         float animationStep = 1.0f;
         int currentAnimation = -1;
-        int frame;
+        float frame;
         bool animate;
         bool paused;
+
+        private struct animationCacheEntry
+        {
+            public float frame;
+            public int modelIndex, objectIndex;
+            public RenderBase.CustomVertex[] buffer;
+        }
+        List<animationCacheEntry> animationCache = new List<animationCacheEntry>();
 
         /// <summary>
         ///     Initialize the renderer at a given target.
@@ -104,16 +112,14 @@ namespace Ohana3DS_Rebirth.Ohana
             textures.Clear();
             if (!useLegacyTexturing) fragmentShader.Dispose();
             device.Dispose();
-            foreach (RenderBase.OModelObject obj in model.model.SelectMany(mdl => mdl.modelObject))
-            {
-                obj.animatedRenderBuffer.Clear();
-            }
             model.model.Clear();
             model.texture.Clear();
             model.lookUpTable.Clear();
+            model.light.Clear();
             model.camera.Clear();
             model.fog.Clear();
             model.skeletalAnimation.Clear();
+            animationCache.Clear();
             model = null;
         }
 
@@ -159,6 +165,21 @@ namespace Ohana3DS_Rebirth.Ohana
             gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(-50.0f / scale, 0, 0, Color.FromArgb(0x7f, 0xff, 0x7f).ToArgb());
             gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(50.0f / scale, 0, 0, Color.FromArgb(0x7f, 0xff, 0x7f).ToArgb());
             #endregion
+
+            List<Matrix[]> skeletonTransform = new List<Matrix[]>();
+            foreach (RenderBase.OModel mdl in model.model)
+            {
+                Matrix[] transform = new Matrix[mdl.skeleton.Count];
+
+                for (int index = 0; index < mdl.skeleton.Count; index++)
+                {
+                    transform[index] = Matrix.Identity;
+                    transformSkeleton(mdl.skeleton, index, ref transform[index]);
+                    transform[index] = Matrix.Invert(transform[index]);
+                }
+
+                skeletonTransform.Add(transform);
+            }
 
             keepRendering = true;
             while (keepRendering)
@@ -210,8 +231,59 @@ namespace Ohana3DS_Rebirth.Ohana
                     #endregion
                 }
 
+                int modelIndex = 0;
                 foreach (RenderBase.OModel mdl in model.model)
                 {
+                    #region "Animation"
+                    bool foundModelEntry = false;
+                    foreach (animationCacheEntry cacheEntry in animationCache)
+                    {
+                        if (cacheEntry.modelIndex == modelIndex && cacheEntry.frame == frame)
+                        {
+                            foundModelEntry = true;
+                            break;
+                        }
+                    }
+
+                    Matrix[] animationSkeletonTransform = new Matrix[mdl.skeleton.Count];
+                    if (animate && !foundModelEntry)
+                    {
+                        List<RenderBase.OSkeletalAnimationBone> bone = model.skeletalAnimation[currentAnimation].bone;
+                        List<RenderBase.OBone> frameAnimationSkeleton = new List<RenderBase.OBone>();
+                        for (int index = 0; index < mdl.skeleton.Count; index++)
+                        {
+                            RenderBase.OBone newBone = new RenderBase.OBone();
+                            newBone.parentId = mdl.skeleton[index].parentId;
+                            newBone.rotation = new RenderBase.OVector3(mdl.skeleton[index].rotation);
+                            newBone.translation = new RenderBase.OVector3(mdl.skeleton[index].translation);
+                            foreach (RenderBase.OSkeletalAnimationBone b in bone)
+                            {
+                                if (b.name == mdl.skeleton[index].name)
+                                {
+                                    if (frameCheck(b.rotationX, frame)) newBone.rotation.x = getKey(b.rotationX, frame);
+                                    if (frameCheck(b.rotationY, frame)) newBone.rotation.y = getKey(b.rotationY, frame);
+                                    if (frameCheck(b.rotationZ, frame)) newBone.rotation.z = getKey(b.rotationZ, frame);
+                                    if (frameCheck(b.translationX, frame)) newBone.translation.x = getKey(b.translationX, frame);
+                                    if (frameCheck(b.translationY, frame)) newBone.translation.y = getKey(b.translationY, frame);
+                                    if (frameCheck(b.translationZ, frame)) newBone.translation.z = getKey(b.translationZ, frame);
+
+                                    break;
+                                }
+                            }
+
+                            frameAnimationSkeleton.Add(newBone);
+                        }
+
+                        for (int index = 0; index < mdl.skeleton.Count; index++)
+                        {
+                            animationSkeletonTransform[index] = Matrix.Identity;
+                            transformSkeleton(frameAnimationSkeleton, index, ref animationSkeletonTransform[index]);
+                            animationSkeletonTransform[index] = skeletonTransform[modelIndex][index] * animationSkeletonTransform[index];
+                        }
+                    }
+                    #endregion
+
+                    int objectIndex = 0;
                     foreach (RenderBase.OModelObject obj in mdl.modelObject)
                     {
                         RenderBase.OMaterial material = mdl.material[obj.materialId];
@@ -368,29 +440,85 @@ namespace Ohana3DS_Rebirth.Ohana
                         device.RenderState.StencilPass = getStencilOperation(stencil.passOperation);
 
                         //Vertex rendering
-                        if (obj.renderBuffer.Length > 0)
+                        VertexFormats vertexFormat = VertexFormats.Position | VertexFormats.Normal | VertexFormats.Texture3 | VertexFormats.Diffuse;
+                        device.VertexFormat = vertexFormat;
+                        VertexBuffer vertexBuffer;
+                        if (animate)
                         {
-                            if (!useLegacyTexturing) fragmentShader.BeginPass(0);
-                            const VertexFormats vertexFormat = VertexFormats.Position | VertexFormats.Normal | VertexFormats.Texture3 | VertexFormats.Diffuse;
-                            device.VertexFormat = vertexFormat;
-                            VertexBuffer vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), obj.renderBuffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
-                            vertexBuffer.SetData(animate 
-                                ? obj.animatedRenderBuffer[frame] 
-                                : obj.renderBuffer, 0,
-                                LockFlags.None);
+                            animationCacheEntry entry = new animationCacheEntry();
+
+                            #region "Animation smart caching"
+                            bool foundEntry = false;
+                            if (foundModelEntry)
+                            {
+                                foreach (animationCacheEntry cacheEntry in animationCache)
+                                {
+                                    if (cacheEntry.modelIndex == modelIndex && cacheEntry.objectIndex == objectIndex && cacheEntry.frame == frame)
+                                    {
+                                        foundEntry = true;
+                                        entry = cacheEntry;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (!foundEntry)
+                            {
+                                entry.frame = frame;
+                                entry.modelIndex = modelIndex;
+                                entry.objectIndex = objectIndex;
+                                entry.buffer = new RenderBase.CustomVertex[obj.renderBuffer.Length];
+
+                                for (int vertex = 0; vertex < obj.renderBuffer.Length; vertex++)
+                                {
+                                    entry.buffer[vertex] = obj.renderBuffer[vertex];
+                                    RenderBase.OVertex input = obj.obj[vertex];
+                                    Vector3 position = new Vector3(input.position.x, input.position.y, input.position.z);
+                                    Vector4 p = new Vector4();
+
+                                    int weightIndex = 0;
+                                    foreach (int boneIndex in input.node)
+                                    {
+                                        p += Vector3.Transform(position, animationSkeletonTransform[boneIndex]) * input.weight[weightIndex++];
+                                    }
+
+                                    entry.buffer[vertex].x = p.X;
+                                    entry.buffer[vertex].y = p.Y;
+                                    entry.buffer[vertex].z = p.Z;
+                                }
+
+                                animationCache.Add(entry);
+                            }
+                            #endregion
+
+                            vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), entry.buffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
+                            vertexBuffer.SetData(entry.buffer, 0, LockFlags.None);
                             device.SetStreamSource(0, vertexBuffer, 0);
-                            device.DrawPrimitives(PrimitiveType.TriangleList, 0, obj.renderBuffer.Length / 3);
-                            vertexBuffer.Dispose();
-                            if (!useLegacyTexturing) fragmentShader.EndPass();
+
+                            device.DrawPrimitives(PrimitiveType.TriangleList, 0, entry.buffer.Length / 3);
                         }
+                        else
+                        {
+                            vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), obj.renderBuffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
+                            vertexBuffer.SetData(obj.renderBuffer, 0, LockFlags.None);
+                            device.SetStreamSource(0, vertexBuffer, 0);
+
+                            device.DrawPrimitives(PrimitiveType.TriangleList, 0, obj.renderBuffer.Length / 3);
+
+                        }
+
+                        vertexBuffer.Dispose();
+                        objectIndex++;
                     }
+
+                    modelIndex++;
                 }
                 if (!useLegacyTexturing) fragmentShader.End();
 
                 device.EndScene();
                 device.Present();
 
-                if (!paused && animate) frame = (frame + 1) % (int)(model.skeletalAnimation[currentAnimation].frameSize / animationStep);
+                if (!paused && animate) frame = (frame + 0.25f) % (int)(model.skeletalAnimation[currentAnimation].frameSize / animationStep);
 
                 Application.DoEvents();
             }
@@ -588,99 +716,6 @@ namespace Ohana3DS_Rebirth.Ohana
             return (a0 * a.value + a1 * m0 + a2 * m1 + a3 * b.value);
         }
 
-        private void preAnimate(int animationIndex)
-        {
-            currentAnimation = animationIndex;
-            List<RenderBase.OSkeletalAnimationBone> bone = model.skeletalAnimation[animationIndex].bone;
-
-            foreach (RenderBase.OModel mdl in model.model)
-            {
-                List<RenderBase.OBone> skeleton = mdl.skeleton;
-                Matrix[] skeletonTransform = new Matrix[skeleton.Count];
-                for (int index = 0; index < skeleton.Count; index++)
-                {
-                    skeletonTransform[index] = Matrix.Identity;
-                    transformSkeleton(skeleton, index, ref skeletonTransform[index]);
-                }
-
-                List<Matrix[]> animationSkeleton = new List<Matrix[]>();
-                for (float frame = 0; frame <= model.skeletalAnimation[animationIndex].frameSize; frame += animationStep)
-                {
-                    RenderBase.OBone[] frameAnimationSkeleton = new RenderBase.OBone[skeleton.Count];
-
-                    for (int b2 = 0; b2 < skeleton.Count; b2++)
-                    {
-                        frameAnimationSkeleton[b2] = new RenderBase.OBone
-                        {
-                            parentId = skeleton[b2].parentId,
-                            rotation = new RenderBase.OVector3(skeleton[b2].rotation),
-                            translation = new RenderBase.OVector3(skeleton[b2].translation)
-                        };
-                        foreach (RenderBase.OSkeletalAnimationBone b in bone)
-                        {
-                            if (b.name == skeleton[b2].name)
-                            {
-                                if (frameCheck(b.rotationX, frame)) frameAnimationSkeleton[b2].rotation.x = getKey(b.rotationX, frame);
-                                if (frameCheck(b.rotationY, frame)) frameAnimationSkeleton[b2].rotation.y = getKey(b.rotationY, frame);
-                                if (frameCheck(b.rotationZ, frame)) frameAnimationSkeleton[b2].rotation.z = getKey(b.rotationZ, frame);
-                                if (frameCheck(b.translationX, frame)) frameAnimationSkeleton[b2].translation.x = getKey(b.translationX, frame);
-                                if (frameCheck(b.translationY, frame)) frameAnimationSkeleton[b2].translation.y = getKey(b.translationY, frame);
-                                if (frameCheck(b.translationZ, frame)) frameAnimationSkeleton[b2].translation.z = getKey(b.translationZ, frame);
-                            }
-                        }
-                    }
-
-                    Matrix[] animationSkeletonTransform = new Matrix[frameAnimationSkeleton.Length];
-                    for (int index = 0; index < frameAnimationSkeleton.Length; index++)
-                    {
-                        animationSkeletonTransform[index] = Matrix.Identity;
-                        transformSkeleton(frameAnimationSkeleton.ToList(), index, ref animationSkeletonTransform[index]);
-                        animationSkeletonTransform[index] = Matrix.Invert(skeletonTransform[index]) * animationSkeletonTransform[index];
-                    }
-
-                    animationSkeleton.Add(animationSkeletonTransform);
-                }
-
-                //
-                //
-                //
-
-                foreach (RenderBase.OModelObject obj in mdl.modelObject)
-                {
-                    obj.animatedRenderBuffer.Clear();
-
-                    foreach (Matrix[] m in animationSkeleton)
-                    {
-                        RenderBase.CustomVertex[] buffer = new RenderBase.CustomVertex[obj.renderBuffer.Length];
-
-                        for (int i = 0; i < buffer.Length; i++)
-                        {
-                            buffer[i] = obj.renderBuffer[i];
-                            RenderBase.OVertex input = obj.obj[i];
-                            Vector3 position = new Vector3(input.position.x, input.position.y, input.position.z);
-
-                            Vector4 p = new Vector4();
-                            
-                            int weightIndex = 0;
-                            foreach (int boneIndex in input.node)
-                            {
-                                float weight = 1.0f;
-                                if (weightIndex < input.weight.Count) weight = input.weight[weightIndex++];
-                                p += Vector3.Transform(position, m[boneIndex]) * weight;
-                            }
-                            if (input.node.Count == 0) p = new Vector4(position.X, position.Y, position.Z, 0);
-
-                            buffer[i].x = p.X;
-                            buffer[i].y = p.Y;
-                            buffer[i].z = p.Z;
-                        }
-
-                        obj.animatedRenderBuffer.Add(buffer);
-                    }
-                }
-            }
-        }
-
         /// <summary>
         ///     Interpolates a Key Frame from a list of Key Frames.
         /// </summary>
@@ -729,12 +764,11 @@ namespace Ohana3DS_Rebirth.Ohana
         /// </summary>
         /// <param name="animationIndex">The index where the animation is located</param>
         /// <param name="step">The step speed to load the animation. Smaller steps have very high RAM usage</param>
-        public void loadAnimation(int animationIndex, float step = 0.25f)
+        public void loadAnimation(int animationIndex)
         {
-            if (animationIndex >= model.skeletalAnimation.Count) return;
-            animationStep = step;
-            frame = 0;
-            preAnimate(animationIndex);
+            if (animationIndex < 0 || animationIndex >= model.skeletalAnimation.Count) return;
+            animationCache.Clear();
+            currentAnimation = animationIndex;
         }
 
         /// <summary>
@@ -744,7 +778,7 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="targetFrame">The new frame index</param>
         public void setAnimationFrame(int targetFrame)
         {
-            if (targetFrame > (model.skeletalAnimation[currentAnimation].frameSize / animationStep)) return;
+            if (targetFrame < 0 || targetFrame > (model.skeletalAnimation[currentAnimation].frameSize / animationStep)) return;
             frame = targetFrame;
         }
 
@@ -767,9 +801,11 @@ namespace Ohana3DS_Rebirth.Ohana
 
         /// <summary>
         ///     Play the animation.
+        ///     It will have no effect if no animations are loaded.
         /// </summary>
         public void playAnimation()
         {
+            if (currentAnimation == -1) return;
             paused = false;
             animate = true;
         }

@@ -46,13 +46,14 @@ namespace Ohana3DS_Rebirth
                 Filter = "Binary CTR H3D File|*.bch"
             };
             if (openDlg.ShowDialog() != DialogResult.OK) return;
+            open(openDlg.FileName);
+        }
 
-        private void openBCH(string filename)
+        private void open(string fileName)
         {
-            
             WindowManager.flush();
 
-            FileIdentifier.fileFormat format = FileIdentifier.identify(openDlg.FileName);
+            FileIdentifier.fileFormat format = FileIdentifier.identify(fileName);
             switch (format)
             {
                 case FileIdentifier.fileFormat.H3D:
@@ -60,10 +61,10 @@ namespace Ohana3DS_Rebirth
                     GUI.OTextureWindow textureWindow = new GUI.OTextureWindow();
                     GUI.OAnimWindow animWindow = new GUI.OAnimWindow();
 
-                    String fileName = Path.GetFileNameWithoutExtension(openDlg.FileName);
-                    modelWindow.Title = "Model [" + fileName + "]";
-                    textureWindow.Title = "Textures [" + fileName + "]";
-                    animWindow.Title = "Animations [" + fileName + "]";
+                    String name = Path.GetFileNameWithoutExtension(fileName);
+                    modelWindow.Title = "Model [" + name + "]";
+                    textureWindow.Title = "Textures [" + name + "]";
+                    animWindow.Title = "Animations [" + name + "]";
 
                     launchWindow(modelWindow);
                     DockContainer.dockMainWindow();
@@ -73,7 +74,7 @@ namespace Ohana3DS_Rebirth
 
                     RenderEngine renderer = new RenderEngine();
 
-                    RenderBase.OModelGroup model = BCH.load(openDlg.FileName);
+                    RenderBase.OModelGroup model = BCH.load(fileName);
                     renderer.model = model;
                     Application.DoEvents(); //Call this to avoid clicks on the OpenDialog going to ViewPort
 
