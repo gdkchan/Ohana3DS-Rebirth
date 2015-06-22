@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
@@ -12,7 +8,7 @@ namespace Ohana3DS_Rebirth.Ohana
     {
         public static Bitmap getBitmap(byte[] array, int width, int height)
         {
-            Bitmap img = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            Bitmap img = new Bitmap(width, height, PixelFormat.Format32bppArgb);
             BitmapData imgData = img.LockBits(new Rectangle(0, 0, img.Width, img.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
             Marshal.Copy(array, 0, imgData.Scan0, array.Length);
             img.UnlockBits(imgData);

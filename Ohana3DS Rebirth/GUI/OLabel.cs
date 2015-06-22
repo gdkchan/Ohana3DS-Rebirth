@@ -2,11 +2,7 @@
 //Custom Label control with Image support
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
 
@@ -40,7 +36,7 @@ namespace Ohana3DS_Rebirth.GUI
             set
             {
                 img = value;
-                this.Refresh();
+                Refresh();
             }
         }
 
@@ -53,7 +49,7 @@ namespace Ohana3DS_Rebirth.GUI
             set
             {
                 autoSize = value;
-                this.Refresh();
+                Refresh();
             }
         }
 
@@ -64,12 +60,12 @@ namespace Ohana3DS_Rebirth.GUI
             {
                 imgWidth = img.Width;
                 imgHeight = img.Height;
-                e.Graphics.DrawImage(img, new Rectangle(0, (this.Height / 2) - (img.Height / 2), img.Width, img.Height));
+                e.Graphics.DrawImage(img, new Rectangle(0, (Height / 2) - (img.Height / 2), img.Width, img.Height));
             }
 
-            SizeF textSize = e.Graphics.MeasureString(this.Text, this.Font);
-            if (autoSize) this.Size = new Size(imgWidth + (int)textSize.Width, Math.Max(imgHeight, (int)textSize.Height));
-            e.Graphics.DrawString(this.Text, this.Font, new SolidBrush(this.ForeColor), new Point(imgWidth + (((this.Width - imgWidth) / 2) - ((int)textSize.Width / 2)), 0));
+            SizeF textSize = e.Graphics.MeasureString(Text, Font);
+            if (autoSize) Size = new Size(imgWidth + (int)textSize.Width, Math.Max(imgHeight, (int)textSize.Height));
+            e.Graphics.DrawString(Text, Font, new SolidBrush(ForeColor), new Point(imgWidth + (((Width - imgWidth) / 2) - ((int)textSize.Width / 2)), 0));
 
             base.OnPaint(e);
         }

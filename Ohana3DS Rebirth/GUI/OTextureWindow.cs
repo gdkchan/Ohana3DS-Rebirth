@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-
-using Ohana3DS_Rebirth.Ohana;
+﻿using Ohana3DS_Rebirth.Ohana;
 
 namespace Ohana3DS_Rebirth.GUI
 {

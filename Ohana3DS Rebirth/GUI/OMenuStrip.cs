@@ -1,15 +1,9 @@
 ﻿//OMenuStrip made for Ohana3DS by gdkchan
 //Custom menu design, should be used with "Renderer" property of a Menu
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
-using System.Drawing.Drawing2D;
+using Ohana3DS_Rebirth.Properties;
 
 namespace Ohana3DS_Rebirth.GUI
 {
@@ -26,7 +20,7 @@ namespace Ohana3DS_Rebirth.GUI
             InitializeComponent();
         }
 
-        protected override void OnRenderImageMargin(System.Windows.Forms.ToolStripRenderEventArgs e)
+        protected override void OnRenderImageMargin(ToolStripRenderEventArgs e)
         {
             e.Graphics.FillRectangle(new SolidBrush(bgColor1), new Rectangle(0, 0, e.ToolStrip.Width, e.ToolStrip.Height));
             e.Graphics.FillRectangle(new SolidBrush(bgColor1), e.AffectedBounds);
@@ -35,14 +29,14 @@ namespace Ohana3DS_Rebirth.GUI
             base.OnRenderImageMargin(e);
         }
 
-        protected override void OnRenderItemCheck(System.Windows.Forms.ToolStripItemImageRenderEventArgs e)
+        protected override void OnRenderItemCheck(ToolStripItemImageRenderEventArgs e)
         {
             Rectangle rect = new Rectangle(4, 2, 18, 18);
             e.Graphics.FillRectangle(new SolidBrush(Color.Transparent), rect);
-            e.Graphics.DrawImage(Ohana3DS_Rebirth.Properties.Resources.icn_ticked, new Point(5, 3));
+            e.Graphics.DrawImage(Resources.icn_ticked, new Point(5, 3));
         }
 
-        protected override void OnRenderSeparator(System.Windows.Forms.ToolStripSeparatorRenderEventArgs e)
+        protected override void OnRenderSeparator(ToolStripSeparatorRenderEventArgs e)
         {
             Rectangle rect = new Rectangle(32, 3, e.Item.Width - 32, 1);
             Rectangle rect2 = new Rectangle(32, 4, e.Item.Width - 32, 1);
@@ -52,14 +46,14 @@ namespace Ohana3DS_Rebirth.GUI
             base.OnRenderSeparator(e);
         }
 
-        protected override void OnRenderArrow(System.Windows.Forms.ToolStripArrowRenderEventArgs e)
+        protected override void OnRenderArrow(ToolStripArrowRenderEventArgs e)
         {
             e.ArrowColor = itemColor;
 
             base.OnRenderArrow(e);
         }
 
-        protected override void OnRenderMenuItemBackground(System.Windows.Forms.ToolStripItemRenderEventArgs e)
+        protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e)
         {
             if (e.Item.Enabled)
             {

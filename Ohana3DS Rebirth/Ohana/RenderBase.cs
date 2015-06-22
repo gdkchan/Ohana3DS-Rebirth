@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Drawing;
-using System.IO;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
@@ -44,7 +41,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
             public override string ToString()
             {
-                return String.Format("X:{0}; Y:{1}", x.ToString(), y.ToString());
+                return String.Format("X:{0}; Y:{1}", x, y);
             }
         }
 
@@ -99,7 +96,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
             public override string ToString()
             {
-                return String.Format("X:{0}; Y:{1}; Z:{2}", x.ToString(), y.ToString(), z.ToString());
+                return String.Format("X:{0}; Y:{1}; Z:{2}", x, y, z);
             }
         }
 
@@ -146,7 +143,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
             public override string ToString()
             {
-                return String.Format("X:{0}; Y:{1}; Z:{2}; W:{3}", x.ToString(), y.ToString(), z.ToString(), w.ToString());
+                return String.Format("X:{0}; Y:{1}; Z:{2}; W:{3}", x, y, z, w);
             }
         }
 
@@ -312,11 +309,12 @@ namespace Ohana3DS_Rebirth.Ohana
             /// <returns></returns>
             public static OMatrix scale(OVector3 scale)
             {
-                OMatrix output = new OMatrix();
-
-                output.M11 = scale.x;
-                output.M22 = scale.y;
-                output.M33 = scale.z;
+                OMatrix output = new OMatrix
+                {
+                    M11 = scale.x, 
+                    M22 = scale.y, 
+                    M33 = scale.z
+                };
 
                 return output;
             }
@@ -328,11 +326,12 @@ namespace Ohana3DS_Rebirth.Ohana
             /// <returns></returns>
             public static OMatrix scale(float scale)
             {
-                OMatrix output = new OMatrix();
-
-                output.M11 = scale;
-                output.M22 = scale;
-                output.M33 = scale;
+                OMatrix output = new OMatrix
+                {
+                    M11 = scale, 
+                    M22 = scale, 
+                    M33 = scale
+                };
 
                 return output;
             }
@@ -344,11 +343,12 @@ namespace Ohana3DS_Rebirth.Ohana
             /// <returns></returns>
             public static OMatrix translate(OVector3 position)
             {
-                OMatrix output = new OMatrix();
-
-                output.M41 = position.x;
-                output.M42 = position.y;
-                output.M43 = position.z;
+                OMatrix output = new OMatrix
+                {
+                    M41 = position.x, 
+                    M42 = position.y, 
+                    M43 = position.z
+                };
 
                 return output;
             }
