@@ -32,7 +32,7 @@ namespace Ohana3DS_Rebirth.Ohana
         private bool useLegacyTexturing = false; //Set to True to disable Fragment Shader
         private const bool showGrid = true;
 
-        float animationStep = 1.0f;
+        const float animationStep = 0.25f;
         int currentAnimation = -1;
         float frame;
         bool animate;
@@ -246,7 +246,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
 
                     Matrix[] animationSkeletonTransform = new Matrix[mdl.skeleton.Count];
-                    if (animate && !foundModelEntry)
+                    if (animate && !foundModelEntry && currentAnimation > -1)
                     {
                         Matrix[] skeletonTransform = new Matrix[mdl.skeleton.Count];
 
@@ -453,74 +453,71 @@ namespace Ohana3DS_Rebirth.Ohana
                         VertexFormats vertexFormat = VertexFormats.Position | VertexFormats.Normal | VertexFormats.Texture3 | VertexFormats.Diffuse;
                         device.VertexFormat = vertexFormat;
                         VertexBuffer vertexBuffer;
-                        if (obj.visible)
+
+                        if (animate && currentAnimation > -1)
                         {
-                            if (animate)
-                            {
-                                animationCacheEntry entry = new animationCacheEntry();
+                            animationCacheEntry entry = new animationCacheEntry();
 
-                                #region "Animation smart caching"
-                                bool foundEntry = false;
-                                if (foundModelEntry)
+                            #region "Animation smart caching"
+                            bool foundEntry = false;
+                            if (foundModelEntry)
+                            {
+                                foreach (animationCacheEntry cacheEntry in animationCache)
                                 {
-                                    foreach (animationCacheEntry cacheEntry in animationCache)
+                                    if (cacheEntry.modelIndex == modelIndex && cacheEntry.objectIndex == objectIndex && cacheEntry.frame == frame)
                                     {
-                                        if (cacheEntry.modelIndex == modelIndex && cacheEntry.objectIndex == objectIndex && cacheEntry.frame == frame)
-                                        {
-                                            foundEntry = true;
-                                            entry = cacheEntry;
-                                            break;
-                                        }
+                                        foundEntry = true;
+                                        entry = cacheEntry;
+                                        break;
                                     }
                                 }
+                            }
 
-                                if (!foundEntry)
+                            if (!foundEntry)
+                            {
+                                entry.frame = frame;
+                                entry.modelIndex = modelIndex;
+                                entry.objectIndex = objectIndex;
+                                entry.buffer = new RenderBase.CustomVertex[obj.renderBuffer.Length];
+
+                                for (int vertex = 0; vertex < obj.renderBuffer.Length; vertex++)
                                 {
-                                    entry.frame = frame;
-                                    entry.modelIndex = modelIndex;
-                                    entry.objectIndex = objectIndex;
-                                    entry.buffer = new RenderBase.CustomVertex[obj.renderBuffer.Length];
+                                    entry.buffer[vertex] = obj.renderBuffer[vertex];
+                                    RenderBase.OVertex input = obj.obj[vertex];
+                                    Vector3 position = new Vector3(input.position.x, input.position.y, input.position.z);
+                                    Vector4 p = new Vector4();
 
-                                    for (int vertex = 0; vertex < obj.renderBuffer.Length; vertex++)
+                                    int weightIndex = 0;
+                                    foreach (int boneIndex in input.node)
                                     {
-                                        entry.buffer[vertex] = obj.renderBuffer[vertex];
-                                        RenderBase.OVertex input = obj.obj[vertex];
-                                        Vector3 position = new Vector3(input.position.x, input.position.y, input.position.z);
-                                        Vector4 p = new Vector4();
-
-                                        int weightIndex = 0;
-                                        foreach (int boneIndex in input.node)
-                                        {
-                                            p += Vector3.Transform(position, animationSkeletonTransform[boneIndex]) * input.weight[weightIndex++];
-                                        }
-
-                                        entry.buffer[vertex].x = p.X;
-                                        entry.buffer[vertex].y = p.Y;
-                                        entry.buffer[vertex].z = p.Z;
+                                        p += Vector3.Transform(position, animationSkeletonTransform[boneIndex]) * input.weight[weightIndex++];
                                     }
 
-                                    animationCache.Add(entry);
+                                    entry.buffer[vertex].x = p.X;
+                                    entry.buffer[vertex].y = p.Y;
+                                    entry.buffer[vertex].z = p.Z;
                                 }
-                                #endregion
 
-                                vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), entry.buffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
-                                vertexBuffer.SetData(entry.buffer, 0, LockFlags.None);
-                                device.SetStreamSource(0, vertexBuffer, 0);
-
-                                device.DrawPrimitives(PrimitiveType.TriangleList, 0, entry.buffer.Length / 3);
+                                animationCache.Add(entry);
                             }
-                            else
-                            {
-                                vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), obj.renderBuffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
-                                vertexBuffer.SetData(obj.renderBuffer, 0, LockFlags.None);
-                                device.SetStreamSource(0, vertexBuffer, 0);
+                            #endregion
 
-                                device.DrawPrimitives(PrimitiveType.TriangleList, 0, obj.renderBuffer.Length / 3);
-                            }
+                            vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), entry.buffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
+                            vertexBuffer.SetData(entry.buffer, 0, LockFlags.None);
+                            device.SetStreamSource(0, vertexBuffer, 0);
 
-                            vertexBuffer.Dispose();
+                            device.DrawPrimitives(PrimitiveType.TriangleList, 0, entry.buffer.Length / 3);
+                        }
+                        else
+                        {
+                            vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), obj.renderBuffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
+                            vertexBuffer.SetData(obj.renderBuffer, 0, LockFlags.None);
+                            device.SetStreamSource(0, vertexBuffer, 0);
+
+                            device.DrawPrimitives(PrimitiveType.TriangleList, 0, obj.renderBuffer.Length / 3);
                         }
 
+                        vertexBuffer.Dispose();
                         objectIndex++;
                     }
 
@@ -531,7 +528,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 device.EndScene();
                 device.Present();
 
-                if (!paused && animate) frame = (frame + 0.25f) % (int)model.skeletalAnimation[currentAnimation].frameSize;
+                if (!paused && animate && currentAnimation > -1) frame = (frame + animationStep) % (int)model.skeletalAnimation[currentAnimation].frameSize;
 
                 Application.DoEvents();
             }

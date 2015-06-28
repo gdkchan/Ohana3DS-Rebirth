@@ -35,6 +35,7 @@ namespace Ohana3DS_Rebirth.GUI
                     AnimationsListSA.addItem(animation.name);
                 }
             }
+            AnimationsListSA.Refresh();
         }
 
         private void Control_MouseEnter(object sender, EventArgs e)

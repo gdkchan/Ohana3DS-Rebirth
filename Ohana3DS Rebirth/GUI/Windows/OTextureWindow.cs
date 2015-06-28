@@ -32,6 +32,7 @@ namespace Ohana3DS_Rebirth.GUI
                 item.columns.Add(new OList.listItem(texture.name));
                 TextureList.addItem(item);
             }
+            TextureList.Refresh();
         }
 
         private void BtnImport_Click(object sender, System.EventArgs e)
