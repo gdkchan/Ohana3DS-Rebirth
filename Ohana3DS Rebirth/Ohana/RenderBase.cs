@@ -401,6 +401,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public int texUVCount;
             public ushort materialId;
             public ushort renderPriority;
+            public bool visible;
             public String objName = null;
 
             public OModelObject()

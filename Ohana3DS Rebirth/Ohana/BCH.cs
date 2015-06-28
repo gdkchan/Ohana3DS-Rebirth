@@ -87,8 +87,8 @@ namespace Ohana3DS_Rebirth.Ohana
             public ushort shadowMaterialEntries;
             public RenderBase.OMatrix worldTransform;
 
-            public uint texturesTableOffset;
-            public uint texturesTableEntries;
+            public uint materialsTableOffset;
+            public uint materialsTableEntries;
             public uint materialsNameOffset;
             public uint verticesTableOffset;
             public uint verticesTableEntries;
@@ -684,8 +684,8 @@ namespace Ohana3DS_Rebirth.Ohana
                 objectsHeader.worldTransform.M33 = input.ReadSingle();
                 objectsHeader.worldTransform.M34 = input.ReadSingle();
 
-                objectsHeader.texturesTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
-                objectsHeader.texturesTableEntries = input.ReadUInt32();
+                objectsHeader.materialsTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                objectsHeader.materialsTableEntries = input.ReadUInt32();
                 objectsHeader.materialsNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
                 objectsHeader.verticesTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
                 objectsHeader.verticesTableEntries = input.ReadUInt32();
@@ -704,14 +704,14 @@ namespace Ohana3DS_Rebirth.Ohana
                 model.transform = objectsHeader.worldTransform;
 
                 //Texture names table
-                for (int index = 0; index < objectsHeader.texturesTableEntries; index++)
+                for (int index = 0; index < objectsHeader.materialsTableEntries; index++)
                 {
                     //Nota: As versões mais antigas tinham o Coordinator já no header do material.
                     //As versões mais recentes tem uma seção reservada só pra ele, por isso possuem tamanho do header menor.
                     switch (header.backwardCompatibility)
                     {
-                        case 0x20: data.Seek(objectsHeader.texturesTableOffset + (index * 0x58), SeekOrigin.Begin); break;
-                        case 0x21: case 0x22: data.Seek(objectsHeader.texturesTableOffset + (index * 0x2c), SeekOrigin.Begin); break;
+                        case 0x20: data.Seek(objectsHeader.materialsTableOffset + (index * 0x58), SeekOrigin.Begin); break;
+                        case 0x21: case 0x22: data.Seek(objectsHeader.materialsTableOffset + (index * 0x2c), SeekOrigin.Begin); break;
                         default: throw new Exception(String.Format("BCH: Unknow BCH version r{0}, can't parse Material texture header! STOP!", header.version.ToString()));
                     }
 
@@ -1091,6 +1091,9 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                 }
 
+                data.Seek(objectsHeader.objectsNodeVisibilityOffset, SeekOrigin.Begin);
+                uint nodeVisibility = input.ReadUInt32();
+
                 //Vertices header
                 data.Seek(objectsHeader.verticesTableOffset, SeekOrigin.Begin);
                 List<bchObjectEntry> objects = new List<bchObjectEntry>();
@@ -1121,6 +1124,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     RenderBase.OModelObject obj = new RenderBase.OModelObject();
                     obj.materialId = objects[index].materialId;
                     obj.renderPriority = objects[index].renderPriority;
+                    obj.visible = (nodeVisibility & (1 << index)) > 0;
 
                     //Vertices
                     data.Seek(objects[index].verticesHeaderOffset, SeekOrigin.Begin);

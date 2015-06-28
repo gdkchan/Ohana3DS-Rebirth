@@ -88,20 +88,28 @@ namespace Ohana3DS_Rebirth.GUI
         private void BtnToggle_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button != MouseButtons.Left) return;
-
-            if (toggle)
-            {
-                BtnToggle.Image = Properties.Resources.icn_collapse;
-                this.Size = originalSize;
-            }
-            else
-            {
-                BtnToggle.Image = Properties.Resources.icn_expand;
-                originalSize = this.Size;
-                Height = 16;
-            }
+            if (toggle) expand(); else collapse();
             toggle = !toggle;
-        } 
+        }
+
+        /// <summary>
+        ///     Expands the GroupBox, so the content is accesible.
+        /// </summary>
+        public void expand()
+        {
+            BtnToggle.Image = Properties.Resources.icn_collapse;
+            this.Size = originalSize;
+        }
+
+        /// <summary>
+        ///     Collapses the GroupBox, so the content is not accesible and less space is used.
+        /// </summary>
+        public void collapse()
+        {
+            BtnToggle.Image = Properties.Resources.icn_expand;
+            originalSize = this.Size;
+            Height = 16;
+        }
 
         public class OGroupBoxDesigner : ParentControlDesigner
         {
