@@ -123,16 +123,13 @@ namespace Ohana3DS_Rebirth.Ohana
             model = null;
         }
 
-        public void render()
+        /// <summary>
+        ///     Forces all textures to be updated.
+        ///     Call this if you add new textures to reflect changes.
+        /// </summary>
+        public void updateTextures()
         {
-            if (!useLegacyTexturing)
-            {
-                string compilationErros;
-                fragmentShader = Effect.FromString(device, Properties.Resources.OFragmentShader, null, null, ShaderFlags.SkipOptimization, null, out compilationErros);
-                if (compilationErros != "") MessageBox.Show("Failed to compile Fragment Shader!" + Environment.NewLine + compilationErros, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                fragmentShader.Technique = "Combiner";
-            }
-
+            textures.Clear();
             foreach (RenderBase.OTexture texture in model.texture)
             {
                 CustomTexture tex;
@@ -143,10 +140,24 @@ namespace Ohana3DS_Rebirth.Ohana
                 textures.Add(tex);
                 bmp.Dispose();
             }
+        }
+
+        public void render()
+        {
+            if (!useLegacyTexturing)
+            {
+                string compilationErros;
+                fragmentShader = Effect.FromString(device, Properties.Resources.OFragmentShader, null, null, ShaderFlags.SkipOptimization, null, out compilationErros);
+                if (compilationErros != "") MessageBox.Show("Failed to compile Fragment Shader!" + Environment.NewLine + compilationErros, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                fragmentShader.Technique = "Combiner";
+            }
+
+            updateTextures();
 
             float minSize = Math.Min(Math.Min(model.minVector.x, model.minVector.y), model.minVector.z);
             float maxSize = Math.Max(Math.Max(model.maxVector.x, model.maxVector.y), model.maxVector.z);
             float scale = (10.0f / (maxSize - minSize)); //Try to adjust to screen
+            if (maxSize - minSize == 0) scale = 1;
 
             #region "Grid buffer creation"
             //Creates buffer with grid that appears below the model
@@ -188,6 +199,16 @@ namespace Ohana3DS_Rebirth.Ohana
                 device.SetTexture(0, null);
                 device.BeginScene();
 
+                //View
+                Matrix centerMatrix = Matrix.Translation(
+                    -(model.minVector.x + model.maxVector.x) / 2,
+                    -(model.minVector.y + model.maxVector.y) / 2,
+                    -(model.minVector.z + model.maxVector.z) / 2);
+                Matrix translationMatrix = Matrix.Translation(new Vector3((-translation.X / 50.0f) / scale, (translation.Y / 50.0f) / scale, zoom / scale));
+                Matrix baseTransform = Matrix.Identity;
+                baseTransform *= Matrix.RotationY(rotation.Y) * Matrix.RotationX(rotation.X);
+                baseTransform *= centerMatrix * translationMatrix * Matrix.Scaling(-scale, scale, scale);
+
                 //Grid
                 device.RenderState.AlphaTestEnable = false;
                 device.RenderState.ZBufferEnable = true;
@@ -197,6 +218,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 device.RenderState.CullMode = Cull.None;
                 if (showGrid)
                 {
+                    device.Transform.World = baseTransform;
                     device.VertexFormat = CustomVertex.PositionColored.Format;
                     VertexBuffer lineBuffer = new VertexBuffer(typeof(CustomVertex.PositionColored), gridBuffer.Length, device, Usage.None, CustomVertex.PositionColored.Format, Pool.Managed);
                     lineBuffer.SetData(gridBuffer, 0, LockFlags.None);
@@ -204,15 +226,6 @@ namespace Ohana3DS_Rebirth.Ohana
                     device.DrawPrimitives(PrimitiveType.LineList, 0, gridBuffer.Length / 2);
                     lineBuffer.Dispose();
                 }
-
-                //View
-                Matrix centerMatrix = Matrix.Translation(
-                    -(model.minVector.x + model.maxVector.x) / 2,
-                    -(model.minVector.y + model.maxVector.y) / 2,
-                    -(model.minVector.z + model.maxVector.z) / 2);
-                Matrix translationMatrix = Matrix.Translation(new Vector3((-translation.X / 50.0f) / scale, (translation.Y / 50.0f) / scale, zoom / scale));
-                device.Transform.World = Matrix.RotationY(rotation.Y) * Matrix.RotationX(rotation.X);
-                device.Transform.World *= centerMatrix * translationMatrix * Matrix.Scaling(-scale, scale, scale);
 
                 if (!useLegacyTexturing)
                 {
@@ -234,6 +247,8 @@ namespace Ohana3DS_Rebirth.Ohana
                 int modelIndex = 0;
                 foreach (RenderBase.OModel mdl in model.model)
                 {
+                    device.Transform.World = getMatrix(mdl.transform) * baseTransform;
+
                     #region "Animation"
                     bool foundModelEntry = false;
                     foreach (animationCacheEntry cacheEntry in animationCache)
@@ -260,12 +275,12 @@ namespace Ohana3DS_Rebirth.Ohana
                             {
                                 if (b.name == mdl.skeleton[index].name)
                                 {
-                                    if (frameCheck(b.rotationX, frame)) newBone.rotation.x = getKey(b.rotationX, frame);
-                                    if (frameCheck(b.rotationY, frame)) newBone.rotation.y = getKey(b.rotationY, frame);
-                                    if (frameCheck(b.rotationZ, frame)) newBone.rotation.z = getKey(b.rotationZ, frame);
-                                    if (frameCheck(b.translationX, frame)) newBone.translation.x = getKey(b.translationX, frame);
-                                    if (frameCheck(b.translationY, frame)) newBone.translation.y = getKey(b.translationY, frame);
-                                    if (frameCheck(b.translationZ, frame)) newBone.translation.z = getKey(b.translationZ, frame);
+                                    if (b.rotationX.exists) newBone.rotation.x = getKey(b.rotationX, getFrameNumber(b.rotationX, frame));
+                                    if (b.rotationY.exists) newBone.rotation.y = getKey(b.rotationY, getFrameNumber(b.rotationY, frame));
+                                    if (b.rotationZ.exists) newBone.rotation.z = getKey(b.rotationZ, getFrameNumber(b.rotationZ, frame));
+                                    if (b.translationX.exists) newBone.translation.x = getKey(b.translationX, getFrameNumber(b.translationX, frame));
+                                    if (b.translationY.exists) newBone.translation.y = getKey(b.translationY, getFrameNumber(b.translationY, frame));
+                                    if (b.translationZ.exists) newBone.translation.z = getKey(b.translationZ, getFrameNumber(b.translationZ, frame));
 
                                     break;
                                 }
@@ -360,6 +375,8 @@ namespace Ohana3DS_Rebirth.Ohana
                         }
                         else
                         {
+                            device.SetTexture(0, null);
+
                             //Texture
                             foreach (CustomTexture texture in textures)
                             {
@@ -504,7 +521,6 @@ namespace Ohana3DS_Rebirth.Ohana
                             device.SetStreamSource(0, vertexBuffer, 0);
 
                             device.DrawPrimitives(PrimitiveType.TriangleList, 0, obj.renderBuffer.Length / 3);
-
                         }
 
                         vertexBuffer.Dispose();
@@ -518,7 +534,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 device.EndScene();
                 device.Present();
 
-                if (!paused && animate) frame = (frame + 0.25f) % (int)(model.skeletalAnimation[currentAnimation].frameSize / animationStep);
+                if (!paused && animate) frame = (frame + 0.25f) % (int)model.skeletalAnimation[currentAnimation].frameSize;
 
                 Application.DoEvents();
             }
@@ -544,6 +560,33 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             if (value < 0.0f) return (float)((Math.PI * 2) + value);
             return (float)(value % (Math.PI * 2));
+        }
+
+        /// <summary>
+        ///     Gets a MDX Matrix from a RenderBase Matrix.
+        /// </summary>
+        /// <param name="mtx">RenderBase matrix</param>
+        /// <returns></returns>
+        private Matrix getMatrix(RenderBase.OMatrix mtx)
+        {
+            Matrix output = Matrix.Identity;
+
+            output.M11 = mtx.M11;
+            output.M12 = mtx.M12;
+            output.M13 = mtx.M13;
+            output.M14 = mtx.M14;
+
+            output.M21 = mtx.M21;
+            output.M22 = mtx.M22;
+            output.M23 = mtx.M23;
+            output.M24 = mtx.M24;
+
+            output.M31 = mtx.M31;
+            output.M32 = mtx.M32;
+            output.M33 = mtx.M33;
+            output.M34 = mtx.M34;
+
+            return output;
         }
 
         #region "Materials helper functions"
@@ -733,14 +776,31 @@ namespace Ohana3DS_Rebirth.Ohana
         }
 
         /// <summary>
-        ///     Check if a segment actually exists and if it is inside the frame window.
+        ///     Converts global Frame number to segment Frame number.
         /// </summary>
         /// <param name="sourceFrame">The list of key frames</param>
         /// <param name="frame">The frame that should be verified</param>
         /// <returns></returns>
-        private bool frameCheck(RenderBase.OSkeletalAnimationFrame sourceFrame, float frame)
+        private float getFrameNumber(RenderBase.OSkeletalAnimationFrame sourceFrame, float frame)
         {
-            return (sourceFrame.exists && frame >= sourceFrame.startFrame && frame <= sourceFrame.endFrame);
+            //TODO
+            if (frame < sourceFrame.startFrame)
+            {
+                switch (sourceFrame.preRepeat)
+                {
+                    case RenderBase.ORepeatMethod.none: return sourceFrame.startFrame;
+                }
+            }
+
+            if (frame > sourceFrame.endFrame)
+            {
+                switch (sourceFrame.postRepeat)
+                {
+                    case RenderBase.ORepeatMethod.none: return sourceFrame.endFrame;
+                }
+            }
+
+            return frame;
         }
 
         /// <summary>
@@ -764,11 +824,13 @@ namespace Ohana3DS_Rebirth.Ohana
         /// </summary>
         /// <param name="animationIndex">The index where the animation is located</param>
         /// <param name="step">The step speed to load the animation. Smaller steps have very high RAM usage</param>
-        public void loadAnimation(int animationIndex)
+        public bool loadAnimation(int animationIndex)
         {
-            if (animationIndex < 0 || animationIndex >= model.skeletalAnimation.Count) return;
+            if (animationIndex < -1 || animationIndex >= model.skeletalAnimation.Count) return false;
             animationCache.Clear();
             currentAnimation = animationIndex;
+            frame = 0;
+            return true;
         }
 
         /// <summary>

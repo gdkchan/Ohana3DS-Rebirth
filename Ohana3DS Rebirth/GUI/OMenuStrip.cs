@@ -70,11 +70,7 @@ namespace Ohana3DS_Rebirth.GUI
                     Rectangle Rect = new Rectangle(3, 2, e.Item.Width - 5, e.Item.Height - 3);
                     e.Graphics.FillRectangle(new SolidBrush(itemSelect), Rect);
                 }
-                if (e.Item.IsOnDropDown == false)
-                {
-                    //Make font Upper Case for Menu Header
-                    e.Item.Text = e.Item.Text.ToUpper();
-                }
+
                 e.Item.ForeColor = itemColor;
             }
             else

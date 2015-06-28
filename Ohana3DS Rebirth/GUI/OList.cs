@@ -11,19 +11,22 @@ namespace Ohana3DS_Rebirth.GUI
         private int tileSize = 64;
         private int headerSize = 24;
 
-        Color selectedColor = Color.LightBlue;
+        Color selectedColor = ColorManager.highlight;
         Point mousePosition;
         bool clicked;
+
+        public event EventHandler SelectedIndexChanged;
+        private int oldIndex = -1;
 
         public class listItem
         {
             public Bitmap thumbnail;
             public String text;
 
-            public listItem(string Text, Bitmap Thumbnail = null)
+            public listItem(string _text, Bitmap _thumbnail = null)
             {
-                thumbnail = Thumbnail;
-                text = Text;
+                text = _text;
+                thumbnail = _thumbnail;
             }
         }
         public class listItemGroup
@@ -41,15 +44,16 @@ namespace Ohana3DS_Rebirth.GUI
             public int width;
             public String text;
 
-            public columnHeader(int Width, string Text)
+            public columnHeader(int _width, string _text)
             {
-                width = Width;
-                text = Text;
+                width = _width;
+                text = _text;
             }
         }
         List<columnHeader> columns = new List<columnHeader>();
 
         int selectedIndex = -1;
+        private bool showHeader = false;
 
         public OList()
         {
@@ -114,16 +118,48 @@ namespace Ohana3DS_Rebirth.GUI
             {
                 return selectedIndex;
             }
+            set
+            {
+                if (value > -1 && value < list.Count)
+                {
+                    selectedIndex = value;
+                    updateScroll();
+                    if (selectedIndex != oldIndex && SelectedIndexChanged != null) SelectedIndexChanged(this, EventArgs.Empty);
+                    oldIndex = selectedIndex;
+                }
+            }
         }
 
         /// <summary>
         ///     Adds a item to the list. At least one column is necessary.
         /// </summary>
-        /// <param name="item"></param>
+        /// <param name="item">The item with one or more columns</param>
         public void addItem(listItemGroup item)
         {
             list.Add(item);
             recalcScroll();
+        }
+
+        /// <summary>
+        ///     Adds a item to the list.
+        /// </summary>
+        /// <param name="item"></param>
+        public void addItem(listItem item)
+        {
+            listItemGroup newItem = new listItemGroup();
+            newItem.columns.Add(item);
+            addItem(newItem);
+        }
+
+        /// <summary>
+        ///     Adds a text to the list.
+        /// </summary>
+        /// <param name="text"></param>
+        public void addItem(string text)
+        {
+            listItemGroup newItem = new listItemGroup();
+            newItem.columns.Add(new listItem(text));
+            addItem(newItem);
         }
 
         /// <summary>
@@ -133,6 +169,7 @@ namespace Ohana3DS_Rebirth.GUI
         public void addColumn(columnHeader column)
         {
             columns.Add(column);
+            showHeader = true;
         }
 
         /// <summary>
@@ -142,13 +179,15 @@ namespace Ohana3DS_Rebirth.GUI
         {
             list.Clear();
             columns.Clear();
-            selectedIndex = 0;
+            selectedIndex = -1;
+            oldIndex = -1;
             recalcScroll();
+            showHeader = false;
         }
 
         private void recalcScroll()
         {
-            int totalSize = (list.Count * tileSize) + headerSize;
+            int totalSize = (list.Count * tileSize) + (showHeader ? headerSize : 0);
             if (totalSize > Height)
             {
                 ListScroll.MaximumScroll = totalSize - Height;
@@ -163,35 +202,40 @@ namespace Ohana3DS_Rebirth.GUI
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            if (list.Count == 0 || columns.Count == 0) return;
+            if (list.Count == 0) return;
 
-            int totalSize = (list.Count * tileSize) + headerSize;
+            int totalSize = (list.Count * tileSize) + (showHeader ? headerSize : 0);
             int startY = 0;
             if (totalSize > Height) startY = ListScroll.Value * -1;
             int index = 0;
 
             //Renderiza a parte do Header
-            int columnX = 0;
             int i = 0;
-            foreach (columnHeader header in columns)
+            if (showHeader)
             {
-                int columnWidth;
-                if (i == columns.Count - 1) columnWidth = Width - columnX; else columnWidth = header.width;
-                if (columnWidth < 2) break;
+                int columnX = 0;
+                
+                foreach (columnHeader header in columns)
+                {
+                    int columnWidth;
+                    if (i == columns.Count - 1) columnWidth = Width - columnX; else columnWidth = header.width;
+                    if (columnWidth < 2) break;
 
-                Rectangle rect = new Rectangle(columnX, startY, columnWidth - 1, headerSize);
-                e.Graphics.FillRectangle(new LinearGradientBrush(rect, Color.Transparent, Color.FromArgb(0x2f, 0x2f, 0x2f), LinearGradientMode.Vertical), rect);
-                e.Graphics.DrawLine(new Pen(Color.FromArgb(0x1f, 0x1f, 0x1f)), new Point(columnX, startY + headerSize), new Point(columnX + (columnWidth - 2), startY + headerSize));
+                    Rectangle rect = new Rectangle(columnX, startY, columnWidth - 1, headerSize);
+                    e.Graphics.FillRectangle(new LinearGradientBrush(rect, Color.Transparent, Color.FromArgb(0x2f, 0x2f, 0x2f), LinearGradientMode.Vertical), rect);
+                    e.Graphics.DrawLine(new Pen(Color.FromArgb(0x1f, 0x1f, 0x1f)), new Point(columnX, startY + headerSize), new Point(columnX + (columnWidth - 2), startY + headerSize));
 
-                Font font = new Font(Font.FontFamily, Font.Size, FontStyle.Bold);
-                int textHeight = (int)e.Graphics.MeasureString(header.text, font).Height;
-                e.Graphics.DrawString(DrawingHelper.clampText(header.text, font, columnWidth), font, new SolidBrush(ForeColor), new Point(columnX, startY + ((headerSize / 2) - (textHeight / 2))));
-                font.Dispose();
+                    Font font = new Font(Font.FontFamily, Font.Size, FontStyle.Bold);
+                    int textHeight = (int)e.Graphics.MeasureString(header.text, font).Height;
+                    e.Graphics.DrawString(DrawingHelper.clampText(header.text, font, columnWidth), font, new SolidBrush(ForeColor), new Point(columnX, startY + ((headerSize / 2) - (textHeight / 2))));
+                    font.Dispose();
 
-                columnX += columnWidth;
-                i++;
+                    columnX += columnWidth;
+                    i++;
+                }
+
+                startY += headerSize;
             }
-            startY += headerSize;
 
             //Renderiza os itens da lista
             foreach (listItemGroup item in list)
@@ -210,6 +254,8 @@ namespace Ohana3DS_Rebirth.GUI
                         {
                             e.Graphics.FillRectangle(new SolidBrush(selectedColor), new Rectangle(0, startY, Width, tileSize));
                             selectedIndex = index;
+                            if (selectedIndex != oldIndex && SelectedIndexChanged != null) SelectedIndexChanged(this, EventArgs.Empty);
+                            oldIndex = selectedIndex;
                             clicked = false;
                         }
                     }
@@ -223,9 +269,8 @@ namespace Ohana3DS_Rebirth.GUI
                     int x = 0;
                     foreach (listItem subItem in item.columns)
                     {
-                        if (i >= columns.Count) break;
                         int columnWidth;
-                        if (i == columns.Count - 1) columnWidth = Width - x; else columnWidth = columns[i].width;
+                        if (i == columns.Count - 1 || columns.Count == 0) columnWidth = Width - x; else columnWidth = columns[i].width;
                         if (columnWidth < 1) break;
 
                         int textX = x;
@@ -293,6 +338,44 @@ namespace Ohana3DS_Rebirth.GUI
             Refresh();
 
             base.OnLayout(e);
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            switch (keyData)
+            {
+                case Keys.Up: if (selectedIndex > 0) selectedIndex--; break;
+                case Keys.Down: if (selectedIndex < list.Count - 1) selectedIndex++; break;
+            }
+            if (keyData == Keys.Up || keyData == Keys.Down)
+            {
+                updateScroll();
+                if (selectedIndex != oldIndex && SelectedIndexChanged != null) SelectedIndexChanged(this, EventArgs.Empty);
+                oldIndex = selectedIndex;
+                return true;
+            }
+
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
+        private void updateScroll()
+        {
+            int header = showHeader ? headerSize : 0;
+            int totalSize = (list.Count * tileSize) + header;
+            int startY = totalSize > Height ? ListScroll.Value : 0;
+            int positionY = (selectedIndex * tileSize) + header;
+            if (totalSize > Height)
+            {
+                if (positionY < startY)
+                {
+                    ListScroll.Value = positionY;
+                }
+                else if (positionY > startY + Height)
+                {
+                    ListScroll.Value = (positionY + tileSize - 1) - Height;
+                }
+            }
+            Refresh();
         }
 
         private void ListScroll_ScrollChanged(object sender, EventArgs e)

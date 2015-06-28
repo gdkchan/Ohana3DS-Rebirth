@@ -114,7 +114,7 @@ namespace Ohana3DS_Rebirth.GUI
 
                 if (window.Visible)
                 {
-                    Color baseColor = Color.FromArgb(21, 46, 84);
+                    Color baseColor = ColorManager.highlight;
                     e.Graphics.FillRectangle(new SolidBrush(baseColor), rect);
                     e.Graphics.FillRectangle(new LinearGradientBrush(rectShadow, baseColor, Color.Transparent, LinearGradientMode.Vertical), rectShadow);
                 }
@@ -127,7 +127,7 @@ namespace Ohana3DS_Rebirth.GUI
                 e.Graphics.DrawString(window.Title, font, new SolidBrush(Color.White), new Point(rect.Left + 16, rect.Top));
                 font.Dispose();
 
-                // Rectangle iconRect = new Rectangle(rect.X, rect.Y + (rect.Height / 2) - 8, 16, 16);
+                Rectangle iconRect = new Rectangle(rect.X, rect.Y + (rect.Height / 2) - 8, 16, 16);
                 
                 left += windowWidth + 4;
             }

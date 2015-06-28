@@ -122,8 +122,8 @@ namespace Ohana3DS_Rebirth.GUI
             }
             set
             {
-                if (value > max) throw new Exception("OVscroll: The Value set is greater than the maximum value!");
-                if (value < 0) throw new Exception("OVscroll: Value can't be less than 0!");
+                if (value > max) throw new Exception("OVScroll: The Value set is greater than the maximum value!");
+                if (value < 0) throw new Exception("OVScroll: Value can't be less than 0!");
                 scrollY = value;
                 scrollBarY = (int)(((float)scrollY / max) * (Height - scrollBarSize));
                 Refresh();
@@ -189,7 +189,7 @@ namespace Ohana3DS_Rebirth.GUI
                     else if (y > Height - scrollBarSize) y = Height - scrollBarSize;
                     scrollBarY = y;
 
-                    scrollY = (int)(((float)y / Math.Max((Height - scrollBarSize), 1)) * max);
+                    scrollY = (int)(((float)y / Math.Max(Height - scrollBarSize, 1)) * max);
                     if (ScrollChanged != null) ScrollChanged(this, EventArgs.Empty);
                     Refresh();
                 }

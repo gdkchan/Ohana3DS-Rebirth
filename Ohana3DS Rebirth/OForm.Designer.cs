@@ -118,7 +118,7 @@
             this.LblTitle.Image = null;
             this.LblTitle.Location = new System.Drawing.Point(0, 0);
             this.LblTitle.Name = "LblTitle";
-            this.LblTitle.Size = new System.Drawing.Size(37, 19);
+            this.LblTitle.Size = new System.Drawing.Size(31, 19);
             this.LblTitle.TabIndex = 12;
             this.LblTitle.Text = "Title";
             this.LblTitle.MouseDown += new System.Windows.Forms.MouseEventHandler(this.OForm_MouseDown);

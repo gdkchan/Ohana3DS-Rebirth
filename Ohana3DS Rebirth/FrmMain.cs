@@ -29,10 +29,12 @@ namespace Ohana3DS_Rebirth
         {
             LblTitle.BackColor = Color.FromArgb(0x7f, 15, 82, 186);
         }
+
         private void LblTitle_MouseLeave(object sender, EventArgs e)
         {
             LblTitle.BackColor = Color.Transparent;
         }
+
         private void LblTitle_MouseDown(object sender, MouseEventArgs e)
         {
             MainMenu.Show(Left + LblTitle.Left, Top + LblTitle.Top + LblTitle.Height);
@@ -59,7 +61,7 @@ namespace Ohana3DS_Rebirth
                 case FileIdentifier.fileFormat.H3D:
                     GUI.OModelWindow modelWindow = new GUI.OModelWindow();
                     GUI.OTextureWindow textureWindow = new GUI.OTextureWindow();
-                    GUI.OAnimWindow animWindow = new GUI.OAnimWindow();
+                    GUI.OAnimationsWindow animWindow = new GUI.OAnimationsWindow();
 
                     String name = Path.GetFileNameWithoutExtension(fileName);
                     modelWindow.Title = "Model [" + name + "]";
@@ -78,7 +80,7 @@ namespace Ohana3DS_Rebirth
                     renderer.model = model;
                     Application.DoEvents(); //Call this to avoid clicks on the OpenDialog going to ViewPort
 
-                    textureWindow.initialize(model);
+                    textureWindow.initialize(renderer);
                     animWindow.initialize(renderer);
                     modelWindow.initialize(renderer);
 

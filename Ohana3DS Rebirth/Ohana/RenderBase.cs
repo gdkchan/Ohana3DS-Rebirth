@@ -849,6 +849,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public List<OModelObject> modelObject;
             public List<OBone> skeleton;
             public List<OMaterial> material;
+            public OMatrix transform;
             public float height;
 
             public OModel()
@@ -1143,12 +1144,21 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Adds a Model.
+            ///     Adds a new Model.
             /// </summary>
             /// <param name="_model">The Model</param>
             public void addModel(OModel _model)
             {
                 model.Add(_model);
+            }
+
+            /// <summary>
+            ///     Adds Models.
+            /// </summary>
+            /// <param name="_model">The Models</param>
+            public void addModel(List<OModel> _model)
+            {
+                model.AddRange(_model);
             }
 
             /// <summary>
@@ -1161,12 +1171,30 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
+            ///     Adds Textures.
+            /// </summary>
+            /// <param name="_texture">The Textures</param>
+            public void addTexture(List<OTexture> _texture)
+            {
+                texture.AddRange(_texture);
+            }
+
+            /// <summary>
             ///     Adds a new LookUp Table.
             /// </summary>
             /// <param name="_lookUpTable">The LUT</param>
             public void addLUT(OLookUpTable _lookUpTable)
             {
                 lookUpTable.Add(_lookUpTable);
+            }
+
+            /// <summary>
+            ///     Adds LookUp Tables.
+            /// </summary>
+            /// <param name="_lookUpTable">The LUTs</param>
+            public void addLUT(List<OLookUpTable> _lookUpTable)
+            {
+                lookUpTable.AddRange(_lookUpTable);
             }
 
             /// <summary>
@@ -1179,12 +1207,30 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
+            ///     Adds Lights.
+            /// </summary>
+            /// <param name="_light">The Lights</param>
+            public void addLight(List<OLight> _light)
+            {
+                light.AddRange(_light);
+            }
+
+            /// <summary>
             ///     Adds a new Camera.
             /// </summary>
             /// <param name="_camera">The Camera</param>
             public void addCamera(OCamera _camera)
             {
                 camera.Add(_camera);
+            }
+
+            /// <summary>
+            ///     Adds Cameras.
+            /// </summary>
+            /// <param name="_camera">The Cameras</param>
+            public void addCamera(List<OCamera> _camera)
+            {
+                camera.AddRange(_camera);
             }
 
             /// <summary>
@@ -1197,12 +1243,30 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
+            ///     Adds Fogs.
+            /// </summary>
+            /// <param name="_fog">The Fogs</param>
+            public void addFog(List<OFog> _fog)
+            {
+                fog.AddRange(_fog);
+            }
+
+            /// <summary>
             ///     Adds a new Skeletal Animation.
             /// </summary>
             /// <param name="_skeletalAnimation">The Skeletal Animation</param>
             public void addSekeletalAnimaton(OSkeletalAnimation _skeletalAnimation)
             {
                 skeletalAnimation.Add(_skeletalAnimation);
+            }
+
+            /// <summary>
+            ///     Adds Skeletal Animations.
+            /// </summary>
+            /// <param name="_skeletalAnimation">The Skeletal Animations</param>
+            public void addSekeletalAnimaton(List<OSkeletalAnimation> _skeletalAnimation)
+            {
+                skeletalAnimation.AddRange(_skeletalAnimation);
             }
         }
     }

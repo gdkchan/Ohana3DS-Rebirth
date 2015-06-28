@@ -31,11 +31,15 @@ namespace Ohana3DS_Rebirth.GUI
             {
                 using (Graphics g2 = Graphics.FromImage(hoverBlue))
                 {
-                    g1.FillRectangle(new SolidBrush(Color.FromArgb(0x7f, Color.Crimson)), new Rectangle(1, 1, hoverRed.Width - 2, hoverRed.Height - 2));
-                    g2.FillRectangle(new SolidBrush(Color.FromArgb(0x7f, Color.FromArgb(15, 82, 186))), new Rectangle(1, 1, hoverBlue.Width - 2, hoverBlue.Height - 2));
+                    g1.FillRectangle(new SolidBrush(Color.FromArgb(0x7f, ColorManager.hoverClose)), new Rectangle(1, 1, hoverRed.Width - 2, hoverRed.Height - 2));
+                    g2.FillRectangle(new SolidBrush(Color.FromArgb(0x7f, ColorManager.hover)), new Rectangle(1, 1, hoverBlue.Width - 2, hoverBlue.Height - 2));
                 }
             }
 
+            SetStyle(ControlStyles.SupportsTransparentBackColor, true);
+            SetStyle(ControlStyles.UserPaint, true);
+            SetStyle(ControlStyles.AllPaintingInWmPaint, true);
+            SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
             InitializeComponent();
         }
 
@@ -112,10 +116,12 @@ namespace Ohana3DS_Rebirth.GUI
             {
                 BtnClose.BackgroundImage = hoverRed;
             }
+
             private void BtnClose_MouseLeave(object sender, EventArgs e)
             {
                 BtnClose.BackgroundImage = null;
             }
+
             private void BtnClose_MouseDown(object sender, MouseEventArgs e)
             {
                 if (e.Button == MouseButtons.Left) Visible = false;
@@ -125,10 +131,12 @@ namespace Ohana3DS_Rebirth.GUI
             {
                 BtnPin.BackgroundImage = hoverBlue;
             }
+
             private void BtnPin_MouseLeave(object sender, EventArgs e)
             {
                 BtnPin.BackgroundImage = null;
             }
+
             private void BtnPin_MouseDown(object sender, MouseEventArgs e)
             {
                 if (e.Button == MouseButtons.Left)
@@ -142,5 +150,6 @@ namespace Ohana3DS_Rebirth.GUI
                 }
             }
         #endregion
+
     }
 }

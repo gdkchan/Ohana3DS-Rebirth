@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using System.Collections.Generic;
 
 using Ohana3DS_Rebirth.Ohana;
 
@@ -20,6 +21,7 @@ namespace Ohana3DS_Rebirth.GUI
             finalMovement = new RenderBase.OVector2();
 
             InitializeComponent();
+            ModelMenu.Renderer = new GUI.OMenuStrip();
         }
 
         private void Screen_Resize(object sender, EventArgs e)
@@ -54,7 +56,7 @@ namespace Ohana3DS_Rebirth.GUI
                         renderer.setRotation(rY, rX);
                         initialRotation = new RenderBase.OVector2(e.X, e.Y);
                         break;
-                    case MouseButtons.Right:
+                    case MouseButtons.Middle:
                         renderer.translation.X = (initialMovement.x - MousePosition.X) + finalMovement.x;
                         renderer.translation.Y = (initialMovement.y - MousePosition.Y) + finalMovement.y;
                         break;
@@ -68,7 +70,8 @@ namespace Ohana3DS_Rebirth.GUI
             switch (e.Button)
             {
                 case MouseButtons.Left: initialRotation = new RenderBase.OVector2(e.X, e.Y); break;
-                case MouseButtons.Right: initialMovement = new RenderBase.OVector2(MousePosition.X, MousePosition.Y); break;
+                case MouseButtons.Middle: initialMovement = new RenderBase.OVector2(MousePosition.X, MousePosition.Y); break;
+                case MouseButtons.Right: ModelMenu.Show(Cursor.Position); break;
             }
         }
 
@@ -78,7 +81,7 @@ namespace Ohana3DS_Rebirth.GUI
             {
                 switch (e.Button)
                 {
-                    case MouseButtons.Right: finalMovement = new RenderBase.OVector2(finalMovement.x + (initialMovement.x - MousePosition.X), finalMovement.y + (initialMovement.y - MousePosition.Y)); break;
+                    case MouseButtons.Middle: finalMovement = new RenderBase.OVector2(finalMovement.x + (initialMovement.x - MousePosition.X), finalMovement.y + (initialMovement.y - MousePosition.Y)); break;
                 }
                 clicked = false;
             }
@@ -87,6 +90,17 @@ namespace Ohana3DS_Rebirth.GUI
         private void Screen_MouseWheel(object sender, MouseEventArgs e)
         {
             if (renderer != null && e.Delta > 0) renderer.zoom += 1.0f; else renderer.zoom -= 1.0f;
+        }
+
+        private void MnuImport_Click(object sender, EventArgs e)
+        {
+            Object importedData = FileImporter.import(FileImporter.importFileType.model);
+            if (importedData != null) renderer.model.addModel((List<RenderBase.OModel>)importedData);
+        }
+
+        private void MnuClear_Click(object sender, EventArgs e)
+        {
+            renderer.model.model.Clear();
         }
     }
 }

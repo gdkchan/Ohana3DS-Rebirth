@@ -72,6 +72,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Design" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -87,12 +88,13 @@
     <Compile Include="FrmMain.Designer.cs">
       <DependentUpon>FrmMain.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\ColorManager.cs" />
     <Compile Include="GUI\DrawingHelper.cs" />
-    <Compile Include="GUI\OAnimWindow.cs">
+    <Compile Include="GUI\Windows\OAnimationsWindow.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="GUI\OAnimWindow.Designer.cs">
-      <DependentUpon>OAnimWindow.cs</DependentUpon>
+    <Compile Include="GUI\Windows\OAnimationsWindow.Designer.cs">
+      <DependentUpon>OAnimationsWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\OButton.cs">
       <SubType>Component</SubType>
@@ -106,11 +108,17 @@
     <Compile Include="GUI\ODock.Designer.cs">
       <DependentUpon>ODock.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\ODockWindow.cs">
+    <Compile Include="GUI\Windows\ODockWindow.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="GUI\ODockWindow.Designer.cs">
+    <Compile Include="GUI\Windows\ODockWindow.Designer.cs">
       <DependentUpon>ODockWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OGroupBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\OGroupBox.Designer.cs">
+      <DependentUpon>OGroupBox.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\OHScroll.cs">
       <SubType>Component</SubType>
@@ -134,16 +142,22 @@
     <Compile Include="GUI\OMenuStrip.Designer.cs">
       <DependentUpon>OMenuStrip.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\OModelWindow.cs">
+    <Compile Include="GUI\Windows\OModelWindow.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="GUI\OModelWindow.Designer.cs">
+    <Compile Include="GUI\Windows\OModelWindow.Designer.cs">
       <DependentUpon>OModelWindow.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\OTextureWindow.cs">
+    <Compile Include="GUI\OScrollablePanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="GUI\OTextureWindow.Designer.cs">
+    <Compile Include="GUI\OScrollablePanel.Designer.cs">
+      <DependentUpon>OScrollablePanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Windows\OTextureWindow.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Windows\OTextureWindow.Designer.cs">
       <DependentUpon>OTextureWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\OVScroll.cs">
@@ -166,6 +180,7 @@
     </Compile>
     <Compile Include="Ohana\BCH.cs" />
     <Compile Include="Ohana\FileIdentifier.cs" />
+    <Compile Include="Ohana\FileImporter.cs" />
     <Compile Include="Ohana\GenericFormats\SMD.cs" />
     <Compile Include="Ohana\IOUtils.cs" />
     <Compile Include="Ohana\RenderBase.cs" />
@@ -177,22 +192,28 @@
     <EmbeddedResource Include="FrmMain.resx">
       <DependentUpon>FrmMain.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\OAnimWindow.resx">
-      <DependentUpon>OAnimWindow.cs</DependentUpon>
+    <EmbeddedResource Include="GUI\Windows\OAnimationsWindow.resx">
+      <DependentUpon>OAnimationsWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\ODock.resx">
       <DependentUpon>ODock.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\ODockWindow.resx">
+    <EmbeddedResource Include="GUI\Windows\ODockWindow.resx">
       <DependentUpon>ODockWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\OGroupBox.resx">
+      <DependentUpon>OGroupBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\OList.resx">
       <DependentUpon>OList.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\OModelWindow.resx">
+    <EmbeddedResource Include="GUI\Windows\OModelWindow.resx">
       <DependentUpon>OModelWindow.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\OTextureWindow.resx">
+    <EmbeddedResource Include="GUI\OScrollablePanel.resx">
+      <DependentUpon>OScrollablePanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Windows\OTextureWindow.resx">
       <DependentUpon>OTextureWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="OForm.resx">
@@ -268,13 +289,37 @@
     <None Include="Resources\OFragmentShader.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\play.png" />
+    <None Include="Resources\icn_collapse.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\pause.png" />
+    <None Include="Resources\icn_expand.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\stop.png" />
+    <None Include="Resources\icn_arrow_down.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_arrow_up.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_edit.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_trash.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_big_next.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_big_play.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_big_previous.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_big_stop.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_big_pause.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

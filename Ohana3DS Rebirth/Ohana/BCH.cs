@@ -519,19 +519,18 @@ namespace Ohana3DS_Rebirth.Ohana
                                     uint entries = frameFlags >> 16;
                                     frame.exists = entries > 0;
 
-                                    float minValue = 0, maxValue = 0;
-                                    uint value0 = input.ReadUInt32();
-                                    float value1 = input.ReadSingle();
-                                    float value2 = input.ReadSingle();
-                                    float value3 = input.ReadSingle();
+                                    float maxValue = 0;
+                                    uint rawMaxValue = input.ReadUInt32();
+                                    float minValue = input.ReadSingle();
+                                    float frameScale = input.ReadSingle();
+                                    uint rawData = input.ReadUInt32();
 
                                     switch (entryFormat)
                                     {
-                                        case 1: case 7: maxValue = getCustomFloat(value0, 107); break;
-                                        case 2: case 4: maxValue = getCustomFloat(value0, 111); break;
-                                        case 5: maxValue = getCustomFloat(value0, 115); break;
+                                        case 1: case 7: maxValue = getCustomFloat(rawMaxValue, 107); break;
+                                        case 2: case 4: maxValue = getCustomFloat(rawMaxValue, 111); break;
+                                        case 5: maxValue = getCustomFloat(rawMaxValue, 115); break;
                                     }
-                                    minValue = value1;
                                     maxValue = minValue + maxValue;
 
                                     float interpolation;
@@ -611,7 +610,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                                         break;
                                                     case 5:
                                                         value = input.ReadUInt32();
-                                                        hermitePoint.frame = (float)(value & 0xff);
+                                                        hermitePoint.frame = (float)(value & 0xff) * frameScale;
                                                         interpolation = (float)((value >> 8) & 0xfff) / 0x1000;
                                                         hermitePoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
                                                         hermitePoint.inSlope = get12bValue((int)(value >> 20));
@@ -701,6 +700,8 @@ namespace Ohana3DS_Rebirth.Ohana
                 objectsHeader.objectsNodeNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
                 input.ReadUInt32(); //0x0
                 objectsHeader.boundingBoxAndMeasuresPointerOffset = input.ReadUInt32();
+
+                model.transform = objectsHeader.worldTransform;
 
                 //Texture names table
                 for (int index = 0; index < objectsHeader.texturesTableEntries; index++)
