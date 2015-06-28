@@ -454,6 +454,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         device.VertexFormat = vertexFormat;
                         VertexBuffer vertexBuffer;
 
+                        if (!useLegacyTexturing) fragmentShader.BeginPass(0);
                         if (animate && currentAnimation > -1)
                         {
                             animationCacheEntry entry = new animationCacheEntry();
@@ -518,6 +519,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         }
 
                         vertexBuffer.Dispose();
+                        if (!useLegacyTexturing) fragmentShader.EndPass();
                         objectIndex++;
                     }
 
