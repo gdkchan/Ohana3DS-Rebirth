@@ -17,7 +17,6 @@ float4x4 projection;
 texture texture0;
 texture texture1;
 texture texture2;
-texture texture3;
 
 sampler tex0 = sampler_state
 {
@@ -35,11 +34,6 @@ sampler tex2 = sampler_state
 {
 	Texture = <texture2>;
 	MinFilter = Linear;
-};
-
-sampler tex3 = sampler_state
-{
-	Texture = <texture3>;
 };
 
 struct COMBINER
@@ -71,6 +65,10 @@ int numLights;
 
 bool hasTextures;
 int uvCount;
+
+float4 uvTranslate[3];
+float4 uvScale[3];
+float4x4 uvTransform[3];
 
 float4 mEmissive;
 float4 mAmbient;
@@ -128,10 +126,18 @@ float4 PixelShaderFunction(VS_OUTPUT input) : COLOR0
 	float4 output = float4(0, 0, 0, 0);
 	float4 temp = float4(0, 0, 0, 0);
 	float4 buffer = float4(0, 0, 0, 0);
-	float4 color0 = tex2D(tex0, input.uv0);
-	float4 color1 = tex2D(tex1, uvCount > 1 ? input.uv1 : input.uv0);
-	float4 color2 = tex2D(tex2, uvCount > 2 ? input.uv2 : input.uv0);
-	float4 color3 = tex2D(tex3, input.uv0); //Deve usar o primeiro UV lel
+
+	float2 uv0 = mul(input.uv0, uvTransform[0]);
+	float2 uv1 = mul(input.uv1, uvTransform[1]);
+	float2 uv2 = mul(input.uv2, uvTransform[2]);
+
+	uv0 = (uv0 + (float2)uvTranslate[0]) * (float2)uvScale[0];
+	uv1 = (uv1 + (float2)uvTranslate[1]) * (float2)uvScale[1];
+	uv2 = (uv2 + (float2)uvTranslate[2]) * (float2)uvScale[2];
+
+	float4 color0 = tex2D(tex0, uv0);
+	float4 color1 = tex2D(tex1, uvCount > 1 ? uv1 : uv0);
+	float4 color2 = tex2D(tex2, uvCount > 2 ? uv2 : uv0);
 
 	float4 primaryColor = float4(0, 0, 0, 0);
 	float4 fragmentPrimaryColor;
@@ -147,7 +153,6 @@ float4 PixelShaderFunction(VS_OUTPUT input) : COLOR0
 			if (bumpIndex == 0) bumpColor = color0;
 			else if (bumpIndex == 1) bumpColor = color1;
 			else if (bumpIndex == 2) bumpColor = color2;
-			else if (bumpIndex == 3) bumpColor = color3;
 		}
 
 		float4 baseColor = mAmbient * lights[i].ambient + mDiffuse * lights[i].diffuse;

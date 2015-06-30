@@ -32,11 +32,16 @@ namespace Ohana3DS_Rebirth.Ohana
         private bool useLegacyTexturing = false; //Set to True to disable Fragment Shader
         private const bool showGrid = true;
 
-        const float animationStep = 0.25f;
-        int currentAnimation = -1;
-        float frame;
-        bool animate;
-        bool paused;
+
+        private struct animationControl
+        {
+            public float animationStep;
+            public int currentAnimation;
+            public float frame;
+            public bool animate;
+            public bool paused;
+        }
+        animationControl ctrlSA, ctrlMA;
 
         private struct animationCacheEntry
         {
@@ -75,6 +80,12 @@ namespace Ohana3DS_Rebirth.Ohana
                 //Some crap GPUs only works with Software vertex processing
                 device = new Device(0, DeviceType.Hardware, handle, CreateFlags.SoftwareVertexProcessing, pParams);
             }
+
+            //Spare parts
+            ctrlSA.currentAnimation = -1;
+            ctrlMA.currentAnimation = -1;
+            ctrlSA.animationStep = 0.25f;
+            ctrlMA.animationStep = 0.25f;
 
             setupViewPort();
         }
@@ -195,6 +206,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 baseTransform *= centerMatrix * translationMatrix * Matrix.Scaling(-scale, scale, scale);
 
                 //Grid
+                #region "Grid Rendering"
                 device.RenderState.AlphaTestEnable = false;
                 device.RenderState.ZBufferEnable = true;
                 device.RenderState.ZBufferWriteEnable = true;
@@ -211,6 +223,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     device.DrawPrimitives(PrimitiveType.LineList, 0, gridBuffer.Length / 2);
                     lineBuffer.Dispose();
                 }
+                #endregion
 
                 if (!useLegacyTexturing)
                 {
@@ -238,7 +251,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     bool foundModelEntry = false;
                     foreach (animationCacheEntry cacheEntry in animationCache)
                     {
-                        if (cacheEntry.modelIndex == modelIndex && cacheEntry.frame == frame)
+                        if (cacheEntry.modelIndex == modelIndex && cacheEntry.frame == ctrlSA.frame)
                         {
                             foundModelEntry = true;
                             break;
@@ -246,7 +259,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
 
                     Matrix[] animationSkeletonTransform = new Matrix[mdl.skeleton.Count];
-                    if (animate && !foundModelEntry && currentAnimation > -1)
+                    if (ctrlSA.animate && !foundModelEntry && ctrlSA.currentAnimation > -1)
                     {
                         Matrix[] skeletonTransform = new Matrix[mdl.skeleton.Count];
 
@@ -256,7 +269,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             transformSkeleton(mdl.skeleton, index, ref skeletonTransform[index]);
                         }
 
-                        List<RenderBase.OSkeletalAnimationBone> bone = model.skeletalAnimation[currentAnimation].bone;
+                        List<RenderBase.OSkeletalAnimationBone> bone = model.skeletalAnimation[ctrlSA.currentAnimation].bone;
                         List<RenderBase.OBone> frameAnimationSkeleton = new List<RenderBase.OBone>();
                         for (int index = 0; index < mdl.skeleton.Count; index++)
                         {
@@ -268,12 +281,12 @@ namespace Ohana3DS_Rebirth.Ohana
                             {
                                 if (b.name == mdl.skeleton[index].name)
                                 {
-                                    if (b.rotationX.exists) newBone.rotation.x = getKey(b.rotationX, getFrameNumber(b.rotationX, frame));
-                                    if (b.rotationY.exists) newBone.rotation.y = getKey(b.rotationY, getFrameNumber(b.rotationY, frame));
-                                    if (b.rotationZ.exists) newBone.rotation.z = getKey(b.rotationZ, getFrameNumber(b.rotationZ, frame));
-                                    if (b.translationX.exists) newBone.translation.x = getKey(b.translationX, getFrameNumber(b.translationX, frame));
-                                    if (b.translationY.exists) newBone.translation.y = getKey(b.translationY, getFrameNumber(b.translationY, frame));
-                                    if (b.translationZ.exists) newBone.translation.z = getKey(b.translationZ, getFrameNumber(b.translationZ, frame));
+                                    if (b.rotationX.exists) newBone.rotation.x = getKey(b.rotationX, getFrameNumber(b.rotationX, ctrlSA.frame));
+                                    if (b.rotationY.exists) newBone.rotation.y = getKey(b.rotationY, getFrameNumber(b.rotationY, ctrlSA.frame));
+                                    if (b.rotationZ.exists) newBone.rotation.z = getKey(b.rotationZ, getFrameNumber(b.rotationZ, ctrlSA.frame));
+                                    if (b.translationX.exists) newBone.translation.x = getKey(b.translationX, getFrameNumber(b.translationX, ctrlSA.frame));
+                                    if (b.translationY.exists) newBone.translation.y = getKey(b.translationY, getFrameNumber(b.translationY, ctrlSA.frame));
+                                    if (b.translationZ.exists) newBone.translation.z = getKey(b.translationZ, getFrameNumber(b.translationZ, ctrlSA.frame));
 
                                     break;
                                 }
@@ -296,9 +309,63 @@ namespace Ohana3DS_Rebirth.Ohana
                     {
                         RenderBase.OMaterial material = mdl.material[obj.materialId];
 
+                        #region "Material Animation"
+                        int[] textureId = {-1, -1, -1};
+                        Color blendColor = material.fragmentOperation.blend.blendColor;
+                        Color[] borderColor = new Color[3];
+                        borderColor[0] = material.textureMapper[0].borderColor;
+                        borderColor[1] = material.textureMapper[1].borderColor;
+                        borderColor[2] = material.textureMapper[2].borderColor;
+                        if (ctrlMA.animate && ctrlMA.currentAnimation > -1)
+                        {
+                            foreach (RenderBase.OMaterialAnimationData data in model.materialAnimation[ctrlMA.currentAnimation].data)
+                            {
+                                if (data.name == material.name)
+                                {
+                                    switch (data.type)
+                                    {
+                                        case RenderBase.OMaterialAnimationType.textureMapper0: textureId[0] = (int)getMaterialAnimationFloat(data); break;
+                                        case RenderBase.OMaterialAnimationType.textureMapper1: textureId[1] = (int)getMaterialAnimationFloat(data); break;
+                                        case RenderBase.OMaterialAnimationType.textureMapper2: textureId[2] = (int)getMaterialAnimationFloat(data); break;
+                                        case RenderBase.OMaterialAnimationType.borderColorMapper0: borderColor[0] = getMaterialAnimationColor(data); break;
+                                        case RenderBase.OMaterialAnimationType.borderColorMapper1: borderColor[1] = getMaterialAnimationColor(data); break;
+                                        case RenderBase.OMaterialAnimationType.borderColorMapper2: borderColor[2] = getMaterialAnimationColor(data); break;
+                                        case RenderBase.OMaterialAnimationType.blendColor: blendColor = getMaterialAnimationColor(data); break;
+                                    }
+                                }
+                            }
+                        }
+                        #endregion
+
                         if (!useLegacyTexturing)
                         {
                             #region "Shader combiner parameters"
+                            RenderBase.OMaterialColor materialColor = new RenderBase.OMaterialColor();
+                            materialColor = material.materialColor;
+
+                            if (ctrlMA.animate && ctrlMA.currentAnimation > -1)
+                            {
+                                foreach (RenderBase.OMaterialAnimationData data in model.materialAnimation[ctrlMA.currentAnimation].data)
+                                {
+                                    if (data.name == material.name)
+                                    {
+                                        switch (data.type)
+                                        {
+                                            case RenderBase.OMaterialAnimationType.constant0: materialColor.constant0 = getMaterialAnimationColor(data); break;
+                                            case RenderBase.OMaterialAnimationType.constant1: materialColor.constant1 = getMaterialAnimationColor(data); break;
+                                            case RenderBase.OMaterialAnimationType.constant2: materialColor.constant2 = getMaterialAnimationColor(data); break;
+                                            case RenderBase.OMaterialAnimationType.constant3: materialColor.constant3 = getMaterialAnimationColor(data); break;
+                                            case RenderBase.OMaterialAnimationType.constant4: materialColor.constant4 = getMaterialAnimationColor(data); break;
+                                            case RenderBase.OMaterialAnimationType.constant5: materialColor.constant5 = getMaterialAnimationColor(data); break;
+                                            case RenderBase.OMaterialAnimationType.diffuse: materialColor.diffuse = getMaterialAnimationColor(data); break;
+                                            case RenderBase.OMaterialAnimationType.specular0: materialColor.specular0 = getMaterialAnimationColor(data); break;
+                                            case RenderBase.OMaterialAnimationType.specular1: materialColor.specular1 = getMaterialAnimationColor(data); break;
+                                            case RenderBase.OMaterialAnimationType.ambient: materialColor.ambient = getMaterialAnimationColor(data); break;
+                                        }
+                                    }
+                                }
+                            }
+
                             fragmentShader.SetValue("hasTextures", textures.Count > 0);
                             fragmentShader.SetValue("uvCount", obj.texUVCount);
 
@@ -311,10 +378,10 @@ namespace Ohana3DS_Rebirth.Ohana
                             fragmentShader.SetValue("bumpIndex", (int)material.fragmentShader.bump.texture);
                             fragmentShader.SetValue("bumpMode", (int)material.fragmentShader.bump.mode);
 
-                            fragmentShader.SetValue("mEmissive", getColor(material.materialColor.emission));
-                            fragmentShader.SetValue("mAmbient", getColor(material.materialColor.ambient));
-                            fragmentShader.SetValue("mDiffuse", getColor(material.materialColor.diffuse));
-                            fragmentShader.SetValue("mSpecular", getColor(material.materialColor.specular0));
+                            fragmentShader.SetValue("mEmissive", getColor(materialColor.emission));
+                            fragmentShader.SetValue("mAmbient", getColor(materialColor.ambient));
+                            fragmentShader.SetValue("mDiffuse", getColor(materialColor.diffuse));
+                            fragmentShader.SetValue("mSpecular", getColor(materialColor.specular0));
 
                             for (int i = 0; i < 6; i++)
                             {
@@ -337,17 +404,17 @@ namespace Ohana3DS_Rebirth.Ohana
                                 Color constantColor = Color.White;
                                 switch (textureCombiner.constantColor)
                                 {
-                                    case RenderBase.OConstantColor.ambient: constantColor = material.materialColor.ambient; break;
-                                    case RenderBase.OConstantColor.constant0: constantColor = material.materialColor.constant0; break;
-                                    case RenderBase.OConstantColor.constant1: constantColor = material.materialColor.constant1; break;
-                                    case RenderBase.OConstantColor.constant2: constantColor = material.materialColor.constant2; break;
-                                    case RenderBase.OConstantColor.constant3: constantColor = material.materialColor.constant3; break;
-                                    case RenderBase.OConstantColor.constant4: constantColor = material.materialColor.constant4; break;
-                                    case RenderBase.OConstantColor.constant5: constantColor = material.materialColor.constant5; break;
-                                    case RenderBase.OConstantColor.diffuse: constantColor = material.materialColor.diffuse; break;
-                                    case RenderBase.OConstantColor.emission: constantColor = material.materialColor.emission; break;
-                                    case RenderBase.OConstantColor.specular0: constantColor = material.materialColor.specular0; break;
-                                    case RenderBase.OConstantColor.specular1: constantColor = material.materialColor.specular1; break;
+                                    case RenderBase.OConstantColor.ambient: constantColor = materialColor.ambient; break;
+                                    case RenderBase.OConstantColor.constant0: constantColor = materialColor.constant0; break;
+                                    case RenderBase.OConstantColor.constant1: constantColor = materialColor.constant1; break;
+                                    case RenderBase.OConstantColor.constant2: constantColor = materialColor.constant2; break;
+                                    case RenderBase.OConstantColor.constant3: constantColor = materialColor.constant3; break;
+                                    case RenderBase.OConstantColor.constant4: constantColor = materialColor.constant4; break;
+                                    case RenderBase.OConstantColor.constant5: constantColor = materialColor.constant5; break;
+                                    case RenderBase.OConstantColor.diffuse: constantColor = materialColor.diffuse; break;
+                                    case RenderBase.OConstantColor.emission: constantColor = materialColor.emission; break;
+                                    case RenderBase.OConstantColor.specular0: constantColor = materialColor.specular0; break;
+                                    case RenderBase.OConstantColor.specular1: constantColor = materialColor.specular1; break;
                                 }
 
                                 fragmentShader.SetValue(String.Format("combiners[{0}].constant", i), new Vector4(
@@ -362,8 +429,14 @@ namespace Ohana3DS_Rebirth.Ohana
                                 if (texture.name == material.name0) fragmentShader.SetValue("texture0", texture.texture);
                                 else if (texture.name == material.name1) fragmentShader.SetValue("texture1", texture.texture);
                                 else if (texture.name == material.name2) fragmentShader.SetValue("texture2", texture.texture);
-                                else if (texture.name == material.name3) fragmentShader.SetValue("texture3", texture.texture);
                             }
+
+                            #region "Material Animation"
+                            if (textureId[0] > -1) fragmentShader.SetValue("texture0", textures[textureId[0]].texture);
+                            if (textureId[1] > -1) fragmentShader.SetValue("texture1", textures[textureId[1]].texture);
+                            if (textureId[2] > -1) fragmentShader.SetValue("texture2", textures[textureId[2]].texture);
+                            #endregion
+
                             #endregion
                         }
                         else
@@ -379,9 +452,47 @@ namespace Ohana3DS_Rebirth.Ohana
                             }
                         }
 
+                        #region "Texture Filtering/Addressing Setup"
                         //Filtering
                         for (int s = 0; s < 3; s++)
                         {
+                            if (!useLegacyTexturing)
+                            {
+                                RenderBase.OTextureCoordinator coordinator = material.textureCoordinator[s];
+
+                                Vector2 translate = new Vector2(coordinator.translateU, coordinator.translateV);
+                                Vector2 scaling = new Vector2(coordinator.scaleU, coordinator.scaleV);
+                                if (scaling == Vector2.Empty) scaling = new Vector2(1, 1);
+                                float rotate = coordinator.rotate;
+                                #region "Material Animation"
+                                if (ctrlMA.animate && ctrlMA.currentAnimation > -1)
+                                {
+                                    foreach (RenderBase.OMaterialAnimationData data in model.materialAnimation[ctrlMA.currentAnimation].data)
+                                    {
+                                        if (data.name == material.name)
+                                        {
+                                            switch (data.type)
+                                            {
+                                                case RenderBase.OMaterialAnimationType.translateCoordinator0: if (s == 0) translate = getMaterialAnimationVector2(data); break; //Translation
+                                                case RenderBase.OMaterialAnimationType.translateCoordinator1: if (s == 1) translate = getMaterialAnimationVector2(data); break;
+                                                case RenderBase.OMaterialAnimationType.translateCoordinator2: if (s == 2) translate = getMaterialAnimationVector2(data); break;
+                                                case RenderBase.OMaterialAnimationType.scaleCoordinator0: if (s == 0) scaling = getMaterialAnimationVector2(data); break; //Scaling
+                                                case RenderBase.OMaterialAnimationType.scaleCoordinator1: if (s == 1) scaling = getMaterialAnimationVector2(data); break;
+                                                case RenderBase.OMaterialAnimationType.scaleCoordinator2: if (s == 2) scaling = getMaterialAnimationVector2(data); break;
+                                                case RenderBase.OMaterialAnimationType.rotateCoordinator0: if (s == 0) rotate = getMaterialAnimationFloat(data); break; //Rotation
+                                                case RenderBase.OMaterialAnimationType.rotateCoordinator1: if (s == 1) rotate = getMaterialAnimationFloat(data); break;
+                                                case RenderBase.OMaterialAnimationType.rotateCoordinator2: if (s == 2) rotate = getMaterialAnimationFloat(data); break;
+                                            }
+                                        }
+                                    }
+                                }
+                                #endregion
+
+                                fragmentShader.SetValue(String.Format("uvTranslate[{0}]", s), new Vector4(translate.X, translate.Y, 0, 0));
+                                fragmentShader.SetValue(String.Format("uvScale[{0}]", s), new Vector4(scaling.X, scaling.Y, 0, 0));
+                                fragmentShader.SetValue(String.Format("uvTransform[{0}]", s), Matrix.RotationZ(rotate));
+                            }
+
                             device.SetSamplerState(s, SamplerStageStates.MinFilter, (int)TextureFilter.Linear);
                             switch (material.textureMapper[s].magFilter)
                             {
@@ -390,7 +501,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             }
 
                             //Addressing
-                            device.SetSamplerState(s, SamplerStageStates.BorderColor, material.textureMapper[s].borderColor.ToArgb());
+                            device.SetSamplerState(s, SamplerStageStates.BorderColor, borderColor[s].ToArgb());
                             switch (material.textureMapper[s].wrapU)
                             {
                                 case RenderBase.OTextureWrap.repeat: device.SetSamplerState(s, SamplerStageStates.AddressU, (int)TextureAddress.Wrap); break;
@@ -406,7 +517,9 @@ namespace Ohana3DS_Rebirth.Ohana
                                 case RenderBase.OTextureWrap.clampToBorder: device.SetSamplerState(s, SamplerStageStates.AddressV, (int)TextureAddress.Border); break;
                             }
                         }
+                        #endregion
 
+                        #region "Culling/Alpha/Depth/Stencil testing/blending stuff Setup"
                         //Culling
                         switch (material.rasterization.cullMode)
                         {
@@ -437,7 +550,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         device.RenderState.AlphaSourceBlend = getBlend(blend.alphaFunctionSource);
                         device.RenderState.AlphaDestinationBlend = getBlend(blend.alphaFunctionDestination);
                         device.RenderState.AlphaBlendOperation = getBlendOperation(blend.alphaBlendEquation);
-                        device.RenderState.BlendFactorColor = blend.blendColor.ToArgb();
+                        device.RenderState.BlendFactorColor = blendColor.ToArgb();
 
                         //Stencil testing
                         RenderBase.OStencilOperation stencil = material.fragmentOperation.stencil;
@@ -448,14 +561,16 @@ namespace Ohana3DS_Rebirth.Ohana
                         device.RenderState.StencilFail = getStencilOperation(stencil.failOperation);
                         device.RenderState.StencilZBufferFail = getStencilOperation(stencil.zFailOperation);
                         device.RenderState.StencilPass = getStencilOperation(stencil.passOperation);
+                        #endregion
 
+                        #region "Rendering"
                         //Vertex rendering
                         VertexFormats vertexFormat = VertexFormats.Position | VertexFormats.Normal | VertexFormats.Texture3 | VertexFormats.Diffuse;
                         device.VertexFormat = vertexFormat;
                         VertexBuffer vertexBuffer;
 
                         if (!useLegacyTexturing) fragmentShader.BeginPass(0);
-                        if (animate && currentAnimation > -1)
+                        if (ctrlSA.animate && ctrlSA.currentAnimation > -1)
                         {
                             animationCacheEntry entry = new animationCacheEntry();
 
@@ -465,7 +580,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             {
                                 foreach (animationCacheEntry cacheEntry in animationCache)
                                 {
-                                    if (cacheEntry.modelIndex == modelIndex && cacheEntry.objectIndex == objectIndex && cacheEntry.frame == frame)
+                                    if (cacheEntry.modelIndex == modelIndex && cacheEntry.objectIndex == objectIndex && cacheEntry.frame == ctrlSA.frame)
                                     {
                                         foundEntry = true;
                                         entry = cacheEntry;
@@ -476,7 +591,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
                             if (!foundEntry)
                             {
-                                entry.frame = frame;
+                                entry.frame = ctrlSA.frame;
                                 entry.modelIndex = modelIndex;
                                 entry.objectIndex = objectIndex;
                                 entry.buffer = new RenderBase.CustomVertex[obj.renderBuffer.Length];
@@ -491,7 +606,9 @@ namespace Ohana3DS_Rebirth.Ohana
                                     int weightIndex = 0;
                                     foreach (int boneIndex in input.node)
                                     {
-                                        p += Vector3.Transform(position, animationSkeletonTransform[boneIndex]) * input.weight[weightIndex++];
+                                        float weight = 1;
+                                        if (weightIndex < input.weight.Count) weight = input.weight[weightIndex++];
+                                        p += Vector3.Transform(position, animationSkeletonTransform[boneIndex]) * weight;
                                     }
 
                                     entry.buffer[vertex].x = p.X;
@@ -520,6 +637,8 @@ namespace Ohana3DS_Rebirth.Ohana
 
                         vertexBuffer.Dispose();
                         if (!useLegacyTexturing) fragmentShader.EndPass();
+                        #endregion
+
                         objectIndex++;
                     }
 
@@ -530,7 +649,8 @@ namespace Ohana3DS_Rebirth.Ohana
                 device.EndScene();
                 device.Present();
 
-                if (!paused && animate && currentAnimation > -1) frame = (frame + animationStep) % (int)model.skeletalAnimation[currentAnimation].frameSize;
+                if (!ctrlSA.paused && ctrlSA.animate && ctrlSA.currentAnimation > -1) ctrlSA.frame = (ctrlSA.frame + ctrlSA.animationStep) % (int)model.skeletalAnimation[ctrlSA.currentAnimation].frameSize;
+                if (!ctrlMA.paused && ctrlMA.animate && ctrlMA.currentAnimation > -1) ctrlMA.frame = (ctrlMA.frame + ctrlMA.animationStep) % (int)model.materialAnimation[ctrlMA.currentAnimation].frameSize;
 
                 Application.DoEvents();
             }
@@ -713,7 +833,6 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <returns>The interpolated frame value</returns>
         private float interpolate(List<RenderBase.OHermiteFloat> keyFrames, float frame)
         {
-            //No idea if this is right
             float minFrame = 0;
             float maxFrame = float.MaxValue;
 
@@ -743,10 +862,10 @@ namespace Ohana3DS_Rebirth.Ohana
             float mu = (frame - minFrame) / (maxFrame - minFrame);
             float mu2 = mu * mu;
             float mu3 = mu2 * mu;
-            float m0 = a.inSlope / 2;
+            float m0 = a.outSlope / 2;
             m0 += (b.value - a.value) / 2;
             float m1 = (b.value - a.value) / 2;
-            m1 += b.outSlope / 2;
+            m1 += b.inSlope / 2;
             float a0 = 2 * mu3 - 3 * mu2 + 1;
             float a1 = mu3 - 2 * mu2 + mu;
             float a2 = mu3 - mu2;
@@ -761,7 +880,7 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="sourceFrame">The list of key frames</param>
         /// <param name="frame">The frame that should be returned or interpolated from the list</param>
         /// <returns></returns>
-        private float getKey(RenderBase.OSkeletalAnimationFrame sourceFrame, float frame)
+        private float getKey(RenderBase.OAnimationFrame sourceFrame, float frame)
         {
             switch (sourceFrame.interpolation)
             {
@@ -777,7 +896,7 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="sourceFrame">The list of key frames</param>
         /// <param name="frame">The frame that should be verified</param>
         /// <returns></returns>
-        private float getFrameNumber(RenderBase.OSkeletalAnimationFrame sourceFrame, float frame)
+        private float getFrameNumber(RenderBase.OAnimationFrame sourceFrame, float frame)
         {
             //TODO
             if (frame < sourceFrame.startFrame)
@@ -819,13 +938,12 @@ namespace Ohana3DS_Rebirth.Ohana
         ///     It will have no effect if the index is invalid.
         /// </summary>
         /// <param name="animationIndex">The index where the animation is located</param>
-        /// <param name="step">The step speed to load the animation. Smaller steps have very high RAM usage</param>
-        public bool loadAnimation(int animationIndex)
+        public bool loadSkeletalAnimation(int animationIndex)
         {
             if (animationIndex < -1 || animationIndex >= model.skeletalAnimation.Count) return false;
             animationCache.Clear();
-            currentAnimation = animationIndex;
-            frame = 0;
+            ctrlSA.currentAnimation = animationIndex;
+            ctrlSA.frame = 0;
             return true;
         }
 
@@ -834,55 +952,140 @@ namespace Ohana3DS_Rebirth.Ohana
         ///     It will have no effect if the frame is outside of the animation range.
         /// </summary>
         /// <param name="targetFrame">The new frame index</param>
-        public void setAnimationFrame(int targetFrame)
+        public void setSkeletalAnimationFrame(int targetFrame)
         {
-            if (targetFrame < 0 || targetFrame > (model.skeletalAnimation[currentAnimation].frameSize / animationStep)) return;
-            frame = targetFrame;
+            if (targetFrame < 0 || targetFrame > model.skeletalAnimation[ctrlSA.currentAnimation].frameSize) return;
+            ctrlSA.frame = targetFrame;
         }
 
         /// <summary>
         ///     Pauses the animation.
         /// </summary>
-        public void pauseAnimation()
+        public void pauseSkeletalAnimation()
         {
-            paused = true;
+            ctrlSA.paused = true;
         }
 
         /// <summary>
         ///     Stops the animation, and render the still model.
         /// </summary>
-        public void stopAnimation()
+        public void stopSkeletalAnimation()
         {
-            animate = false;
-            frame = 0;
+            ctrlSA.animate = false;
+            ctrlSA.frame = 0;
         }
 
         /// <summary>
         ///     Play the animation.
         ///     It will have no effect if no animations are loaded.
         /// </summary>
-        public void playAnimation()
+        public void playSkeletalAnimation()
         {
-            if (currentAnimation == -1) return;
-            paused = false;
-            animate = true;
-        }
-
-        /// <summary>
-        ///     List with all loaded animations.
-        /// </summary>
-        public List<RenderBase.OSkeletalAnimation> animations
-        {
-            get { return model.skeletalAnimation; }
+            if (ctrlSA.currentAnimation == -1) return;
+            ctrlSA.paused = false;
+            ctrlSA.animate = true;
         }
 
         /// <summary>
         ///     Get the current animation index.
         ///     It will return -1 if no animations have been loaded yet.
         /// </summary>
-        public int currentAnimationIndex
+        public int currentSkeletalAnimationIndex
         {
-            get { return currentAnimation; }
+            get { return ctrlSA.currentAnimation; }
+        }
+
+        //
+        //
+        //
+
+        private Color getMaterialAnimationColor(RenderBase.OMaterialAnimationData data)
+        {
+            float r = getKey(data.d0, ctrlMA.frame);
+            float g = getKey(data.d1, ctrlMA.frame);
+            float b = getKey(data.d2, ctrlMA.frame);
+            float a = getKey(data.d3, ctrlMA.frame);
+
+            byte R = (byte)(r * 0xff);
+            byte G = (byte)(g * 0xff);
+            byte B = (byte)(b * 0xff);
+            byte A = (byte)(a * 0xff);
+
+            return Color.FromArgb(A, R, G, B);
+        }
+
+        private Vector2 getMaterialAnimationVector2(RenderBase.OMaterialAnimationData data)
+        {
+            float x = getKey(data.d0, ctrlMA.frame);
+            float y = getKey(data.d1, ctrlMA.frame);
+
+            return new Vector2(x, y);
+        }
+
+        private float getMaterialAnimationFloat(RenderBase.OMaterialAnimationData data)
+        {
+            return getKey(data.d0, ctrlMA.frame);
+        }
+
+        /// <summary>
+        ///     Load the animation at the given index on the model Material Animation.
+        ///     It will have no effect if the index is invalid.
+        /// </summary>
+        /// <param name="animationIndex">The index where the animation is located</param>
+        public bool loadMaterialAnimation(int animationIndex)
+        {
+            if (animationIndex < -1 || animationIndex >= model.materialAnimation.Count) return false;
+            ctrlMA.currentAnimation = animationIndex;
+            ctrlMA.frame = 0;
+            return true;
+        }
+
+        /// <summary>
+        ///     Changes the current animation frame.
+        ///     It will have no effect if the frame is outside of the animation range.
+        /// </summary>
+        /// <param name="targetFrame">The new frame index</param>
+        public void setMaterialAnimationFrame(int targetFrame)
+        {
+            if (targetFrame < 0 || targetFrame > model.materialAnimation[ctrlMA.currentAnimation].frameSize) return;
+            ctrlMA.frame = targetFrame;
+        }
+
+        /// <summary>
+        ///     Pauses the animation.
+        /// </summary>
+        public void pauseMaterialAnimation()
+        {
+            ctrlMA.paused = true;
+        }
+
+        /// <summary>
+        ///     Stops the animation, and render the still model.
+        /// </summary>
+        public void stopMaterialAnimation()
+        {
+            ctrlMA.animate = false;
+            ctrlMA.frame = 0;
+        }
+
+        /// <summary>
+        ///     Play the animation.
+        ///     It will have no effect if no animations are loaded.
+        /// </summary>
+        public void playMaterialAnimation()
+        {
+            if (ctrlMA.currentAnimation == -1) return;
+            ctrlMA.paused = false;
+            ctrlMA.animate = true;
+        }
+
+        /// <summary>
+        ///     Get the current animation index.
+        ///     It will return -1 if no animations have been loaded yet.
+        /// </summary>
+        public int currentMaterialAnimationIndex
+        {
+            get { return ctrlMA.currentAnimation; }
         }
         #endregion
 

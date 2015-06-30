@@ -15,7 +15,7 @@ namespace Ohana3DS_Rebirth.GUI
     {
         private String title;
         private Size originalSize;
-        private bool toggle;
+        private bool collapsed;
 
         public OGroupBox()
         {
@@ -88,8 +88,7 @@ namespace Ohana3DS_Rebirth.GUI
         private void BtnToggle_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button != MouseButtons.Left) return;
-            if (toggle) expand(); else collapse();
-            toggle = !toggle;
+            if (collapsed) expand(); else collapse();
         }
 
         /// <summary>
@@ -99,6 +98,7 @@ namespace Ohana3DS_Rebirth.GUI
         {
             BtnToggle.Image = Properties.Resources.icn_collapse;
             this.Size = originalSize;
+            collapsed = false;
         }
 
         /// <summary>
@@ -109,6 +109,7 @@ namespace Ohana3DS_Rebirth.GUI
             BtnToggle.Image = Properties.Resources.icn_expand;
             originalSize = this.Size;
             Height = 16;
+            collapsed = true;
         }
 
         public class OGroupBoxDesigner : ParentControlDesigner

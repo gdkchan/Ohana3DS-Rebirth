@@ -46,6 +46,14 @@ namespace Ohana3DS_Rebirth.GUI
             }
         }
 
+        private void BtnDelete_Click(object sender, EventArgs e)
+        {
+            if (TextureList.SelectedIndex == -1) return;
+            renderer.model.texture.RemoveAt(TextureList.SelectedIndex);
+            renderer.updateTextures();
+            TextureList.removeItem(TextureList.SelectedIndex);
+        }
+
         private void BtnClear_Click(object sender, EventArgs e)
         {
             renderer.model.texture.Clear();

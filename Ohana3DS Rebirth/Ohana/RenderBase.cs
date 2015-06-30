@@ -820,7 +820,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
         public class OMaterial
         {
-            public String name0, name1, name2, name3;
+            public String name, name0, name1, name2;
 
             public OMaterialColor materialColor;
             public ORasterization rasterization;
@@ -958,7 +958,6 @@ namespace Ohana3DS_Rebirth.Ohana
             public OLightType lightType;
 
             public OFragmentSampler angleSampler;
-
         }
 
         public class OCamera
@@ -1065,7 +1064,7 @@ namespace Ohana3DS_Rebirth.Ohana
             hermite = 2
         }
 
-        public class OSkeletalAnimationFrame
+        public class OAnimationFrame
         {
             public List<OHermiteFloat> hermiteFrame;
             public List<OLinearFloat> linearFrame;
@@ -1076,7 +1075,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public ORepeatMethod preRepeat;
             public ORepeatMethod postRepeat;
 
-            public OSkeletalAnimationFrame()
+            public OAnimationFrame()
             {
                 hermiteFrame = new List<OHermiteFloat>();
                 linearFrame = new List<OLinearFloat>();
@@ -1087,17 +1086,17 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             
             public string name;
-            public OSkeletalAnimationFrame rotationX, rotationY, rotationZ;
-            public OSkeletalAnimationFrame translationX, translationY, translationZ;
+            public OAnimationFrame rotationX, rotationY, rotationZ;
+            public OAnimationFrame translationX, translationY, translationZ;
 
             public OSkeletalAnimationBone()
             {
-                rotationX = new OSkeletalAnimationFrame();
-                rotationY = new OSkeletalAnimationFrame();
-                rotationZ = new OSkeletalAnimationFrame();
-                translationX = new OSkeletalAnimationFrame();
-                translationY = new OSkeletalAnimationFrame();
-                translationZ = new OSkeletalAnimationFrame();
+                rotationX = new OAnimationFrame();
+                rotationY = new OAnimationFrame();
+                rotationZ = new OAnimationFrame();
+                translationX = new OAnimationFrame();
+                translationY = new OAnimationFrame();
+                translationZ = new OAnimationFrame();
             }
         }
 
@@ -1120,6 +1119,65 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        public enum OMaterialAnimationType
+        {
+            constant0 = 1,
+            constant1 = 2,
+            constant2 = 3,
+            constant3 = 4,
+            constant4 = 5,
+            constant5 = 6,
+            emission = 7,
+            ambient = 8,
+            diffuse = 9,
+            specular0 = 0xa,
+            specular1 = 0xb,
+            borderColorMapper0 = 0xc,
+            textureMapper0 = 0xd,
+            borderColorMapper1 = 0xe,
+            textureMapper1 = 0xf,
+            borderColorMapper2 = 0x10,
+            textureMapper2 = 0x11,
+            blendColor = 0x12,
+            scaleCoordinator0 = 0x13,
+            rotateCoordinator0 = 0x14,
+            translateCoordinator0 = 0x15,
+            scaleCoordinator1 = 0x16,
+            rotateCoordinator1 = 0x17,
+            translateCoordinator1 = 0x18,
+            scaleCoordinator2 = 0x19,
+            rotateCoordinator2 = 0x1a,
+            translateCoordinator2 = 0x1b
+        }
+
+        public class OMaterialAnimationData
+        {
+            public string name;
+            public OMaterialAnimationType type;
+            public OAnimationFrame d0, d1, d2, d3;
+
+            public OMaterialAnimationData()
+            {
+                d0 = new OAnimationFrame();
+                d1 = new OAnimationFrame();
+                d2 = new OAnimationFrame();
+                d3 = new OAnimationFrame();
+            }
+        }
+
+        public class OMaterialAnimation
+        {
+            public string name;
+            public float frameSize;
+            public OLoopMode loopMode;
+            public List<OMaterialAnimationData> data;
+
+            public OMaterialAnimation()
+            {
+                data = new List<OMaterialAnimationData>();
+            }
+        }
+
         public class OModelGroup
         {
             public List<OModel> model;
@@ -1129,6 +1187,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public List<OCamera> camera;
             public List<OFog> fog;
             public List<OSkeletalAnimation> skeletalAnimation;
+            public List<OMaterialAnimation> materialAnimation;
             public OVector3 minVector, maxVector;
 
             public OModelGroup()
@@ -1140,6 +1199,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 camera = new List<OCamera>();
                 fog = new List<OFog>();
                 skeletalAnimation = new List<OSkeletalAnimation>();
+                materialAnimation = new List<OMaterialAnimation>();
                 minVector = new OVector3();
                 maxVector = new OVector3();
             }
@@ -1268,6 +1328,24 @@ namespace Ohana3DS_Rebirth.Ohana
             public void addSekeletalAnimaton(List<OSkeletalAnimation> _skeletalAnimation)
             {
                 skeletalAnimation.AddRange(_skeletalAnimation);
+            }
+
+            /// <summary>
+            ///     Adds a new Material Animation.
+            /// </summary>
+            /// <param name="_materialColorAnimation">The Material Animation</param>
+            public void addMaterialAnimation(OMaterialAnimation _materialAnimation)
+            {
+                materialAnimation.Add(_materialAnimation);
+            }
+
+            /// <summary>
+            ///     Adds Material Animations.
+            /// </summary>
+            /// <param name="_materialColorAnimation">The Material Color Animations</param>
+            public void addMaterialAnimation(List<OMaterialAnimation> _materialAnimation)
+            {
+                materialAnimation.AddRange(_materialAnimation);
             }
         }
     }

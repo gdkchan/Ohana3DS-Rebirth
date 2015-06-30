@@ -78,6 +78,9 @@ namespace Ohana3DS_Rebirth.Ohana
             public uint skeletalAnimationsPointerTableOffset;
             public uint skeletalAnimationsPointerTableEntries;
             public uint skeletalAnimationsNameOffset;
+            public uint materialAnimationsPointerTableOffset;
+            public uint materialAnimationsPointerTableEntries;
+            public uint materialAnimationsNameOffset;
         }
 
         private struct bchObjectsHeader
@@ -258,6 +261,9 @@ namespace Ohana3DS_Rebirth.Ohana
             contentHeader.skeletalAnimationsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
             contentHeader.skeletalAnimationsPointerTableEntries = input.ReadUInt32();
             contentHeader.skeletalAnimationsNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
+            contentHeader.materialAnimationsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
+            contentHeader.materialAnimationsPointerTableEntries = input.ReadUInt32();
+            contentHeader.materialAnimationsNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
             //Note: 15 enntries total, all have the same pattern: Table Offset/Table Entries/Name Offset
 
             //Shaders
@@ -491,7 +497,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         case 4:
                             for (int j = 0; j < 6; j++)
                             {
-                                RenderBase.OSkeletalAnimationFrame frame = new RenderBase.OSkeletalAnimationFrame();
+                                RenderBase.OAnimationFrame frame = new RenderBase.OAnimationFrame();
 
                                 data.Seek(offset + 0x18 + (j * 4), SeekOrigin.Begin);
 
@@ -506,125 +512,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                 {
                                     uint frameOffset = input.ReadUInt32() + header.mainHeaderOffset;
                                     data.Seek(frameOffset, SeekOrigin.Begin);
-                                    frame.startFrame = input.ReadSingle();
-                                    frame.endFrame = input.ReadSingle();
-
-                                    uint frameFlags = input.ReadUInt32();
-                                    frame.preRepeat = (RenderBase.ORepeatMethod)(frameFlags & 0xf);
-                                    frame.postRepeat = (RenderBase.ORepeatMethod)((frameFlags >> 8) & 0xf);
-
-                                    frameFlags = input.ReadUInt32();
-                                    frame.interpolation = (RenderBase.OInterpolationMode)(frameFlags & 0xf);
-                                    uint entryFormat = (frameFlags >> 8) & 0xff;
-                                    uint entries = frameFlags >> 16;
-                                    frame.exists = entries > 0;
-
-                                    float maxValue = 0;
-                                    uint rawMaxValue = input.ReadUInt32();
-                                    float minValue = input.ReadSingle();
-                                    float frameScale = input.ReadSingle();
-                                    uint rawData = input.ReadUInt32();
-
-                                    switch (entryFormat)
-                                    {
-                                        case 1: case 7: maxValue = getCustomFloat(rawMaxValue, 107); break;
-                                        case 2: case 4: maxValue = getCustomFloat(rawMaxValue, 111); break;
-                                        case 5: maxValue = getCustomFloat(rawMaxValue, 115); break;
-                                    }
-                                    maxValue = minValue + maxValue;
-
-                                    float interpolation;
-                                    uint value;
-                                    uint rawDataOffset = input.ReadUInt32() + header.mainHeaderOffset;
-                                    data.Seek(rawDataOffset, SeekOrigin.Begin);
-                                    for (int k = 0; k < entries; k++)
-                                    {
-                                        switch (frame.interpolation)
-                                        {
-                                            case RenderBase.OInterpolationMode.step:
-                                                //TODO
-                                                break;
-                                            case RenderBase.OInterpolationMode.linear:
-                                                RenderBase.OLinearFloat linearPoint = new RenderBase.OLinearFloat();
-                                                switch (entryFormat)
-                                                {
-                                                    case 6:
-                                                        linearPoint.frame = input.ReadSingle();
-                                                        linearPoint.value = input.ReadSingle();
-                                                        break;
-                                                    case 7:
-                                                        value = input.ReadUInt32();
-                                                        interpolation = (float)(value >> 12) / 0x100000;
-                                                        linearPoint.frame = (float)(value & 0xfff);
-                                                        linearPoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
-                                                        break;
-                                                    default:
-                                                        Debug.WriteLine(String.Format("[BCH] Skeletal Animation: Unsupported bone quantization format {0} on Linear, disabling bone {1}...", entryFormat.ToString(), bone.name));
-                                                        frame.exists = false;
-                                                        break;
-                                                }
-                                                frame.linearFrame.Add(linearPoint);
-                                                break;
-                                            case RenderBase.OInterpolationMode.hermite:
-                                                RenderBase.OHermiteFloat hermitePoint = new RenderBase.OHermiteFloat();
-                                                switch (entryFormat)
-                                                {
-                                                    case 0:
-                                                        hermitePoint.frame = input.ReadSingle();
-                                                        hermitePoint.value = input.ReadSingle();
-                                                        hermitePoint.inSlope = input.ReadSingle();
-                                                        hermitePoint.outSlope = input.ReadSingle();
-                                                        break;
-                                                    case 1:
-                                                        value = input.ReadUInt32();
-                                                        hermitePoint.frame = (float)(value & 0xfff);
-                                                        interpolation = (float)(value >> 12) / 0x100000;
-                                                        hermitePoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
-                                                        hermitePoint.inSlope = (float)input.ReadInt16() / 256;
-                                                        hermitePoint.outSlope = (float)input.ReadInt16() / 256;
-                                                        break;
-                                                    case 2:
-                                                        value = input.ReadUInt32();
-                                                        uint inSlopeLow = value >> 24;
-                                                        hermitePoint.frame = (float)(value & 0xff);
-                                                        interpolation = (float)((value >> 8) & 0xffff) / 0x10000;
-                                                        hermitePoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
-                                                        value = input.ReadUInt16();
-                                                        hermitePoint.inSlope = get12bValue((int)(((value & 0xf) << 8) | inSlopeLow));
-                                                        hermitePoint.outSlope = get12bValue((int)((value >> 4) & 0xfff));
-                                                        break;
-                                                    case 3:
-                                                        hermitePoint.frame = input.ReadSingle();
-                                                        hermitePoint.value = input.ReadSingle();
-                                                        hermitePoint.inSlope = input.ReadSingle();
-                                                        hermitePoint.outSlope = hermitePoint.inSlope;
-                                                        break;
-                                                    case 4:
-                                                        //TODO: Implement support for different inSlope and outSlope
-                                                        //Note: they are added with another frame with same number, but the inSlope is actually the outSlope
-                                                        hermitePoint.frame = (float)input.ReadInt16() / 32;
-                                                        interpolation = (float)input.ReadUInt16() / 0x10000;
-                                                        hermitePoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
-                                                        hermitePoint.inSlope = (float)input.ReadInt16() / 256;
-                                                        hermitePoint.outSlope = hermitePoint.inSlope;
-                                                        break;
-                                                    case 5:
-                                                        value = input.ReadUInt32();
-                                                        hermitePoint.frame = (float)(value & 0xff) * frameScale;
-                                                        interpolation = (float)((value >> 8) & 0xfff) / 0x1000;
-                                                        hermitePoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
-                                                        hermitePoint.inSlope = get12bValue((int)(value >> 20));
-                                                        hermitePoint.outSlope = hermitePoint.inSlope;
-                                                        break;
-                                                    default:
-                                                        Debug.WriteLine(String.Format("[BCH] Skeletal Animation: Unsupported bone quantization format {0} on Hermite, disabling bone {1}...", entryFormat.ToString(), bone.name));
-                                                        frame.exists = false;
-                                                        break;
-                                                }
-                                                frame.hermiteFrame.Add(hermitePoint);
-                                                break;
-                                        }
-                                    }
+                                    frame = getAnimationKeyFrame(input, header);
                                 }
 
                                 switch (j)
@@ -651,6 +539,111 @@ namespace Ohana3DS_Rebirth.Ohana
                 }
 
                 models.addSekeletalAnimaton(skeletalAnimation);
+            }
+
+            //Material Animations
+            for (int index = 0; index < contentHeader.materialAnimationsPointerTableEntries; index++)
+            {
+                data.Seek(contentHeader.materialAnimationsPointerTableOffset + (index * 4), SeekOrigin.Begin);
+                uint dataOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                data.Seek(dataOffset, SeekOrigin.Begin);
+
+                RenderBase.OMaterialAnimation materialAnimation = new RenderBase.OMaterialAnimation();
+
+                materialAnimation.name = readString(input, header);
+                uint animationFlags = input.ReadUInt32();
+                materialAnimation.loopMode = (RenderBase.OLoopMode)(animationFlags & 1);
+                materialAnimation.frameSize = input.ReadSingle();
+                uint dataTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                uint dataTableEntries = input.ReadUInt32();
+
+                for (int i = 0; i < dataTableEntries; i++)
+                {
+                    data.Seek(dataTableOffset + (i * 4), SeekOrigin.Begin);
+                    uint offset = input.ReadUInt32() + header.mainHeaderOffset;
+
+                    RenderBase.OMaterialAnimationData animationData = new RenderBase.OMaterialAnimationData();
+
+                    data.Seek(offset, SeekOrigin.Begin);
+                    animationData.name = readString(input, header);
+                    uint animationTypeFlags = input.ReadUInt32();
+                    uint flags = input.ReadUInt32();
+
+                    animationData.type = (RenderBase.OMaterialAnimationType)(animationTypeFlags & 0xff);
+
+                    int segmentCount = 0;
+                    switch (animationData.type)
+                    {
+                        case RenderBase.OMaterialAnimationType.emission:
+                        case RenderBase.OMaterialAnimationType.ambient:
+                        case RenderBase.OMaterialAnimationType.diffuse:
+                        case RenderBase.OMaterialAnimationType.specular0:
+                        case RenderBase.OMaterialAnimationType.specular1:
+                        case RenderBase.OMaterialAnimationType.constant0:
+                        case RenderBase.OMaterialAnimationType.constant1:
+                        case RenderBase.OMaterialAnimationType.constant2:
+                        case RenderBase.OMaterialAnimationType.constant3:
+                        case RenderBase.OMaterialAnimationType.constant4:
+                        case RenderBase.OMaterialAnimationType.constant5:
+                        case RenderBase.OMaterialAnimationType.borderColorMapper0:
+                        case RenderBase.OMaterialAnimationType.borderColorMapper1:
+                        case RenderBase.OMaterialAnimationType.borderColorMapper2:
+                        case RenderBase.OMaterialAnimationType.blendColor: //RgbaColor
+                            segmentCount = 4;
+                            break;
+                        case RenderBase.OMaterialAnimationType.scaleCoordinator0:
+                        case RenderBase.OMaterialAnimationType.scaleCoordinator1:
+                        case RenderBase.OMaterialAnimationType.scaleCoordinator2:
+                        case RenderBase.OMaterialAnimationType.translateCoordinator0:
+                        case RenderBase.OMaterialAnimationType.translateCoordinator1:
+                        case RenderBase.OMaterialAnimationType.translateCoordinator2: //Vector2
+                            segmentCount = 2;
+                            break;
+                        case RenderBase.OMaterialAnimationType.rotateCoordinator0:
+                        case RenderBase.OMaterialAnimationType.rotateCoordinator1:
+                        case RenderBase.OMaterialAnimationType.rotateCoordinator2: //Float
+                        case RenderBase.OMaterialAnimationType.textureMapper0:
+                        case RenderBase.OMaterialAnimationType.textureMapper1:
+                        case RenderBase.OMaterialAnimationType.textureMapper2: //Int
+                            segmentCount = 1;
+                            break;
+                    }
+
+                    for (int j = 0; j < segmentCount; j++)
+                    {
+                        RenderBase.OAnimationFrame frame = new RenderBase.OAnimationFrame();
+
+                        frame.exists = ((flags >> 8) & (1 << j)) == 0;
+                        bool inline = (flags & (1 << j)) > 0;
+
+                        if (frame.exists)
+                        {
+                            if (inline)
+                            {
+                                frame.interpolation = RenderBase.OInterpolationMode.linear;
+                                frame.linearFrame.Add(new RenderBase.OLinearFloat(input.ReadSingle(), 0.0f));
+                            }
+                            else
+                            {
+                                uint frameOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                                data.Seek(frameOffset, SeekOrigin.Begin);
+                                frame = getAnimationKeyFrame(input, header);
+                            }
+                        }
+
+                        switch (j)
+                        {
+                            case 0: animationData.d0 = frame; break;
+                            case 1: animationData.d1 = frame; break;
+                            case 2: animationData.d2 = frame; break;
+                            case 3: animationData.d3 = frame; break;
+                        }
+                    }
+
+                    materialAnimation.data.Add(animationData);
+                }
+
+                models.addMaterialAnimation(materialAnimation);
             }
 
             //Model
@@ -737,7 +730,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     material.name0 = readString(input, header);
                     material.name1 = readString(input, header);
                     material.name2 = readString(input, header);
-                    material.name3 = readString(input, header);
+                    material.name = readString(input, header);
 
                     //Parameters
                     //Same pointer of Materials section. Why?
@@ -1449,11 +1442,19 @@ namespace Ohana3DS_Rebirth.Ohana
                                             break;
                                         case 1: //Normal
                                             RenderBase.OVector4 normalVector = getVector(input, (quantization)normalQuantization, (vectorType)normalType);
-                                            vertex.normal = new RenderBase.OVector3(normalVector.x * normalScale, normalVector.y * normalScale, normalVector.z * normalScale);
+                                            switch ((vectorType)normalType)
+                                            {
+                                                case vectorType.vector3: vertex.normal = new RenderBase.OVector3(normalVector.x * normalScale, normalVector.y * normalScale, normalVector.z * normalScale); break;
+                                                default: vertex.normal = new RenderBase.OVector3(1, 1, 1); break;
+                                            }
                                             break;
                                         case 2: //Tangent
                                             RenderBase.OVector4 tangentVector = getVector(input, (quantization)tangentQuantization, (vectorType)tangentType);
-                                            vertex.tangent = new RenderBase.OVector3(tangentVector.x * tangentScale, tangentVector.y * tangentScale, tangentVector.z * tangentScale);
+                                            switch ((vectorType)tangentType)
+                                            {
+                                                case vectorType.vector3: vertex.tangent = new RenderBase.OVector3(tangentVector.x * tangentScale, tangentVector.y * tangentScale, tangentVector.z * tangentScale); break;
+                                                default: vertex.tangent = new RenderBase.OVector3(1, 1, 1); break;
+                                            }
                                             break;
                                         case 3: //Color
                                             RenderBase.OVector4 color = getVector(input, (quantization)colorQuantization, (vectorType)colorType);
@@ -1599,6 +1600,133 @@ namespace Ohana3DS_Rebirth.Ohana
             }
             input.BaseStream.Seek(dataPosition + 4, SeekOrigin.Begin);
             return null;
+        }
+
+        private static RenderBase.OAnimationFrame getAnimationKeyFrame(BinaryReader input, bchHeader header)
+        {
+            RenderBase.OAnimationFrame frame = new RenderBase.OAnimationFrame();
+
+            frame.startFrame = input.ReadSingle();
+            frame.endFrame = input.ReadSingle();
+
+            uint frameFlags = input.ReadUInt32();
+            frame.preRepeat = (RenderBase.ORepeatMethod)(frameFlags & 0xf);
+            frame.postRepeat = (RenderBase.ORepeatMethod)((frameFlags >> 8) & 0xf);
+
+            frameFlags = input.ReadUInt32();
+            frame.interpolation = (RenderBase.OInterpolationMode)(frameFlags & 0xf);
+            uint entryFormat = (frameFlags >> 8) & 0xff;
+            uint entries = frameFlags >> 16;
+            frame.exists = entries > 0;
+
+            float maxValue = 0;
+            uint rawMaxValue = input.ReadUInt32();
+            float minValue = input.ReadSingle();
+            float frameScale = input.ReadSingle();
+            uint rawData = input.ReadUInt32();
+
+            switch (entryFormat)
+            {
+                case 1: case 7: maxValue = getCustomFloat(rawMaxValue, 107); break;
+                case 2: case 4: maxValue = getCustomFloat(rawMaxValue, 111); break;
+                case 5: maxValue = getCustomFloat(rawMaxValue, 115); break;
+            }
+            maxValue = minValue + maxValue;
+
+            float interpolation;
+            uint value;
+            uint rawDataOffset = input.ReadUInt32() + header.mainHeaderOffset;
+            input.BaseStream.Seek(rawDataOffset, SeekOrigin.Begin);
+            for (int k = 0; k < entries; k++)
+            {
+                switch (frame.interpolation)
+                {
+                    case RenderBase.OInterpolationMode.step:
+                        //TODO
+                        break;
+                    case RenderBase.OInterpolationMode.linear:
+                        RenderBase.OLinearFloat linearPoint = new RenderBase.OLinearFloat();
+                        switch (entryFormat)
+                        {
+                            case 6:
+                                linearPoint.frame = input.ReadSingle();
+                                linearPoint.value = input.ReadSingle();
+                                break;
+                            case 7:
+                                value = input.ReadUInt32();
+                                interpolation = (float)(value >> 12) / 0x100000;
+                                linearPoint.frame = (float)(value & 0xfff);
+                                linearPoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
+                                break;
+                            default:
+                                Debug.WriteLine(String.Format("[BCH] Animation: Unsupported bone quantization format {0} on Linear...", entryFormat));
+                                frame.exists = false;
+                                break;
+                        }
+                        frame.linearFrame.Add(linearPoint);
+                        break;
+                    case RenderBase.OInterpolationMode.hermite:
+                        RenderBase.OHermiteFloat hermitePoint = new RenderBase.OHermiteFloat();
+                        switch (entryFormat)
+                        {
+                            case 0:
+                                hermitePoint.frame = input.ReadSingle();
+                                hermitePoint.value = input.ReadSingle();
+                                hermitePoint.inSlope = input.ReadSingle();
+                                hermitePoint.outSlope = input.ReadSingle();
+                                break;
+                            case 1:
+                                value = input.ReadUInt32();
+                                hermitePoint.frame = (float)(value & 0xfff);
+                                interpolation = (float)(value >> 12) / 0x100000;
+                                hermitePoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
+                                hermitePoint.inSlope = (float)input.ReadInt16() / 256;
+                                hermitePoint.outSlope = (float)input.ReadInt16() / 256;
+                                break;
+                            case 2:
+                                value = input.ReadUInt32();
+                                uint inSlopeLow = value >> 24;
+                                hermitePoint.frame = (float)(value & 0xff);
+                                interpolation = (float)((value >> 8) & 0xffff) / 0x10000;
+                                hermitePoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
+                                value = input.ReadUInt16();
+                                hermitePoint.inSlope = get12bValue((int)(((value & 0xf) << 8) | inSlopeLow));
+                                hermitePoint.outSlope = get12bValue((int)((value >> 4) & 0xfff));
+                                break;
+                            case 3:
+                                hermitePoint.frame = input.ReadSingle();
+                                hermitePoint.value = input.ReadSingle();
+                                hermitePoint.inSlope = input.ReadSingle();
+                                hermitePoint.outSlope = hermitePoint.inSlope;
+                                break;
+                            case 4:
+                                //TODO: Implement support for different inSlope and outSlope
+                                //Note: they are added with another frame with same number, but the inSlope is actually the outSlope
+                                hermitePoint.frame = (float)input.ReadInt16() / 32;
+                                interpolation = (float)input.ReadUInt16() / 0x10000;
+                                hermitePoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
+                                hermitePoint.inSlope = (float)input.ReadInt16() / 256;
+                                hermitePoint.outSlope = hermitePoint.inSlope;
+                                break;
+                            case 5:
+                                value = input.ReadUInt32();
+                                hermitePoint.frame = (float)(value & 0xff) * frameScale;
+                                interpolation = (float)((value >> 8) & 0xfff) / 0x1000;
+                                hermitePoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
+                                hermitePoint.inSlope = get12bValue((int)(value >> 20));
+                                hermitePoint.outSlope = hermitePoint.inSlope;
+                                break;
+                            default:
+                                Debug.WriteLine(String.Format("[BCH] Animation: Unsupported quantization format {0} on Hermite...", entryFormat));
+                                frame.exists = false;
+                                break;
+                        }
+                        frame.hermiteFrame.Add(hermitePoint);
+                        break;
+                }
+            }
+
+            return frame;
         }
 
         private static float getCustomFloat(uint value, int exponentBias)

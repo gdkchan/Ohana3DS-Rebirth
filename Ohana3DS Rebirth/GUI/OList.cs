@@ -173,6 +173,21 @@ namespace Ohana3DS_Rebirth.GUI
         }
 
         /// <summary>
+        ///     Removes the item at given index.
+        /// </summary>
+        /// <param name="index">Item index</param>
+        public void removeItem(int index)
+        {
+            if (list.Count == 0) return;
+            if (selectedIndex == list.Count - 1) selectedIndex--;
+            list.RemoveAt(index);
+            recalcScroll();
+            updateScroll();
+            if (SelectedIndexChanged != null) SelectedIndexChanged(this, EventArgs.Empty);
+            oldIndex = selectedIndex;
+        }
+
+        /// <summary>
         ///     Erase the list.
         /// </summary>
         public void flush()

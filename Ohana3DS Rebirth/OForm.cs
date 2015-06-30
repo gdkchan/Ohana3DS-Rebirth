@@ -19,6 +19,8 @@ namespace Ohana3DS_Rebirth
         [DllImport("user32.dll")]
         public static extern bool ReleaseCapture();
 
+        private const int WM_SETREDRAW = 11;
+
         protected override CreateParams CreateParams
         {
             get
@@ -27,6 +29,33 @@ namespace Ohana3DS_Rebirth
                 cp.ExStyle |= 0x02000000; //Turn on WS_EX_COMPOSITED
                 return cp;
             }
+        }
+
+        public void SuspendDrawing()
+        {
+            SendMessage(Handle, WM_SETREDRAW, 0, 0);
+        }
+
+        public void ResumeDrawing()
+        {
+            SendMessage(Handle, WM_SETREDRAW, 1, 0);
+            Refresh();
+        }
+
+        private void OForm_Resize(object sender, EventArgs e)
+        {
+            ResumeDrawing();
+            SuspendDrawing();
+        }
+
+        private void OForm_ResizeBegin(object sender, EventArgs e)
+        {
+            SuspendDrawing();
+        }
+
+        private void OForm_ResizeEnd(object sender, EventArgs e)
+        {
+            ResumeDrawing();
         }
        
         #region "WndProc Form Resize"
@@ -43,8 +72,8 @@ namespace Ohana3DS_Rebirth
                 
                 if (m.Msg == WM_NCHITTEST && WindowState == FormWindowState.Normal)
                 {
-                    int x = m.LParam.ToInt32() & 0xFFFF;
-                    int y = (int)((m.LParam.ToInt32() & 0xFFFF0000) >> 16);
+                    int x = m.LParam.ToInt32() & 0xffff;
+                    int y = (int)((m.LParam.ToInt32() & 0xffff0000) >> 16);
                     Point pt = PointToClient(new Point(x, y));
                     if (pt.X < gripSize && pt.Y < gripSize)
                     {
@@ -178,6 +207,8 @@ namespace Ohana3DS_Rebirth
                     MaximumSize = Screen.PrimaryScreen.WorkingArea.Size;
                     WindowState = FormWindowState.Maximized;
                 }
+
+                ResumeDrawing();
             }
 
             private void BtnMinimize_Click(object sender, EventArgs e)
@@ -185,5 +216,6 @@ namespace Ohana3DS_Rebirth
                 WindowState = FormWindowState.Minimized;
             }
         #endregion
+
     }
 }

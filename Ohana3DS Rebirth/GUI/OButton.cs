@@ -55,16 +55,16 @@ namespace Ohana3DS_Rebirth.GUI
                 width += img.Width;
                 yImage = (Height / 2) - (img.Height / 2);
             }
-            int x = (Width / 2) - (width / 2);
+            int x = Math.Max(0, (Width / 2) - (width / 2));
             int yText = (Height / 2) - (int)(textSize.Height / 2);
             if (img != null)
             {
                 pevent.Graphics.DrawImage(img, new Point(x, yImage));
-                pevent.Graphics.DrawString(this.Text, this.Font, new SolidBrush(this.ForeColor), new Point(x + img.Width, yText));
+                pevent.Graphics.DrawString(DrawingHelper.clampText(this.Text, this.Font, Width - img.Width), this.Font, new SolidBrush(this.ForeColor), new Point(x + img.Width, yText));
             }
             else
             {
-                pevent.Graphics.DrawString(this.Text, this.Font, new SolidBrush(this.ForeColor), new Point(x, yText));
+                pevent.Graphics.DrawString(DrawingHelper.clampText(this.Text, this.Font, Width), this.Font, new SolidBrush(this.ForeColor), new Point(x, yText));
             }
 
             base.OnPaint(pevent);

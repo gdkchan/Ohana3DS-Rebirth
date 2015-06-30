@@ -12,7 +12,8 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             model,
             texture,
-            skeletalAnimation
+            skeletalAnimation,
+            materialAnimation
         }
 
         /// <summary>
@@ -41,6 +42,11 @@ namespace Ohana3DS_Rebirth.Ohana
                     openDlg.Title = "Import Skeletal Animation";
                     openDlg.Filter = "Binary CTR H3D|*.bch";
                     if (openDlg.ShowDialog() == DialogResult.OK) return BCH.load(openDlg.FileName).skeletalAnimation;
+                    break;
+                case importFileType.materialAnimation:
+                    openDlg.Title = "Import Material Animation";
+                    openDlg.Filter = "Binary CTR H3D|*.bch";
+                    if (openDlg.ShowDialog() == DialogResult.OK) return BCH.load(openDlg.FileName).materialAnimation;
                     break;
             }
 
