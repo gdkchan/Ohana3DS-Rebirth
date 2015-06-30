@@ -32,7 +32,6 @@ namespace Ohana3DS_Rebirth.Ohana
         private bool useLegacyTexturing = false; //Set to True to disable Fragment Shader
         private const bool showGrid = true;
 
-
         private struct animationControl
         {
             public float animationStep;
@@ -85,7 +84,7 @@ namespace Ohana3DS_Rebirth.Ohana
             ctrlSA.currentAnimation = -1;
             ctrlMA.currentAnimation = -1;
             ctrlSA.animationStep = 0.25f;
-            ctrlMA.animationStep = 0.25f;
+            ctrlMA.animationStep = 0.5f;
 
             setupViewPort();
         }
@@ -130,6 +129,8 @@ namespace Ohana3DS_Rebirth.Ohana
             model.camera.Clear();
             model.fog.Clear();
             model.skeletalAnimation.Clear();
+            model.materialAnimation.Clear();
+            model.cameraAnimation.Clear();
             animationCache.Clear();
             model = null;
         }
@@ -324,13 +325,13 @@ namespace Ohana3DS_Rebirth.Ohana
                                 {
                                     switch (data.type)
                                     {
-                                        case RenderBase.OMaterialAnimationType.textureMapper0: textureId[0] = (int)getMaterialAnimationFloat(data); break;
-                                        case RenderBase.OMaterialAnimationType.textureMapper1: textureId[1] = (int)getMaterialAnimationFloat(data); break;
-                                        case RenderBase.OMaterialAnimationType.textureMapper2: textureId[2] = (int)getMaterialAnimationFloat(data); break;
-                                        case RenderBase.OMaterialAnimationType.borderColorMapper0: borderColor[0] = getMaterialAnimationColor(data); break;
-                                        case RenderBase.OMaterialAnimationType.borderColorMapper1: borderColor[1] = getMaterialAnimationColor(data); break;
-                                        case RenderBase.OMaterialAnimationType.borderColorMapper2: borderColor[2] = getMaterialAnimationColor(data); break;
-                                        case RenderBase.OMaterialAnimationType.blendColor: blendColor = getMaterialAnimationColor(data); break;
+                                        case RenderBase.OMaterialAnimationType.textureMapper0: getMaterialAnimationInt(data, ref textureId[0]); break;
+                                        case RenderBase.OMaterialAnimationType.textureMapper1: getMaterialAnimationInt(data, ref textureId[1]); break;
+                                        case RenderBase.OMaterialAnimationType.textureMapper2: getMaterialAnimationInt(data, ref textureId[2]); break;
+                                        case RenderBase.OMaterialAnimationType.borderColorMapper0: getMaterialAnimationColor(data, ref borderColor[0]); break;
+                                        case RenderBase.OMaterialAnimationType.borderColorMapper1: getMaterialAnimationColor(data, ref borderColor[1]); break;
+                                        case RenderBase.OMaterialAnimationType.borderColorMapper2: getMaterialAnimationColor(data, ref borderColor[2]); break;
+                                        case RenderBase.OMaterialAnimationType.blendColor: getMaterialAnimationColor(data, ref blendColor); break;
                                     }
                                 }
                             }
@@ -351,16 +352,16 @@ namespace Ohana3DS_Rebirth.Ohana
                                     {
                                         switch (data.type)
                                         {
-                                            case RenderBase.OMaterialAnimationType.constant0: materialColor.constant0 = getMaterialAnimationColor(data); break;
-                                            case RenderBase.OMaterialAnimationType.constant1: materialColor.constant1 = getMaterialAnimationColor(data); break;
-                                            case RenderBase.OMaterialAnimationType.constant2: materialColor.constant2 = getMaterialAnimationColor(data); break;
-                                            case RenderBase.OMaterialAnimationType.constant3: materialColor.constant3 = getMaterialAnimationColor(data); break;
-                                            case RenderBase.OMaterialAnimationType.constant4: materialColor.constant4 = getMaterialAnimationColor(data); break;
-                                            case RenderBase.OMaterialAnimationType.constant5: materialColor.constant5 = getMaterialAnimationColor(data); break;
-                                            case RenderBase.OMaterialAnimationType.diffuse: materialColor.diffuse = getMaterialAnimationColor(data); break;
-                                            case RenderBase.OMaterialAnimationType.specular0: materialColor.specular0 = getMaterialAnimationColor(data); break;
-                                            case RenderBase.OMaterialAnimationType.specular1: materialColor.specular1 = getMaterialAnimationColor(data); break;
-                                            case RenderBase.OMaterialAnimationType.ambient: materialColor.ambient = getMaterialAnimationColor(data); break;
+                                            case RenderBase.OMaterialAnimationType.constant0: getMaterialAnimationColor(data, ref materialColor.constant0); break;
+                                            case RenderBase.OMaterialAnimationType.constant1: getMaterialAnimationColor(data, ref materialColor.constant1); break;
+                                            case RenderBase.OMaterialAnimationType.constant2: getMaterialAnimationColor(data, ref materialColor.constant2); break;
+                                            case RenderBase.OMaterialAnimationType.constant3: getMaterialAnimationColor(data, ref materialColor.constant3); break;
+                                            case RenderBase.OMaterialAnimationType.constant4: getMaterialAnimationColor(data, ref materialColor.constant4); break;
+                                            case RenderBase.OMaterialAnimationType.constant5: getMaterialAnimationColor(data, ref materialColor.constant5); break;
+                                            case RenderBase.OMaterialAnimationType.diffuse: getMaterialAnimationColor(data, ref materialColor.diffuse); break;
+                                            case RenderBase.OMaterialAnimationType.specular0: getMaterialAnimationColor(data, ref materialColor.specular0); break;
+                                            case RenderBase.OMaterialAnimationType.specular1: getMaterialAnimationColor(data, ref materialColor.specular1); ; break;
+                                            case RenderBase.OMaterialAnimationType.ambient: getMaterialAnimationColor(data, ref materialColor.ambient); break;
                                         }
                                     }
                                 }
@@ -382,6 +383,8 @@ namespace Ohana3DS_Rebirth.Ohana
                             fragmentShader.SetValue("mAmbient", getColor(materialColor.ambient));
                             fragmentShader.SetValue("mDiffuse", getColor(materialColor.diffuse));
                             fragmentShader.SetValue("mSpecular", getColor(materialColor.specular0));
+
+                            fragmentShader.SetValue("hasNormal", obj.hasNormal);
 
                             for (int i = 0; i < 6; i++)
                             {
@@ -456,41 +459,48 @@ namespace Ohana3DS_Rebirth.Ohana
                         //Filtering
                         for (int s = 0; s < 3; s++)
                         {
-                            if (!useLegacyTexturing)
-                            {
-                                RenderBase.OTextureCoordinator coordinator = material.textureCoordinator[s];
+                            RenderBase.OTextureCoordinator coordinator = material.textureCoordinator[s];
 
-                                Vector2 translate = new Vector2(coordinator.translateU, coordinator.translateV);
-                                Vector2 scaling = new Vector2(coordinator.scaleU, coordinator.scaleV);
-                                if (scaling == Vector2.Empty) scaling = new Vector2(1, 1);
-                                float rotate = coordinator.rotate;
-                                #region "Material Animation"
-                                if (ctrlMA.animate && ctrlMA.currentAnimation > -1)
+                            Vector2 translate = new Vector2(coordinator.translateU, coordinator.translateV);
+                            Vector2 scaling = new Vector2(coordinator.scaleU, coordinator.scaleV);
+                            if (scaling == Vector2.Empty) scaling = new Vector2(1, 1);
+                            float rotate = coordinator.rotate;
+                            #region "Material Animation"
+                            if (ctrlMA.animate && ctrlMA.currentAnimation > -1)
+                            {
+                                foreach (RenderBase.OMaterialAnimationData data in model.materialAnimation[ctrlMA.currentAnimation].data)
                                 {
-                                    foreach (RenderBase.OMaterialAnimationData data in model.materialAnimation[ctrlMA.currentAnimation].data)
+                                    if (data.name == material.name)
                                     {
-                                        if (data.name == material.name)
+                                        switch (data.type)
                                         {
-                                            switch (data.type)
-                                            {
-                                                case RenderBase.OMaterialAnimationType.translateCoordinator0: if (s == 0) translate = getMaterialAnimationVector2(data); break; //Translation
-                                                case RenderBase.OMaterialAnimationType.translateCoordinator1: if (s == 1) translate = getMaterialAnimationVector2(data); break;
-                                                case RenderBase.OMaterialAnimationType.translateCoordinator2: if (s == 2) translate = getMaterialAnimationVector2(data); break;
-                                                case RenderBase.OMaterialAnimationType.scaleCoordinator0: if (s == 0) scaling = getMaterialAnimationVector2(data); break; //Scaling
-                                                case RenderBase.OMaterialAnimationType.scaleCoordinator1: if (s == 1) scaling = getMaterialAnimationVector2(data); break;
-                                                case RenderBase.OMaterialAnimationType.scaleCoordinator2: if (s == 2) scaling = getMaterialAnimationVector2(data); break;
-                                                case RenderBase.OMaterialAnimationType.rotateCoordinator0: if (s == 0) rotate = getMaterialAnimationFloat(data); break; //Rotation
-                                                case RenderBase.OMaterialAnimationType.rotateCoordinator1: if (s == 1) rotate = getMaterialAnimationFloat(data); break;
-                                                case RenderBase.OMaterialAnimationType.rotateCoordinator2: if (s == 2) rotate = getMaterialAnimationFloat(data); break;
-                                            }
+                                            case RenderBase.OMaterialAnimationType.translateCoordinator0: if (s == 0) getMaterialAnimationVector2(data, ref translate); break; //Translation
+                                            case RenderBase.OMaterialAnimationType.translateCoordinator1: if (s == 1) getMaterialAnimationVector2(data, ref translate); break;
+                                            case RenderBase.OMaterialAnimationType.translateCoordinator2: if (s == 2) getMaterialAnimationVector2(data, ref translate); break;
+                                            case RenderBase.OMaterialAnimationType.scaleCoordinator0: if (s == 0) getMaterialAnimationVector2(data, ref scaling); break; //Scaling
+                                            case RenderBase.OMaterialAnimationType.scaleCoordinator1: if (s == 1) getMaterialAnimationVector2(data, ref scaling); break;
+                                            case RenderBase.OMaterialAnimationType.scaleCoordinator2: if (s == 2) getMaterialAnimationVector2(data, ref scaling); break;
+                                            case RenderBase.OMaterialAnimationType.rotateCoordinator0: if (s == 0) getMaterialAnimationFloat(data, ref rotate); break; //Rotation
+                                            case RenderBase.OMaterialAnimationType.rotateCoordinator1: if (s == 1) getMaterialAnimationFloat(data, ref rotate); break;
+                                            case RenderBase.OMaterialAnimationType.rotateCoordinator2: if (s == 2) getMaterialAnimationFloat(data, ref rotate); break;
                                         }
                                     }
                                 }
-                                #endregion
-
+                            }
+                            #endregion
+                            translate.X = -translate.X; //For some reason UVs need to be flipped to show up correct on animation
+                            translate.Y = -translate.Y;
+                            Matrix uvTransform = Matrix.RotationZ(rotate) * Matrix.Scaling(scaling.X, scaling.Y, 1) * translate2D(translate);
+                            if (!useLegacyTexturing)
+                            {
                                 fragmentShader.SetValue(String.Format("uvTranslate[{0}]", s), new Vector4(translate.X, translate.Y, 0, 0));
                                 fragmentShader.SetValue(String.Format("uvScale[{0}]", s), new Vector4(scaling.X, scaling.Y, 0, 0));
                                 fragmentShader.SetValue(String.Format("uvTransform[{0}]", s), Matrix.RotationZ(rotate));
+                            }
+                            else
+                            {
+                                device.SetTextureStageState(s, TextureStageStates.TextureTransform, (int)TextureTransform.Count2);
+                                if (s == 0) device.Transform.Texture0 = uvTransform;
                             }
 
                             device.SetSamplerState(s, SamplerStageStates.MinFilter, (int)TextureFilter.Linear);
@@ -999,32 +1009,48 @@ namespace Ohana3DS_Rebirth.Ohana
         //
         //
 
-        private Color getMaterialAnimationColor(RenderBase.OMaterialAnimationData data)
+        private void getMaterialAnimationColor(RenderBase.OMaterialAnimationData data, ref Color baseColor)
         {
-            float r = getKey(data.d0, ctrlMA.frame);
-            float g = getKey(data.d1, ctrlMA.frame);
-            float b = getKey(data.d2, ctrlMA.frame);
-            float a = getKey(data.d3, ctrlMA.frame);
+            float r = getKey(data.frameList[0], ctrlMA.frame);
+            float g = getKey(data.frameList[1], ctrlMA.frame);
+            float b = getKey(data.frameList[2], ctrlMA.frame);
+            float a = getKey(data.frameList[3], ctrlMA.frame);
 
-            byte R = (byte)(r * 0xff);
-            byte G = (byte)(g * 0xff);
-            byte B = (byte)(b * 0xff);
-            byte A = (byte)(a * 0xff);
+            byte R = data.frameList[0].exists ? (byte)(r * 0xff) : baseColor.R;
+            byte G = data.frameList[1].exists ? (byte)(g * 0xff) : baseColor.G;
+            byte B = data.frameList[2].exists ? (byte)(b * 0xff) : baseColor.B;
+            byte A = data.frameList[3].exists ? (byte)(a * 0xff) : baseColor.A;
 
-            return Color.FromArgb(A, R, G, B);
+            baseColor = Color.FromArgb(A, R, G, B);
         }
 
-        private Vector2 getMaterialAnimationVector2(RenderBase.OMaterialAnimationData data)
+        private void getMaterialAnimationVector2(RenderBase.OMaterialAnimationData data, ref Vector2 baseVector)
         {
-            float x = getKey(data.d0, ctrlMA.frame);
-            float y = getKey(data.d1, ctrlMA.frame);
-
-            return new Vector2(x, y);
+            if (data.frameList[0].exists) baseVector.X = getKey(data.frameList[0], ctrlMA.frame);
+            if (data.frameList[1].exists) baseVector.Y = getKey(data.frameList[1], ctrlMA.frame);
         }
 
-        private float getMaterialAnimationFloat(RenderBase.OMaterialAnimationData data)
+        private void getMaterialAnimationFloat(RenderBase.OMaterialAnimationData data, ref float baseFloat)
         {
-            return getKey(data.d0, ctrlMA.frame);
+            if (data.frameList[0].exists) baseFloat = getKey(data.frameList[0], ctrlMA.frame);
+        }
+
+        private void getMaterialAnimationInt(RenderBase.OMaterialAnimationData data, ref int baseInt)
+        {
+            if (data.frameList[0].exists) baseInt = (int)getKey(data.frameList[0], ctrlMA.frame);
+        }
+
+        /// <summary>
+        ///     Builds a 2-D translation Matrix.
+        /// </summary>
+        /// <param name="translation">Translation vector</param>
+        /// <returns>Translation matrix</returns>
+        private Matrix translate2D(Vector2 translation)
+        {
+            Matrix output = Matrix.Identity;
+            output.M31 = translation.X;
+            output.M32 = translation.Y;
+            return output;
         }
 
         /// <summary>

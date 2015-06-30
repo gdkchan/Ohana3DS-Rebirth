@@ -398,6 +398,7 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public List<OVertex> obj;
             public CustomVertex[] renderBuffer;
+            public bool hasNormal;
             public int texUVCount;
             public ushort materialId;
             public ushort renderPriority;
@@ -1082,6 +1083,17 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        public enum OSegmentType
+        {
+            single = 0,
+            boolean = 1,
+            vector2 = 2,
+            vector3 = 3,
+            transform = 4,
+            rgbaColor = 5,
+            integer = 6
+        }
+
         public class OSkeletalAnimationBone
         {
             
@@ -1154,14 +1166,11 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public string name;
             public OMaterialAnimationType type;
-            public OAnimationFrame d0, d1, d2, d3;
+            public List<OAnimationFrame> frameList;
 
             public OMaterialAnimationData()
             {
-                d0 = new OAnimationFrame();
-                d1 = new OAnimationFrame();
-                d2 = new OAnimationFrame();
-                d3 = new OAnimationFrame();
+                frameList = new List<OAnimationFrame>();
             }
         }
 
@@ -1178,6 +1187,60 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        public enum OCameraAnimationType
+        {
+            transform = 5,
+            vuTargetPosition = 6,
+            vuTwist = 7,
+            vuUpwardVector = 8,
+            vuViewRotate = 9,
+            puNear = 0xa,
+            puFar = 0xb,
+            puFovy = 0xc,
+            puAspectRatio = 0xd,
+            puHeight = 0xe
+        }
+        
+        public class OCameraAnimationData
+        {
+            public string name;
+            public OCameraAnimationType type;
+            public List<OAnimationFrame> frameList;
+
+            public OCameraAnimationData()
+            {
+                frameList = new List<OAnimationFrame>();
+            }
+        }
+
+        public enum OCameraViewMode
+        {
+            aimTarget = 0,
+            lookAtTarget = 1,
+            rotate = 2
+        }
+
+        public enum OCameraProjectionMode
+        {
+            perspective = 0,
+            orthogonal = 1
+        }
+
+        public class OCameraAnimation
+        {
+            public string name;
+            public float frameSize;
+            public OLoopMode loopMode;
+            public OCameraViewMode viewMode;
+            public OCameraProjectionMode projectionMode;
+            public List<OCameraAnimationData> data;
+
+            public OCameraAnimation()
+            {
+                data = new List<OCameraAnimationData>();
+            }
+        }
+
         public class OModelGroup
         {
             public List<OModel> model;
@@ -1188,6 +1251,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public List<OFog> fog;
             public List<OSkeletalAnimation> skeletalAnimation;
             public List<OMaterialAnimation> materialAnimation;
+            public List<OCameraAnimation> cameraAnimation;
             public OVector3 minVector, maxVector;
 
             public OModelGroup()
@@ -1200,6 +1264,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 fog = new List<OFog>();
                 skeletalAnimation = new List<OSkeletalAnimation>();
                 materialAnimation = new List<OMaterialAnimation>();
+                cameraAnimation = new List<OCameraAnimation>();
                 minVector = new OVector3();
                 maxVector = new OVector3();
             }
@@ -1342,10 +1407,28 @@ namespace Ohana3DS_Rebirth.Ohana
             /// <summary>
             ///     Adds Material Animations.
             /// </summary>
-            /// <param name="_materialColorAnimation">The Material Color Animations</param>
+            /// <param name="_materialColorAnimation">The Material Animations</param>
             public void addMaterialAnimation(List<OMaterialAnimation> _materialAnimation)
             {
                 materialAnimation.AddRange(_materialAnimation);
+            }
+
+            /// <summary>
+            ///     Adds a new Camera Animation.
+            /// </summary>
+            /// <param name="_cameraAnimation">The Camera Animation</param>
+            public void addCameraAnimation(OCameraAnimation _cameraAnimation)
+            {
+                cameraAnimation.Add(_cameraAnimation);
+            }
+
+            /// <summary>
+            ///     Adds Camera Animations.
+            /// </summary>
+            /// <param name="_cameraAnimation">The Camera Animations</param>
+            public void addCameraAnimation(List<OCameraAnimation> _cameraAnimation)
+            {
+                cameraAnimation.AddRange(_cameraAnimation);
             }
         }
     }

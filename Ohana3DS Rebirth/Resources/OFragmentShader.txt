@@ -82,6 +82,8 @@ bool isD0Enabled, isD1Enabled; //Fragment Secondary Color
 bool isG0Enabled, isG1Enabled;
 bool isREnabled;
 
+bool hasNormal;
+
 struct VS_INPUT
 {
 	float4 pos : POSITION0;
@@ -156,7 +158,8 @@ float4 PixelShaderFunction(VS_OUTPUT input) : COLOR0
 		}
 
 		float4 baseColor = mAmbient * lights[i].ambient + mDiffuse * lights[i].diffuse;
-		float4 lambertian = saturate(dot(-normalize(lights[i].pos - input.posWorld), input.normal));
+		float4 lambertian = float4(1, 1, 1, 1);
+		if (hasNormal) lambertian = saturate(dot(-normalize(lights[i].pos - input.posWorld), input.normal));
 		fragmentPrimaryColor += max(0,  bumpColor * (baseColor * lambertian));
 		float4 pCol = ((lights[i].ambient + (input.vColor * lambertian)) * lights[i].diffuse);
 		primaryColor += float4(pCol.x, pCol.y, pCol.z, 1);

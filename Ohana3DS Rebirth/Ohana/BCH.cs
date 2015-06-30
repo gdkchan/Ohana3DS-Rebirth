@@ -81,6 +81,9 @@ namespace Ohana3DS_Rebirth.Ohana
             public uint materialAnimationsPointerTableOffset;
             public uint materialAnimationsPointerTableEntries;
             public uint materialAnimationsNameOffset;
+            public uint cameraAnimationsPointerTableOffset;
+            public uint cameraAnimationsPointerTableEntries;
+            public uint cameraAnimationsNameOffset;
         }
 
         private struct bchObjectsHeader
@@ -264,6 +267,15 @@ namespace Ohana3DS_Rebirth.Ohana
             contentHeader.materialAnimationsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
             contentHeader.materialAnimationsPointerTableEntries = input.ReadUInt32();
             contentHeader.materialAnimationsNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
+            input.ReadUInt32();
+            input.ReadUInt32();
+            input.ReadUInt32();
+            input.ReadUInt32();
+            input.ReadUInt32();
+            input.ReadUInt32();
+            contentHeader.cameraAnimationsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
+            contentHeader.cameraAnimationsPointerTableEntries = input.ReadUInt32();
+            contentHeader.cameraAnimationsNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
             //Note: 15 enntries total, all have the same pattern: Table Offset/Table Entries/Name Offset
 
             //Shaders
@@ -570,48 +582,22 @@ namespace Ohana3DS_Rebirth.Ohana
                     uint flags = input.ReadUInt32();
 
                     animationData.type = (RenderBase.OMaterialAnimationType)(animationTypeFlags & 0xff);
+                    RenderBase.OSegmentType segmentType = (RenderBase.OSegmentType)((animationTypeFlags >> 16) & 0xf);
 
                     int segmentCount = 0;
-                    switch (animationData.type)
+                    switch (segmentType)
                     {
-                        case RenderBase.OMaterialAnimationType.emission:
-                        case RenderBase.OMaterialAnimationType.ambient:
-                        case RenderBase.OMaterialAnimationType.diffuse:
-                        case RenderBase.OMaterialAnimationType.specular0:
-                        case RenderBase.OMaterialAnimationType.specular1:
-                        case RenderBase.OMaterialAnimationType.constant0:
-                        case RenderBase.OMaterialAnimationType.constant1:
-                        case RenderBase.OMaterialAnimationType.constant2:
-                        case RenderBase.OMaterialAnimationType.constant3:
-                        case RenderBase.OMaterialAnimationType.constant4:
-                        case RenderBase.OMaterialAnimationType.constant5:
-                        case RenderBase.OMaterialAnimationType.borderColorMapper0:
-                        case RenderBase.OMaterialAnimationType.borderColorMapper1:
-                        case RenderBase.OMaterialAnimationType.borderColorMapper2:
-                        case RenderBase.OMaterialAnimationType.blendColor: //RgbaColor
-                            segmentCount = 4;
-                            break;
-                        case RenderBase.OMaterialAnimationType.scaleCoordinator0:
-                        case RenderBase.OMaterialAnimationType.scaleCoordinator1:
-                        case RenderBase.OMaterialAnimationType.scaleCoordinator2:
-                        case RenderBase.OMaterialAnimationType.translateCoordinator0:
-                        case RenderBase.OMaterialAnimationType.translateCoordinator1:
-                        case RenderBase.OMaterialAnimationType.translateCoordinator2: //Vector2
-                            segmentCount = 2;
-                            break;
-                        case RenderBase.OMaterialAnimationType.rotateCoordinator0:
-                        case RenderBase.OMaterialAnimationType.rotateCoordinator1:
-                        case RenderBase.OMaterialAnimationType.rotateCoordinator2: //Float
-                        case RenderBase.OMaterialAnimationType.textureMapper0:
-                        case RenderBase.OMaterialAnimationType.textureMapper1:
-                        case RenderBase.OMaterialAnimationType.textureMapper2: //Int
-                            segmentCount = 1;
-                            break;
+                        case RenderBase.OSegmentType.rgbaColor: segmentCount = 4; break;
+                        case RenderBase.OSegmentType.vector2: segmentCount = 2; break;
+                        case RenderBase.OSegmentType.single: segmentCount = 1; break;
+                        case RenderBase.OSegmentType.integer: segmentCount = 1; break;
                     }
 
                     for (int j = 0; j < segmentCount; j++)
                     {
                         RenderBase.OAnimationFrame frame = new RenderBase.OAnimationFrame();
+
+                        data.Seek(offset + 0xc + (j * 4), SeekOrigin.Begin);
 
                         frame.exists = ((flags >> 8) & (1 << j)) == 0;
                         bool inline = (flags & (1 << j)) > 0;
@@ -631,19 +617,90 @@ namespace Ohana3DS_Rebirth.Ohana
                             }
                         }
 
-                        switch (j)
-                        {
-                            case 0: animationData.d0 = frame; break;
-                            case 1: animationData.d1 = frame; break;
-                            case 2: animationData.d2 = frame; break;
-                            case 3: animationData.d3 = frame; break;
-                        }
+                        animationData.frameList.Add(frame);
+                        
                     }
 
                     materialAnimation.data.Add(animationData);
                 }
 
                 models.addMaterialAnimation(materialAnimation);
+            }
+
+            //Camera Animations
+            for (int index = 0; index < contentHeader.cameraAnimationsPointerTableEntries; index++)
+            {
+                data.Seek(contentHeader.cameraAnimationsPointerTableOffset + (index * 4), SeekOrigin.Begin);
+                uint dataOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                data.Seek(dataOffset, SeekOrigin.Begin);
+
+                RenderBase.OCameraAnimation cameraAnimation = new RenderBase.OCameraAnimation();
+
+                cameraAnimation.name = readString(input, header);
+                uint animationFlags = input.ReadUInt32();
+                cameraAnimation.loopMode = (RenderBase.OLoopMode)(animationFlags & 1);
+                cameraAnimation.frameSize = input.ReadSingle();
+                uint dataTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                uint dataTableEntries = input.ReadUInt32();
+                input.ReadUInt32();
+                uint modeFlags = input.ReadUInt32();
+                cameraAnimation.viewMode = (RenderBase.OCameraViewMode)(modeFlags & 0xf);
+                cameraAnimation.projectionMode = (RenderBase.OCameraProjectionMode)((modeFlags >> 8) & 0xf);
+
+                for (int i = 0; i < dataTableEntries; i++)
+                {
+                    data.Seek(dataTableOffset + (i * 4), SeekOrigin.Begin);
+                    uint offset = input.ReadUInt32() + header.mainHeaderOffset;
+
+                    RenderBase.OCameraAnimationData animationData = new RenderBase.OCameraAnimationData();
+
+                    data.Seek(offset, SeekOrigin.Begin);
+                    animationData.name = readString(input, header);
+                    uint animationTypeFlags = input.ReadUInt32();
+                    uint flags = input.ReadUInt32();
+
+                    animationData.type = (RenderBase.OCameraAnimationType)(animationTypeFlags & 0xff);
+                    RenderBase.OSegmentType segmentType = (RenderBase.OSegmentType)((animationTypeFlags >> 16) & 0xf);
+
+                    int segmentCount = 0;
+                    switch (segmentType)
+                    {
+                        case RenderBase.OSegmentType.transform: segmentCount = 9; break;
+                        case RenderBase.OSegmentType.vector3: segmentCount = 3; break;
+                        case RenderBase.OSegmentType.single: segmentCount = 1; break;
+                    }
+
+                    for (int j = 0; j < segmentCount; j++)
+                    {
+                        RenderBase.OAnimationFrame frame = new RenderBase.OAnimationFrame();
+
+                        data.Seek(offset + 0xc + (j * 4), SeekOrigin.Begin);
+
+                        frame.exists = ((flags >> (segmentType == RenderBase.OSegmentType.transform ? 16 : 8)) & (1 << j)) == 0;
+                        bool inline = (flags & (1 << j)) > 0;
+
+                        if (frame.exists)
+                        {
+                            if (inline)
+                            {
+                                frame.interpolation = RenderBase.OInterpolationMode.linear;
+                                frame.linearFrame.Add(new RenderBase.OLinearFloat(input.ReadSingle(), 0.0f));
+                            }
+                            else
+                            {
+                                uint frameOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                                data.Seek(frameOffset, SeekOrigin.Begin);
+                                frame = getAnimationKeyFrame(input, header);
+                            }
+                        }
+
+                        animationData.frameList.Add(frame);
+                    }
+
+                    cameraAnimation.data.Add(animationData);
+                }
+
+                models.addCameraAnimation(cameraAnimation);
             }
 
             //Model
@@ -1378,6 +1435,8 @@ namespace Ohana3DS_Rebirth.Ohana
                         obj.texUVCount = uvCount;
                         #endregion
 
+                        obj.hasNormal = (vectorType)normalType == vectorType.vector3;
+
                         data.Seek(faceDataOffset, SeekOrigin.Begin);
                         for (int faceIndex = 0; faceIndex < faceDataEntries / 3; faceIndex++)
                         {
@@ -1442,19 +1501,11 @@ namespace Ohana3DS_Rebirth.Ohana
                                             break;
                                         case 1: //Normal
                                             RenderBase.OVector4 normalVector = getVector(input, (quantization)normalQuantization, (vectorType)normalType);
-                                            switch ((vectorType)normalType)
-                                            {
-                                                case vectorType.vector3: vertex.normal = new RenderBase.OVector3(normalVector.x * normalScale, normalVector.y * normalScale, normalVector.z * normalScale); break;
-                                                default: vertex.normal = new RenderBase.OVector3(1, 1, 1); break;
-                                            }
+                                            if ((vectorType)normalType == vectorType.vector3) vertex.normal = new RenderBase.OVector3(normalVector.x * normalScale, normalVector.y * normalScale, normalVector.z * normalScale);    
                                             break;
                                         case 2: //Tangent
                                             RenderBase.OVector4 tangentVector = getVector(input, (quantization)tangentQuantization, (vectorType)tangentType);
-                                            switch ((vectorType)tangentType)
-                                            {
-                                                case vectorType.vector3: vertex.tangent = new RenderBase.OVector3(tangentVector.x * tangentScale, tangentVector.y * tangentScale, tangentVector.z * tangentScale); break;
-                                                default: vertex.tangent = new RenderBase.OVector3(1, 1, 1); break;
-                                            }
+                                            if ((vectorType)tangentType == vectorType.vector3) vertex.tangent = new RenderBase.OVector3(tangentVector.x * tangentScale, tangentVector.y * tangentScale, tangentVector.z * tangentScale);
                                             break;
                                         case 3: //Color
                                             RenderBase.OVector4 color = getVector(input, (quantization)colorQuantization, (vectorType)colorType);
