@@ -384,6 +384,7 @@
             this.LAUpVecZ.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
             this.LAUpVecZ.DecimalPlaces = ((uint)(1u));
             this.LAUpVecZ.Dock = System.Windows.Forms.DockStyle.Top;
+            this.LAUpVecZ.Enabled = false;
             this.LAUpVecZ.Location = new System.Drawing.Point(0, 239);
             this.LAUpVecZ.Margin = new System.Windows.Forms.Padding(0);
             this.LAUpVecZ.MaximumValue = 1F;
@@ -398,6 +399,7 @@
             this.LAUpVecY.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
             this.LAUpVecY.DecimalPlaces = ((uint)(1u));
             this.LAUpVecY.Dock = System.Windows.Forms.DockStyle.Top;
+            this.LAUpVecY.Enabled = false;
             this.LAUpVecY.Location = new System.Drawing.Point(0, 217);
             this.LAUpVecY.Margin = new System.Windows.Forms.Padding(0);
             this.LAUpVecY.MaximumValue = 1F;
@@ -412,6 +414,7 @@
             this.LAUpVecX.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
             this.LAUpVecX.DecimalPlaces = ((uint)(1u));
             this.LAUpVecX.Dock = System.Windows.Forms.DockStyle.Top;
+            this.LAUpVecX.Enabled = false;
             this.LAUpVecX.Location = new System.Drawing.Point(0, 195);
             this.LAUpVecX.Margin = new System.Windows.Forms.Padding(0);
             this.LAUpVecX.MaximumValue = 1F;
