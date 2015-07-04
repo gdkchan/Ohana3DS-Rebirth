@@ -1,7 +1,8 @@
 ﻿using System;
-using Ohana3DS_Rebirth.Ohana;
 using System.Collections.Generic;
 using System.Windows.Forms;
+
+using Ohana3DS_Rebirth.Ohana;
 
 namespace Ohana3DS_Rebirth.GUI
 {
@@ -40,9 +41,16 @@ namespace Ohana3DS_Rebirth.GUI
             Object importedData = FileImporter.import(FileImporter.importFileType.texture);
             if (importedData != null)
             {
-                renderer.model.addTexture((List<RenderBase.OTexture>)importedData);
+                renderer.model.texture.AddRange((List<RenderBase.OTexture>)importedData);
                 renderer.updateTextures();
-                updateList();
+                foreach (RenderBase.OTexture texture in (List<RenderBase.OTexture>)importedData)
+                {
+                    OList.listItemGroup item = new OList.listItemGroup();
+                    item.columns.Add(new OList.listItem(null, texture.texture));
+                    item.columns.Add(new OList.listItem(texture.name));
+                    TextureList.addItem(item);
+                }
+                TextureList.Refresh();
             }
         }
 

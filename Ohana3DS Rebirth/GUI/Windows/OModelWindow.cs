@@ -10,9 +10,9 @@ namespace Ohana3DS_Rebirth.GUI
     {
         RenderEngine renderer;
 
+        bool clicked;
         RenderBase.OVector2 initialRotation, initialMovement;
         RenderBase.OVector2 finalMovement;
-        bool clicked;
 
         public OModelWindow()
         {
@@ -45,27 +45,30 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void Screen_MouseMove(object sender, MouseEventArgs e)
         {
-            if (!Screen.Focused) Screen.Select();
-            if (renderer != null)
+            if (clicked)
             {
-                switch (e.Button)
+                if (renderer != null)
                 {
-                    case MouseButtons.Left:
-                        float rY = (float)(((e.X - initialRotation.x) / Screen.Width) * Math.PI);
-                        float rX = (float)(((e.Y - initialRotation.y) / Screen.Height) * Math.PI);
-                        renderer.setRotation(rY, rX);
-                        initialRotation = new RenderBase.OVector2(e.X, e.Y);
-                        break;
-                    case MouseButtons.Middle:
-                        renderer.translation.X = (initialMovement.x - MousePosition.X) + finalMovement.x;
-                        renderer.translation.Y = (initialMovement.y - MousePosition.Y) + finalMovement.y;
-                        break;
+                    switch (e.Button)
+                    {
+                        case MouseButtons.Left:
+                            float rY = (float)(((e.X - initialRotation.x) / Screen.Width) * Math.PI);
+                            float rX = (float)(((e.Y - initialRotation.y) / Screen.Height) * Math.PI);
+                            renderer.setRotation(rY, rX);
+                            initialRotation = new RenderBase.OVector2(e.X, e.Y);
+                            break;
+                        case MouseButtons.Middle:
+                            renderer.translation.X = (initialMovement.x - MousePosition.X) + finalMovement.x;
+                            renderer.translation.Y = (initialMovement.y - MousePosition.Y) + finalMovement.y;
+                            break;
+                    }
                 }
             }
         }
 
         private void Screen_MouseDown(object sender, MouseEventArgs e)
         {
+            if (!Screen.Focused) Screen.Select();
             clicked = true;
             switch (e.Button)
             {
@@ -79,11 +82,11 @@ namespace Ohana3DS_Rebirth.GUI
         {
             if (clicked)
             {
+                clicked = false;
                 switch (e.Button)
                 {
                     case MouseButtons.Middle: finalMovement = new RenderBase.OVector2(finalMovement.x + (initialMovement.x - MousePosition.X), finalMovement.y + (initialMovement.y - MousePosition.Y)); break;
                 }
-                clicked = false;
             }
         }
 
@@ -95,7 +98,7 @@ namespace Ohana3DS_Rebirth.GUI
         private void MnuImport_Click(object sender, EventArgs e)
         {
             Object importedData = FileImporter.import(FileImporter.importFileType.model);
-            if (importedData != null) renderer.model.addModel((List<RenderBase.OModel>)importedData);
+            if (importedData != null) renderer.model.model.AddRange((List<RenderBase.OModel>)importedData);
         }
 
         private void MnuClear_Click(object sender, EventArgs e)

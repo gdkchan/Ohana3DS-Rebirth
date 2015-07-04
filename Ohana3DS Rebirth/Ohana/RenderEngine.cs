@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using System.Drawing;
+
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 
@@ -32,23 +33,85 @@ namespace Ohana3DS_Rebirth.Ohana
         private bool useLegacyTexturing = false; //Set to True to disable Fragment Shader
         private const bool showGrid = true;
 
-        private struct animationControl
+        public class animationControl
         {
             public float animationStep;
-            public int currentAnimation;
-            public float frame;
+            private int currentAnimation;
+            private float frame;
             public bool animate;
             public bool paused;
-        }
-        animationControl ctrlSA, ctrlMA;
 
-        private struct animationCacheEntry
-        {
-            public float frame;
-            public int modelIndex, objectIndex;
-            public RenderBase.CustomVertex[] buffer;
+            public event EventHandler FrameChanged;
+            public event EventHandler AnimationChanged;
+
+            public float Frame
+            {
+                get
+                {
+                    return frame;
+                }
+                set
+                {
+                    frame = value;
+                    if (FrameChanged != null) FrameChanged(this, EventArgs.Empty);
+                }
+            }
+
+            public int CurrentAnimation
+            {
+                get
+                {
+                    return currentAnimation;
+                }
+                set
+                {
+                    currentAnimation = value;
+                    if (AnimationChanged != null) AnimationChanged(this, EventArgs.Empty);
+                }
+            }
+
+            /// <summary>
+            ///     Load the animation at the given index.
+            /// </summary>
+            /// <param name="animationIndex">The index where the animation is located</param>
+            public bool load(int animationIndex)
+            {
+                currentAnimation = animationIndex;
+                if (AnimationChanged != null) AnimationChanged(this, EventArgs.Empty);
+                frame = 0;
+                return true;
+            }
+
+            /// <summary>
+            ///     Pauses the animation.
+            /// </summary>
+            public void pause()
+            {
+                paused = true;
+            }
+
+            /// <summary>
+            ///     Stops the animation.
+            /// </summary>
+            public void stop()
+            {
+                animate = false;
+                frame = 0;
+            }
+
+            /// <summary>
+            ///     Play the animation.
+            ///     It will have no effect if no animations are loaded.
+            /// </summary>
+            public void play()
+            {
+                if (currentAnimation == -1) return;
+                paused = false;
+                animate = true;
+            }
         }
-        List<animationCacheEntry> animationCache = new List<animationCacheEntry>();
+        public animationControl ctrlSA = new animationControl();
+        public animationControl ctrlMA = new animationControl();
 
         /// <summary>
         ///     Initialize the renderer at a given target.
@@ -81,10 +144,10 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             //Spare parts
-            ctrlSA.currentAnimation = -1;
-            ctrlMA.currentAnimation = -1;
-            ctrlSA.animationStep = 0.25f;
-            ctrlMA.animationStep = 0.5f;
+            ctrlSA.CurrentAnimation = -1;
+            ctrlMA.CurrentAnimation = -1;
+            ctrlSA.animationStep = 1.0f;
+            ctrlMA.animationStep = 1.0f;
 
             setupViewPort();
         }
@@ -128,10 +191,9 @@ namespace Ohana3DS_Rebirth.Ohana
             model.light.Clear();
             model.camera.Clear();
             model.fog.Clear();
-            model.skeletalAnimation.Clear();
-            model.materialAnimation.Clear();
-            model.cameraAnimation.Clear();
-            animationCache.Clear();
+            model.skeletalAnimation.list.Clear();
+            model.materialAnimation.list.Clear();
+            model.cameraAnimation.list.Clear();
             model = null;
         }
 
@@ -249,18 +311,8 @@ namespace Ohana3DS_Rebirth.Ohana
                     device.Transform.World = getMatrix(mdl.transform) * baseTransform;
 
                     #region "Animation"
-                    bool foundModelEntry = false;
-                    foreach (animationCacheEntry cacheEntry in animationCache)
-                    {
-                        if (cacheEntry.modelIndex == modelIndex && cacheEntry.frame == ctrlSA.frame)
-                        {
-                            foundModelEntry = true;
-                            break;
-                        }
-                    }
-
                     Matrix[] animationSkeletonTransform = new Matrix[mdl.skeleton.Count];
-                    if (ctrlSA.animate && !foundModelEntry && ctrlSA.currentAnimation > -1)
+                    if (ctrlSA.animate)
                     {
                         Matrix[] skeletonTransform = new Matrix[mdl.skeleton.Count];
 
@@ -270,7 +322,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             transformSkeleton(mdl.skeleton, index, ref skeletonTransform[index]);
                         }
 
-                        List<RenderBase.OSkeletalAnimationBone> bone = model.skeletalAnimation[ctrlSA.currentAnimation].bone;
+                        List<RenderBase.OSkeletalAnimationBone> bone = ((RenderBase.OSkeletalAnimation)model.skeletalAnimation.list[ctrlSA.CurrentAnimation]).bone;
                         List<RenderBase.OBone> frameAnimationSkeleton = new List<RenderBase.OBone>();
                         for (int index = 0; index < mdl.skeleton.Count; index++)
                         {
@@ -282,12 +334,12 @@ namespace Ohana3DS_Rebirth.Ohana
                             {
                                 if (b.name == mdl.skeleton[index].name)
                                 {
-                                    if (b.rotationX.exists) newBone.rotation.x = getKey(b.rotationX, getFrameNumber(b.rotationX, ctrlSA.frame));
-                                    if (b.rotationY.exists) newBone.rotation.y = getKey(b.rotationY, getFrameNumber(b.rotationY, ctrlSA.frame));
-                                    if (b.rotationZ.exists) newBone.rotation.z = getKey(b.rotationZ, getFrameNumber(b.rotationZ, ctrlSA.frame));
-                                    if (b.translationX.exists) newBone.translation.x = getKey(b.translationX, getFrameNumber(b.translationX, ctrlSA.frame));
-                                    if (b.translationY.exists) newBone.translation.y = getKey(b.translationY, getFrameNumber(b.translationY, ctrlSA.frame));
-                                    if (b.translationZ.exists) newBone.translation.z = getKey(b.translationZ, getFrameNumber(b.translationZ, ctrlSA.frame));
+                                    if (b.rotationX.exists) newBone.rotation.x = getKey(b.rotationX, getFrameNumber(b.rotationX, ctrlSA.Frame));
+                                    if (b.rotationY.exists) newBone.rotation.y = getKey(b.rotationY, getFrameNumber(b.rotationY, ctrlSA.Frame));
+                                    if (b.rotationZ.exists) newBone.rotation.z = getKey(b.rotationZ, getFrameNumber(b.rotationZ, ctrlSA.Frame));
+                                    if (b.translationX.exists) newBone.translation.x = getKey(b.translationX, getFrameNumber(b.translationX, ctrlSA.Frame));
+                                    if (b.translationY.exists) newBone.translation.y = getKey(b.translationY, getFrameNumber(b.translationY, ctrlSA.Frame));
+                                    if (b.translationZ.exists) newBone.translation.z = getKey(b.translationZ, getFrameNumber(b.translationZ, ctrlSA.Frame));
 
                                     break;
                                 }
@@ -317,9 +369,9 @@ namespace Ohana3DS_Rebirth.Ohana
                         borderColor[0] = material.textureMapper[0].borderColor;
                         borderColor[1] = material.textureMapper[1].borderColor;
                         borderColor[2] = material.textureMapper[2].borderColor;
-                        if (ctrlMA.animate && ctrlMA.currentAnimation > -1)
+                        if (ctrlMA.animate)
                         {
-                            foreach (RenderBase.OMaterialAnimationData data in model.materialAnimation[ctrlMA.currentAnimation].data)
+                            foreach (RenderBase.OMaterialAnimationData data in ((RenderBase.OMaterialAnimation)model.materialAnimation.list[ctrlMA.CurrentAnimation]).data)
                             {
                                 if (data.name == material.name)
                                 {
@@ -344,9 +396,9 @@ namespace Ohana3DS_Rebirth.Ohana
                             RenderBase.OMaterialColor materialColor = new RenderBase.OMaterialColor();
                             materialColor = material.materialColor;
 
-                            if (ctrlMA.animate && ctrlMA.currentAnimation > -1)
+                            if (ctrlMA.animate)
                             {
-                                foreach (RenderBase.OMaterialAnimationData data in model.materialAnimation[ctrlMA.currentAnimation].data)
+                                foreach (RenderBase.OMaterialAnimationData data in ((RenderBase.OMaterialAnimation)model.materialAnimation.list[ctrlMA.CurrentAnimation]).data)
                                 {
                                     if (data.name == material.name)
                                     {
@@ -466,9 +518,9 @@ namespace Ohana3DS_Rebirth.Ohana
                             if (scaling == Vector2.Empty) scaling = new Vector2(1, 1);
                             float rotate = coordinator.rotate;
                             #region "Material Animation"
-                            if (ctrlMA.animate && ctrlMA.currentAnimation > -1)
+                            if (ctrlMA.animate)
                             {
-                                foreach (RenderBase.OMaterialAnimationData data in model.materialAnimation[ctrlMA.currentAnimation].data)
+                                foreach (RenderBase.OMaterialAnimationData data in ((RenderBase.OMaterialAnimation)model.materialAnimation.list[ctrlMA.CurrentAnimation]).data)
                                 {
                                     if (data.name == material.name)
                                     {
@@ -580,61 +632,36 @@ namespace Ohana3DS_Rebirth.Ohana
                         VertexBuffer vertexBuffer;
 
                         if (!useLegacyTexturing) fragmentShader.BeginPass(0);
-                        if (ctrlSA.animate && ctrlSA.currentAnimation > -1)
+                        if (ctrlSA.animate)
                         {
-                            animationCacheEntry entry = new animationCacheEntry();
 
-                            #region "Animation smart caching"
-                            bool foundEntry = false;
-                            if (foundModelEntry)
+                            RenderBase.CustomVertex[] buffer = new RenderBase.CustomVertex[obj.renderBuffer.Length];
+
+                            for (int vertex = 0; vertex < obj.renderBuffer.Length; vertex++)
                             {
-                                foreach (animationCacheEntry cacheEntry in animationCache)
+                                buffer[vertex] = obj.renderBuffer[vertex];
+                                RenderBase.OVertex input = obj.obj[vertex];
+                                Vector3 position = new Vector3(input.position.x, input.position.y, input.position.z);
+                                Vector4 p = new Vector4();
+
+                                int weightIndex = 0;
+                                foreach (int boneIndex in input.node)
                                 {
-                                    if (cacheEntry.modelIndex == modelIndex && cacheEntry.objectIndex == objectIndex && cacheEntry.frame == ctrlSA.frame)
-                                    {
-                                        foundEntry = true;
-                                        entry = cacheEntry;
-                                        break;
-                                    }
-                                }
-                            }
-
-                            if (!foundEntry)
-                            {
-                                entry.frame = ctrlSA.frame;
-                                entry.modelIndex = modelIndex;
-                                entry.objectIndex = objectIndex;
-                                entry.buffer = new RenderBase.CustomVertex[obj.renderBuffer.Length];
-
-                                for (int vertex = 0; vertex < obj.renderBuffer.Length; vertex++)
-                                {
-                                    entry.buffer[vertex] = obj.renderBuffer[vertex];
-                                    RenderBase.OVertex input = obj.obj[vertex];
-                                    Vector3 position = new Vector3(input.position.x, input.position.y, input.position.z);
-                                    Vector4 p = new Vector4();
-
-                                    int weightIndex = 0;
-                                    foreach (int boneIndex in input.node)
-                                    {
-                                        float weight = 1;
-                                        if (weightIndex < input.weight.Count) weight = input.weight[weightIndex++];
-                                        p += Vector3.Transform(position, animationSkeletonTransform[boneIndex]) * weight;
-                                    }
-
-                                    entry.buffer[vertex].x = p.X;
-                                    entry.buffer[vertex].y = p.Y;
-                                    entry.buffer[vertex].z = p.Z;
+                                    float weight = 1;
+                                    if (weightIndex < input.weight.Count) weight = input.weight[weightIndex++];
+                                    p += Vector3.Transform(position, animationSkeletonTransform[boneIndex]) * weight;
                                 }
 
-                                animationCache.Add(entry);
+                                buffer[vertex].x = p.X;
+                                buffer[vertex].y = p.Y;
+                                buffer[vertex].z = p.Z;
                             }
-                            #endregion
 
-                            vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), entry.buffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
-                            vertexBuffer.SetData(entry.buffer, 0, LockFlags.None);
+                            vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), buffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
+                            vertexBuffer.SetData(buffer, 0, LockFlags.None);
                             device.SetStreamSource(0, vertexBuffer, 0);
 
-                            device.DrawPrimitives(PrimitiveType.TriangleList, 0, entry.buffer.Length / 3);
+                            device.DrawPrimitives(PrimitiveType.TriangleList, 0, buffer.Length / 3);
                         }
                         else
                         {
@@ -659,8 +686,8 @@ namespace Ohana3DS_Rebirth.Ohana
                 device.EndScene();
                 device.Present();
 
-                if (!ctrlSA.paused && ctrlSA.animate && ctrlSA.currentAnimation > -1) ctrlSA.frame = (ctrlSA.frame + ctrlSA.animationStep) % (int)model.skeletalAnimation[ctrlSA.currentAnimation].frameSize;
-                if (!ctrlMA.paused && ctrlMA.animate && ctrlMA.currentAnimation > -1) ctrlMA.frame = (ctrlMA.frame + ctrlMA.animationStep) % (int)model.materialAnimation[ctrlMA.currentAnimation].frameSize;
+                if (!ctrlSA.paused && ctrlSA.animate) if (ctrlSA.Frame < model.skeletalAnimation.list[ctrlSA.CurrentAnimation].frameSize) ctrlSA.Frame += ctrlSA.animationStep; else ctrlSA.Frame = 0;
+                if (!ctrlMA.paused && ctrlMA.animate) if (ctrlMA.Frame < model.materialAnimation.list[ctrlMA.CurrentAnimation].frameSize) ctrlMA.Frame += ctrlMA.animationStep; else ctrlMA.Frame = 0;
 
                 Application.DoEvents();
             }
@@ -943,78 +970,16 @@ namespace Ohana3DS_Rebirth.Ohana
             if (skeleton[index].parentId > -1) transformSkeleton(skeleton, skeleton[index].parentId, ref target);
         }
 
-        /// <summary>
-        ///     Load the animation at the given index on the model Skeletal Animation.
-        ///     It will have no effect if the index is invalid.
-        /// </summary>
-        /// <param name="animationIndex">The index where the animation is located</param>
-        public bool loadSkeletalAnimation(int animationIndex)
-        {
-            if (animationIndex < -1 || animationIndex >= model.skeletalAnimation.Count) return false;
-            animationCache.Clear();
-            ctrlSA.currentAnimation = animationIndex;
-            ctrlSA.frame = 0;
-            return true;
-        }
-
-        /// <summary>
-        ///     Changes the current animation frame.
-        ///     It will have no effect if the frame is outside of the animation range.
-        /// </summary>
-        /// <param name="targetFrame">The new frame index</param>
-        public void setSkeletalAnimationFrame(int targetFrame)
-        {
-            if (targetFrame < 0 || targetFrame > model.skeletalAnimation[ctrlSA.currentAnimation].frameSize) return;
-            ctrlSA.frame = targetFrame;
-        }
-
-        /// <summary>
-        ///     Pauses the animation.
-        /// </summary>
-        public void pauseSkeletalAnimation()
-        {
-            ctrlSA.paused = true;
-        }
-
-        /// <summary>
-        ///     Stops the animation, and render the still model.
-        /// </summary>
-        public void stopSkeletalAnimation()
-        {
-            ctrlSA.animate = false;
-            ctrlSA.frame = 0;
-        }
-
-        /// <summary>
-        ///     Play the animation.
-        ///     It will have no effect if no animations are loaded.
-        /// </summary>
-        public void playSkeletalAnimation()
-        {
-            if (ctrlSA.currentAnimation == -1) return;
-            ctrlSA.paused = false;
-            ctrlSA.animate = true;
-        }
-
-        /// <summary>
-        ///     Get the current animation index.
-        ///     It will return -1 if no animations have been loaded yet.
-        /// </summary>
-        public int currentSkeletalAnimationIndex
-        {
-            get { return ctrlSA.currentAnimation; }
-        }
-
         //
         //
         //
 
         private void getMaterialAnimationColor(RenderBase.OMaterialAnimationData data, ref Color baseColor)
         {
-            float r = getKey(data.frameList[0], ctrlMA.frame);
-            float g = getKey(data.frameList[1], ctrlMA.frame);
-            float b = getKey(data.frameList[2], ctrlMA.frame);
-            float a = getKey(data.frameList[3], ctrlMA.frame);
+            float r = getKey(data.frameList[0], ctrlMA.Frame);
+            float g = getKey(data.frameList[1], ctrlMA.Frame);
+            float b = getKey(data.frameList[2], ctrlMA.Frame);
+            float a = getKey(data.frameList[3], ctrlMA.Frame);
 
             byte R = data.frameList[0].exists ? (byte)(r * 0xff) : baseColor.R;
             byte G = data.frameList[1].exists ? (byte)(g * 0xff) : baseColor.G;
@@ -1026,18 +991,18 @@ namespace Ohana3DS_Rebirth.Ohana
 
         private void getMaterialAnimationVector2(RenderBase.OMaterialAnimationData data, ref Vector2 baseVector)
         {
-            if (data.frameList[0].exists) baseVector.X = getKey(data.frameList[0], ctrlMA.frame);
-            if (data.frameList[1].exists) baseVector.Y = getKey(data.frameList[1], ctrlMA.frame);
+            if (data.frameList[0].exists) baseVector.X = getKey(data.frameList[0], ctrlMA.Frame);
+            if (data.frameList[1].exists) baseVector.Y = getKey(data.frameList[1], ctrlMA.Frame);
         }
 
         private void getMaterialAnimationFloat(RenderBase.OMaterialAnimationData data, ref float baseFloat)
         {
-            if (data.frameList[0].exists) baseFloat = getKey(data.frameList[0], ctrlMA.frame);
+            if (data.frameList[0].exists) baseFloat = getKey(data.frameList[0], ctrlMA.Frame);
         }
 
         private void getMaterialAnimationInt(RenderBase.OMaterialAnimationData data, ref int baseInt)
         {
-            if (data.frameList[0].exists) baseInt = (int)getKey(data.frameList[0], ctrlMA.frame);
+            if (data.frameList[0].exists) baseInt = (int)getKey(data.frameList[0], ctrlMA.Frame);
         }
 
         /// <summary>
@@ -1051,67 +1016,6 @@ namespace Ohana3DS_Rebirth.Ohana
             output.M31 = translation.X;
             output.M32 = translation.Y;
             return output;
-        }
-
-        /// <summary>
-        ///     Load the animation at the given index on the model Material Animation.
-        ///     It will have no effect if the index is invalid.
-        /// </summary>
-        /// <param name="animationIndex">The index where the animation is located</param>
-        public bool loadMaterialAnimation(int animationIndex)
-        {
-            if (animationIndex < -1 || animationIndex >= model.materialAnimation.Count) return false;
-            ctrlMA.currentAnimation = animationIndex;
-            ctrlMA.frame = 0;
-            return true;
-        }
-
-        /// <summary>
-        ///     Changes the current animation frame.
-        ///     It will have no effect if the frame is outside of the animation range.
-        /// </summary>
-        /// <param name="targetFrame">The new frame index</param>
-        public void setMaterialAnimationFrame(int targetFrame)
-        {
-            if (targetFrame < 0 || targetFrame > model.materialAnimation[ctrlMA.currentAnimation].frameSize) return;
-            ctrlMA.frame = targetFrame;
-        }
-
-        /// <summary>
-        ///     Pauses the animation.
-        /// </summary>
-        public void pauseMaterialAnimation()
-        {
-            ctrlMA.paused = true;
-        }
-
-        /// <summary>
-        ///     Stops the animation, and render the still model.
-        /// </summary>
-        public void stopMaterialAnimation()
-        {
-            ctrlMA.animate = false;
-            ctrlMA.frame = 0;
-        }
-
-        /// <summary>
-        ///     Play the animation.
-        ///     It will have no effect if no animations are loaded.
-        /// </summary>
-        public void playMaterialAnimation()
-        {
-            if (ctrlMA.currentAnimation == -1) return;
-            ctrlMA.paused = false;
-            ctrlMA.animate = true;
-        }
-
-        /// <summary>
-        ///     Get the current animation index.
-        ///     It will return -1 if no animations have been loaded yet.
-        /// </summary>
-        public int currentMaterialAnimationIndex
-        {
-            get { return ctrlMA.currentAnimation; }
         }
         #endregion
 

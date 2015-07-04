@@ -28,14 +28,6 @@ namespace Ohana3DS_Rebirth.GUI
             InitializeComponent();
         }
 
-        public OVScroll(IContainer container)
-        {
-            container.Add(this);
-
-            init();
-            InitializeComponent();
-        }
-
         private void init()
         {
             SetStyle(ControlStyles.SupportsTransparentBackColor, true);
@@ -100,12 +92,13 @@ namespace Ohana3DS_Rebirth.GUI
             }
             set
             {
+                if (value < 1) throw new Exception("OVScroll: Maximum value MUST be greater than 0!");
                 max = value;
                 recalcSize();
                 if (scrollY > value)
                 {
                     scrollY = value;
-                    scrollBarY = (int)(((float)scrollY / max) * (Height - scrollBarSize));
+                    scrollBarY = (int)Math.Max(Height - scrollBarSize, 0);
                     Refresh();
                 }
             }
@@ -125,7 +118,7 @@ namespace Ohana3DS_Rebirth.GUI
                 if (value > max) throw new Exception("OVScroll: The Value set is greater than the maximum value!");
                 if (value < 0) throw new Exception("OVScroll: Value can't be less than 0!");
                 scrollY = value;
-                scrollBarY = (int)(((float)scrollY / max) * (Height - scrollBarSize));
+                scrollBarY = (int)(((float)scrollY / max) * Math.Max(Height - scrollBarSize, 0));
                 Refresh();
             }
         }
@@ -186,7 +179,7 @@ namespace Ohana3DS_Rebirth.GUI
                 {
                     int y = e.Y - scroll;
                     if (y < 0) y = 0;
-                    else if (y > Height - scrollBarSize) y = Height - scrollBarSize;
+                    else if (y > Height - scrollBarSize) y = Math.Max(Height - scrollBarSize, 0);
                     scrollBarY = y;
 
                     scrollY = (int)(((float)y / Math.Max(Height - scrollBarSize, 1)) * max);
@@ -214,7 +207,7 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void recalcSize()
         {
-            scrollBarSize = Math.Max(32, Height - max);
+            scrollBarSize = Math.Max(Height - max, 32);
             scrollBarY = (int)(((float)scrollY / max) * (Height - scrollBarSize));
             Refresh();
         }

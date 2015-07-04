@@ -19,14 +19,6 @@ namespace Ohana3DS_Rebirth.GUI
             InitializeComponent();
         }
 
-        public OLabel(IContainer container)
-        {
-            container.Add(this);
-
-            SetStyle(ControlStyles.SupportsTransparentBackColor, true);
-            InitializeComponent();
-        }
-
         public Bitmap Image
         {
             get

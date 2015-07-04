@@ -341,6 +341,7 @@ namespace Ohana3DS_Rebirth.GUI
                 ListScroll.Value = e.Delta > 0 
                     ? Math.Max(ListScroll.Value - 32, 0) 
                     : Math.Min(ListScroll.Value + 32, ListScroll.MaximumScroll);
+
                 Refresh();
             }
 

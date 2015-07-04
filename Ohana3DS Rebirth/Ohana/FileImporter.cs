@@ -6,10 +6,11 @@ using System.Windows.Forms;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
-    class FileImporter
+    public class FileImporter
     {
         public enum importFileType
         {
+            none,
             model,
             texture,
             skeletalAnimation,

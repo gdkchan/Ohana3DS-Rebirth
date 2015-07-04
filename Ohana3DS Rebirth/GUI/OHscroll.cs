@@ -28,14 +28,6 @@ namespace Ohana3DS_Rebirth.GUI
             InitializeComponent();
         }
 
-        public OHScroll(IContainer container)
-        {
-            container.Add(this);
-
-            init();
-            InitializeComponent();
-        }
-
         private void init()
         {
             SetStyle(ControlStyles.SupportsTransparentBackColor, true);
@@ -100,12 +92,13 @@ namespace Ohana3DS_Rebirth.GUI
             }
             set
             {
+                if (value < 1) throw new Exception("OHScroll: Maximum value MUST be greater than 0!");
                 max = value;
                 recalcSize();
                 if (scrollX > value)
                 {
                     scrollX = value;
-                    scrollBarX = (int)(((float)scrollX / max) * (Width - scrollBarSize));
+                    scrollBarX = (int)Math.Max(Width - scrollBarSize, 0);
                     Refresh();
                 }
             }
@@ -125,7 +118,7 @@ namespace Ohana3DS_Rebirth.GUI
                 if (value > max) throw new Exception("OHScroll: The Value set is greater than the maximum value!");
                 if (value < 0) throw new Exception("OHScroll: Value can't be less than 0!");
                 scrollX = value;
-                scrollBarX = (int)(((float)scrollX / max) * (Width - scrollBarSize));
+                scrollBarX = (int)(((float)scrollX / max) * Math.Max(Width - scrollBarSize, 0));
                 Refresh();
             }
         }
@@ -186,7 +179,7 @@ namespace Ohana3DS_Rebirth.GUI
                 {
                     int x = e.X - scroll;
                     if (x < 0) x = 0;
-                    else if (x > Width - scrollBarSize) x = Width - scrollBarSize;
+                    else if (x > Width - scrollBarSize) x = Math.Max(Width - scrollBarSize, 0);
                     scrollBarX = x;
 
                     scrollX = (int)(((float)x / Math.Max(Width - scrollBarSize, 1)) * max);
@@ -214,7 +207,7 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void recalcSize()
         {
-            scrollBarSize = Math.Max(32, Width - max);
+            scrollBarSize = Math.Max(Width - max, 32);
             scrollBarX = (int)(((float)scrollX / max) * (Width - scrollBarSize));
             Refresh();
         }

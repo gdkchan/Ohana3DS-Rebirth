@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.ListScroll = new Ohana3DS_Rebirth.GUI.OVScroll(this.components);
+            this.ListScroll = new Ohana3DS_Rebirth.GUI.OVScroll();
             this.SuspendLayout();
             // 
             // ListScroll

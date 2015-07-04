@@ -7,14 +7,19 @@ using System.Text;
 using System.ComponentModel;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
+using System.Runtime.InteropServices;
 
 namespace Ohana3DS_Rebirth.GUI
 {
     [Designer(typeof(OGroupBoxDesigner))]
     public partial class OGroupBox : UserControl
     {
+        [DllImport("user32.dll")]
+        public static extern int SendMessage(IntPtr hWnd, int wMsg, int wParam, int lParam);
+        private const int WM_SETREDRAW = 11;
+
         private String title;
-        private Size originalSize;
+        private int originalHeight = 256;
         private bool collapsed;
 
         public OGroupBox()
@@ -31,11 +36,83 @@ namespace Ohana3DS_Rebirth.GUI
             SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
         }
 
+        public void SuspendDrawing()
+        {
+            SendMessage(Handle, WM_SETREDRAW, 0, 0);
+        }
+
+        public void ResumeDrawing()
+        {
+            SendMessage(Handle, WM_SETREDRAW, 1, 0);
+            Refresh();
+        }
+
         [Category("Appearance")]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
         public Panel ContentArea
         {
             get { return ContentPanel; }
+        }
+
+        /// <summary>
+        ///     Set to true to hide content, or false to show them.
+        /// </summary>
+        public bool Collapsed
+        {
+            get
+            {
+                return collapsed;
+            }
+            set
+            {
+                if (value) collapse(); else expand();
+            }
+        }
+
+        /// <summary>
+        ///     GroupBox Title text.
+        /// </summary>
+        public string Title
+        {
+            get
+            {
+                return title;
+            }
+            set
+            {
+                title = value;
+                updateTitle();
+            }
+        }
+
+        /// <summary>
+        ///     BackColor of the inner Panel.
+        /// </summary>
+        public Color ContentColor
+        {
+            get
+            {
+                return ContentPanel.BackColor;
+            }
+            set
+            {
+                ContentPanel.BackColor = value;
+            }
+        }
+
+        /// <summary>
+        ///     Total Height of the control when it is expanded.
+        /// </summary>
+        public int ExpandedHeight
+        {
+            get
+            {
+                return originalHeight;
+            }
+            set
+            {
+                originalHeight = value;
+            }
         }
 
         private void OGroupBox_Layout(object sender, LayoutEventArgs e)
@@ -55,59 +132,27 @@ namespace Ohana3DS_Rebirth.GUI
             BtnToggle.BackColor = Color.Transparent;
         }
 
-        private void updateTitle()
-        {
-            LblTitle.Text = DrawingHelper.clampText(title, LblTitle.Font, Width - 16);
-        }
-
-        public string Title
-        {
-            get
-            {
-                return title;
-            }
-            set
-            {
-                title = value;
-                updateTitle();
-            }
-        }
-
-        public Color ContentColor
-        {
-            get
-            {
-                return ContentPanel.BackColor;
-            }
-            set
-            {
-                ContentPanel.BackColor = value;
-            }
-        }
-
         private void BtnToggle_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button != MouseButtons.Left) return;
             if (collapsed) expand(); else collapse();
         }
 
-        /// <summary>
-        ///     Expands the GroupBox, so the content is accesible.
-        /// </summary>
-        public void expand()
+        private void updateTitle()
+        {
+            LblTitle.Text = DrawingHelper.clampText(title, LblTitle.Font, Width - 16);
+        }
+
+        private void expand()
         {
             BtnToggle.Image = Properties.Resources.icn_collapse;
-            this.Size = originalSize;
+            Height = originalHeight;
             collapsed = false;
         }
 
-        /// <summary>
-        ///     Collapses the GroupBox, so the content is not accesible and less space is used.
-        /// </summary>
-        public void collapse()
+        private void collapse()
         {
             BtnToggle.Image = Properties.Resources.icn_expand;
-            originalSize = this.Size;
             Height = 16;
             collapsed = true;
         }

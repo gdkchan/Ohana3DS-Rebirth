@@ -47,7 +47,7 @@ namespace Ohana3DS_Rebirth.GUI
         {
             pevent.Graphics.FillRectangle(new SolidBrush(bgColor), new Rectangle(0, 0, Width, Height));
 
-            SizeF textSize = pevent.Graphics.MeasureString(this.Text, this.Font);
+            SizeF textSize = pevent.Graphics.MeasureString(Text, Font);
             int width = (int)textSize.Width;
             int yImage = 0;
             if (img != null)
@@ -60,11 +60,11 @@ namespace Ohana3DS_Rebirth.GUI
             if (img != null)
             {
                 pevent.Graphics.DrawImage(img, new Point(x, yImage));
-                pevent.Graphics.DrawString(DrawingHelper.clampText(this.Text, this.Font, Width - img.Width), this.Font, new SolidBrush(this.ForeColor), new Point(x + img.Width, yText));
+                pevent.Graphics.DrawString(DrawingHelper.clampText(Text, Font, Width - img.Width), Font, new SolidBrush(ForeColor), new Point(x + img.Width, yText));
             }
             else
             {
-                pevent.Graphics.DrawString(DrawingHelper.clampText(this.Text, this.Font, Width), this.Font, new SolidBrush(this.ForeColor), new Point(x, yText));
+                pevent.Graphics.DrawString(DrawingHelper.clampText(Text, Font, Width), Font, new SolidBrush(ForeColor), new Point(x, yText));
             }
 
             base.OnPaint(pevent);

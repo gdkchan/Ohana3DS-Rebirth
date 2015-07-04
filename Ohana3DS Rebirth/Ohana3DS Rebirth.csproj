@@ -90,6 +90,36 @@
     </Compile>
     <Compile Include="GUI\ColorManager.cs" />
     <Compile Include="GUI\DrawingHelper.cs" />
+    <Compile Include="GUI\OFloatTextBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\OFloatTextBox.Designer.cs">
+      <DependentUpon>OFloatTextBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OGenericAnimationControls.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\OGenericAnimationControls.Designer.cs">
+      <DependentUpon>OGenericAnimationControls.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\ORadioButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\ORadioButton.Designer.cs">
+      <DependentUpon>ORadioButton.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OSeekBar.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OSeekBar.Designer.cs">
+      <DependentUpon>OSeekBar.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OTextBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OTextBox.Designer.cs">
+      <DependentUpon>OTextBox.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\Windows\OAnimationsWindow.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -107,6 +137,12 @@
     </Compile>
     <Compile Include="GUI\ODock.Designer.cs">
       <DependentUpon>ODock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Windows\OCameraWindow.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Windows\OCameraWindow.Designer.cs">
+      <DependentUpon>OCameraWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\Windows\ODockWindow.cs">
       <SubType>UserControl</SubType>
@@ -192,11 +228,23 @@
     <EmbeddedResource Include="FrmMain.resx">
       <DependentUpon>FrmMain.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GUI\OFloatTextBox.resx">
+      <DependentUpon>OFloatTextBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\OGenericAnimationControls.resx">
+      <DependentUpon>OGenericAnimationControls.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\OTextBox.resx">
+      <DependentUpon>OTextBox.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\Windows\OAnimationsWindow.resx">
       <DependentUpon>OAnimationsWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\ODock.resx">
       <DependentUpon>ODock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Windows\OCameraWindow.resx">
+      <DependentUpon>OCameraWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Windows\ODockWindow.resx">
       <DependentUpon>ODockWindow.cs</DependentUpon>
@@ -320,6 +368,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\icn_big_pause.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_knob.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

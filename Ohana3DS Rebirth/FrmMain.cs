@@ -62,26 +62,29 @@ namespace Ohana3DS_Rebirth
                     GUI.OModelWindow modelWindow = new GUI.OModelWindow();
                     GUI.OTextureWindow textureWindow = new GUI.OTextureWindow();
                     GUI.OAnimationsWindow animWindow = new GUI.OAnimationsWindow();
+                    GUI.OCameraWindow cameraWindow = new GUI.OCameraWindow();
 
-                    String name = Path.GetFileNameWithoutExtension(fileName);
+                    string name = Path.GetFileNameWithoutExtension(fileName);
                     modelWindow.Title = "Model [" + name + "]";
                     textureWindow.Title = "Textures [" + name + "]";
                     animWindow.Title = "Animations [" + name + "]";
+                    cameraWindow.Title = "Cameras [" + name + "]";
 
                     launchWindow(modelWindow);
                     DockContainer.dockMainWindow();
                     launchWindow(textureWindow, false);
                     launchWindow(animWindow, false);
+                    launchWindow(cameraWindow, false);
                     WindowManager.Refresh();
 
                     RenderEngine renderer = new RenderEngine();
 
                     RenderBase.OModelGroup model = BCH.load(fileName);
                     renderer.model = model;
-                    Application.DoEvents(); //Call this to avoid clicks on the OpenDialog going to ViewPort
 
                     textureWindow.initialize(renderer);
                     animWindow.initialize(renderer);
+                    cameraWindow.initialize(renderer);
                     modelWindow.initialize(renderer);
 
                     break;

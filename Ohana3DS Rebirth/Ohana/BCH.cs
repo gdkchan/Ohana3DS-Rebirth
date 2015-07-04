@@ -427,24 +427,35 @@ namespace Ohana3DS_Rebirth.Ohana
                 camera.transformRotate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
                 camera.transformTranslate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
 
-                uint cameraFlags = input.ReadUInt32() >> 16;
-                camera.isInheritingTargetRotate = (cameraFlags & 1) > 0;
-                camera.isInheritingTargetTranslate = (cameraFlags & 2) > 0;
-                camera.isInheritingUpRotate = (cameraFlags & 4) > 0;
+                uint cameraFlags = input.ReadUInt32();
+                camera.isInheritingTargetRotate = (cameraFlags & 0x10000) > 0;
+                camera.isInheritingTargetTranslate = (cameraFlags & 0x20000) > 0;
+                camera.isInheritingUpRotate = (cameraFlags & 0x40000) > 0;
+                camera.view = (RenderBase.OCameraView)(cameraFlags & 0xf);
+                camera.projection = (RenderBase.OCameraProjection)((cameraFlags >> 8) & 0xf);
 
-                input.ReadUInt32();
-                uint lookAtOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                input.ReadSingle();
+                uint viewOffset = input.ReadUInt32() + header.mainHeaderOffset;
                 uint projectionOffset = input.ReadUInt32() + header.mainHeaderOffset;
 
-                data.Seek(lookAtOffset, SeekOrigin.Begin);
-                camera.lookAtTarget = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
-                camera.lookAtUpVector = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                data.Seek(viewOffset, SeekOrigin.Begin);
+                RenderBase.OVector3 target = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                switch (camera.view)
+                {
+                    case RenderBase.OCameraView.aimTarget: camera.target = target; camera.twist = input.ReadSingle(); break;
+                    case RenderBase.OCameraView.lookAtTarget: camera.target = target; camera.upVector = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle()); break;
+                    case RenderBase.OCameraView.rotate: camera.rotation = target; break;
+                }
 
                 data.Seek(projectionOffset, SeekOrigin.Begin);
                 camera.zNear = input.ReadSingle();
                 camera.zFar = input.ReadSingle();
                 camera.aspectRatio = input.ReadSingle();
-                camera.fieldOfViewY = input.ReadSingle();
+                switch (camera.projection)
+                {
+                    case RenderBase.OCameraProjection.perspective: camera.fieldOfViewY = input.ReadSingle(); break;
+                    case RenderBase.OCameraProjection.orthogonal: camera.height = input.ReadSingle(); break;
+                }
 
                 models.addCamera(camera);
             }
@@ -644,8 +655,8 @@ namespace Ohana3DS_Rebirth.Ohana
                 uint dataTableEntries = input.ReadUInt32();
                 input.ReadUInt32();
                 uint modeFlags = input.ReadUInt32();
-                cameraAnimation.viewMode = (RenderBase.OCameraViewMode)(modeFlags & 0xf);
-                cameraAnimation.projectionMode = (RenderBase.OCameraProjectionMode)((modeFlags >> 8) & 0xf);
+                cameraAnimation.viewMode = (RenderBase.OCameraView)(modeFlags & 0xf);
+                cameraAnimation.projectionMode = (RenderBase.OCameraProjection)((modeFlags >> 8) & 0xf);
 
                 for (int i = 0; i < dataTableEntries; i++)
                 {

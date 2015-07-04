@@ -327,5 +327,15 @@ namespace Ohana3DS_Rebirth.Properties {
                 return ResourceManager.GetString("OFragmentShader", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap ui_knob {
+            get {
+                object obj = ResourceManager.GetObject("ui_knob", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }

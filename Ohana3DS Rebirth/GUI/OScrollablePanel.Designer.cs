@@ -28,8 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.PnlVScroll = new Ohana3DS_Rebirth.GUI.OVScroll(this.components);
+            this.PnlVScroll = new Ohana3DS_Rebirth.GUI.OVScroll();
             this.ContentPanel = new System.Windows.Forms.Panel();
             this.SuspendLayout();
             // 

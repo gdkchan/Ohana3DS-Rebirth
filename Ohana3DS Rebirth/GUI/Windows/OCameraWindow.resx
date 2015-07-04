@@ -121,7 +121,7 @@
   <data name="BtnDelete.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAHdElNRQffBBgXIiDKJA73AAAAeUlEQVQ4T6WM2w2AMAwD
+        YQUAAAAJcEhZcwAADrwAAA68AZW8ckkAAAAHdElNRQffBBgXIiDKJA73AAAAeUlEQVQ4T6WM2w2AMAwD
         Owif3X8zZgAlsqOWmIaHpZOofaHtW/+FLN8QHwcyjgpo4aXBwu4KZg+7Uqi2STLgeFYdmR4EbopyU0Fw
         E1GOIUsDdxHlGLLETYpyUwHXs+rI9IDjGfvVVgojmD3s0sj3HdDyD74iy+f0dgLK7+DQwLU/IwAAAABJ
         RU5ErkJggg==
@@ -130,7 +130,7 @@
   <data name="BtnClear.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAAHdElNRQffBhsVBxUflTLTAAAAS0lEQVQ4T83MQQqAMBAE
+        YQUAAAAJcEhZcwAADrwAAA68AZW8ckkAAAAHdElNRQffBhsVBxUflTLTAAAAS0lEQVQ4T83MQQqAMBAE
         wf3/pxWhQGQio7fUMdOb2dPxwtyt4vrBFfzh7Ob9M2dPtkqe7JU82St5slfyZK/kyV7Jk72SJ3sl38LM
         CR8svlCk5X01AAAAAElFTkSuQmCC
 </value>
@@ -138,7 +138,7 @@
   <data name="BtnExport.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAAHdElNRQffBhsVBhUGjgOSAAAAQElEQVQ4T2MY3OA/FEC5
+        YQUAAAAJcEhZcwAADrwAAA68AZW8ckkAAAAHdElNRQffBhsVBhUGjgOSAAAAQElEQVQ4T2MY3OA/FEC5
         pAGoXjiAChMHoHowAFQaP4CqxQmgyogDUD3khQEIQPWPGgAEUC7pAKp/AA2gA2BgAADkP49xuwNJbQAA
         AABJRU5ErkJggg==
 </value>
@@ -146,7 +146,7 @@
   <data name="BtnImport.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAAHdElNRQffBhsVBThofAwkAAAAPklEQVQ4T2MY3OA/FEC5
+        YQUAAAAJcEhZcwAADrwAAA68AZW8ckkAAAAHdElNRQffBhsVBThofAwkAAAAPklEQVQ4T2MY3OA/FEC5
         pAOo/lEDgADKJR1A9dPZAKgenACqDD+AqsUAUGniAFQPHECFSQNQveQHIh0AAwMA/OyPcXNbRpkAAAAA
         SUVORK5CYII=
 </value>

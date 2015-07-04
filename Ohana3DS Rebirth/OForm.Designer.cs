@@ -35,7 +35,7 @@
             this.BtnMinimize = new System.Windows.Forms.PictureBox();
             this.BtnMinMax = new System.Windows.Forms.PictureBox();
             this.BtnClose = new System.Windows.Forms.PictureBox();
-            this.LblTitle = new Ohana3DS_Rebirth.GUI.OLabel(this.components);
+            this.LblTitle = new Ohana3DS_Rebirth.GUI.OLabel();
             this.ContentContainer.SuspendLayout();
             this.TitleBar.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.BtnMinimize)).BeginInit();

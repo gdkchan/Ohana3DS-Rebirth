@@ -961,6 +961,19 @@ namespace Ohana3DS_Rebirth.Ohana
             public OFragmentSampler angleSampler;
         }
 
+        public enum OCameraView
+        {
+            aimTarget = 0,
+            lookAtTarget = 1,
+            rotate = 2
+        }
+
+        public enum OCameraProjection
+        {
+            perspective = 0,
+            orthogonal = 1
+        }
+
         public class OCamera
         {
             public string name;
@@ -968,10 +981,15 @@ namespace Ohana3DS_Rebirth.Ohana
             public OVector3 transformScale;
             public OVector3 transformRotate;
             public OVector3 transformTranslate;
-            public OVector3 lookAtTarget;
-            public OVector3 lookAtUpVector;
+            public OVector3 target;
+            public OVector3 rotation;
+            public OVector3 upVector;
+            public float twist;
+            public OCameraView view;
+            public OCameraProjection projection;
             public float zNear, zFar;
             public float fieldOfViewY;
+            public float height;
             public float aspectRatio;
 
             public bool isInheritingTargetRotate;
@@ -1118,11 +1136,28 @@ namespace Ohana3DS_Rebirth.Ohana
             loop = 1
         }
 
-        public class OSkeletalAnimation
+        public class OAnimationBase
         {
-            public string name;
-            public float frameSize;
-            public OLoopMode loopMode;
+            public virtual string name { get; set; }
+            public virtual float frameSize { get; set; }
+            public virtual OLoopMode loopMode { get; set; }
+        }
+
+        public class OAnimationListBase
+        {
+            public List<OAnimationBase> list;
+
+            public OAnimationListBase()
+            {
+                list = new List<OAnimationBase>();
+            }
+        }
+
+        public class OSkeletalAnimation : OAnimationBase
+        {
+            public override string name { get; set; }
+            public override float frameSize { get; set; }
+            public override OLoopMode loopMode { get; set; }
             public List<OSkeletalAnimationBone> bone;
 
             public OSkeletalAnimation()
@@ -1174,11 +1209,11 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
-        public class OMaterialAnimation
+        public class OMaterialAnimation : OAnimationBase
         {
-            public string name;
-            public float frameSize;
-            public OLoopMode loopMode;
+            public override string name { get; set; }
+            public override float frameSize { get; set; }
+            public override OLoopMode loopMode { get; set; }
             public List<OMaterialAnimationData> data;
 
             public OMaterialAnimation()
@@ -1213,26 +1248,13 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
-        public enum OCameraViewMode
+        public class OCameraAnimation : OAnimationBase
         {
-            aimTarget = 0,
-            lookAtTarget = 1,
-            rotate = 2
-        }
-
-        public enum OCameraProjectionMode
-        {
-            perspective = 0,
-            orthogonal = 1
-        }
-
-        public class OCameraAnimation
-        {
-            public string name;
-            public float frameSize;
-            public OLoopMode loopMode;
-            public OCameraViewMode viewMode;
-            public OCameraProjectionMode projectionMode;
+            public override string name { get; set; }
+            public override float frameSize { get; set; }
+            public override OLoopMode loopMode { get; set; }
+            public OCameraView viewMode;
+            public OCameraProjection projectionMode;
             public List<OCameraAnimationData> data;
 
             public OCameraAnimation()
@@ -1249,9 +1271,9 @@ namespace Ohana3DS_Rebirth.Ohana
             public List<OLight> light;
             public List<OCamera> camera;
             public List<OFog> fog;
-            public List<OSkeletalAnimation> skeletalAnimation;
-            public List<OMaterialAnimation> materialAnimation;
-            public List<OCameraAnimation> cameraAnimation;
+            public OAnimationListBase skeletalAnimation;
+            public OAnimationListBase materialAnimation;
+            public OAnimationListBase cameraAnimation;
             public OVector3 minVector, maxVector;
 
             public OModelGroup()
@@ -1262,9 +1284,9 @@ namespace Ohana3DS_Rebirth.Ohana
                 light = new List<OLight>();
                 camera = new List<OCamera>();
                 fog = new List<OFog>();
-                skeletalAnimation = new List<OSkeletalAnimation>();
-                materialAnimation = new List<OMaterialAnimation>();
-                cameraAnimation = new List<OCameraAnimation>();
+                skeletalAnimation = new OAnimationListBase();
+                materialAnimation = new OAnimationListBase();
+                cameraAnimation = new OAnimationListBase();
                 minVector = new OVector3();
                 maxVector = new OVector3();
             }
@@ -1279,30 +1301,12 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Adds Models.
-            /// </summary>
-            /// <param name="_model">The Models</param>
-            public void addModel(List<OModel> _model)
-            {
-                model.AddRange(_model);
-            }
-
-            /// <summary>
             ///     Adds a new Texture.
             /// </summary>
             /// <param name="_texture">The Texture</param>
             public void addTexture(OTexture _texture)
             {
                 texture.Add(_texture);
-            }
-
-            /// <summary>
-            ///     Adds Textures.
-            /// </summary>
-            /// <param name="_texture">The Textures</param>
-            public void addTexture(List<OTexture> _texture)
-            {
-                texture.AddRange(_texture);
             }
 
             /// <summary>
@@ -1315,30 +1319,12 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Adds LookUp Tables.
-            /// </summary>
-            /// <param name="_lookUpTable">The LUTs</param>
-            public void addLUT(List<OLookUpTable> _lookUpTable)
-            {
-                lookUpTable.AddRange(_lookUpTable);
-            }
-
-            /// <summary>
             ///     Adds a new Light.
             /// </summary>
             /// <param name="_light">The Light</param>
             public void addLight(OLight _light)
             {
                 light.Add(_light);
-            }
-
-            /// <summary>
-            ///     Adds Lights.
-            /// </summary>
-            /// <param name="_light">The Lights</param>
-            public void addLight(List<OLight> _light)
-            {
-                light.AddRange(_light);
             }
 
             /// <summary>
@@ -1351,15 +1337,6 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Adds Cameras.
-            /// </summary>
-            /// <param name="_camera">The Cameras</param>
-            public void addCamera(List<OCamera> _camera)
-            {
-                camera.AddRange(_camera);
-            }
-
-            /// <summary>
             ///     Adds a new Fog.
             /// </summary>
             /// <param name="_fog">The Fog</param>
@@ -1369,30 +1346,12 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Adds Fogs.
-            /// </summary>
-            /// <param name="_fog">The Fogs</param>
-            public void addFog(List<OFog> _fog)
-            {
-                fog.AddRange(_fog);
-            }
-
-            /// <summary>
             ///     Adds a new Skeletal Animation.
             /// </summary>
             /// <param name="_skeletalAnimation">The Skeletal Animation</param>
             public void addSekeletalAnimaton(OSkeletalAnimation _skeletalAnimation)
             {
-                skeletalAnimation.Add(_skeletalAnimation);
-            }
-
-            /// <summary>
-            ///     Adds Skeletal Animations.
-            /// </summary>
-            /// <param name="_skeletalAnimation">The Skeletal Animations</param>
-            public void addSekeletalAnimaton(List<OSkeletalAnimation> _skeletalAnimation)
-            {
-                skeletalAnimation.AddRange(_skeletalAnimation);
+                skeletalAnimation.list.Add(_skeletalAnimation);
             }
 
             /// <summary>
@@ -1401,16 +1360,7 @@ namespace Ohana3DS_Rebirth.Ohana
             /// <param name="_materialColorAnimation">The Material Animation</param>
             public void addMaterialAnimation(OMaterialAnimation _materialAnimation)
             {
-                materialAnimation.Add(_materialAnimation);
-            }
-
-            /// <summary>
-            ///     Adds Material Animations.
-            /// </summary>
-            /// <param name="_materialColorAnimation">The Material Animations</param>
-            public void addMaterialAnimation(List<OMaterialAnimation> _materialAnimation)
-            {
-                materialAnimation.AddRange(_materialAnimation);
+                materialAnimation.list.Add(_materialAnimation);
             }
 
             /// <summary>
@@ -1419,16 +1369,7 @@ namespace Ohana3DS_Rebirth.Ohana
             /// <param name="_cameraAnimation">The Camera Animation</param>
             public void addCameraAnimation(OCameraAnimation _cameraAnimation)
             {
-                cameraAnimation.Add(_cameraAnimation);
-            }
-
-            /// <summary>
-            ///     Adds Camera Animations.
-            /// </summary>
-            /// <param name="_cameraAnimation">The Camera Animations</param>
-            public void addCameraAnimation(List<OCameraAnimation> _cameraAnimation)
-            {
-                cameraAnimation.AddRange(_cameraAnimation);
+                cameraAnimation.list.Add(_cameraAnimation);
             }
         }
     }

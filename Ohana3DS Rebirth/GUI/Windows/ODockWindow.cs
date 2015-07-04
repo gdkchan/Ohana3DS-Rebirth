@@ -5,6 +5,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
+
 using Ohana3DS_Rebirth.Properties;
 
 namespace Ohana3DS_Rebirth.GUI

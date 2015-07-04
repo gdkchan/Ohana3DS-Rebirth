@@ -41,6 +41,17 @@ namespace Ohana3DS_Rebirth.GUI
             base.OnLayout(e);
         }
 
+        protected override void OnControlAdded(ControlEventArgs e)
+        {
+            e.Control.Layout += Control_Layout;
+            base.OnControlAdded(e);
+        }
+
+        private void Control_Layout(Object sender, EventArgs e)
+        {
+            recalc();
+        }
+
         private void recalc()
         {
             int maxTop = 0, maxHeight = 0;
@@ -63,8 +74,6 @@ namespace Ohana3DS_Rebirth.GUI
             }
             PnlVScroll.Left = Width - PnlVScroll.Width;
             PnlVScroll.Height = Height;
-
-            Refresh();
         }
 
         public class OScrollablePanelDesigner : ParentControlDesigner
@@ -78,6 +87,20 @@ namespace Ohana3DS_Rebirth.GUI
                     this.EnableDesignMode(((OScrollablePanel)this.Control).ContentArea, "ContentArea");
                 }
             }
+        }
+
+        protected override void OnMouseWheel(MouseEventArgs e)
+        {
+            if (PnlVScroll.Visible)
+            {
+                PnlVScroll.Value = e.Delta > 0
+                    ? Math.Max(PnlVScroll.Value - 32, 0)
+                    : Math.Min(PnlVScroll.Value + 32, PnlVScroll.MaximumScroll);
+
+                ContentPanel.Top = -PnlVScroll.Value;
+            }
+
+            base.OnMouseWheel(e);
         }
 
         private void VScroll_ScrollChanged(object sender, EventArgs e)
