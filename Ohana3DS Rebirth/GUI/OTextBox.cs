@@ -117,7 +117,7 @@ namespace Ohana3DS_Rebirth.GUI
             protected override void OnKeyPress(KeyPressEventArgs e)
             {
                 e.Handled = false;
-                if (charWhiteList.Length > 0)
+                if (charWhiteList != null)
                 {
                     if (!charWhiteList.Contains(e.KeyChar.ToString()) && !Char.IsControl(e.KeyChar)) e.Handled = true;
                 }
