@@ -148,7 +148,7 @@ namespace Ohana3DS_Rebirth.GUI
             if (animation != null)
             {
                 animations.list.AddRange(animation.list);
-                foreach (RenderBase.OAnimationBase anim in animations.list) AnimationsList.addItem(anim.name);
+                foreach (RenderBase.OAnimationBase anim in animation.list) AnimationsList.addItem(anim.name);
                 AnimationsList.Refresh();
             }
         }

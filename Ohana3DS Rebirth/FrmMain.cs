@@ -81,6 +81,7 @@ namespace Ohana3DS_Rebirth
 
                     RenderBase.OModelGroup model = BCH.load(fileName);
                     renderer.model = model;
+                    //Ohana.GenericFormats.SMD.export(model, "D:\\teste.smd");
 
                     textureWindow.initialize(renderer);
                     animWindow.initialize(renderer);

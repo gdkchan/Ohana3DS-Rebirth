@@ -113,6 +113,28 @@ namespace Ohana3DS_Rebirth.Ohana
         public animationControl ctrlSA = new animationControl();
         public animationControl ctrlMA = new animationControl();
 
+        private class OQuaternionBone
+        {
+            public RenderBase.OVector3 translation;
+            public RenderBase.OVector3 rotation;
+            public RenderBase.OVector4 rotationQuaternion;
+            public bool hasQuaternionRotation;
+            public RenderBase.OVector3 scale;
+            public short parentId;
+            public String name = null;
+
+            /// <summary>
+            ///     Creates a new Bone.
+            /// </summary>
+            public OQuaternionBone()
+            {
+                translation = new RenderBase.OVector3();
+                rotation = new RenderBase.OVector3();
+                rotationQuaternion = new RenderBase.OVector4();
+                scale = new RenderBase.OVector3();
+            }
+        }
+
         /// <summary>
         ///     Initialize the renderer at a given target.
         /// </summary>
@@ -323,10 +345,10 @@ namespace Ohana3DS_Rebirth.Ohana
                         }
 
                         List<RenderBase.OSkeletalAnimationBone> bone = ((RenderBase.OSkeletalAnimation)model.skeletalAnimation.list[ctrlSA.CurrentAnimation]).bone;
-                        List<RenderBase.OBone> frameAnimationSkeleton = new List<RenderBase.OBone>();
+                        List<OQuaternionBone> frameAnimationSkeleton = new List<OQuaternionBone>();
                         for (int index = 0; index < mdl.skeleton.Count; index++)
                         {
-                            RenderBase.OBone newBone = new RenderBase.OBone();
+                            OQuaternionBone newBone = new OQuaternionBone();
                             newBone.parentId = mdl.skeleton[index].parentId;
                             newBone.rotation = new RenderBase.OVector3(mdl.skeleton[index].rotation);
                             newBone.translation = new RenderBase.OVector3(mdl.skeleton[index].translation);
@@ -334,12 +356,26 @@ namespace Ohana3DS_Rebirth.Ohana
                             {
                                 if (b.name == mdl.skeleton[index].name)
                                 {
-                                    if (b.rotationX.exists) newBone.rotation.x = getKey(b.rotationX, getFrameNumber(b.rotationX, ctrlSA.Frame));
-                                    if (b.rotationY.exists) newBone.rotation.y = getKey(b.rotationY, getFrameNumber(b.rotationY, ctrlSA.Frame));
-                                    if (b.rotationZ.exists) newBone.rotation.z = getKey(b.rotationZ, getFrameNumber(b.rotationZ, ctrlSA.Frame));
-                                    if (b.translationX.exists) newBone.translation.x = getKey(b.translationX, getFrameNumber(b.translationX, ctrlSA.Frame));
-                                    if (b.translationY.exists) newBone.translation.y = getKey(b.translationY, getFrameNumber(b.translationY, ctrlSA.Frame));
-                                    if (b.translationZ.exists) newBone.translation.z = getKey(b.translationZ, getFrameNumber(b.translationZ, ctrlSA.Frame));
+                                    
+                                    if (b.isFrameFormat)
+                                    {
+                                        newBone.hasQuaternionRotation = true;
+                                        if (b.rotationQuaternion.exists) newBone.rotationQuaternion = b.rotationQuaternion.vector[(int)ctrlSA.Frame % b.rotationQuaternion.vector.Count];
+                                        if (b.translation.exists)
+                                        {
+                                            RenderBase.OVector4 t = b.translation.vector[(int)ctrlSA.Frame % b.translation.vector.Count];
+                                            newBone.translation = new RenderBase.OVector3(t.x, t.y, t.z);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (b.rotationX.exists) newBone.rotation.x = getKey(b.rotationX, getFrameNumber(b.rotationX, ctrlSA.Frame));
+                                        if (b.rotationY.exists) newBone.rotation.y = getKey(b.rotationY, getFrameNumber(b.rotationY, ctrlSA.Frame));
+                                        if (b.rotationZ.exists) newBone.rotation.z = getKey(b.rotationZ, getFrameNumber(b.rotationZ, ctrlSA.Frame));
+                                        if (b.translationX.exists) newBone.translation.x = getKey(b.translationX, getFrameNumber(b.translationX, ctrlSA.Frame));
+                                        if (b.translationY.exists) newBone.translation.y = getKey(b.translationY, getFrameNumber(b.translationY, ctrlSA.Frame));
+                                        if (b.translationZ.exists) newBone.translation.z = getKey(b.translationZ, getFrameNumber(b.translationZ, ctrlSA.Frame));
+                                    }
 
                                     break;
                                 }
@@ -351,7 +387,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         for (int index = 0; index < mdl.skeleton.Count; index++)
                         {
                             animationSkeletonTransform[index] = Matrix.Identity;
-                            transformSkeleton(frameAnimationSkeleton, index, ref animationSkeletonTransform[index]);
+                            transformQuaternionSkeleton(frameAnimationSkeleton, index, ref animationSkeletonTransform[index]);
                             animationSkeletonTransform[index] = Matrix.Invert(skeletonTransform[index]) * animationSkeletonTransform[index];
                         }
                     }
@@ -634,7 +670,6 @@ namespace Ohana3DS_Rebirth.Ohana
                         if (!useLegacyTexturing) fragmentShader.BeginPass(0);
                         if (ctrlSA.animate)
                         {
-
                             RenderBase.CustomVertex[] buffer = new RenderBase.CustomVertex[obj.renderBuffer.Length];
 
                             for (int vertex = 0; vertex < obj.renderBuffer.Length; vertex++)
@@ -917,7 +952,7 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="sourceFrame">The list of key frames</param>
         /// <param name="frame">The frame that should be returned or interpolated from the list</param>
         /// <returns></returns>
-        private float getKey(RenderBase.OAnimationFrame sourceFrame, float frame)
+        private float getKey(RenderBase.OAnimationKeyFrame sourceFrame, float frame)
         {
             switch (sourceFrame.interpolation)
             {
@@ -933,7 +968,7 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="sourceFrame">The list of key frames</param>
         /// <param name="frame">The frame that should be verified</param>
         /// <returns></returns>
-        private float getFrameNumber(RenderBase.OAnimationFrame sourceFrame, float frame)
+        private float getFrameNumber(RenderBase.OAnimationKeyFrame sourceFrame, float frame)
         {
             //TODO
             if (frame < sourceFrame.startFrame)
@@ -968,6 +1003,27 @@ namespace Ohana3DS_Rebirth.Ohana
             target *= Matrix.RotationZ(skeleton[index].rotation.z);
             target *= Matrix.Translation(skeleton[index].translation.x, skeleton[index].translation.y, skeleton[index].translation.z);
             if (skeleton[index].parentId > -1) transformSkeleton(skeleton, skeleton[index].parentId, ref target);
+        }
+
+        private void transformQuaternionSkeleton(List<OQuaternionBone> skeleton, int index, ref Matrix target)
+        {
+            if (skeleton[index].hasQuaternionRotation)
+            {
+                Quaternion rotation = new Quaternion(
+                    skeleton[index].rotationQuaternion.x,
+                    skeleton[index].rotationQuaternion.y,
+                    skeleton[index].rotationQuaternion.z,
+                    skeleton[index].rotationQuaternion.w);
+                target *= Matrix.RotationQuaternion(rotation);
+            }
+            else
+            {
+                target *= Matrix.RotationX(skeleton[index].rotation.x);
+                target *= Matrix.RotationY(skeleton[index].rotation.y);
+                target *= Matrix.RotationZ(skeleton[index].rotation.z);
+            }
+            target *= Matrix.Translation(skeleton[index].translation.x, skeleton[index].translation.y, skeleton[index].translation.z);
+            if (skeleton[index].parentId > -1) transformQuaternionSkeleton(skeleton, skeleton[index].parentId, ref target);
         }
 
         //

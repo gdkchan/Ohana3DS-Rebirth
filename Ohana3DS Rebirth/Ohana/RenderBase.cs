@@ -97,16 +97,6 @@ namespace Ohana3DS_Rebirth.Ohana
                 return output;
             }
 
-            public static OVector3 operator +(OVector3 a, OVector3 b)
-            {
-                return new OVector3(a.x + b.x, a.y + b.y, a.z + b.z);
-            }
-
-            public static OVector3 operator *(OVector3 a, OVector3 b)
-            {
-                return new OVector3(a.x * b.x, a.y * b.y, a.z * b.z);
-            }
-
             public override string ToString()
             {
                 return String.Format("X:{0}; Y:{1}; Z:{2}", x, y, z);
@@ -350,6 +340,60 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
+            ///     Rotates about the X axis.
+            /// </summary>
+            /// <param name="angle">Angle in radians</param>
+            /// <returns></returns>
+            public static OMatrix rotateX(float angle)
+            {
+                OMatrix output = new OMatrix
+                {
+                    M22 = (float)Math.Cos(angle),
+                    M32 = -(float)Math.Sin(angle),
+                    M23 = (float)Math.Sin(angle),
+                    M33 = (float)Math.Cos(angle)
+                };
+
+                return output;
+            }
+
+            /// <summary>
+            ///     Rotates about the Y axis.
+            /// </summary>
+            /// <param name="angle">Angle in radians</param>
+            /// <returns></returns>
+            public static OMatrix rotateY(float angle)
+            {
+                OMatrix output = new OMatrix
+                {
+                    M11 = (float)Math.Cos(angle),
+                    M31 = (float)Math.Sin(angle),
+                    M13 = -(float)Math.Sin(angle),
+                    M33 = (float)Math.Cos(angle)
+                };
+
+                return output;
+            }
+
+            /// <summary>
+            ///     Rotates about the Z axis.
+            /// </summary>
+            /// <param name="angle">Angle in radians</param>
+            /// <returns></returns>
+            public static OMatrix rotateZ(float angle)
+            {
+                OMatrix output = new OMatrix
+                {
+                    M11 = (float)Math.Cos(angle),
+                    M21 = -(float)Math.Sin(angle),
+                    M12 = (float)Math.Sin(angle),
+                    M22 = (float)Math.Cos(angle)
+                };
+
+                return output;
+            }
+
+            /// <summary>
             ///     Creates a translation Matrix with the given position offset.
             /// </summary>
             /// <param name="position">The Position offset</param>
@@ -420,6 +464,17 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        public enum OBillboardMode
+        {
+            off = 0,
+            world = 2,
+            worldViewpoint = 3,
+            screen = 4,
+            screenViewpoint = 5,
+            yAxial = 6,
+            yAxialViewpoint = 7
+        }
+
         public class OBone
         {
             public OVector3 translation;
@@ -427,6 +482,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public OVector3 scale;
             public short parentId;
             public String name = null;
+            public OBillboardMode billboardMode;
 
             /// <summary>
             ///     Creates a new Bone.
@@ -1083,7 +1139,7 @@ namespace Ohana3DS_Rebirth.Ohana
             hermite = 2
         }
 
-        public class OAnimationFrame
+        public class OAnimationKeyFrame
         {
             public List<OHermiteFloat> hermiteFrame;
             public List<OLinearFloat> linearFrame;
@@ -1094,10 +1150,25 @@ namespace Ohana3DS_Rebirth.Ohana
             public ORepeatMethod preRepeat;
             public ORepeatMethod postRepeat;
 
-            public OAnimationFrame()
+            public OAnimationKeyFrame()
             {
                 hermiteFrame = new List<OHermiteFloat>();
                 linearFrame = new List<OLinearFloat>();
+            }
+        }
+
+        public class OAnimationFrame
+        {
+            public List<OVector4> vector;
+            public float startFrame, endFrame;
+            public bool exists;
+
+            public ORepeatMethod preRepeat;
+            public ORepeatMethod postRepeat;
+
+            public OAnimationFrame()
+            {
+                vector = new List<OVector4>();
             }
         }
 
@@ -1114,19 +1185,25 @@ namespace Ohana3DS_Rebirth.Ohana
 
         public class OSkeletalAnimationBone
         {
-            
             public string name;
-            public OAnimationFrame rotationX, rotationY, rotationZ;
-            public OAnimationFrame translationX, translationY, translationZ;
+            public OAnimationKeyFrame rotationX, rotationY, rotationZ;
+            public OAnimationKeyFrame translationX, translationY, translationZ;
+
+            public OAnimationFrame rotationQuaternion;
+            public OAnimationFrame translation;
+            public bool isFrameFormat;
 
             public OSkeletalAnimationBone()
             {
-                rotationX = new OAnimationFrame();
-                rotationY = new OAnimationFrame();
-                rotationZ = new OAnimationFrame();
-                translationX = new OAnimationFrame();
-                translationY = new OAnimationFrame();
-                translationZ = new OAnimationFrame();
+                rotationX = new OAnimationKeyFrame();
+                rotationY = new OAnimationKeyFrame();
+                rotationZ = new OAnimationKeyFrame();
+                translationX = new OAnimationKeyFrame();
+                translationY = new OAnimationKeyFrame();
+                translationZ = new OAnimationKeyFrame();
+
+                rotationQuaternion = new OAnimationFrame();
+                translation = new OAnimationFrame(); 
             }
         }
 
@@ -1201,11 +1278,11 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public string name;
             public OMaterialAnimationType type;
-            public List<OAnimationFrame> frameList;
+            public List<OAnimationKeyFrame> frameList;
 
             public OMaterialAnimationData()
             {
-                frameList = new List<OAnimationFrame>();
+                frameList = new List<OAnimationKeyFrame>();
             }
         }
 
@@ -1240,11 +1317,11 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public string name;
             public OCameraAnimationType type;
-            public List<OAnimationFrame> frameList;
+            public List<OAnimationKeyFrame> frameList;
 
             public OCameraAnimationData()
             {
-                frameList = new List<OAnimationFrame>();
+                frameList = new List<OAnimationKeyFrame>();
             }
         }
 

@@ -514,28 +514,34 @@ namespace Ohana3DS_Rebirth.Ohana
                     bone.name = readString(input, header);
                     uint animationTypeFlags = input.ReadUInt32();
                     uint flags = input.ReadUInt32();
+                    input.ReadUInt32();
 
                     switch ((animationTypeFlags >> 16) & 0xf)
                     {
                         case 4:
+                            bool rotationExists = (flags & 0x300000) == 0;
+                            bool translationExists = (flags & 0xc00000) == 0;
+
                             for (int j = 0; j < 6; j++)
                             {
-                                RenderBase.OAnimationFrame frame = new RenderBase.OAnimationFrame();
+                                RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
 
                                 data.Seek(offset + 0x18 + (j * 4), SeekOrigin.Begin);
-
                                 bool inline = ((flags >> 8) & (1 << shiftTable[j])) > 0;
-                                if (inline)
+                                if ((j < 3 && rotationExists) || (j > 2 && translationExists))
                                 {
-                                    frame.interpolation = RenderBase.OInterpolationMode.linear;
-                                    frame.linearFrame.Add(new RenderBase.OLinearFloat(input.ReadSingle(), 0.0f));
-                                    frame.exists = true;
-                                }
-                                else
-                                {
-                                    uint frameOffset = input.ReadUInt32() + header.mainHeaderOffset;
-                                    data.Seek(frameOffset, SeekOrigin.Begin);
-                                    frame = getAnimationKeyFrame(input, header);
+                                    if (inline)
+                                    {
+                                        frame.interpolation = RenderBase.OInterpolationMode.linear;
+                                        frame.linearFrame.Add(new RenderBase.OLinearFloat(input.ReadSingle(), 0.0f));
+                                        frame.exists = true;
+                                    }
+                                    else
+                                    {
+                                        uint frameOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                                        data.Seek(frameOffset, SeekOrigin.Begin);
+                                        frame = getAnimationKeyFrame(input, header);
+                                    }
                                 }
 
                                 switch (j)
@@ -550,7 +556,62 @@ namespace Ohana3DS_Rebirth.Ohana
                             }
                             break;
                         case 7:
-                            Debug.WriteLine("[BCH] TODO: Skeletal Animation Frame format");
+                            bone.isFrameFormat = true;
+
+                            long originalPos = data.Position;
+                            uint rotationOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                            uint translationOffset = input.ReadUInt32() + header.mainHeaderOffset;
+
+                            if ((flags & 0x10) == 0)
+                            {
+                                bone.rotationQuaternion.exists = true;
+                                data.Seek(rotationOffset, SeekOrigin.Begin);
+
+                                if ((flags & 2) > 0)
+                                {
+                                    bone.rotationQuaternion.vector.Add(new RenderBase.OVector4(input.ReadSingle(), input.ReadSingle(), input.ReadSingle(), input.ReadSingle()));
+                                }
+                                else
+                                {
+                                    bone.rotationQuaternion.startFrame = input.ReadSingle();
+                                    bone.rotationQuaternion.endFrame = input.ReadSingle();
+                                    uint rotationFlags = input.ReadUInt32();
+                                    uint rotationDataOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                                    uint rotationEntries = input.ReadUInt32();
+
+                                    data.Seek(rotationDataOffset, SeekOrigin.Begin);
+                                    for (int j = 0; j < rotationEntries; j++)
+                                    {
+                                        bone.rotationQuaternion.vector.Add(new RenderBase.OVector4(input.ReadSingle(), input.ReadSingle(), input.ReadSingle(), input.ReadSingle()));
+                                    }
+                                }
+                            }
+
+                            if ((flags & 8) == 0)
+                            {
+                                bone.translation.exists = true;
+                                data.Seek(translationOffset, SeekOrigin.Begin);
+
+                                if ((flags & 1) > 0)
+                                {
+                                    bone.translation.vector.Add(new RenderBase.OVector4(input.ReadSingle(), input.ReadSingle(), input.ReadSingle(), 0));
+                                }
+                                else
+                                {
+                                    bone.translation.startFrame = input.ReadSingle();
+                                    bone.translation.endFrame = input.ReadSingle();
+                                    uint translationFlags = input.ReadUInt32();
+                                    uint translationDataOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                                    uint translationEntries = input.ReadUInt32();
+
+                                    data.Seek(translationDataOffset, SeekOrigin.Begin);
+                                    for (int j = 0; j < translationEntries; j++)
+                                    {
+                                        bone.translation.vector.Add(new RenderBase.OVector4(input.ReadSingle(), input.ReadSingle(), input.ReadSingle(), 0));
+                                    }
+                                }
+                            }
+
                             break;
                         case 9:
                             Debug.WriteLine("[BCH] TODO: Skeletal Animation Full Baked format");
@@ -606,7 +667,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
                     for (int j = 0; j < segmentCount; j++)
                     {
-                        RenderBase.OAnimationFrame frame = new RenderBase.OAnimationFrame();
+                        RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
 
                         data.Seek(offset + 0xc + (j * 4), SeekOrigin.Begin);
 
@@ -683,7 +744,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
                     for (int j = 0; j < segmentCount; j++)
                     {
-                        RenderBase.OAnimationFrame frame = new RenderBase.OAnimationFrame();
+                        RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
 
                         data.Seek(offset + 0xc + (j * 4), SeekOrigin.Begin);
 
@@ -1088,6 +1149,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     RenderBase.OBone bone = new RenderBase.OBone();
 
                     uint boneFlags = input.ReadUInt32();
+                    bone.billboardMode = (RenderBase.OBillboardMode)((boneFlags >> 16) & 0xf);
                     bone.parentId = input.ReadInt16();
                     ushort boneSpacer = input.ReadUInt16();
                     bone.scale = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
@@ -1114,6 +1176,14 @@ namespace Ohana3DS_Rebirth.Ohana
                     input.ReadUInt32(); //TODO: Figure out
 
                     model.addBone(bone);
+                }
+
+                List<RenderBase.OMatrix> skeletonTransform = new List<RenderBase.OMatrix>();
+                for (int index = 0; index < objectsHeader.skeletonEntries; index++)
+                {
+                    RenderBase.OMatrix transform = new RenderBase.OMatrix();
+                    transformSkeleton(model.skeleton, index, ref transform);
+                    skeletonTransform.Add(transform);
                 }
 
                 //Bounding box
@@ -1291,7 +1361,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             break;
                         }
                     }
-                    if (!dbgVertexDataOffsetCheck) throw new Exception("BCH: Vertex Data Offset pointer not found on Relocatable Table! STOP!");
+                    if (!dbgVertexDataOffsetCheck) throw new Exception("BCH: Vertex Data Offset pointer not found on Relocation Table! STOP!");
 
                     List<RenderBase.CustomVertex> vertexBuffer = new List<RenderBase.CustomVertex>();
 
@@ -1369,7 +1439,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                 break;
                             }
                         }
-                        if (!dbgFaceDataOffsetCheck) throw new Exception("BCH: Face Data Offset pointer not found on Relocatable Table! STOP!");
+                        if (!dbgFaceDataOffsetCheck) throw new Exception("BCH: Face Data Offset pointer not found on Relocation Table! STOP!");
 
                         #region "Vertex types/quantizations"
                         uint positionQuantization = 0;
@@ -1569,6 +1639,14 @@ namespace Ohana3DS_Rebirth.Ohana
                                     }
                                 }
 
+                                if (skinningMode == RenderBase.OSkinningMode.rigidSkinning)
+                                {
+                                    //Note: Rigid skinning can have only one bone per vertex
+                                    //Note2: Vertex with Rigid skinning seems to be always have meshes centered, so is necessary to make them follow the skeleton
+                                    //^ but I'm not sure :/
+                                    vertex.position = RenderBase.OVector3.transform(vertex.position, skeletonTransform[vertex.node[0]]);
+                                }
+
                                 //Like a Bounding Box, used to calculate the proportions of the mesh on the Viewport
                                 if (vertex.position.x < models.minVector.x) models.minVector.x = vertex.position.x;
                                 else if (vertex.position.x > models.maxVector.x) models.maxVector.x = vertex.position.x;
@@ -1596,6 +1674,21 @@ namespace Ohana3DS_Rebirth.Ohana
             data.Dispose();
 
             return models;
+        }
+
+        /// <summary>
+        ///     Transforms a Skeleton from relative to absolute positions.
+        /// </summary>
+        /// <param name="skeleton">The skeleton</param>
+        /// <param name="index">Index of the bone to convert</param>
+        /// <param name="target">Target matrix to save bone transformation</param>
+        private static void transformSkeleton(List<RenderBase.OBone> skeleton, int index, ref RenderBase.OMatrix target)
+        {
+            target *= RenderBase.OMatrix.rotateX(skeleton[index].rotation.x);
+            target *= RenderBase.OMatrix.rotateY(skeleton[index].rotation.y);
+            target *= RenderBase.OMatrix.rotateZ(skeleton[index].rotation.z);
+            target *= RenderBase.OMatrix.translate(skeleton[index].translation);
+            if (skeleton[index].parentId > -1) transformSkeleton(skeleton, skeleton[index].parentId, ref target);
         }
 
         private static RenderBase.OVector4 getVector(BinaryReader input, quantization quantization, vectorType type)
@@ -1664,10 +1757,11 @@ namespace Ohana3DS_Rebirth.Ohana
             return null;
         }
 
-        private static RenderBase.OAnimationFrame getAnimationKeyFrame(BinaryReader input, bchHeader header)
+        private static RenderBase.OAnimationKeyFrame getAnimationKeyFrame(BinaryReader input, bchHeader header)
         {
-            RenderBase.OAnimationFrame frame = new RenderBase.OAnimationFrame();
+            RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
 
+            frame.exists = true;
             frame.startFrame = input.ReadSingle();
             frame.endFrame = input.ReadSingle();
 
@@ -1679,7 +1773,6 @@ namespace Ohana3DS_Rebirth.Ohana
             frame.interpolation = (RenderBase.OInterpolationMode)(frameFlags & 0xf);
             uint entryFormat = (frameFlags >> 8) & 0xff;
             uint entries = frameFlags >> 16;
-            frame.exists = entries > 0;
 
             float maxValue = 0;
             uint rawMaxValue = input.ReadUInt32();
@@ -1721,7 +1814,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                 linearPoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
                                 break;
                             default:
-                                Debug.WriteLine(String.Format("[BCH] Animation: Unsupported bone quantization format {0} on Linear...", entryFormat));
+                                Debug.WriteLine(String.Format("[BCH] Animation: Unsupported quantization format {0} on Linear...", entryFormat));
                                 frame.exists = false;
                                 break;
                         }
