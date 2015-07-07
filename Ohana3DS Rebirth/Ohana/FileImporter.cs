@@ -13,6 +13,7 @@ namespace Ohana3DS_Rebirth.Ohana
             none,
             model,
             texture,
+            camera,
             skeletalAnimation,
             materialAnimation
         }
@@ -38,6 +39,11 @@ namespace Ohana3DS_Rebirth.Ohana
                     openDlg.Title = "Import Texture";
                     openDlg.Filter = "Binary CTR H3D|*.bch";
                     if (openDlg.ShowDialog() == DialogResult.OK) return BCH.load(openDlg.FileName).texture;
+                    break;
+                case importFileType.camera:
+                    openDlg.Title = "Import Camera";
+                    openDlg.Filter = "Binary CTR H3D|*.bch";
+                    if (openDlg.ShowDialog() == DialogResult.OK) return BCH.load(openDlg.FileName).camera;
                     break;
                 case importFileType.skeletalAnimation:
                     openDlg.Title = "Import Skeletal Animation";

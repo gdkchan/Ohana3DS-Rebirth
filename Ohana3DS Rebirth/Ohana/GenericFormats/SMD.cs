@@ -29,7 +29,6 @@ namespace Ohana3DS_Rebirth.Ohana.GenericFormats
             output.AppendLine("skeleton");
             output.AppendLine("time 0");
             int index = 0;
-            RenderBase.OVector3[] skl = new RenderBase.OVector3[mdl.skeleton.Count];
             foreach (RenderBase.OBone bone in mdl.skeleton)
             {
                 string line = index.ToString();
@@ -41,9 +40,6 @@ namespace Ohana3DS_Rebirth.Ohana.GenericFormats
                 line += " " +  getString(bone.rotation.z);
                 output.AppendLine(line);
                 index++;
-
-                skl[index - 1] = new RenderBase.OVector3();
-                getSkl(mdl.skeleton, index - 1, ref skl[index - 1]);
             }
             output.AppendLine("end");
             output.AppendLine("triangles");
@@ -60,12 +56,7 @@ namespace Ohana3DS_Rebirth.Ohana.GenericFormats
                     float x = vertex.position.x;
                     float y = vertex.position.y;
                     float z = vertex.position.z;
-                    //for (int b = 0; b < vertex.node.Count; b++)
-                    //{
-                    //    /*x += skl[vertex.node[b]].x;
-                    //    y += skl[vertex.node[b]].y;
-                    //    z += skl[vertex.node[b]].z;*/
-                    //}
+
                     line += " " + getString(x);
                     line += " " + getString(y);
                     line += " " + getString(z);
@@ -97,15 +88,6 @@ namespace Ohana3DS_Rebirth.Ohana.GenericFormats
         private static string getString(float value)
         {
             return value.ToString(CultureInfo.InvariantCulture);
-        }
-
-        private static void getSkl(List<RenderBase.OBone> skeleton, int index, ref RenderBase.OVector3 target)
-        {
-            target.x += skeleton[index].translation.x;
-            target.y += skeleton[index].translation.y;
-            target.z += skeleton[index].translation.z;
-
-            if (skeleton[index].parentId > -1) getSkl(skeleton, skeleton[index].parentId, ref target);
         }
     }
 }

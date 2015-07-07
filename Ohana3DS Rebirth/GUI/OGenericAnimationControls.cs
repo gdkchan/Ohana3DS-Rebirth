@@ -137,11 +137,6 @@ namespace Ohana3DS_Rebirth.GUI
             control.animationStep = (float)Speed.Value / 100;
         }
 
-        private void BtnExport_Click(object sender, EventArgs e)
-        {
-            //TODO
-        }
-
         private void BtnImport_Click(object sender, EventArgs e)
         {
             RenderBase.OAnimationListBase animation = (RenderBase.OAnimationListBase)FileImporter.import(importType);
@@ -151,6 +146,11 @@ namespace Ohana3DS_Rebirth.GUI
                 foreach (RenderBase.OAnimationBase anim in animation.list) AnimationsList.addItem(anim.name);
                 AnimationsList.Refresh();
             }
+        }
+
+        private void BtnExport_Click(object sender, EventArgs e)
+        {
+            //TODO
         }
 
         private void BtnDelete_Click(object sender, EventArgs e)

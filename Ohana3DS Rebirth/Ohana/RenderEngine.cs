@@ -113,20 +113,24 @@ namespace Ohana3DS_Rebirth.Ohana
         public animationControl ctrlSA = new animationControl();
         public animationControl ctrlMA = new animationControl();
 
-        private class OQuaternionBone
+        public int currentCamera = -1;
+
+        private class OAnimationBone
         {
+            public RenderBase.OMatrix transform;
+            public bool hasTransform;
             public RenderBase.OVector3 translation;
             public RenderBase.OVector3 rotation;
             public RenderBase.OVector4 rotationQuaternion;
             public bool hasQuaternionRotation;
             public RenderBase.OVector3 scale;
             public short parentId;
-            public String name = null;
+            public string name = null;
 
             /// <summary>
             ///     Creates a new Bone.
             /// </summary>
-            public OQuaternionBone()
+            public OAnimationBone()
             {
                 translation = new RenderBase.OVector3();
                 rotation = new RenderBase.OVector3();
@@ -345,10 +349,10 @@ namespace Ohana3DS_Rebirth.Ohana
                         }
 
                         List<RenderBase.OSkeletalAnimationBone> bone = ((RenderBase.OSkeletalAnimation)model.skeletalAnimation.list[ctrlSA.CurrentAnimation]).bone;
-                        List<OQuaternionBone> frameAnimationSkeleton = new List<OQuaternionBone>();
+                        List<OAnimationBone> frameAnimationSkeleton = new List<OAnimationBone>();
                         for (int index = 0; index < mdl.skeleton.Count; index++)
                         {
-                            OQuaternionBone newBone = new OQuaternionBone();
+                            OAnimationBone newBone = new OAnimationBone();
                             newBone.parentId = mdl.skeleton[index].parentId;
                             newBone.rotation = new RenderBase.OVector3(mdl.skeleton[index].rotation);
                             newBone.translation = new RenderBase.OVector3(mdl.skeleton[index].translation);
@@ -356,8 +360,12 @@ namespace Ohana3DS_Rebirth.Ohana
                             {
                                 if (b.name == mdl.skeleton[index].name)
                                 {
-                                    
-                                    if (b.isFrameFormat)
+                                    if (b.isFullBakedFormat)
+                                    {
+                                        newBone.hasTransform = true;
+                                        newBone.transform = b.transform[(int)ctrlSA.Frame % b.transform.Count];
+                                    }
+                                    else if (b.isFrameFormat)
                                     {
                                         newBone.hasQuaternionRotation = true;
                                         if (b.rotationQuaternion.exists) newBone.rotationQuaternion = b.rotationQuaternion.vector[(int)ctrlSA.Frame % b.rotationQuaternion.vector.Count];
@@ -387,7 +395,12 @@ namespace Ohana3DS_Rebirth.Ohana
                         for (int index = 0; index < mdl.skeleton.Count; index++)
                         {
                             animationSkeletonTransform[index] = Matrix.Identity;
-                            transformQuaternionSkeleton(frameAnimationSkeleton, index, ref animationSkeletonTransform[index]);
+
+                            if (frameAnimationSkeleton[index].hasTransform)
+                                animationSkeletonTransform[index] = getMatrix(frameAnimationSkeleton[index].transform);
+                            else
+                                transformAnimationSkeleton(frameAnimationSkeleton, index, ref animationSkeletonTransform[index]);
+
                             animationSkeletonTransform[index] = Matrix.Invert(skeletonTransform[index]) * animationSkeletonTransform[index];
                         }
                     }
@@ -426,6 +439,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         }
                         #endregion
 
+                        int legacyUsedTexture = -1;
                         if (!useLegacyTexturing)
                         {
                             #region "Shader combiner parameters"
@@ -537,9 +551,9 @@ namespace Ohana3DS_Rebirth.Ohana
                             //Texture
                             foreach (CustomTexture texture in textures)
                             {
-                                if (texture.name == material.name0) device.SetTexture(0, texture.texture);
-                                else if (texture.name == material.name1) device.SetTexture(0, texture.texture);
-                                else if (texture.name == material.name2) device.SetTexture(0, texture.texture);
+                                if (texture.name == material.name0) { device.SetTexture(0, texture.texture); legacyUsedTexture = 0; }
+                                else if (texture.name == material.name1) { device.SetTexture(0, texture.texture); legacyUsedTexture = 1; }
+                                else if (texture.name == material.name2) { device.SetTexture(0, texture.texture); legacyUsedTexture = 2; }
                             }
                         }
 
@@ -588,7 +602,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             else
                             {
                                 device.SetTextureStageState(s, TextureStageStates.TextureTransform, (int)TextureTransform.Count2);
-                                if (s == 0) device.Transform.Texture0 = uvTransform;
+                                if (s == legacyUsedTexture) device.Transform.Texture0 = uvTransform;
                             }
 
                             device.SetSamplerState(s, SamplerStageStates.MinFilter, (int)TextureFilter.Linear);
@@ -773,6 +787,11 @@ namespace Ohana3DS_Rebirth.Ohana
             output.M32 = mtx.M32;
             output.M33 = mtx.M33;
             output.M34 = mtx.M34;
+
+            output.M41 = mtx.M41;
+            output.M42 = mtx.M42;
+            output.M43 = mtx.M43;
+            output.M44 = mtx.M44;
 
             return output;
         }
@@ -1005,7 +1024,7 @@ namespace Ohana3DS_Rebirth.Ohana
             if (skeleton[index].parentId > -1) transformSkeleton(skeleton, skeleton[index].parentId, ref target);
         }
 
-        private void transformQuaternionSkeleton(List<OQuaternionBone> skeleton, int index, ref Matrix target)
+        private void transformAnimationSkeleton(List<OAnimationBone> skeleton, int index, ref Matrix target)
         {
             if (skeleton[index].hasQuaternionRotation)
             {
@@ -1023,7 +1042,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 target *= Matrix.RotationZ(skeleton[index].rotation.z);
             }
             target *= Matrix.Translation(skeleton[index].translation.x, skeleton[index].translation.y, skeleton[index].translation.z);
-            if (skeleton[index].parentId > -1) transformQuaternionSkeleton(skeleton, skeleton[index].parentId, ref target);
+            if (skeleton[index].parentId > -1) transformAnimationSkeleton(skeleton, skeleton[index].parentId, ref target);
         }
 
         //

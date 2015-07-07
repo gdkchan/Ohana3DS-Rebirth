@@ -481,7 +481,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public OVector3 rotation;
             public OVector3 scale;
             public short parentId;
-            public String name = null;
+            public string name = null;
             public OBillboardMode billboardMode;
 
             /// <summary>
@@ -1193,6 +1193,9 @@ namespace Ohana3DS_Rebirth.Ohana
             public OAnimationFrame translation;
             public bool isFrameFormat;
 
+            public List<OMatrix> transform;
+            public bool isFullBakedFormat;
+
             public OSkeletalAnimationBone()
             {
                 rotationX = new OAnimationKeyFrame();
@@ -1203,7 +1206,9 @@ namespace Ohana3DS_Rebirth.Ohana
                 translationZ = new OAnimationKeyFrame();
 
                 rotationQuaternion = new OAnimationFrame();
-                translation = new OAnimationFrame(); 
+                translation = new OAnimationFrame();
+
+                transform = new List<OMatrix>();
             }
         }
 

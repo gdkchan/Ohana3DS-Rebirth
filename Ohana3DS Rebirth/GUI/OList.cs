@@ -131,6 +131,17 @@ namespace Ohana3DS_Rebirth.GUI
         }
 
         /// <summary>
+        ///     Total number of items on the list.
+        /// </summary>
+        public int Count
+        {
+            get
+            {
+                return list.Count;
+            }
+        }
+
+        /// <summary>
         ///     Adds a item to the list. At least one column is necessary.
         /// </summary>
         /// <param name="item">The item with one or more columns</param>
@@ -178,13 +189,41 @@ namespace Ohana3DS_Rebirth.GUI
         /// <param name="index">Item index</param>
         public void removeItem(int index)
         {
-            if (list.Count == 0) return;
+            if (index >= list.Count || index < 0) return;
             if (selectedIndex == list.Count - 1) selectedIndex--;
             list.RemoveAt(index);
             recalcScroll();
             updateScroll();
             if (SelectedIndexChanged != null) SelectedIndexChanged(this, EventArgs.Empty);
             oldIndex = selectedIndex;
+        }
+
+        /// <summary>
+        ///     Changes the Text of a Item at the given Index.
+        /// </summary>
+        /// <param name="index">Index number of the item</param>
+        /// <param name="newText">New text</param>
+        public void changeItem(int index, string newText)
+        {
+            if (index >= list.Count || index < 0) return;
+            listItemGroup item = list[index];
+            list.RemoveAt(index);
+            item.columns[0].text = newText;
+            list.Insert(index, item);
+            Refresh();
+        }
+
+        /// <summary>
+        ///     Changes the Item at the given Index.
+        /// </summary>
+        /// <param name="index">Index number of the item</param>
+        /// <param name="newText">New item</param>
+        public void changeItem(int index, listItemGroup newItem)
+        {
+            if (index >= list.Count || index < 0) return;
+            list.RemoveAt(index);
+            list.Insert(index, newItem);
+            Refresh();
         }
 
         /// <summary>
@@ -253,8 +292,10 @@ namespace Ohana3DS_Rebirth.GUI
             }
 
             //Renderiza os itens da lista
-            foreach (listItemGroup item in list)
+            for (int j = 0; j < list.Count; j++)
             {
+                listItemGroup item = list[j];
+
                 if (startY >= -tileSize)
                 {
                     if (startY > Height) break;
@@ -316,7 +357,11 @@ namespace Ohana3DS_Rebirth.GUI
                 index++;
             }
 
-            if (clicked) selectedIndex = -1;
+            if (clicked)
+            {
+                selectedIndex = -1;
+                if (selectedIndex != oldIndex && SelectedIndexChanged != null) SelectedIndexChanged(this, EventArgs.Empty);
+            }
             clicked = false;
 
             base.OnPaint(e);

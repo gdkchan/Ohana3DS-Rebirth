@@ -48,7 +48,6 @@ namespace Ohana3DS_Rebirth.GUI
             {
                 val = value;
                 TextBox.Text = val.ToString(CultureInfo.InvariantCulture);
-                TextBox.Refresh();
                 updateSeekBar();
             }
         }
@@ -128,14 +127,12 @@ namespace Ohana3DS_Rebirth.GUI
             else if (val < minVal)
                 SeekBar.Value = 0;
             else
-                SeekBar.Value = (int)Math.Ceiling((val - minVal) * Math.Pow(10, decimalPlaces));
-
-            SeekBar.Refresh();
+                SeekBar.Value = (int)Math.Round((val - minVal) * Math.Pow(10, decimalPlaces));
         }
 
         private void updateSeekBarMinMax()
         {
-            SeekBar.MaximumSeek = (int)Math.Ceiling((maxVal - minVal) * Math.Pow(10, decimalPlaces));
+            SeekBar.MaximumSeek = (int)Math.Round((maxVal - minVal) * Math.Pow(10, decimalPlaces));
         }
     }
 }

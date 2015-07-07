@@ -31,6 +31,9 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OCameraWindow));
             this.Content = new Ohana3DS_Rebirth.GUI.OScrollablePanel();
             this.ProjectionGroup = new Ohana3DS_Rebirth.GUI.OGroupBox();
+            this.ARButtonsPanel = new System.Windows.Forms.Panel();
+            this.BtnARBottom = new Ohana3DS_Rebirth.GUI.OButton();
+            this.BtnARTop = new Ohana3DS_Rebirth.GUI.OButton();
             this.PPARatio = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
             this.LblARatio = new System.Windows.Forms.Label();
             this.OPHeight = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
@@ -79,8 +82,10 @@
             this.NameGroup = new Ohana3DS_Rebirth.GUI.OGroupBox();
             this.TxtCameraName = new Ohana3DS_Rebirth.GUI.OTextBox();
             this.CameraList = new Ohana3DS_Rebirth.GUI.OList();
-            this.TopControls = new System.Windows.Forms.TableLayoutPanel();
+            this.TopControlsExtended = new System.Windows.Forms.TableLayoutPanel();
             this.BtnDelete = new Ohana3DS_Rebirth.GUI.OButton();
+            this.BtnAdd = new Ohana3DS_Rebirth.GUI.OButton();
+            this.TopControls = new System.Windows.Forms.TableLayoutPanel();
             this.BtnClear = new Ohana3DS_Rebirth.GUI.OButton();
             this.BtnExport = new Ohana3DS_Rebirth.GUI.OButton();
             this.BtnImport = new Ohana3DS_Rebirth.GUI.OButton();
@@ -88,6 +93,7 @@
             this.Content.SuspendLayout();
             this.ProjectionGroup.ContentArea.SuspendLayout();
             this.ProjectionGroup.SuspendLayout();
+            this.ARButtonsPanel.SuspendLayout();
             this.ProjectionTypePanel.SuspendLayout();
             this.ViewGroup.ContentArea.SuspendLayout();
             this.ViewGroup.SuspendLayout();
@@ -96,6 +102,7 @@
             this.TransformGroup.SuspendLayout();
             this.NameGroup.ContentArea.SuspendLayout();
             this.NameGroup.SuspendLayout();
+            this.TopControlsExtended.SuspendLayout();
             this.TopControls.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -111,15 +118,16 @@
             this.Content.ContentArea.Controls.Add(this.TransformGroup);
             this.Content.ContentArea.Controls.Add(this.NameGroup);
             this.Content.ContentArea.Controls.Add(this.CameraList);
+            this.Content.ContentArea.Controls.Add(this.TopControlsExtended);
             this.Content.ContentArea.Controls.Add(this.TopControls);
             this.Content.ContentArea.Location = new System.Drawing.Point(0, 0);
             this.Content.ContentArea.Name = "ContentArea";
-            this.Content.ContentArea.Size = new System.Drawing.Size(256, 1100);
+            this.Content.ContentArea.Size = new System.Drawing.Size(256, 1148);
             this.Content.ContentArea.TabIndex = 2;
             this.Content.Dock = System.Windows.Forms.DockStyle.Fill;
             this.Content.Location = new System.Drawing.Point(0, 16);
             this.Content.Name = "Content";
-            this.Content.Size = new System.Drawing.Size(256, 1100);
+            this.Content.Size = new System.Drawing.Size(256, 1184);
             this.Content.TabIndex = 1;
             // 
             // ProjectionGroup
@@ -130,6 +138,7 @@
             // ProjectionGroup.ContentArea
             // 
             this.ProjectionGroup.ContentArea.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
+            this.ProjectionGroup.ContentArea.Controls.Add(this.ARButtonsPanel);
             this.ProjectionGroup.ContentArea.Controls.Add(this.PPARatio);
             this.ProjectionGroup.ContentArea.Controls.Add(this.LblARatio);
             this.ProjectionGroup.ContentArea.Controls.Add(this.OPHeight);
@@ -143,17 +152,49 @@
             this.ProjectionGroup.ContentArea.Controls.Add(this.ProjectionTypePanel);
             this.ProjectionGroup.ContentArea.Location = new System.Drawing.Point(1, 16);
             this.ProjectionGroup.ContentArea.Name = "ContentArea";
-            this.ProjectionGroup.ContentArea.Size = new System.Drawing.Size(254, 198);
+            this.ProjectionGroup.ContentArea.Size = new System.Drawing.Size(254, 222);
             this.ProjectionGroup.ContentArea.TabIndex = 0;
             this.ProjectionGroup.ContentColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
             this.ProjectionGroup.Dock = System.Windows.Forms.DockStyle.Top;
-            this.ProjectionGroup.ExpandedHeight = 180;
+            this.ProjectionGroup.ExpandedHeight = 239;
             this.ProjectionGroup.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ProjectionGroup.Location = new System.Drawing.Point(0, 885);
+            this.ProjectionGroup.Location = new System.Drawing.Point(0, 909);
             this.ProjectionGroup.Name = "ProjectionGroup";
-            this.ProjectionGroup.Size = new System.Drawing.Size(256, 215);
+            this.ProjectionGroup.Size = new System.Drawing.Size(256, 239);
             this.ProjectionGroup.TabIndex = 20;
             this.ProjectionGroup.Title = "Projection";
+            // 
+            // ARButtonsPanel
+            // 
+            this.ARButtonsPanel.Controls.Add(this.BtnARBottom);
+            this.ARButtonsPanel.Controls.Add(this.BtnARTop);
+            this.ARButtonsPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.ARButtonsPanel.Location = new System.Drawing.Point(0, 198);
+            this.ARButtonsPanel.Name = "ARButtonsPanel";
+            this.ARButtonsPanel.Size = new System.Drawing.Size(254, 24);
+            this.ARButtonsPanel.TabIndex = 27;
+            // 
+            // BtnARBottom
+            // 
+            this.BtnARBottom.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_bottom_scrn;
+            this.BtnARBottom.Location = new System.Drawing.Point(80, 0);
+            this.BtnARBottom.Margin = new System.Windows.Forms.Padding(0);
+            this.BtnARBottom.Name = "BtnARBottom";
+            this.BtnARBottom.Size = new System.Drawing.Size(96, 24);
+            this.BtnARBottom.TabIndex = 1;
+            this.BtnARBottom.Text = "Bottom Scrn";
+            this.BtnARBottom.Click += new System.EventHandler(this.BtnARBottom_Click);
+            // 
+            // BtnARTop
+            // 
+            this.BtnARTop.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_top_scrn;
+            this.BtnARTop.Location = new System.Drawing.Point(0, 0);
+            this.BtnARTop.Margin = new System.Windows.Forms.Padding(0);
+            this.BtnARTop.Name = "BtnARTop";
+            this.BtnARTop.Size = new System.Drawing.Size(80, 24);
+            this.BtnARTop.TabIndex = 0;
+            this.BtnARTop.Text = "Top Scrn";
+            this.BtnARTop.Click += new System.EventHandler(this.BtnARTop_Click);
             // 
             // PPARatio
             // 
@@ -167,7 +208,8 @@
             this.PPARatio.Name = "PPARatio";
             this.PPARatio.Size = new System.Drawing.Size(254, 22);
             this.PPARatio.TabIndex = 22;
-            this.PPARatio.Value = 1.666667F;
+            this.PPARatio.Value = 1F;
+            this.PPARatio.ValueChanged += new System.EventHandler(this.PPARatio_ValueChanged);
             // 
             // LblARatio
             // 
@@ -191,7 +233,8 @@
             this.OPHeight.Name = "OPHeight";
             this.OPHeight.Size = new System.Drawing.Size(254, 22);
             this.OPHeight.TabIndex = 25;
-            this.OPHeight.Value = 240F;
+            this.OPHeight.Value = 0F;
+            this.OPHeight.ValueChanged += new System.EventHandler(this.OPHeight_ValueChanged);
             // 
             // LblHeight
             // 
@@ -214,7 +257,8 @@
             this.PPFovy.Name = "PPFovy";
             this.PPFovy.Size = new System.Drawing.Size(254, 22);
             this.PPFovy.TabIndex = 20;
-            this.PPFovy.Value = 0.7853982F;
+            this.PPFovy.Value = 0F;
+            this.PPFovy.ValueChanged += new System.EventHandler(this.PPFovy_ValueChanged);
             // 
             // LblFovy
             // 
@@ -237,7 +281,8 @@
             this.PZFar.Name = "PZFar";
             this.PZFar.Size = new System.Drawing.Size(254, 22);
             this.PZFar.TabIndex = 18;
-            this.PZFar.Value = 10000F;
+            this.PZFar.Value = 1F;
+            this.PZFar.ValueChanged += new System.EventHandler(this.PZFar_ValueChanged);
             // 
             // LblZFar
             // 
@@ -251,16 +296,17 @@
             // PZNear
             // 
             this.PZNear.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
-            this.PZNear.DecimalPlaces = ((uint)(1u));
+            this.PZNear.DecimalPlaces = ((uint)(2u));
             this.PZNear.Dock = System.Windows.Forms.DockStyle.Top;
             this.PZNear.Location = new System.Drawing.Point(0, 37);
             this.PZNear.Margin = new System.Windows.Forms.Padding(0);
-            this.PZNear.MaximumValue = 10F;
-            this.PZNear.MinimumValue = 0.1F;
+            this.PZNear.MaximumValue = 1F;
+            this.PZNear.MinimumValue = 0.01F;
             this.PZNear.Name = "PZNear";
             this.PZNear.Size = new System.Drawing.Size(254, 22);
             this.PZNear.TabIndex = 16;
-            this.PZNear.Value = 0.1F;
+            this.PZNear.Value = 0.01F;
+            this.PZNear.ValueChanged += new System.EventHandler(this.PZNear_ValueChanged);
             // 
             // LblZNear
             // 
@@ -349,7 +395,7 @@
             this.ViewGroup.Dock = System.Windows.Forms.DockStyle.Top;
             this.ViewGroup.ExpandedHeight = 312;
             this.ViewGroup.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ViewGroup.Location = new System.Drawing.Point(0, 573);
+            this.ViewGroup.Location = new System.Drawing.Point(0, 597);
             this.ViewGroup.Name = "ViewGroup";
             this.ViewGroup.Size = new System.Drawing.Size(256, 312);
             this.ViewGroup.TabIndex = 10;
@@ -360,15 +406,15 @@
             this.ATwist.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
             this.ATwist.DecimalPlaces = ((uint)(6u));
             this.ATwist.Dock = System.Windows.Forms.DockStyle.Top;
-            this.ATwist.Enabled = false;
             this.ATwist.Location = new System.Drawing.Point(0, 274);
             this.ATwist.Margin = new System.Windows.Forms.Padding(0);
-            this.ATwist.MaximumValue = 6.283185F;
-            this.ATwist.MinimumValue = 0F;
+            this.ATwist.MaximumValue = 3.141593F;
+            this.ATwist.MinimumValue = -3.141593F;
             this.ATwist.Name = "ATwist";
             this.ATwist.Size = new System.Drawing.Size(254, 22);
             this.ATwist.TabIndex = 31;
             this.ATwist.Value = 0F;
+            this.ATwist.ValueChanged += new System.EventHandler(this.ATwist_ValueChanged);
             // 
             // LblTwist
             // 
@@ -393,6 +439,7 @@
             this.LAUpVecZ.Size = new System.Drawing.Size(254, 22);
             this.LAUpVecZ.TabIndex = 7;
             this.LAUpVecZ.Value = 0F;
+            this.LAUpVecZ.ValueChanged += new System.EventHandler(this.LAUpVecZ_ValueChanged);
             // 
             // LAUpVecY
             // 
@@ -407,7 +454,8 @@
             this.LAUpVecY.Name = "LAUpVecY";
             this.LAUpVecY.Size = new System.Drawing.Size(254, 22);
             this.LAUpVecY.TabIndex = 6;
-            this.LAUpVecY.Value = 1F;
+            this.LAUpVecY.Value = 0F;
+            this.LAUpVecY.ValueChanged += new System.EventHandler(this.LAUpVecY_ValueChanged);
             // 
             // LAUpVecX
             // 
@@ -423,6 +471,7 @@
             this.LAUpVecX.Size = new System.Drawing.Size(254, 22);
             this.LAUpVecX.TabIndex = 5;
             this.LAUpVecX.Value = 0F;
+            this.LAUpVecX.ValueChanged += new System.EventHandler(this.LAUpVecX_ValueChanged);
             // 
             // LblUpVector
             // 
@@ -441,12 +490,13 @@
             this.RRotZ.Enabled = false;
             this.RRotZ.Location = new System.Drawing.Point(0, 160);
             this.RRotZ.Margin = new System.Windows.Forms.Padding(0);
-            this.RRotZ.MaximumValue = 6.283185F;
-            this.RRotZ.MinimumValue = 0F;
+            this.RRotZ.MaximumValue = 3.141593F;
+            this.RRotZ.MinimumValue = -3.141593F;
             this.RRotZ.Name = "RRotZ";
             this.RRotZ.Size = new System.Drawing.Size(254, 22);
             this.RRotZ.TabIndex = 29;
             this.RRotZ.Value = 0F;
+            this.RRotZ.ValueChanged += new System.EventHandler(this.RRotZ_ValueChanged);
             // 
             // RRotY
             // 
@@ -456,12 +506,13 @@
             this.RRotY.Enabled = false;
             this.RRotY.Location = new System.Drawing.Point(0, 138);
             this.RRotY.Margin = new System.Windows.Forms.Padding(0);
-            this.RRotY.MaximumValue = 6.283185F;
-            this.RRotY.MinimumValue = 0F;
+            this.RRotY.MaximumValue = 3.141593F;
+            this.RRotY.MinimumValue = -3.141593F;
             this.RRotY.Name = "RRotY";
             this.RRotY.Size = new System.Drawing.Size(254, 22);
             this.RRotY.TabIndex = 28;
             this.RRotY.Value = 0F;
+            this.RRotY.ValueChanged += new System.EventHandler(this.RRotY_ValueChanged);
             // 
             // RRotX
             // 
@@ -471,12 +522,13 @@
             this.RRotX.Enabled = false;
             this.RRotX.Location = new System.Drawing.Point(0, 116);
             this.RRotX.Margin = new System.Windows.Forms.Padding(0);
-            this.RRotX.MaximumValue = 6.283185F;
-            this.RRotX.MinimumValue = 0F;
+            this.RRotX.MaximumValue = 3.141593F;
+            this.RRotX.MinimumValue = -3.141593F;
             this.RRotX.Name = "RRotX";
             this.RRotX.Size = new System.Drawing.Size(254, 22);
             this.RRotX.TabIndex = 26;
             this.RRotX.Value = 0F;
+            this.RRotX.ValueChanged += new System.EventHandler(this.RRotX_ValueChanged);
             // 
             // LblRotation
             // 
@@ -500,6 +552,7 @@
             this.TargetZ.Size = new System.Drawing.Size(254, 22);
             this.TargetZ.TabIndex = 3;
             this.TargetZ.Value = 0F;
+            this.TargetZ.ValueChanged += new System.EventHandler(this.TargetZ_ValueChanged);
             // 
             // TargetY
             // 
@@ -514,6 +567,7 @@
             this.TargetY.Size = new System.Drawing.Size(254, 22);
             this.TargetY.TabIndex = 2;
             this.TargetY.Value = 0F;
+            this.TargetY.ValueChanged += new System.EventHandler(this.TargetY_ValueChanged);
             // 
             // TargetX
             // 
@@ -528,6 +582,7 @@
             this.TargetX.Size = new System.Drawing.Size(254, 22);
             this.TargetX.TabIndex = 0;
             this.TargetX.Value = 0F;
+            this.TargetX.ValueChanged += new System.EventHandler(this.TargetX_ValueChanged);
             // 
             // LblTargetPos
             // 
@@ -630,7 +685,7 @@
             this.TransformGroup.Dock = System.Windows.Forms.DockStyle.Top;
             this.TransformGroup.ExpandedHeight = 253;
             this.TransformGroup.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.TransformGroup.Location = new System.Drawing.Point(0, 320);
+            this.TransformGroup.Location = new System.Drawing.Point(0, 344);
             this.TransformGroup.Name = "TransformGroup";
             this.TransformGroup.Size = new System.Drawing.Size(256, 253);
             this.TransformGroup.TabIndex = 9;
@@ -649,6 +704,7 @@
             this.TScaleZ.Size = new System.Drawing.Size(254, 22);
             this.TScaleZ.TabIndex = 11;
             this.TScaleZ.Value = 1F;
+            this.TScaleZ.ValueChanged += new System.EventHandler(this.TScaleZ_ValueChanged);
             // 
             // TScaleY
             // 
@@ -663,6 +719,7 @@
             this.TScaleY.Size = new System.Drawing.Size(254, 22);
             this.TScaleY.TabIndex = 10;
             this.TScaleY.Value = 1F;
+            this.TScaleY.ValueChanged += new System.EventHandler(this.TScaleY_ValueChanged);
             // 
             // TScaleX
             // 
@@ -677,6 +734,7 @@
             this.TScaleX.Size = new System.Drawing.Size(254, 22);
             this.TScaleX.TabIndex = 9;
             this.TScaleX.Value = 1F;
+            this.TScaleX.ValueChanged += new System.EventHandler(this.TScaleX_ValueChanged);
             // 
             // LblTransformScale
             // 
@@ -694,12 +752,13 @@
             this.TRotZ.Dock = System.Windows.Forms.DockStyle.Top;
             this.TRotZ.Location = new System.Drawing.Point(0, 136);
             this.TRotZ.Margin = new System.Windows.Forms.Padding(0);
-            this.TRotZ.MaximumValue = 6.283185F;
-            this.TRotZ.MinimumValue = 0F;
+            this.TRotZ.MaximumValue = 3.141593F;
+            this.TRotZ.MinimumValue = -3.141593F;
             this.TRotZ.Name = "TRotZ";
             this.TRotZ.Size = new System.Drawing.Size(254, 22);
             this.TRotZ.TabIndex = 7;
             this.TRotZ.Value = 0F;
+            this.TRotZ.ValueChanged += new System.EventHandler(this.TRotZ_ValueChanged);
             // 
             // TRotY
             // 
@@ -708,12 +767,13 @@
             this.TRotY.Dock = System.Windows.Forms.DockStyle.Top;
             this.TRotY.Location = new System.Drawing.Point(0, 114);
             this.TRotY.Margin = new System.Windows.Forms.Padding(0);
-            this.TRotY.MaximumValue = 6.283185F;
-            this.TRotY.MinimumValue = 0F;
+            this.TRotY.MaximumValue = 3.141593F;
+            this.TRotY.MinimumValue = -3.141593F;
             this.TRotY.Name = "TRotY";
             this.TRotY.Size = new System.Drawing.Size(254, 22);
             this.TRotY.TabIndex = 6;
             this.TRotY.Value = 0F;
+            this.TRotY.ValueChanged += new System.EventHandler(this.TRotY_ValueChanged);
             // 
             // TRotX
             // 
@@ -722,12 +782,13 @@
             this.TRotX.Dock = System.Windows.Forms.DockStyle.Top;
             this.TRotX.Location = new System.Drawing.Point(0, 92);
             this.TRotX.Margin = new System.Windows.Forms.Padding(0);
-            this.TRotX.MaximumValue = 6.283185F;
-            this.TRotX.MinimumValue = 0F;
+            this.TRotX.MaximumValue = 3.141593F;
+            this.TRotX.MinimumValue = -3.141593F;
             this.TRotX.Name = "TRotX";
             this.TRotX.Size = new System.Drawing.Size(254, 22);
             this.TRotX.TabIndex = 5;
             this.TRotX.Value = 0F;
+            this.TRotX.ValueChanged += new System.EventHandler(this.TRotX_ValueChanged);
             // 
             // LblTransformRotation
             // 
@@ -751,6 +812,7 @@
             this.TTransZ.Size = new System.Drawing.Size(254, 22);
             this.TTransZ.TabIndex = 3;
             this.TTransZ.Value = 0F;
+            this.TTransZ.ValueChanged += new System.EventHandler(this.TTransZ_ValueChanged);
             // 
             // TTransY
             // 
@@ -765,6 +827,7 @@
             this.TTransY.Size = new System.Drawing.Size(254, 22);
             this.TTransY.TabIndex = 2;
             this.TTransY.Value = 0F;
+            this.TTransY.ValueChanged += new System.EventHandler(this.TTransY_ValueChanged);
             // 
             // TTransX
             // 
@@ -779,6 +842,7 @@
             this.TTransX.Size = new System.Drawing.Size(254, 22);
             this.TTransX.TabIndex = 0;
             this.TTransX.Value = 0F;
+            this.TTransX.ValueChanged += new System.EventHandler(this.TTransX_ValueChanged);
             // 
             // LblTransformTranslation
             // 
@@ -806,7 +870,7 @@
             this.NameGroup.Dock = System.Windows.Forms.DockStyle.Top;
             this.NameGroup.ExpandedHeight = 40;
             this.NameGroup.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.NameGroup.Location = new System.Drawing.Point(0, 280);
+            this.NameGroup.Location = new System.Drawing.Point(0, 304);
             this.NameGroup.Name = "NameGroup";
             this.NameGroup.Size = new System.Drawing.Size(256, 40);
             this.NameGroup.TabIndex = 10;
@@ -821,6 +885,7 @@
             this.TxtCameraName.Name = "TxtCameraName";
             this.TxtCameraName.Size = new System.Drawing.Size(254, 23);
             this.TxtCameraName.TabIndex = 0;
+            this.TxtCameraName.ChangedText += new System.EventHandler(this.TxtCameraName_ChangedText);
             // 
             // CameraList
             // 
@@ -828,22 +893,65 @@
             this.CameraList.Dock = System.Windows.Forms.DockStyle.Top;
             this.CameraList.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CameraList.HeaderHeight = 24;
-            this.CameraList.ItemHeight = 128;
-            this.CameraList.Location = new System.Drawing.Point(0, 24);
+            this.CameraList.ItemHeight = 16;
+            this.CameraList.Location = new System.Drawing.Point(0, 48);
             this.CameraList.Name = "CameraList";
             this.CameraList.SelectedIndex = -1;
             this.CameraList.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(15)))), ((int)(((byte)(82)))), ((int)(((byte)(186)))));
             this.CameraList.Size = new System.Drawing.Size(256, 256);
             this.CameraList.TabIndex = 8;
+            this.CameraList.SelectedIndexChanged += new System.EventHandler(this.CameraList_SelectedIndexChanged);
+            // 
+            // TopControlsExtended
+            // 
+            this.TopControlsExtended.ColumnCount = 2;
+            this.TopControlsExtended.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.TopControlsExtended.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.TopControlsExtended.Controls.Add(this.BtnDelete, 0, 0);
+            this.TopControlsExtended.Controls.Add(this.BtnAdd, 0, 0);
+            this.TopControlsExtended.Dock = System.Windows.Forms.DockStyle.Top;
+            this.TopControlsExtended.Location = new System.Drawing.Point(0, 24);
+            this.TopControlsExtended.Name = "TopControlsExtended";
+            this.TopControlsExtended.RowCount = 1;
+            this.TopControlsExtended.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.TopControlsExtended.Size = new System.Drawing.Size(256, 24);
+            this.TopControlsExtended.TabIndex = 21;
+            // 
+            // BtnDelete
+            // 
+            this.BtnDelete.BackColor = System.Drawing.Color.Transparent;
+            this.BtnDelete.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.BtnDelete.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnDelete.Image = ((System.Drawing.Bitmap)(resources.GetObject("BtnDelete.Image")));
+            this.BtnDelete.Location = new System.Drawing.Point(128, 0);
+            this.BtnDelete.Margin = new System.Windows.Forms.Padding(0);
+            this.BtnDelete.Name = "BtnDelete";
+            this.BtnDelete.Size = new System.Drawing.Size(128, 24);
+            this.BtnDelete.TabIndex = 13;
+            this.BtnDelete.Text = "Delete";
+            this.BtnDelete.Click += new System.EventHandler(this.BtnDelete_Click);
+            // 
+            // BtnAdd
+            // 
+            this.BtnAdd.BackColor = System.Drawing.Color.Transparent;
+            this.BtnAdd.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.BtnAdd.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnAdd.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_expand;
+            this.BtnAdd.Location = new System.Drawing.Point(0, 0);
+            this.BtnAdd.Margin = new System.Windows.Forms.Padding(0);
+            this.BtnAdd.Name = "BtnAdd";
+            this.BtnAdd.Size = new System.Drawing.Size(128, 24);
+            this.BtnAdd.TabIndex = 12;
+            this.BtnAdd.Text = "Add";
+            this.BtnAdd.Click += new System.EventHandler(this.BtnAdd_Click);
             // 
             // TopControls
             // 
-            this.TopControls.ColumnCount = 4;
-            this.TopControls.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.TopControls.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.TopControls.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.TopControls.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.TopControls.Controls.Add(this.BtnDelete, 0, 0);
+            this.TopControls.ColumnCount = 3;
+            this.TopControls.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.TopControls.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.TopControls.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.TopControls.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.TopControls.Controls.Add(this.BtnClear, 0, 0);
             this.TopControls.Controls.Add(this.BtnExport, 0, 0);
             this.TopControls.Controls.Add(this.BtnImport, 0, 0);
@@ -855,31 +963,19 @@
             this.TopControls.Size = new System.Drawing.Size(256, 24);
             this.TopControls.TabIndex = 11;
             // 
-            // BtnDelete
-            // 
-            this.BtnDelete.BackColor = System.Drawing.Color.Transparent;
-            this.BtnDelete.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.BtnDelete.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.BtnDelete.Image = ((System.Drawing.Bitmap)(resources.GetObject("BtnDelete.Image")));
-            this.BtnDelete.Location = new System.Drawing.Point(128, 0);
-            this.BtnDelete.Margin = new System.Windows.Forms.Padding(0);
-            this.BtnDelete.Name = "BtnDelete";
-            this.BtnDelete.Size = new System.Drawing.Size(64, 24);
-            this.BtnDelete.TabIndex = 9;
-            this.BtnDelete.Text = "Delete";
-            // 
             // BtnClear
             // 
             this.BtnClear.BackColor = System.Drawing.Color.Transparent;
             this.BtnClear.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnClear.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.BtnClear.Image = ((System.Drawing.Bitmap)(resources.GetObject("BtnClear.Image")));
-            this.BtnClear.Location = new System.Drawing.Point(192, 0);
+            this.BtnClear.Location = new System.Drawing.Point(170, 0);
             this.BtnClear.Margin = new System.Windows.Forms.Padding(0);
             this.BtnClear.Name = "BtnClear";
-            this.BtnClear.Size = new System.Drawing.Size(64, 24);
+            this.BtnClear.Size = new System.Drawing.Size(86, 24);
             this.BtnClear.TabIndex = 8;
             this.BtnClear.Text = "Clear";
+            this.BtnClear.Click += new System.EventHandler(this.BtnClear_Click);
             // 
             // BtnExport
             // 
@@ -887,12 +983,13 @@
             this.BtnExport.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnExport.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.BtnExport.Image = ((System.Drawing.Bitmap)(resources.GetObject("BtnExport.Image")));
-            this.BtnExport.Location = new System.Drawing.Point(0, 0);
+            this.BtnExport.Location = new System.Drawing.Point(85, 0);
             this.BtnExport.Margin = new System.Windows.Forms.Padding(0);
             this.BtnExport.Name = "BtnExport";
-            this.BtnExport.Size = new System.Drawing.Size(64, 24);
+            this.BtnExport.Size = new System.Drawing.Size(85, 24);
             this.BtnExport.TabIndex = 7;
             this.BtnExport.Text = "Export";
+            this.BtnExport.Click += new System.EventHandler(this.BtnExport_Click);
             // 
             // BtnImport
             // 
@@ -900,25 +997,27 @@
             this.BtnImport.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnImport.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.BtnImport.Image = ((System.Drawing.Bitmap)(resources.GetObject("BtnImport.Image")));
-            this.BtnImport.Location = new System.Drawing.Point(64, 0);
+            this.BtnImport.Location = new System.Drawing.Point(0, 0);
             this.BtnImport.Margin = new System.Windows.Forms.Padding(0);
             this.BtnImport.Name = "BtnImport";
-            this.BtnImport.Size = new System.Drawing.Size(64, 24);
+            this.BtnImport.Size = new System.Drawing.Size(85, 24);
             this.BtnImport.TabIndex = 6;
             this.BtnImport.Text = "Import";
+            this.BtnImport.Click += new System.EventHandler(this.BtnImport_Click);
             // 
             // OCameraWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.Controls.Add(this.Content);
             this.Name = "OCameraWindow";
-            this.Size = new System.Drawing.Size(256, 1116);
+            this.Size = new System.Drawing.Size(256, 1200);
             this.Controls.SetChildIndex(this.Content, 0);
             this.Content.ContentArea.ResumeLayout(false);
             this.Content.ResumeLayout(false);
             this.ProjectionGroup.ContentArea.ResumeLayout(false);
             this.ProjectionGroup.ResumeLayout(false);
             this.ProjectionGroup.PerformLayout();
+            this.ARButtonsPanel.ResumeLayout(false);
             this.ProjectionTypePanel.ResumeLayout(false);
             this.ProjectionTypePanel.PerformLayout();
             this.ViewGroup.ContentArea.ResumeLayout(false);
@@ -932,6 +1031,7 @@
             this.NameGroup.ContentArea.ResumeLayout(false);
             this.NameGroup.ResumeLayout(false);
             this.NameGroup.PerformLayout();
+            this.TopControlsExtended.ResumeLayout(false);
             this.TopControls.ResumeLayout(false);
             this.ResumeLayout(false);
 
@@ -964,7 +1064,6 @@
         private OFloatTextBox TargetX;
         private System.Windows.Forms.Label LblTargetPos;
         private System.Windows.Forms.TableLayoutPanel TopControls;
-        private OButton BtnDelete;
         private OButton BtnClear;
         private OButton BtnExport;
         private OButton BtnImport;
@@ -994,6 +1093,12 @@
         private ORadioButton RadioVAT;
         private OGroupBox NameGroup;
         private OTextBox TxtCameraName;
+        private System.Windows.Forms.TableLayoutPanel TopControlsExtended;
+        private OButton BtnDelete;
+        private OButton BtnAdd;
+        private System.Windows.Forms.Panel ARButtonsPanel;
+        private OButton BtnARBottom;
+        private OButton BtnARTop;
 
 
     }

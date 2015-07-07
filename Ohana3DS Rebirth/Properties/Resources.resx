@@ -199,4 +199,10 @@
   <data name="ui_knob" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ui_knob.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="icn_bottom_scrn" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\icn_bottom_scrn.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icn_top_scrn" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\icn_top_scrn.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

@@ -193,6 +193,16 @@ namespace Ohana3DS_Rebirth.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap icn_bottom_scrn {
+            get {
+                object obj = ResourceManager.GetObject("icn_bottom_scrn", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap icn_close {
             get {
                 object obj = ResourceManager.GetObject("icn_close", resourceCulture);
@@ -256,6 +266,16 @@ namespace Ohana3DS_Rebirth.Properties {
         internal static System.Drawing.Bitmap icn_ticked {
             get {
                 object obj = ResourceManager.GetObject("icn_ticked", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap icn_top_scrn {
+            get {
+                object obj = ResourceManager.GetObject("icn_top_scrn", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

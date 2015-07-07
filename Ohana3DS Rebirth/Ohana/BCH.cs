@@ -439,6 +439,9 @@ namespace Ohana3DS_Rebirth.Ohana
                 uint projectionOffset = input.ReadUInt32() + header.mainHeaderOffset;
 
                 data.Seek(viewOffset, SeekOrigin.Begin);
+                camera.target = new RenderBase.OVector3();
+                camera.rotation = new RenderBase.OVector3();
+                camera.upVector = new RenderBase.OVector3();
                 RenderBase.OVector3 target = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
                 switch (camera.view)
                 {
@@ -486,8 +489,10 @@ namespace Ohana3DS_Rebirth.Ohana
                 models.addFog(fog);
             }
 
+            byte[] shiftTable;
+
             //Skeletal Animations
-            byte[] shiftTable = { 1, 2, 3, 5, 6, 7 };
+            shiftTable = new byte[] { 1, 2, 3, 5, 6, 7 };
             for (int index = 0; index < contentHeader.skeletalAnimationsPointerTableEntries; index++)
             {
                 data.Seek(contentHeader.skeletalAnimationsPointerTableOffset + (index * 4), SeekOrigin.Begin);
@@ -614,7 +619,34 @@ namespace Ohana3DS_Rebirth.Ohana
 
                             break;
                         case 9:
-                            Debug.WriteLine("[BCH] TODO: Skeletal Animation Full Baked format");
+                            bone.isFullBakedFormat = true;
+
+                            input.ReadUInt32();
+                            uint matrixOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                            uint entries = input.ReadUInt32();
+
+                            data.Seek(matrixOffset, SeekOrigin.Begin);
+                            for (int j = 0; j < entries; j++)
+                            {
+                                RenderBase.OMatrix transform = new RenderBase.OMatrix();
+                                transform.M11 = input.ReadSingle();
+                                transform.M21 = input.ReadSingle();
+                                transform.M31 = input.ReadSingle();
+                                transform.M41 = input.ReadSingle();
+
+                                transform.M12 = input.ReadSingle();
+                                transform.M22 = input.ReadSingle();
+                                transform.M32 = input.ReadSingle();
+                                transform.M42 = input.ReadSingle();
+
+                                transform.M13 = input.ReadSingle();
+                                transform.M23 = input.ReadSingle();
+                                transform.M33 = input.ReadSingle();
+                                transform.M43 = input.ReadSingle();
+
+                                bone.transform.Add(transform);
+                            }
+
                             break;
                         default: throw new Exception(String.Format("BCH: Unknow flag {0} on Skeletal Animation bone {1}! STOP!", flags.ToString("X8"), bone.name));
                     }
@@ -700,6 +732,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             //Camera Animations
+            shiftTable = new byte[] { 6, 7, 8, 9, 10, 11, 13, 14, 15 };
             for (int index = 0; index < contentHeader.cameraAnimationsPointerTableEntries; index++)
             {
                 data.Seek(contentHeader.cameraAnimationsPointerTableOffset + (index * 4), SeekOrigin.Begin);
@@ -749,7 +782,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         data.Seek(offset + 0xc + (j * 4), SeekOrigin.Begin);
 
                         frame.exists = ((flags >> (segmentType == RenderBase.OSegmentType.transform ? 16 : 8)) & (1 << j)) == 0;
-                        bool inline = (flags & (1 << j)) > 0;
+                        bool inline = (flags & (1 << (segmentType == RenderBase.OSegmentType.transform ? shiftTable[j] : j))) > 0;
 
                         if (frame.exists)
                         {
@@ -792,19 +825,19 @@ namespace Ohana3DS_Rebirth.Ohana
 
                 objectsHeader.worldTransform = new RenderBase.OMatrix();
                 objectsHeader.worldTransform.M11 = input.ReadSingle();
-                objectsHeader.worldTransform.M12 = input.ReadSingle();
-                objectsHeader.worldTransform.M13 = input.ReadSingle();
-                objectsHeader.worldTransform.M14 = input.ReadSingle();
-
                 objectsHeader.worldTransform.M21 = input.ReadSingle();
-                objectsHeader.worldTransform.M22 = input.ReadSingle();
-                objectsHeader.worldTransform.M23 = input.ReadSingle();
-                objectsHeader.worldTransform.M24 = input.ReadSingle();
-
                 objectsHeader.worldTransform.M31 = input.ReadSingle();
+                objectsHeader.worldTransform.M41 = input.ReadSingle();
+
+                objectsHeader.worldTransform.M12 = input.ReadSingle();
+                objectsHeader.worldTransform.M22 = input.ReadSingle();
                 objectsHeader.worldTransform.M32 = input.ReadSingle();
+                objectsHeader.worldTransform.M42 = input.ReadSingle();
+
+                objectsHeader.worldTransform.M13 = input.ReadSingle();
+                objectsHeader.worldTransform.M23 = input.ReadSingle();
                 objectsHeader.worldTransform.M33 = input.ReadSingle();
-                objectsHeader.worldTransform.M34 = input.ReadSingle();
+                objectsHeader.worldTransform.M43 = input.ReadSingle();
 
                 objectsHeader.materialsTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
                 objectsHeader.materialsTableEntries = input.ReadUInt32();
@@ -1158,19 +1191,19 @@ namespace Ohana3DS_Rebirth.Ohana
 
                     RenderBase.OMatrix boneMatrix = new RenderBase.OMatrix();
                     boneMatrix.M11 = input.ReadSingle();
-                    boneMatrix.M12 = input.ReadSingle();
-                    boneMatrix.M13 = input.ReadSingle();
-                    boneMatrix.M14 = input.ReadSingle();
-
                     boneMatrix.M21 = input.ReadSingle();
-                    boneMatrix.M22 = input.ReadSingle();
-                    boneMatrix.M23 = input.ReadSingle();
-                    boneMatrix.M24 = input.ReadSingle();
-
                     boneMatrix.M31 = input.ReadSingle();
+                    boneMatrix.M41 = input.ReadSingle();
+
+                    boneMatrix.M12 = input.ReadSingle();
+                    boneMatrix.M22 = input.ReadSingle();
                     boneMatrix.M32 = input.ReadSingle();
+                    boneMatrix.M42 = input.ReadSingle();
+
+                    boneMatrix.M13 = input.ReadSingle();
+                    boneMatrix.M23 = input.ReadSingle();
                     boneMatrix.M33 = input.ReadSingle();
-                    boneMatrix.M34 = input.ReadSingle();
+                    boneMatrix.M43 = input.ReadSingle();
 
                     bone.name = readString(input, header);
                     input.ReadUInt32(); //TODO: Figure out
@@ -1205,15 +1238,15 @@ namespace Ohana3DS_Rebirth.Ohana
                         bBox.centerPosition = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
                         
                         bBox.orientationMatrix.M11 = input.ReadSingle();
-                        bBox.orientationMatrix.M12 = input.ReadSingle();
-                        bBox.orientationMatrix.M13 = input.ReadSingle();
-
                         bBox.orientationMatrix.M21 = input.ReadSingle();
-                        bBox.orientationMatrix.M22 = input.ReadSingle();
-                        bBox.orientationMatrix.M23 = input.ReadSingle();
-
                         bBox.orientationMatrix.M31 = input.ReadSingle();
+
+                        bBox.orientationMatrix.M12 = input.ReadSingle();
+                        bBox.orientationMatrix.M22 = input.ReadSingle();
                         bBox.orientationMatrix.M32 = input.ReadSingle();
+
+                        bBox.orientationMatrix.M13 = input.ReadSingle();
+                        bBox.orientationMatrix.M23 = input.ReadSingle();
                         bBox.orientationMatrix.M33 = input.ReadSingle();
 
                         bBox.size = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
