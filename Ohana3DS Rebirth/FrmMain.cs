@@ -45,31 +45,35 @@ namespace Ohana3DS_Rebirth
         {
             OpenFileDialog openDlg = new OpenFileDialog
             {
-                Filter = "Binary CTR H3D File|*.bch"
+                Filter = "Binary CTR H3D File|*.bch|Overworld Model|*.mm"
             };
             if (openDlg.ShowDialog() != DialogResult.OK) return;
-            open(openDlg.FileName);
+            open(openDlg.FileName, openDlg.FilterIndex);
         }
 
-        private void open(string fileName)
+        private void open(string fileName, int type)
         {
             WindowManager.flush();
 
             FileIdentifier.fileFormat format = FileIdentifier.identify(fileName);
+
+            RenderBase.OModelGroup model;
+            GUI.OModelWindow modelWindow = new GUI.OModelWindow();
+            GUI.OTextureWindow textureWindow = new GUI.OTextureWindow();
+            GUI.OAnimationsWindow animWindow = new GUI.OAnimationsWindow();
+            GUI.OCameraWindow cameraWindow = new GUI.OCameraWindow();
+            RenderEngine renderer = new RenderEngine();
+            string name = Path.GetFileNameWithoutExtension(fileName);
+            modelWindow.Title = "Model";
+            textureWindow.Title = "Textures";
+            animWindow.Title = "Animations";
+            cameraWindow.Title = "Cameras";
+
             switch (format)
-            {
+            {                    
                 case FileIdentifier.fileFormat.H3D:
-                    GUI.OModelWindow modelWindow = new GUI.OModelWindow();
-                    GUI.OTextureWindow textureWindow = new GUI.OTextureWindow();
-                    GUI.OAnimationsWindow animWindow = new GUI.OAnimationsWindow();
-                    GUI.OCameraWindow cameraWindow = new GUI.OCameraWindow();
 
-                    string name = Path.GetFileNameWithoutExtension(fileName);
-                    modelWindow.Title = "Model [" + name + "]";
-                    textureWindow.Title = "Textures [" + name + "]";
-                    animWindow.Title = "Animations [" + name + "]";
-                    cameraWindow.Title = "Cameras [" + name + "]";
-
+                    model = BCH.load(fileName);
                     launchWindow(modelWindow);
                     DockContainer.dockMainWindow();
                     launchWindow(textureWindow, false);
@@ -77,9 +81,6 @@ namespace Ohana3DS_Rebirth
                     launchWindow(cameraWindow, false);
                     WindowManager.Refresh();
 
-                    RenderEngine renderer = new RenderEngine();
-
-                    RenderBase.OModelGroup model = BCH.load(fileName);
                     renderer.model = model;
                     //Ohana.GenericFormats.SMD.export(model, "D:\\teste.smd");
 
@@ -88,6 +89,24 @@ namespace Ohana3DS_Rebirth
                     cameraWindow.initialize(renderer);
                     modelWindow.initialize(renderer);
 
+                    break;
+                case FileIdentifier.fileFormat.MM:
+
+                    model = Containers.loadMM(fileName);
+                    launchWindow(modelWindow);
+                    DockContainer.dockMainWindow();
+                    launchWindow(textureWindow, false);
+                    launchWindow(animWindow, false);
+                    launchWindow(cameraWindow, false);
+                    WindowManager.Refresh();
+
+                    renderer.model = model;
+                    //Ohana.GenericFormats.SMD.export(model, "D:\\teste.smd");
+
+                    textureWindow.initialize(renderer);
+                    animWindow.initialize(renderer);
+                    cameraWindow.initialize(renderer);
+                    modelWindow.initialize(renderer);
                     break;
                 default:
                     MessageBox.Show("Unsupported file format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);

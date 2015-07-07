@@ -203,10 +203,16 @@ namespace Ohana3DS_Rebirth.Ohana
         public static RenderBase.OModelGroup load(string fileName)
         {
             FileStream data = new FileStream(fileName, FileMode.Open);
+            byte[] array = new byte[data.Length];
+            data.Read(array, 0, array.Length);
+            data.Close();
+            return load(new MemoryStream(array));
+        }
+
+        public static RenderBase.OModelGroup load(MemoryStream data){
             BinaryReader input = new BinaryReader(data);
-
             RenderBase.OModelGroup models = new RenderBase.OModelGroup();
-
+           
             //Primary header
             bchHeader header = new bchHeader();
             header.magic = IOUtils.readString(input, 0);

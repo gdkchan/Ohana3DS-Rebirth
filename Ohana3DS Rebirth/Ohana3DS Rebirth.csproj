@@ -215,6 +215,7 @@
       <DependentUpon>OForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Ohana\BCH.cs" />
+    <Compile Include="Ohana\Containers.cs" />
     <Compile Include="Ohana\FileIdentifier.cs" />
     <Compile Include="Ohana\FileImporter.cs" />
     <Compile Include="Ohana\GenericFormats\SMD.cs" />
