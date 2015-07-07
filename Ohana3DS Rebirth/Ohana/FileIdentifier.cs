@@ -18,7 +18,6 @@ namespace Ohana3DS_Rebirth.Ohana
             BinaryReader input = new BinaryReader(data);
             String magic = new string(input.ReadChars(2));
             if (magic.Equals("BC")) magic = "BCH"; //TODO: work on a better magic reader
-            System.Windows.Forms.MessageBox.Show(magic);
             input.Close();
             data.Dispose();
 
