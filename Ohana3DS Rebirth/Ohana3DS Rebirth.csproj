@@ -184,6 +184,12 @@
     <Compile Include="GUI\Windows\OModelWindow.Designer.cs">
       <DependentUpon>OModelWindow.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\Windows\OViewportWindow.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Windows\OViewportWindow.Designer.cs">
+      <DependentUpon>OViewportWindow.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\OScrollablePanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -214,10 +220,13 @@
     <Compile Include="OForm.Designer.cs">
       <DependentUpon>OForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Ohana\AnimationHelper.cs" />
     <Compile Include="Ohana\BCH.cs" />
-    <Compile Include="Ohana\Containers.cs" />
+    <Compile Include="Ohana\Containers\GenericContainer.cs" />
+    <Compile Include="Ohana\Containers\PkmnContainer.cs" />
+    <Compile Include="Ohana\Compressions\BLZ.cs" />
     <Compile Include="Ohana\FileIdentifier.cs" />
-    <Compile Include="Ohana\FileImporter.cs" />
+    <Compile Include="Ohana\FileIO.cs" />
     <Compile Include="Ohana\GenericFormats\SMD.cs" />
     <Compile Include="Ohana\IOUtils.cs" />
     <Compile Include="Ohana\RenderBase.cs" />
@@ -258,6 +267,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Windows\OModelWindow.resx">
       <DependentUpon>OModelWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Windows\OViewportWindow.resx">
+      <DependentUpon>OViewportWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\OScrollablePanel.resx">
       <DependentUpon>OScrollablePanel.cs</DependentUpon>
@@ -378,6 +390,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\icn_top_scrn.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_camera.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

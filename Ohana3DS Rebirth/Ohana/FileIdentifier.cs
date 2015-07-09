@@ -9,24 +9,49 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             Unsupported,
             H3D,
-            MM
+            PkmnContainer,
+            BLZCompressed
         }
 
-        public static fileFormat identify(String fileName)
+        public static fileFormat identify(string fileName)
         {
-            FileStream data = new FileStream(fileName, FileMode.Open);
-            BinaryReader input = new BinaryReader(data);
-            String magic = new string(input.ReadChars(2));
-            if (magic.Equals("BC")) magic = "BCH"; //TODO: work on a better magic reader
-            input.Close();
+            Stream data = new FileStream(fileName, FileMode.Open);
+            fileFormat format = identify(data);
+            data.Close();
             data.Dispose();
+            return format;
+        }
 
-            switch (magic)
+        public static fileFormat identify(Stream data)
+        {
+            BinaryReader input = new BinaryReader(data);
+
+            byte compression = input.ReadByte();
+            string magic2b = IOUtils.readString(input, 0, 2);
+            string magic3b = IOUtils.readString(input, 0, 3);
+            string magic4b = IOUtils.readString(input, 0, 4);
+            data.Seek(0, SeekOrigin.Begin);
+
+            switch (magic3b)
             {
                 case "BCH": return fileFormat.H3D;
-                case "MM": return fileFormat.MM;
-                default: return fileFormat.Unsupported;
             }
+
+            switch (magic2b)
+            {
+                case "GR":
+                case "MM":
+                    return fileFormat.PkmnContainer;
+            }
+
+            //Unfortunately compression only have one byte for identification.
+            //So, it may have a lot of false positives.
+            switch (compression)
+            {
+                case 0x90: return fileFormat.BLZCompressed;
+            }
+
+            return fileFormat.Unsupported;
         }
     }
 }

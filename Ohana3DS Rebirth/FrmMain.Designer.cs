@@ -75,6 +75,7 @@
             this.WindowManager.Name = "WindowManager";
             this.WindowManager.Size = new System.Drawing.Size(632, 24);
             this.WindowManager.TabIndex = 15;
+            this.WindowManager.WindowWidth = 128;
             // 
             // MainMenu
             // 

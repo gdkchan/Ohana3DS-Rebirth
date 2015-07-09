@@ -203,6 +203,16 @@ namespace Ohana3DS_Rebirth.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap icn_camera {
+            get {
+                object obj = ResourceManager.GetObject("icn_camera", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap icn_close {
             get {
                 object obj = ResourceManager.GetObject("icn_close", resourceCulture);

@@ -9,7 +9,6 @@ namespace Ohana3DS_Rebirth
 {
     public partial class FrmMain : OForm
     {
-
         public FrmMain()
         {
             InitializeComponent();
@@ -43,12 +42,17 @@ namespace Ohana3DS_Rebirth
 
         private void mnuOpen_Click(object sender, EventArgs e)
         {
-            OpenFileDialog openDlg = new OpenFileDialog
+            using (OpenFileDialog openDlg = new OpenFileDialog())
             {
-                Filter = "Binary CTR H3D File|*.bch|Overworld Model|*.mm"
-            };
-            if (openDlg.ShowDialog() != DialogResult.OK) return;
-            open(openDlg.FileName, openDlg.FilterIndex);
+                openDlg.Filter = "All supported files|*.bch;*.cx;*.mm;*.gr";
+                openDlg.Filter += "|Binary CTR H3D|*.bch";
+                openDlg.Filter += "|CTR Compressed file|*.cx";
+                openDlg.Filter += "|Pokémon Overworld model|*.mm";
+                openDlg.Filter += "|Pokémon Map model|*.gr";
+                openDlg.Filter += "|All files|*.*";
+                if (openDlg.ShowDialog() != DialogResult.OK) return;
+                open(openDlg.FileName, openDlg.FilterIndex);
+            }
         }
 
         private void open(string fileName, int type)
@@ -56,62 +60,80 @@ namespace Ohana3DS_Rebirth
             WindowManager.flush();
 
             FileIdentifier.fileFormat format = FileIdentifier.identify(fileName);
-
-            RenderBase.OModelGroup model;
-            GUI.OModelWindow modelWindow = new GUI.OModelWindow();
-            GUI.OTextureWindow textureWindow = new GUI.OTextureWindow();
-            GUI.OAnimationsWindow animWindow = new GUI.OAnimationsWindow();
-            GUI.OCameraWindow cameraWindow = new GUI.OCameraWindow();
-            RenderEngine renderer = new RenderEngine();
             string name = Path.GetFileNameWithoutExtension(fileName);
-            modelWindow.Title = "Model";
-            textureWindow.Title = "Textures";
-            animWindow.Title = "Animations";
-            cameraWindow.Title = "Cameras";
+
+            Stream data = new FileStream(fileName, FileMode.Open);
+            switch (format)
+            {
+                case FileIdentifier.fileFormat.BLZCompressed:
+                    byte[] decompressedData = Ohana.Compressions.BLZ.decompress(data);
+                    byte[] content = new byte[decompressedData.Length - 1];
+                    Buffer.BlockCopy(decompressedData, 1, content, 0, content.Length);
+                    data = new MemoryStream(content);
+                    format = FileIdentifier.identify(data);
+                    break;
+            }
 
             switch (format)
-            {                    
-                case FileIdentifier.fileFormat.H3D:
+            {
+                case FileIdentifier.fileFormat.H3D: launchModel(BCH.load(data), name); break;
+                case FileIdentifier.fileFormat.PkmnContainer:
+                    Ohana.Containers.GenericContainer.OContainer container = Ohana.Containers.PkmnContainer.load(data);
+                    switch (container.fileIdentifier)
+                    {
+                        case "MM": //Pokémon Overworld model
+                            launchModel(BCH.load(new MemoryStream(container.content[0].data)), name);
+                            break;
+                        case "GR": //Pokémon Map model
+                            launchModel(BCH.load(new MemoryStream(container.content[1].data)), name);
+                            break;
+                    }
+                    //TODO: Add windows for extra data
 
-                    model = BCH.load(fileName);
-                    launchWindow(modelWindow);
-                    DockContainer.dockMainWindow();
-                    launchWindow(textureWindow, false);
-                    launchWindow(animWindow, false);
-                    launchWindow(cameraWindow, false);
-                    WindowManager.Refresh();
-
-                    renderer.model = model;
-                    //Ohana.GenericFormats.SMD.export(model, "D:\\teste.smd");
-
-                    textureWindow.initialize(renderer);
-                    animWindow.initialize(renderer);
-                    cameraWindow.initialize(renderer);
-                    modelWindow.initialize(renderer);
-
-                    break;
-                case FileIdentifier.fileFormat.MM:
-
-                    model = Containers.loadMM(fileName);
-                    launchWindow(modelWindow);
-                    DockContainer.dockMainWindow();
-                    launchWindow(textureWindow, false);
-                    launchWindow(animWindow, false);
-                    launchWindow(cameraWindow, false);
-                    WindowManager.Refresh();
-
-                    renderer.model = model;
-                    //Ohana.GenericFormats.SMD.export(model, "D:\\teste.smd");
-
-                    textureWindow.initialize(renderer);
-                    animWindow.initialize(renderer);
-                    cameraWindow.initialize(renderer);
-                    modelWindow.initialize(renderer);
                     break;
                 default:
                     MessageBox.Show("Unsupported file format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     break;
             }
+        }
+
+        /// <summary>
+        ///     Opens the windows used for a model.
+        ///     More windows can be opened later, for files with model and other data.
+        /// </summary>
+        /// <param name="model">The model</param>
+        /// <param name="name">The file name (without the full path and extension)</param>
+        private void launchModel(RenderBase.OModelGroup model, string name)
+        {
+            GUI.OViewportWindow viewportWindow = new GUI.OViewportWindow();
+            GUI.OModelWindow modelWindow = new GUI.OModelWindow();
+            GUI.OTextureWindow textureWindow = new GUI.OTextureWindow();
+            GUI.OCameraWindow cameraWindow = new GUI.OCameraWindow();
+            GUI.OAnimationsWindow animationWindow = new GUI.OAnimationsWindow();
+
+            viewportWindow.Title = name;
+            modelWindow.Title = "Models";
+            textureWindow.Title = "Textures";
+            cameraWindow.Title = "Cameras";
+            animationWindow.Title = "Animations";
+
+            RenderEngine renderer = new RenderEngine();
+            renderer.model = model;
+
+            launchWindow(viewportWindow);
+            DockContainer.dockMainWindow();
+            launchWindow(modelWindow, false);
+            launchWindow(textureWindow, false);
+            launchWindow(cameraWindow, false);
+            launchWindow(animationWindow, false);
+
+            WindowManager.Refresh();
+
+            modelWindow.initialize(renderer);
+            textureWindow.initialize(renderer);
+            cameraWindow.initialize(renderer);
+            animationWindow.initialize(renderer);
+            viewportWindow.initialize(renderer);
         }
 
         private void launchWindow(GUI.ODockWindow window, bool visible = true)

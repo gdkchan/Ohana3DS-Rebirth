@@ -904,6 +904,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
         public class OModel
         {
+            public string name;
             public List<OModelObject> modelObject;
             public List<OBone> skeleton;
             public List<OMaterial> material;
@@ -1130,6 +1131,10 @@ namespace Ohana3DS_Rebirth.Ohana
             public OLinearFloat()
             {
             }
+        }
+
+        public class OStepFloat
+        {
         }
 
         public enum OInterpolationMode

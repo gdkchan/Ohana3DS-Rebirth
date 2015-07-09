@@ -24,9 +24,15 @@ namespace Ohana3DS_Rebirth.Ohana
         }
         private List<CustomTexture> textures = new List<CustomTexture>();
 
-        public Vector2 translation;
+        private Vector2 translation;
         private Vector2 rotation;
-        public float zoom;
+        private float zoom;
+        public bool lockCamera;
+
+        public float Zoom
+        {
+            get { return zoom; }
+        }
 
         private bool keepRendering;
 
@@ -113,6 +119,7 @@ namespace Ohana3DS_Rebirth.Ohana
         public animationControl ctrlSA = new animationControl();
         public animationControl ctrlMA = new animationControl();
 
+        public int currentModel = -1;
         public int currentCamera = -1;
 
         private class OAnimationBone
@@ -174,8 +181,6 @@ namespace Ohana3DS_Rebirth.Ohana
             ctrlMA.CurrentAnimation = -1;
             ctrlSA.animationStep = 1.0f;
             ctrlMA.animationStep = 1.0f;
-
-            setupViewPort();
         }
 
         /// <summary>
@@ -188,15 +193,6 @@ namespace Ohana3DS_Rebirth.Ohana
             pParams.BackBufferWidth = width;
             pParams.BackBufferHeight = height;
             device.Reset(pParams);
-            setupViewPort();
-        }
-
-        private void setupViewPort()
-        {
-            device.Transform.Projection = Matrix.PerspectiveFovLH((float)Math.PI / 4, (float)pParams.BackBufferWidth / pParams.BackBufferHeight, 0.1f, 500.0f);
-            device.Transform.View = Matrix.LookAtLH(new Vector3(0.0f, 0.0f, 20.0f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 0.0f));
-
-            device.RenderState.Lighting = false;
         }
 
         /// <summary>
@@ -205,7 +201,7 @@ namespace Ohana3DS_Rebirth.Ohana
         public void dispose()
         {
             keepRendering = false;
-            
+
             foreach (CustomTexture texture in textures) texture.texture.Dispose();
             foreach (RenderBase.OTexture texture in model.texture) texture.texture.Dispose();
             textures.Clear();
@@ -252,6 +248,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 fragmentShader.Technique = "Combiner";
             }
 
+            if (model.model.Count > 0) currentModel = 0;
             updateTextures();
 
             float minSize = Math.Min(Math.Min(model.minVector.x, model.minVector.y), model.minVector.z);
@@ -284,6 +281,57 @@ namespace Ohana3DS_Rebirth.Ohana
                 device.SetTexture(0, null);
                 device.BeginScene();
 
+                if (currentCamera == -1)
+                {
+                    device.Transform.Projection = Matrix.PerspectiveFovLH((float)Math.PI / 4, (float)pParams.BackBufferWidth / pParams.BackBufferHeight, 0.1f, 500.0f);
+                    device.Transform.View = Matrix.LookAtLH(new Vector3(0.0f, 0.0f, 20.0f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 0.0f));
+                }
+                else
+                {
+                    RenderBase.OCamera camera = model.camera[currentCamera];
+
+                    switch (camera.projection)
+                    {
+                        case RenderBase.OCameraProjection.perspective:
+                            device.Transform.Projection = Matrix.PerspectiveFovLH(camera.fieldOfViewY, (float)pParams.BackBufferWidth / pParams.BackBufferHeight, camera.zNear, camera.zFar);
+                            break;
+                        case RenderBase.OCameraProjection.orthogonal:
+                            device.Transform.Projection = Matrix.OrthoLH(pParams.BackBufferWidth, pParams.BackBufferHeight, camera.zNear, camera.zFar);
+                            break;
+                    }
+
+                    Vector3 position = new Vector3(camera.transformTranslate.x, camera.transformTranslate.y, camera.transformTranslate.z);
+                    switch (camera.view)
+                    {
+                        case RenderBase.OCameraView.aimTarget:
+                            device.Transform.View = Matrix.LookAtLH(
+                                position,
+                                new Vector3(camera.target.x, camera.target.y, camera.target.z),
+                                new Vector3(0, 1, 0));
+                            device.Transform.View *= Matrix.RotationZ(camera.twist);
+                            break;
+                        case RenderBase.OCameraView.lookAtTarget:
+                            device.Transform.View = Matrix.LookAtLH(
+                                position,
+                                new Vector3(camera.target.x, camera.target.y, camera.target.z),
+                                new Vector3(camera.upVector.x, camera.upVector.y, camera.upVector.z));
+                            break;
+                        case RenderBase.OCameraView.rotate:
+                            Vector3 cameraReference = new Vector3(0, 0, -1);
+                            Vector3 upVector = new Vector3(0, 1, 0);
+                            Matrix rotationMatrix = Matrix.RotationX(camera.rotation.x) * Matrix.RotationY(camera.rotation.y) * Matrix.RotationZ(camera.rotation.z);
+                            Vector4 transformedReference = Vector3.Transform(cameraReference, rotationMatrix);
+                            Vector4 transformedUpVector = Vector3.Transform(upVector, rotationMatrix);
+                            Vector4 transformedPosition = Vector3.Transform(position, rotationMatrix);
+                            Vector4 cameraLookAt = transformedPosition + transformedReference;
+                            device.Transform.View = Matrix.LookAtLH(
+                                new Vector3(transformedPosition.X, transformedPosition.Y, transformedPosition.Z),
+                                new Vector3(cameraLookAt.X, cameraLookAt.Y, cameraLookAt.Z),
+                                new Vector3(transformedUpVector.X, transformedUpVector.Y, transformedUpVector.Z));
+                            break;
+                    }
+                }
+
                 //View
                 Matrix centerMatrix = Matrix.Translation(
                     -(model.minVector.x + model.maxVector.x) / 2,
@@ -302,6 +350,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 device.RenderState.AlphaBlendEnable = false;
                 device.RenderState.StencilEnable = false;
                 device.RenderState.CullMode = Cull.None;
+                device.RenderState.Lighting = false;
                 if (showGrid)
                 {
                     device.Transform.World = baseTransform;
@@ -331,9 +380,9 @@ namespace Ohana3DS_Rebirth.Ohana
                     #endregion
                 }
 
-                int modelIndex = 0;
-                foreach (RenderBase.OModel mdl in model.model)
+                if (currentModel > -1)
                 {
+                    RenderBase.OModel mdl = model.model[currentModel];
                     device.Transform.World = getMatrix(mdl.transform) * baseTransform;
 
                     #region "Animation"
@@ -377,12 +426,12 @@ namespace Ohana3DS_Rebirth.Ohana
                                     }
                                     else
                                     {
-                                        if (b.rotationX.exists) newBone.rotation.x = getKey(b.rotationX, getFrameNumber(b.rotationX, ctrlSA.Frame));
-                                        if (b.rotationY.exists) newBone.rotation.y = getKey(b.rotationY, getFrameNumber(b.rotationY, ctrlSA.Frame));
-                                        if (b.rotationZ.exists) newBone.rotation.z = getKey(b.rotationZ, getFrameNumber(b.rotationZ, ctrlSA.Frame));
-                                        if (b.translationX.exists) newBone.translation.x = getKey(b.translationX, getFrameNumber(b.translationX, ctrlSA.Frame));
-                                        if (b.translationY.exists) newBone.translation.y = getKey(b.translationY, getFrameNumber(b.translationY, ctrlSA.Frame));
-                                        if (b.translationZ.exists) newBone.translation.z = getKey(b.translationZ, getFrameNumber(b.translationZ, ctrlSA.Frame));
+                                        if (b.rotationX.exists) newBone.rotation.x = AnimationHelper.getKey(b.rotationX, AnimationHelper.getFrameNumber(b.rotationX, ctrlSA.Frame));
+                                        if (b.rotationY.exists) newBone.rotation.y = AnimationHelper.getKey(b.rotationY, AnimationHelper.getFrameNumber(b.rotationY, ctrlSA.Frame));
+                                        if (b.rotationZ.exists) newBone.rotation.z = AnimationHelper.getKey(b.rotationZ, AnimationHelper.getFrameNumber(b.rotationZ, ctrlSA.Frame));
+                                        if (b.translationX.exists) newBone.translation.x = AnimationHelper.getKey(b.translationX, AnimationHelper.getFrameNumber(b.translationX, ctrlSA.Frame));
+                                        if (b.translationY.exists) newBone.translation.y = AnimationHelper.getKey(b.translationY, AnimationHelper.getFrameNumber(b.translationY, ctrlSA.Frame));
+                                        if (b.translationZ.exists) newBone.translation.z = AnimationHelper.getKey(b.translationZ, AnimationHelper.getFrameNumber(b.translationZ, ctrlSA.Frame));
                                     }
 
                                     break;
@@ -412,7 +461,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         RenderBase.OMaterial material = mdl.material[obj.materialId];
 
                         #region "Material Animation"
-                        int[] textureId = {-1, -1, -1};
+                        int[] textureId = { -1, -1, -1 };
                         Color blendColor = material.fragmentOperation.blend.blendColor;
                         Color[] borderColor = new Color[3];
                         borderColor[0] = material.textureMapper[0].borderColor;
@@ -529,17 +578,20 @@ namespace Ohana3DS_Rebirth.Ohana
                                     (float)constantColor.A / 0xff));
                             }
 
+                            int[] textureIndex = new int[3];
+                            int index = 0;
                             foreach (CustomTexture texture in textures)
                             {
-                                if (texture.name == material.name0) fragmentShader.SetValue("texture0", texture.texture);
-                                else if (texture.name == material.name1) fragmentShader.SetValue("texture1", texture.texture);
-                                else if (texture.name == material.name2) fragmentShader.SetValue("texture2", texture.texture);
+                                if (texture.name == material.name0) { fragmentShader.SetValue("texture0", texture.texture); textureIndex[0] = index; }
+                                else if (texture.name == material.name1) { fragmentShader.SetValue("texture1", texture.texture); textureIndex[1] = index; }
+                                else if (texture.name == material.name2) { fragmentShader.SetValue("texture2", texture.texture); textureIndex[2] = index; }
+                                index++;
                             }
 
                             #region "Material Animation"
-                            if (textureId[0] > -1) fragmentShader.SetValue("texture0", textures[textureId[0]].texture);
-                            if (textureId[1] > -1) fragmentShader.SetValue("texture1", textures[textureId[1]].texture);
-                            if (textureId[2] > -1) fragmentShader.SetValue("texture2", textures[textureId[2]].texture);
+                            if (textureId[0] > -1) fragmentShader.SetValue("texture0", textures[textureIndex[0] + textureId[0]].texture);
+                            if (textureId[1] > -1) fragmentShader.SetValue("texture1", textures[textureIndex[1] + textureId[1]].texture);
+                            if (textureId[2] > -1) fragmentShader.SetValue("texture2", textures[textureIndex[2] + textureId[2]].texture);
                             #endregion
 
                             #endregion
@@ -549,12 +601,19 @@ namespace Ohana3DS_Rebirth.Ohana
                             device.SetTexture(0, null);
 
                             //Texture
+                            int[] textureIndex = new int[3];
+                            int index = 0;
                             foreach (CustomTexture texture in textures)
                             {
-                                if (texture.name == material.name0) { device.SetTexture(0, texture.texture); legacyUsedTexture = 0; }
-                                else if (texture.name == material.name1) { device.SetTexture(0, texture.texture); legacyUsedTexture = 1; }
-                                else if (texture.name == material.name2) { device.SetTexture(0, texture.texture); legacyUsedTexture = 2; }
+                                if (texture.name == material.name0) { device.SetTexture(0, texture.texture); legacyUsedTexture = 0; textureIndex[0] = index; }
+                                else if (texture.name == material.name1) { device.SetTexture(0, texture.texture); legacyUsedTexture = 1; textureIndex[1] = index; }
+                                else if (texture.name == material.name2) { device.SetTexture(0, texture.texture); legacyUsedTexture = 2; textureIndex[2] = index; }
+                                index++;
                             }
+
+                            #region "Material Animation"
+                            if (textureId[0] > -1) device.SetTexture(0, textures[textureIndex[0] + textureId[0]].texture);
+                            #endregion
                         }
 
                         #region "Texture Filtering/Addressing Setup"
@@ -727,10 +786,8 @@ namespace Ohana3DS_Rebirth.Ohana
 
                         objectIndex++;
                     }
-
-                    modelIndex++;
+                    if (!useLegacyTexturing) fragmentShader.End();
                 }
-                if (!useLegacyTexturing) fragmentShader.End();
 
                 device.EndScene();
                 device.Present();
@@ -749,8 +806,41 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="x"></param>
         public void setRotation(float y, float x)
         {
+            if (lockCamera) return;
             rotation.X = wrap(rotation.X + x);
             rotation.Y = wrap(rotation.Y + y);
+        }
+
+        /// <summary>
+        ///     Set translation of the Mesh.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        public void setTranslation(float x, float y)
+        {
+            if (lockCamera) return;
+            translation.X = x;
+            translation.Y = y;
+        }
+
+        /// <summary>
+        ///     Set Zoom (distance of the Mesh to the Camera).
+        /// </summary>
+        /// <param name="z"></param>
+        public void setZoom(float z)
+        {
+            if (lockCamera) return;
+            zoom = z;
+        }
+
+        /// <summary>
+        ///     Set Camera back to zero position.
+        /// </summary>
+        public void resetCamera()
+        {
+            translation = Vector2.Empty;
+            rotation = Vector2.Empty;
+            zoom = 0;
         }
 
         /// <summary>
@@ -876,140 +966,6 @@ namespace Ohana3DS_Rebirth.Ohana
 
         #region "Animation"
         /// <summary>
-        ///     Interpolates a point between two Key Frames on a given Frame using Linear Interpolation.
-        /// </summary>
-        /// <param name="keyFrames">The list with all available Key Frames (Linear format)</param>
-        /// <param name="frame">The frame number that should be interpolated</param>
-        /// <returns>The interpolated frame value</returns>
-        private float interpolate(List<RenderBase.OLinearFloat> keyFrames, float frame)
-        {
-            float minFrame = 0;
-            float maxFrame = float.MaxValue;
-
-            float a = 0;
-            float b = 0;
-
-            foreach (RenderBase.OLinearFloat key in keyFrames)
-            {
-                if (key.frame >= minFrame && key.frame <= frame)
-                {
-                    minFrame = key.frame;
-                    a = key.value;
-                }
-
-                if (key.frame <= maxFrame && key.frame >= frame)
-                {
-                    maxFrame = key.frame;
-                    b = key.value;
-                }
-            }
-            if (minFrame == maxFrame) return a;
-
-            float mu = (frame - minFrame) / (maxFrame - minFrame);
-            return (a * (1 - mu) + b * mu);
-        }
-
-        private struct hermite
-        {
-            public float value;
-            public float inSlope;
-            public float outSlope;
-        }
-
-        /// <summary>
-        ///     Interpolates a point between two Key Frames on a given Frame using Hermite Interpolation.
-        /// </summary>
-        /// <param name="keyFrames">The list with all available Key Frames (Hermite format)</param>
-        /// <param name="frame">The frame number that should be interpolated</param>
-        /// <returns>The interpolated frame value</returns>
-        private float interpolate(List<RenderBase.OHermiteFloat> keyFrames, float frame)
-        {
-            float minFrame = 0;
-            float maxFrame = float.MaxValue;
-
-            hermite a = new hermite();
-            hermite b = new hermite();
-
-            foreach (RenderBase.OHermiteFloat key in keyFrames)
-            {
-                if (key.frame >= minFrame && key.frame <= frame)
-                {
-                    minFrame = key.frame;
-                    a.value = key.value;
-                    a.inSlope = key.inSlope;
-                    a.outSlope = key.outSlope;
-                }
-
-                if (key.frame <= maxFrame && key.frame >= frame)
-                {
-                    maxFrame = key.frame;
-                    b.value = key.value;
-                    b.inSlope = key.inSlope;
-                    b.outSlope = key.outSlope;
-                }
-            }
-            if (minFrame == maxFrame) return a.value;
-
-            float mu = (frame - minFrame) / (maxFrame - minFrame);
-            float mu2 = mu * mu;
-            float mu3 = mu2 * mu;
-            float m0 = a.outSlope / 2;
-            m0 += (b.value - a.value) / 2;
-            float m1 = (b.value - a.value) / 2;
-            m1 += b.inSlope / 2;
-            float a0 = 2 * mu3 - 3 * mu2 + 1;
-            float a1 = mu3 - 2 * mu2 + mu;
-            float a2 = mu3 - mu2;
-            float a3 = -2 * mu3 + 3 * mu2;
-
-            return (a0 * a.value + a1 * m0 + a2 * m1 + a3 * b.value);
-        }
-
-        /// <summary>
-        ///     Interpolates a Key Frame from a list of Key Frames.
-        /// </summary>
-        /// <param name="sourceFrame">The list of key frames</param>
-        /// <param name="frame">The frame that should be returned or interpolated from the list</param>
-        /// <returns></returns>
-        private float getKey(RenderBase.OAnimationKeyFrame sourceFrame, float frame)
-        {
-            switch (sourceFrame.interpolation)
-            {
-                case RenderBase.OInterpolationMode.linear: return interpolate(sourceFrame.linearFrame, frame);
-                case RenderBase.OInterpolationMode.hermite: return interpolate(sourceFrame.hermiteFrame, frame);
-                default: return 0; //Shouldn't happen
-            }
-        }
-
-        /// <summary>
-        ///     Converts global Frame number to segment Frame number.
-        /// </summary>
-        /// <param name="sourceFrame">The list of key frames</param>
-        /// <param name="frame">The frame that should be verified</param>
-        /// <returns></returns>
-        private float getFrameNumber(RenderBase.OAnimationKeyFrame sourceFrame, float frame)
-        {
-            //TODO
-            if (frame < sourceFrame.startFrame)
-            {
-                switch (sourceFrame.preRepeat)
-                {
-                    case RenderBase.ORepeatMethod.none: return sourceFrame.startFrame;
-                }
-            }
-
-            if (frame > sourceFrame.endFrame)
-            {
-                switch (sourceFrame.postRepeat)
-                {
-                    case RenderBase.ORepeatMethod.none: return sourceFrame.endFrame;
-                }
-            }
-
-            return frame;
-        }
-
-        /// <summary>
         ///     Transforms a Skeleton from relative to absolute positions.
         /// </summary>
         /// <param name="skeleton">The skeleton</param>
@@ -1051,10 +1007,10 @@ namespace Ohana3DS_Rebirth.Ohana
 
         private void getMaterialAnimationColor(RenderBase.OMaterialAnimationData data, ref Color baseColor)
         {
-            float r = getKey(data.frameList[0], ctrlMA.Frame);
-            float g = getKey(data.frameList[1], ctrlMA.Frame);
-            float b = getKey(data.frameList[2], ctrlMA.Frame);
-            float a = getKey(data.frameList[3], ctrlMA.Frame);
+            float r = AnimationHelper.getKey(data.frameList[0], ctrlMA.Frame);
+            float g = AnimationHelper.getKey(data.frameList[1], ctrlMA.Frame);
+            float b = AnimationHelper.getKey(data.frameList[2], ctrlMA.Frame);
+            float a = AnimationHelper.getKey(data.frameList[3], ctrlMA.Frame);
 
             byte R = data.frameList[0].exists ? (byte)(r * 0xff) : baseColor.R;
             byte G = data.frameList[1].exists ? (byte)(g * 0xff) : baseColor.G;
@@ -1066,18 +1022,18 @@ namespace Ohana3DS_Rebirth.Ohana
 
         private void getMaterialAnimationVector2(RenderBase.OMaterialAnimationData data, ref Vector2 baseVector)
         {
-            if (data.frameList[0].exists) baseVector.X = getKey(data.frameList[0], ctrlMA.Frame);
-            if (data.frameList[1].exists) baseVector.Y = getKey(data.frameList[1], ctrlMA.Frame);
+            if (data.frameList[0].exists) baseVector.X = AnimationHelper.getKey(data.frameList[0], ctrlMA.Frame);
+            if (data.frameList[1].exists) baseVector.Y = AnimationHelper.getKey(data.frameList[1], ctrlMA.Frame);
         }
 
         private void getMaterialAnimationFloat(RenderBase.OMaterialAnimationData data, ref float baseFloat)
         {
-            if (data.frameList[0].exists) baseFloat = getKey(data.frameList[0], ctrlMA.Frame);
+            if (data.frameList[0].exists) baseFloat = AnimationHelper.getKey(data.frameList[0], ctrlMA.Frame);
         }
 
         private void getMaterialAnimationInt(RenderBase.OMaterialAnimationData data, ref int baseInt)
         {
-            if (data.frameList[0].exists) baseInt = (int)getKey(data.frameList[0], ctrlMA.Frame);
+            if (data.frameList[0].exists) baseInt = (int)AnimationHelper.getKey(data.frameList[0], ctrlMA.Frame);
         }
 
         /// <summary>

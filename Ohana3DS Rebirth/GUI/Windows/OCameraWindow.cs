@@ -41,6 +41,7 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void RadioPersp_CheckedChanged(object sender, EventArgs e)
         {
+            camera.projection = RenderBase.OCameraProjection.perspective;
             ProjectionGroup.SuspendDrawing();
             PPFovy.Enabled = true;
             OPHeight.Enabled = false;
@@ -52,6 +53,7 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void RadioOrtho_CheckedChanged(object sender, EventArgs e)
         {
+            camera.projection = RenderBase.OCameraProjection.orthogonal;
             ProjectionGroup.SuspendDrawing();
             PPFovy.Enabled = false;
             OPHeight.Enabled = true;
@@ -63,6 +65,7 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void RadioVAT_CheckedChanged(object sender, EventArgs e)
         {
+            camera.view = RenderBase.OCameraView.aimTarget;
             ViewGroup.SuspendDrawing();
             TargetX.Enabled = true;
             TargetY.Enabled = true;
@@ -79,6 +82,7 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void RadioVLAT_CheckedChanged(object sender, EventArgs e)
         {
+            camera.view = RenderBase.OCameraView.lookAtTarget;
             ViewGroup.SuspendDrawing();
             TargetX.Enabled = true;
             TargetY.Enabled = true;
@@ -95,6 +99,7 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void RadioVR_CheckedChanged(object sender, EventArgs e)
         {
+            camera.view = RenderBase.OCameraView.rotate;
             ViewGroup.SuspendDrawing();
             TargetX.Enabled = false;
             TargetY.Enabled = false;
@@ -112,6 +117,7 @@ namespace Ohana3DS_Rebirth.GUI
         private void CameraList_SelectedIndexChanged(object sender, EventArgs e)
         {
             camera = null;
+            renderer.currentCamera = CameraList.SelectedIndex;
             if (CameraList.SelectedIndex == -1) return;
 
             camera = renderer.model.camera[CameraList.SelectedIndex];
@@ -123,14 +129,6 @@ namespace Ohana3DS_Rebirth.GUI
             TTransX.Value = camera.transformTranslate.x;
             TTransY.Value = camera.transformTranslate.y;
             TTransZ.Value = camera.transformTranslate.z;
-
-            TRotX.Value = camera.transformRotate.x;
-            TRotY.Value = camera.transformRotate.y;
-            TRotZ.Value = camera.transformRotate.z;
-
-            TScaleX.Value = camera.transformScale.x;
-            TScaleY.Value = camera.transformScale.y;
-            TScaleZ.Value = camera.transformScale.z;
 
             //View
             switch (camera.view)
@@ -164,6 +162,8 @@ namespace Ohana3DS_Rebirth.GUI
             PPFovy.Value = camera.fieldOfViewY;
             OPHeight.Value = camera.height;
             PPARatio.Value = camera.aspectRatio;
+
+            renderer.resetCamera();
         }
 
         private void TTransX_ValueChanged(object sender, EventArgs e)
@@ -179,36 +179,6 @@ namespace Ohana3DS_Rebirth.GUI
         private void TTransZ_ValueChanged(object sender, EventArgs e)
         {
             if (camera != null) camera.transformTranslate.z = TTransZ.Value;
-        }
-
-        private void TRotX_ValueChanged(object sender, EventArgs e)
-        {
-            if (camera != null) camera.transformRotate.x = TRotX.Value;
-        }
-
-        private void TRotY_ValueChanged(object sender, EventArgs e)
-        {
-            if (camera != null) camera.transformRotate.y = TRotY.Value;
-        }
-
-        private void TRotZ_ValueChanged(object sender, EventArgs e)
-        {
-            if (camera != null) camera.transformRotate.z = TRotZ.Value;
-        }
-
-        private void TScaleX_ValueChanged(object sender, EventArgs e)
-        {
-            if (camera != null) camera.transformScale.x = TScaleX.Value;
-        }
-
-        private void TScaleY_ValueChanged(object sender, EventArgs e)
-        {
-            if (camera != null) camera.transformScale.y = TScaleY.Value;
-        }
-
-        private void TScaleZ_ValueChanged(object sender, EventArgs e)
-        {
-            if (camera != null) camera.transformScale.z = TScaleZ.Value;
         }
 
         private void TargetX_ValueChanged(object sender, EventArgs e)
@@ -297,7 +267,7 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void BtnImport_Click(object sender, EventArgs e)
         {
-            Object importedData = FileImporter.import(FileImporter.importFileType.camera);
+            Object importedData = FileIO.import(FileIO.fileType.camera);
             if (importedData != null)
             {
                 renderer.model.camera.AddRange((List<RenderBase.OCamera>)importedData);
@@ -333,9 +303,10 @@ namespace Ohana3DS_Rebirth.GUI
 
             RenderBase.OCamera camera = new RenderBase.OCamera();
             camera.name = currentName;
-            camera.transformTranslate = new RenderBase.OVector3();
+            camera.transformTranslate = new RenderBase.OVector3(0, 0, 20f);
             camera.transformRotate = new RenderBase.OVector3();
             camera.transformScale = new RenderBase.OVector3(1, 1, 1);
+            camera.view = RenderBase.OCameraView.lookAtTarget;
             camera.target = new RenderBase.OVector3();
             camera.rotation = new RenderBase.OVector3();
             camera.upVector = new RenderBase.OVector3(0, 1, 0);
@@ -356,6 +327,11 @@ namespace Ohana3DS_Rebirth.GUI
             if (CameraList.SelectedIndex == -1) return;
             renderer.model.camera.RemoveAt(CameraList.SelectedIndex);
             CameraList.removeItem(CameraList.SelectedIndex);
+        }
+
+        private void BtnReset_Click(object sender, EventArgs e)
+        {
+            CameraList.SelectedIndex = -1;
         }
 
         private void BtnARTop_Click(object sender, EventArgs e)

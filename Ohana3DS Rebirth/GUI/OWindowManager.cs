@@ -14,7 +14,7 @@ namespace Ohana3DS_Rebirth.GUI
 {
     public partial class OWindowManager : Control
     {
-        const int windowWidth = 192;
+        private int windowWidth = 192;
 
         public List<ODockWindow> windowList = new List<ODockWindow>();
 
@@ -82,6 +82,19 @@ namespace Ohana3DS_Rebirth.GUI
             }
         }
 
+        public int WindowWidth
+        {
+            get
+            {
+                return windowWidth;
+            }
+            set
+            {
+                windowWidth = value;
+                Refresh();
+            }
+        }
+
         /// <summary>
         ///     Adds a Window to the bar.
         /// </summary>
@@ -124,7 +137,7 @@ namespace Ohana3DS_Rebirth.GUI
                 }
 
                 Font font = new Font("Segoe UI", 10);
-                e.Graphics.DrawString(window.Title, font, new SolidBrush(Color.White), new Point(rect.Left + 16, rect.Top));
+                e.Graphics.DrawString(DrawingHelper.clampText(window.Title, font, rect.Width - 16), font, new SolidBrush(Color.White), new Point(rect.Left + 16, rect.Top));
                 font.Dispose();
 
                 Rectangle iconRect = new Rectangle(rect.X, rect.Y + (rect.Height / 2) - 8, 16, 16);

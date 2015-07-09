@@ -67,18 +67,9 @@
             this.RadioVLAT = new Ohana3DS_Rebirth.GUI.ORadioButton();
             this.RadioVAT = new Ohana3DS_Rebirth.GUI.ORadioButton();
             this.TransformGroup = new Ohana3DS_Rebirth.GUI.OGroupBox();
-            this.TScaleZ = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
-            this.TScaleY = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
-            this.TScaleX = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
-            this.LblTransformScale = new System.Windows.Forms.Label();
-            this.TRotZ = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
-            this.TRotY = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
-            this.TRotX = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
-            this.LblTransformRotation = new System.Windows.Forms.Label();
             this.TTransZ = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
             this.TTransY = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
             this.TTransX = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
-            this.LblTransformTranslation = new System.Windows.Forms.Label();
             this.NameGroup = new Ohana3DS_Rebirth.GUI.OGroupBox();
             this.TxtCameraName = new Ohana3DS_Rebirth.GUI.OTextBox();
             this.CameraList = new Ohana3DS_Rebirth.GUI.OList();
@@ -89,6 +80,7 @@
             this.BtnClear = new Ohana3DS_Rebirth.GUI.OButton();
             this.BtnExport = new Ohana3DS_Rebirth.GUI.OButton();
             this.BtnImport = new Ohana3DS_Rebirth.GUI.OButton();
+            this.BtnReset = new Ohana3DS_Rebirth.GUI.OButton();
             this.Content.ContentArea.SuspendLayout();
             this.Content.SuspendLayout();
             this.ProjectionGroup.ContentArea.SuspendLayout();
@@ -122,12 +114,12 @@
             this.Content.ContentArea.Controls.Add(this.TopControls);
             this.Content.ContentArea.Location = new System.Drawing.Point(0, 0);
             this.Content.ContentArea.Name = "ContentArea";
-            this.Content.ContentArea.Size = new System.Drawing.Size(256, 1148);
+            this.Content.ContentArea.Size = new System.Drawing.Size(256, 977);
             this.Content.ContentArea.TabIndex = 2;
             this.Content.Dock = System.Windows.Forms.DockStyle.Fill;
             this.Content.Location = new System.Drawing.Point(0, 16);
             this.Content.Name = "Content";
-            this.Content.Size = new System.Drawing.Size(256, 1184);
+            this.Content.Size = new System.Drawing.Size(256, 977);
             this.Content.TabIndex = 1;
             // 
             // ProjectionGroup
@@ -158,7 +150,7 @@
             this.ProjectionGroup.Dock = System.Windows.Forms.DockStyle.Top;
             this.ProjectionGroup.ExpandedHeight = 239;
             this.ProjectionGroup.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ProjectionGroup.Location = new System.Drawing.Point(0, 909);
+            this.ProjectionGroup.Location = new System.Drawing.Point(0, 738);
             this.ProjectionGroup.Name = "ProjectionGroup";
             this.ProjectionGroup.Size = new System.Drawing.Size(256, 239);
             this.ProjectionGroup.TabIndex = 20;
@@ -395,7 +387,7 @@
             this.ViewGroup.Dock = System.Windows.Forms.DockStyle.Top;
             this.ViewGroup.ExpandedHeight = 312;
             this.ViewGroup.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ViewGroup.Location = new System.Drawing.Point(0, 597);
+            this.ViewGroup.Location = new System.Drawing.Point(0, 426);
             this.ViewGroup.Name = "ViewGroup";
             this.ViewGroup.Size = new System.Drawing.Size(256, 312);
             this.ViewGroup.TabIndex = 10;
@@ -665,146 +657,29 @@
             // TransformGroup.ContentArea
             // 
             this.TransformGroup.ContentArea.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
-            this.TransformGroup.ContentArea.Controls.Add(this.TScaleZ);
-            this.TransformGroup.ContentArea.Controls.Add(this.TScaleY);
-            this.TransformGroup.ContentArea.Controls.Add(this.TScaleX);
-            this.TransformGroup.ContentArea.Controls.Add(this.LblTransformScale);
-            this.TransformGroup.ContentArea.Controls.Add(this.TRotZ);
-            this.TransformGroup.ContentArea.Controls.Add(this.TRotY);
-            this.TransformGroup.ContentArea.Controls.Add(this.TRotX);
-            this.TransformGroup.ContentArea.Controls.Add(this.LblTransformRotation);
             this.TransformGroup.ContentArea.Controls.Add(this.TTransZ);
             this.TransformGroup.ContentArea.Controls.Add(this.TTransY);
             this.TransformGroup.ContentArea.Controls.Add(this.TTransX);
-            this.TransformGroup.ContentArea.Controls.Add(this.LblTransformTranslation);
             this.TransformGroup.ContentArea.Location = new System.Drawing.Point(1, 16);
             this.TransformGroup.ContentArea.Name = "ContentArea";
-            this.TransformGroup.ContentArea.Size = new System.Drawing.Size(254, 236);
+            this.TransformGroup.ContentArea.Size = new System.Drawing.Size(254, 65);
             this.TransformGroup.ContentArea.TabIndex = 0;
             this.TransformGroup.ContentColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
             this.TransformGroup.Dock = System.Windows.Forms.DockStyle.Top;
-            this.TransformGroup.ExpandedHeight = 253;
+            this.TransformGroup.ExpandedHeight = 82;
             this.TransformGroup.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.TransformGroup.Location = new System.Drawing.Point(0, 344);
             this.TransformGroup.Name = "TransformGroup";
-            this.TransformGroup.Size = new System.Drawing.Size(256, 253);
+            this.TransformGroup.Size = new System.Drawing.Size(256, 82);
             this.TransformGroup.TabIndex = 9;
-            this.TransformGroup.Title = "Transform";
-            // 
-            // TScaleZ
-            // 
-            this.TScaleZ.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
-            this.TScaleZ.DecimalPlaces = ((uint)(2u));
-            this.TScaleZ.Dock = System.Windows.Forms.DockStyle.Top;
-            this.TScaleZ.Location = new System.Drawing.Point(0, 215);
-            this.TScaleZ.Margin = new System.Windows.Forms.Padding(0);
-            this.TScaleZ.MaximumValue = 10F;
-            this.TScaleZ.MinimumValue = 1F;
-            this.TScaleZ.Name = "TScaleZ";
-            this.TScaleZ.Size = new System.Drawing.Size(254, 22);
-            this.TScaleZ.TabIndex = 11;
-            this.TScaleZ.Value = 1F;
-            this.TScaleZ.ValueChanged += new System.EventHandler(this.TScaleZ_ValueChanged);
-            // 
-            // TScaleY
-            // 
-            this.TScaleY.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
-            this.TScaleY.DecimalPlaces = ((uint)(2u));
-            this.TScaleY.Dock = System.Windows.Forms.DockStyle.Top;
-            this.TScaleY.Location = new System.Drawing.Point(0, 193);
-            this.TScaleY.Margin = new System.Windows.Forms.Padding(0);
-            this.TScaleY.MaximumValue = 10F;
-            this.TScaleY.MinimumValue = 1F;
-            this.TScaleY.Name = "TScaleY";
-            this.TScaleY.Size = new System.Drawing.Size(254, 22);
-            this.TScaleY.TabIndex = 10;
-            this.TScaleY.Value = 1F;
-            this.TScaleY.ValueChanged += new System.EventHandler(this.TScaleY_ValueChanged);
-            // 
-            // TScaleX
-            // 
-            this.TScaleX.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
-            this.TScaleX.DecimalPlaces = ((uint)(2u));
-            this.TScaleX.Dock = System.Windows.Forms.DockStyle.Top;
-            this.TScaleX.Location = new System.Drawing.Point(0, 171);
-            this.TScaleX.Margin = new System.Windows.Forms.Padding(0);
-            this.TScaleX.MaximumValue = 10F;
-            this.TScaleX.MinimumValue = 1F;
-            this.TScaleX.Name = "TScaleX";
-            this.TScaleX.Size = new System.Drawing.Size(254, 22);
-            this.TScaleX.TabIndex = 9;
-            this.TScaleX.Value = 1F;
-            this.TScaleX.ValueChanged += new System.EventHandler(this.TScaleX_ValueChanged);
-            // 
-            // LblTransformScale
-            // 
-            this.LblTransformScale.Dock = System.Windows.Forms.DockStyle.Top;
-            this.LblTransformScale.Location = new System.Drawing.Point(0, 158);
-            this.LblTransformScale.Name = "LblTransformScale";
-            this.LblTransformScale.Size = new System.Drawing.Size(254, 13);
-            this.LblTransformScale.TabIndex = 8;
-            this.LblTransformScale.Text = "Scale (X/Y/Z):";
-            // 
-            // TRotZ
-            // 
-            this.TRotZ.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
-            this.TRotZ.DecimalPlaces = ((uint)(6u));
-            this.TRotZ.Dock = System.Windows.Forms.DockStyle.Top;
-            this.TRotZ.Location = new System.Drawing.Point(0, 136);
-            this.TRotZ.Margin = new System.Windows.Forms.Padding(0);
-            this.TRotZ.MaximumValue = 3.141593F;
-            this.TRotZ.MinimumValue = -3.141593F;
-            this.TRotZ.Name = "TRotZ";
-            this.TRotZ.Size = new System.Drawing.Size(254, 22);
-            this.TRotZ.TabIndex = 7;
-            this.TRotZ.Value = 0F;
-            this.TRotZ.ValueChanged += new System.EventHandler(this.TRotZ_ValueChanged);
-            // 
-            // TRotY
-            // 
-            this.TRotY.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
-            this.TRotY.DecimalPlaces = ((uint)(6u));
-            this.TRotY.Dock = System.Windows.Forms.DockStyle.Top;
-            this.TRotY.Location = new System.Drawing.Point(0, 114);
-            this.TRotY.Margin = new System.Windows.Forms.Padding(0);
-            this.TRotY.MaximumValue = 3.141593F;
-            this.TRotY.MinimumValue = -3.141593F;
-            this.TRotY.Name = "TRotY";
-            this.TRotY.Size = new System.Drawing.Size(254, 22);
-            this.TRotY.TabIndex = 6;
-            this.TRotY.Value = 0F;
-            this.TRotY.ValueChanged += new System.EventHandler(this.TRotY_ValueChanged);
-            // 
-            // TRotX
-            // 
-            this.TRotX.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
-            this.TRotX.DecimalPlaces = ((uint)(6u));
-            this.TRotX.Dock = System.Windows.Forms.DockStyle.Top;
-            this.TRotX.Location = new System.Drawing.Point(0, 92);
-            this.TRotX.Margin = new System.Windows.Forms.Padding(0);
-            this.TRotX.MaximumValue = 3.141593F;
-            this.TRotX.MinimumValue = -3.141593F;
-            this.TRotX.Name = "TRotX";
-            this.TRotX.Size = new System.Drawing.Size(254, 22);
-            this.TRotX.TabIndex = 5;
-            this.TRotX.Value = 0F;
-            this.TRotX.ValueChanged += new System.EventHandler(this.TRotX_ValueChanged);
-            // 
-            // LblTransformRotation
-            // 
-            this.LblTransformRotation.Dock = System.Windows.Forms.DockStyle.Top;
-            this.LblTransformRotation.Location = new System.Drawing.Point(0, 79);
-            this.LblTransformRotation.Name = "LblTransformRotation";
-            this.LblTransformRotation.Size = new System.Drawing.Size(254, 13);
-            this.LblTransformRotation.TabIndex = 4;
-            this.LblTransformRotation.Text = "Rotation (X/Y/Z):";
+            this.TransformGroup.Title = "Position";
             // 
             // TTransZ
             // 
             this.TTransZ.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
             this.TTransZ.DecimalPlaces = ((uint)(1u));
             this.TTransZ.Dock = System.Windows.Forms.DockStyle.Top;
-            this.TTransZ.Location = new System.Drawing.Point(0, 57);
+            this.TTransZ.Location = new System.Drawing.Point(0, 44);
             this.TTransZ.Margin = new System.Windows.Forms.Padding(0);
             this.TTransZ.MaximumValue = 100F;
             this.TTransZ.MinimumValue = -100F;
@@ -819,7 +694,7 @@
             this.TTransY.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
             this.TTransY.DecimalPlaces = ((uint)(1u));
             this.TTransY.Dock = System.Windows.Forms.DockStyle.Top;
-            this.TTransY.Location = new System.Drawing.Point(0, 35);
+            this.TTransY.Location = new System.Drawing.Point(0, 22);
             this.TTransY.Margin = new System.Windows.Forms.Padding(0);
             this.TTransY.MaximumValue = 100F;
             this.TTransY.MinimumValue = -100F;
@@ -834,7 +709,7 @@
             this.TTransX.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
             this.TTransX.DecimalPlaces = ((uint)(1u));
             this.TTransX.Dock = System.Windows.Forms.DockStyle.Top;
-            this.TTransX.Location = new System.Drawing.Point(0, 13);
+            this.TTransX.Location = new System.Drawing.Point(0, 0);
             this.TTransX.Margin = new System.Windows.Forms.Padding(0);
             this.TTransX.MaximumValue = 100F;
             this.TTransX.MinimumValue = -100F;
@@ -843,15 +718,6 @@
             this.TTransX.TabIndex = 0;
             this.TTransX.Value = 0F;
             this.TTransX.ValueChanged += new System.EventHandler(this.TTransX_ValueChanged);
-            // 
-            // LblTransformTranslation
-            // 
-            this.LblTransformTranslation.Dock = System.Windows.Forms.DockStyle.Top;
-            this.LblTransformTranslation.Location = new System.Drawing.Point(0, 0);
-            this.LblTransformTranslation.Name = "LblTransformTranslation";
-            this.LblTransformTranslation.Size = new System.Drawing.Size(254, 13);
-            this.LblTransformTranslation.TabIndex = 1;
-            this.LblTransformTranslation.Text = "Translation (X/Y/Z):";
             // 
             // NameGroup
             // 
@@ -904,16 +770,18 @@
             // 
             // TopControlsExtended
             // 
-            this.TopControlsExtended.ColumnCount = 2;
-            this.TopControlsExtended.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.TopControlsExtended.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.TopControlsExtended.ColumnCount = 3;
+            this.TopControlsExtended.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.TopControlsExtended.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.TopControlsExtended.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.TopControlsExtended.Controls.Add(this.BtnReset, 0, 0);
             this.TopControlsExtended.Controls.Add(this.BtnDelete, 0, 0);
             this.TopControlsExtended.Controls.Add(this.BtnAdd, 0, 0);
             this.TopControlsExtended.Dock = System.Windows.Forms.DockStyle.Top;
             this.TopControlsExtended.Location = new System.Drawing.Point(0, 24);
             this.TopControlsExtended.Name = "TopControlsExtended";
             this.TopControlsExtended.RowCount = 1;
-            this.TopControlsExtended.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.TopControlsExtended.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.TopControlsExtended.Size = new System.Drawing.Size(256, 24);
             this.TopControlsExtended.TabIndex = 21;
             // 
@@ -923,10 +791,10 @@
             this.BtnDelete.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnDelete.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.BtnDelete.Image = ((System.Drawing.Bitmap)(resources.GetObject("BtnDelete.Image")));
-            this.BtnDelete.Location = new System.Drawing.Point(128, 0);
+            this.BtnDelete.Location = new System.Drawing.Point(85, 0);
             this.BtnDelete.Margin = new System.Windows.Forms.Padding(0);
             this.BtnDelete.Name = "BtnDelete";
-            this.BtnDelete.Size = new System.Drawing.Size(128, 24);
+            this.BtnDelete.Size = new System.Drawing.Size(85, 24);
             this.BtnDelete.TabIndex = 13;
             this.BtnDelete.Text = "Delete";
             this.BtnDelete.Click += new System.EventHandler(this.BtnDelete_Click);
@@ -940,7 +808,7 @@
             this.BtnAdd.Location = new System.Drawing.Point(0, 0);
             this.BtnAdd.Margin = new System.Windows.Forms.Padding(0);
             this.BtnAdd.Name = "BtnAdd";
-            this.BtnAdd.Size = new System.Drawing.Size(128, 24);
+            this.BtnAdd.Size = new System.Drawing.Size(85, 24);
             this.BtnAdd.TabIndex = 12;
             this.BtnAdd.Text = "Add";
             this.BtnAdd.Click += new System.EventHandler(this.BtnAdd_Click);
@@ -1005,12 +873,26 @@
             this.BtnImport.Text = "Import";
             this.BtnImport.Click += new System.EventHandler(this.BtnImport_Click);
             // 
+            // BtnReset
+            // 
+            this.BtnReset.BackColor = System.Drawing.Color.Transparent;
+            this.BtnReset.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.BtnReset.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnReset.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_camera;
+            this.BtnReset.Location = new System.Drawing.Point(170, 0);
+            this.BtnReset.Margin = new System.Windows.Forms.Padding(0);
+            this.BtnReset.Name = "BtnReset";
+            this.BtnReset.Size = new System.Drawing.Size(86, 24);
+            this.BtnReset.TabIndex = 14;
+            this.BtnReset.Text = "Reset";
+            this.BtnReset.Click += new System.EventHandler(this.BtnReset_Click);
+            // 
             // OCameraWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.Controls.Add(this.Content);
             this.Name = "OCameraWindow";
-            this.Size = new System.Drawing.Size(256, 1200);
+            this.Size = new System.Drawing.Size(256, 993);
             this.Controls.SetChildIndex(this.Content, 0);
             this.Content.ContentArea.ResumeLayout(false);
             this.Content.ResumeLayout(false);
@@ -1043,17 +925,8 @@
         private OGroupBox TransformGroup;
         private OList CameraList;
         private OFloatTextBox TTransX;
-        private System.Windows.Forms.Label LblTransformTranslation;
-        private System.Windows.Forms.Label LblTransformRotation;
         private OFloatTextBox TTransZ;
         private OFloatTextBox TTransY;
-        private OFloatTextBox TRotZ;
-        private OFloatTextBox TRotY;
-        private OFloatTextBox TRotX;
-        private OFloatTextBox TScaleZ;
-        private OFloatTextBox TScaleY;
-        private OFloatTextBox TScaleX;
-        private System.Windows.Forms.Label LblTransformScale;
         private OGroupBox ViewGroup;
         private OFloatTextBox LAUpVecZ;
         private OFloatTextBox LAUpVecY;
@@ -1099,6 +972,7 @@
         private System.Windows.Forms.Panel ARButtonsPanel;
         private OButton BtnARBottom;
         private OButton BtnARTop;
+        private OButton BtnReset;
 
 
     }

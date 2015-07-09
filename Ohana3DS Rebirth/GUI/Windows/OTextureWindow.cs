@@ -36,9 +36,14 @@ namespace Ohana3DS_Rebirth.GUI
             TextureList.Refresh();
         }
 
+        private void BtnExport_Click(object sender, EventArgs e)
+        {
+            FileIO.export(FileIO.fileType.texture, renderer.model, new List<int> { TextureList.SelectedIndex });
+        }
+
         private void BtnImport_Click(object sender, System.EventArgs e)
         {
-            Object importedData = FileImporter.import(FileImporter.importFileType.texture);
+            Object importedData = FileIO.import(FileIO.fileType.texture);
             if (importedData != null)
             {
                 renderer.model.texture.AddRange((List<RenderBase.OTexture>)importedData);

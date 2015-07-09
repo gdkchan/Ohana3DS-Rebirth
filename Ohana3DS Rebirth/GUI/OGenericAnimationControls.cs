@@ -13,9 +13,10 @@ namespace Ohana3DS_Rebirth.GUI
 {
     public partial class OGenericAnimationControls : UserControl
     {
-        private RenderBase.OAnimationListBase animations;
+        private RenderEngine renderer;
         private RenderEngine.animationControl control;
-        private FileImporter.importFileType importType;
+        private RenderBase.OAnimationListBase animations;
+        private FileIO.fileType type;
 
         private bool paused = true;
         private bool isAnimationLoaded;
@@ -28,14 +29,16 @@ namespace Ohana3DS_Rebirth.GUI
         /// <summary>
         ///     Initializes the control with animation data.
         /// </summary>
-        /// <param name="anms">The list with animations</param>
+        /// <param name="renderEngine">Renderer used to render the model</param>
         /// <param name="ctrl">The animation control</param>
-        /// <param name="type">The animation type (used on Import option)</param>
-        public void initialize(RenderBase.OAnimationListBase anms, RenderEngine.animationControl ctrl, FileImporter.importFileType type)
+        /// <param name="anms">The list with animations</param>
+        /// <param name="t">The animation type (used on Export/Import options)</param>
+        public void initialize(RenderEngine renderEngine, RenderEngine.animationControl ctrl, RenderBase.OAnimationListBase anms, FileIO.fileType t)
         {
-            animations = anms;
+            renderer = renderEngine;
             control = ctrl;
-            importType = type;
+            animations = anms;
+            type = t;
             control.FrameChanged += Control_FrameChanged;
             updateList();
         }
@@ -139,7 +142,7 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void BtnImport_Click(object sender, EventArgs e)
         {
-            RenderBase.OAnimationListBase animation = (RenderBase.OAnimationListBase)FileImporter.import(importType);
+            RenderBase.OAnimationListBase animation = (RenderBase.OAnimationListBase)FileIO.import(type);
             if (animation != null)
             {
                 animations.list.AddRange(animation.list);
@@ -150,7 +153,13 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void BtnExport_Click(object sender, EventArgs e)
         {
-            //TODO
+            switch (type)
+            {
+                case FileIO.fileType.skeletalAnimation:
+                    if (renderer.currentModel == -1 || control.CurrentAnimation == -1) return;
+                    FileIO.export(type, renderer.model, new List<int> {renderer.currentModel, control.CurrentAnimation});
+                    break;
+            }
         }
 
         private void BtnDelete_Click(object sender, EventArgs e)

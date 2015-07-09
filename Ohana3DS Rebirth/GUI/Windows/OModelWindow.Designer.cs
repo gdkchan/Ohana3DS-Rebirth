@@ -2,7 +2,7 @@
 {
     partial class OModelWindow
     {
-        /// <summary> 
+        /// <summary>
         /// Variável de designer necessária.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
@@ -22,92 +22,133 @@
 
         #region código gerado pelo Component Designer
 
-        /// <summary> 
-        /// Método necessário para o suporte do Designer - não modifique 
+        /// <summary>
+        /// Método necessário para suporte do Designer - não modifique
         /// o conteúdo deste método com o editor de código.
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.Screen = new System.Windows.Forms.PictureBox();
-            this.ModelMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.MnuImport = new System.Windows.Forms.ToolStripMenuItem();
-            this.MnuExport = new System.Windows.Forms.ToolStripMenuItem();
-            this.MnuClear = new System.Windows.Forms.ToolStripMenuItem();
-            ((System.ComponentModel.ISupportInitialize)(this.Screen)).BeginInit();
-            this.ModelMenu.SuspendLayout();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OModelWindow));
+            this.TopControls = new System.Windows.Forms.TableLayoutPanel();
+            this.BtnDelete = new Ohana3DS_Rebirth.GUI.OButton();
+            this.BtnClear = new Ohana3DS_Rebirth.GUI.OButton();
+            this.BtnExport = new Ohana3DS_Rebirth.GUI.OButton();
+            this.BtnImport = new Ohana3DS_Rebirth.GUI.OButton();
+            this.ModelList = new Ohana3DS_Rebirth.GUI.OList();
+            this.TopControls.SuspendLayout();
             this.SuspendLayout();
             // 
-            // Screen
+            // TopControls
             // 
-            this.Screen.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.Screen.Location = new System.Drawing.Point(0, 16);
-            this.Screen.Name = "Screen";
-            this.Screen.Size = new System.Drawing.Size(640, 480);
-            this.Screen.TabIndex = 1;
-            this.Screen.TabStop = false;
-            this.Screen.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Screen_MouseDown);
-            this.Screen.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Screen_MouseMove);
-            this.Screen.MouseUp += new System.Windows.Forms.MouseEventHandler(this.Screen_MouseUp);
-            this.Screen.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.Screen_MouseWheel);
-            this.Screen.Resize += new System.EventHandler(this.Screen_Resize);
+            this.TopControls.ColumnCount = 4;
+            this.TopControls.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.TopControls.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.TopControls.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.TopControls.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.TopControls.Controls.Add(this.BtnDelete, 0, 0);
+            this.TopControls.Controls.Add(this.BtnClear, 0, 0);
+            this.TopControls.Controls.Add(this.BtnExport, 0, 0);
+            this.TopControls.Controls.Add(this.BtnImport, 0, 0);
+            this.TopControls.Dock = System.Windows.Forms.DockStyle.Top;
+            this.TopControls.Location = new System.Drawing.Point(0, 16);
+            this.TopControls.Name = "TopControls";
+            this.TopControls.RowCount = 1;
+            this.TopControls.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.TopControls.Size = new System.Drawing.Size(256, 24);
+            this.TopControls.TabIndex = 6;
             // 
-            // ModelMenu
+            // BtnDelete
             // 
-            this.ModelMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MnuImport,
-            this.MnuExport,
-            this.MnuClear});
-            this.ModelMenu.Name = "ModelMenu";
-            this.ModelMenu.Size = new System.Drawing.Size(111, 70);
+            this.BtnDelete.BackColor = System.Drawing.Color.Transparent;
+            this.BtnDelete.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.BtnDelete.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnDelete.Image = ((System.Drawing.Bitmap)(resources.GetObject("BtnDelete.Image")));
+            this.BtnDelete.Location = new System.Drawing.Point(128, 0);
+            this.BtnDelete.Margin = new System.Windows.Forms.Padding(0);
+            this.BtnDelete.Name = "BtnDelete";
+            this.BtnDelete.Size = new System.Drawing.Size(64, 24);
+            this.BtnDelete.TabIndex = 9;
+            this.BtnDelete.Text = "Delete";
+            this.BtnDelete.Click += new System.EventHandler(this.BtnDelete_Click);
             // 
-            // MnuImport
+            // BtnClear
             // 
-            this.MnuImport.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_arrow_down;
-            this.MnuImport.Name = "MnuImport";
-            this.MnuImport.Size = new System.Drawing.Size(110, 22);
-            this.MnuImport.Text = "&Import";
-            this.MnuImport.Click += new System.EventHandler(this.MnuImport_Click);
+            this.BtnClear.BackColor = System.Drawing.Color.Transparent;
+            this.BtnClear.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.BtnClear.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnClear.Image = ((System.Drawing.Bitmap)(resources.GetObject("BtnClear.Image")));
+            this.BtnClear.Location = new System.Drawing.Point(192, 0);
+            this.BtnClear.Margin = new System.Windows.Forms.Padding(0);
+            this.BtnClear.Name = "BtnClear";
+            this.BtnClear.Size = new System.Drawing.Size(64, 24);
+            this.BtnClear.TabIndex = 8;
+            this.BtnClear.Text = "Clear";
+            this.BtnClear.Click += new System.EventHandler(this.BtnClear_Click);
             // 
-            // MnuExport
+            // BtnExport
             // 
-            this.MnuExport.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_arrow_up;
-            this.MnuExport.Name = "MnuExport";
-            this.MnuExport.Size = new System.Drawing.Size(110, 22);
-            this.MnuExport.Text = "&Export";
+            this.BtnExport.BackColor = System.Drawing.Color.Transparent;
+            this.BtnExport.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.BtnExport.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnExport.Image = ((System.Drawing.Bitmap)(resources.GetObject("BtnExport.Image")));
+            this.BtnExport.Location = new System.Drawing.Point(0, 0);
+            this.BtnExport.Margin = new System.Windows.Forms.Padding(0);
+            this.BtnExport.Name = "BtnExport";
+            this.BtnExport.Size = new System.Drawing.Size(64, 24);
+            this.BtnExport.TabIndex = 7;
+            this.BtnExport.Text = "Export";
+            this.BtnExport.Click += new System.EventHandler(this.BtnExport_Click);
             // 
-            // MnuClear
+            // BtnImport
             // 
-            this.MnuClear.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_trash;
-            this.MnuClear.Name = "MnuClear";
-            this.MnuClear.Size = new System.Drawing.Size(110, 22);
-            this.MnuClear.Text = "&Clear";
-            this.MnuClear.Click += new System.EventHandler(this.MnuClear_Click);
+            this.BtnImport.BackColor = System.Drawing.Color.Transparent;
+            this.BtnImport.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.BtnImport.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnImport.Image = ((System.Drawing.Bitmap)(resources.GetObject("BtnImport.Image")));
+            this.BtnImport.Location = new System.Drawing.Point(64, 0);
+            this.BtnImport.Margin = new System.Windows.Forms.Padding(0);
+            this.BtnImport.Name = "BtnImport";
+            this.BtnImport.Size = new System.Drawing.Size(64, 24);
+            this.BtnImport.TabIndex = 6;
+            this.BtnImport.Text = "Import";
+            this.BtnImport.Click += new System.EventHandler(this.BtnImport_Click);
+            // 
+            // ModelList
+            // 
+            this.ModelList.BackColor = System.Drawing.Color.Transparent;
+            this.ModelList.Dock = System.Windows.Forms.DockStyle.Top;
+            this.ModelList.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ModelList.HeaderHeight = 24;
+            this.ModelList.ItemHeight = 16;
+            this.ModelList.Location = new System.Drawing.Point(0, 40);
+            this.ModelList.Name = "ModelList";
+            this.ModelList.SelectedIndex = -1;
+            this.ModelList.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(15)))), ((int)(((byte)(82)))), ((int)(((byte)(186)))));
+            this.ModelList.Size = new System.Drawing.Size(256, 256);
+            this.ModelList.TabIndex = 9;
+            this.ModelList.SelectedIndexChanged += new System.EventHandler(this.ModelList_SelectedIndexChanged);
             // 
             // OModelWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.Screen);
+            this.Controls.Add(this.ModelList);
+            this.Controls.Add(this.TopControls);
             this.Name = "OModelWindow";
-            this.Size = new System.Drawing.Size(640, 496);
-            this.Controls.SetChildIndex(this.Screen, 0);
-            ((System.ComponentModel.ISupportInitialize)(this.Screen)).EndInit();
-            this.ModelMenu.ResumeLayout(false);
+            this.Size = new System.Drawing.Size(256, 400);
+            this.Controls.SetChildIndex(this.TopControls, 0);
+            this.Controls.SetChildIndex(this.ModelList, 0);
+            this.TopControls.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
-        private System.Windows.Forms.PictureBox Screen;
-        private System.Windows.Forms.ContextMenuStrip ModelMenu;
-        private System.Windows.Forms.ToolStripMenuItem MnuImport;
-        private System.Windows.Forms.ToolStripMenuItem MnuExport;
-        private System.Windows.Forms.ToolStripMenuItem MnuClear;
-
-
-
-
+        private System.Windows.Forms.TableLayoutPanel TopControls;
+        private OButton BtnDelete;
+        private OButton BtnClear;
+        private OButton BtnExport;
+        private OButton BtnImport;
+        private OList ModelList;
     }
 }

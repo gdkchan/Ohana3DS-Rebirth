@@ -111,6 +111,7 @@
             this.BtnExport.Size = new System.Drawing.Size(64, 24);
             this.BtnExport.TabIndex = 7;
             this.BtnExport.Text = "Export";
+            this.BtnExport.Click += new System.EventHandler(this.BtnExport_Click);
             // 
             // BtnImport
             // 

@@ -120,7 +120,7 @@ namespace Ohana3DS_Rebirth.GUI
             }
             set
             {
-                if (value > -1 && value < list.Count)
+                if (value >= -1 && value < list.Count)
                 {
                     selectedIndex = value;
                     updateScroll();

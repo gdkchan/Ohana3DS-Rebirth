@@ -44,12 +44,14 @@ namespace Ohana3DS_Rebirth
 
         private void OForm_Resize(object sender, EventArgs e)
         {
+            if (this.WindowState != FormWindowState.Normal) return;
             ResumeDrawing();
             SuspendDrawing();
         }
 
         private void OForm_ResizeBegin(object sender, EventArgs e)
         {
+            if (this.WindowState != FormWindowState.Normal) return;
             SuspendDrawing();
         }
 
