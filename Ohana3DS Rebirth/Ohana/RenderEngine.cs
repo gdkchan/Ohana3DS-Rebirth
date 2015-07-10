@@ -578,21 +578,25 @@ namespace Ohana3DS_Rebirth.Ohana
                                     (float)constantColor.A / 0xff));
                             }
 
-                            int[] textureIndex = new int[3];
-                            int index = 0;
-                            foreach (CustomTexture texture in textures)
+                            if (ctrlMA.animate)
                             {
-                                if (texture.name == material.name0) { fragmentShader.SetValue("texture0", texture.texture); textureIndex[0] = index; }
-                                else if (texture.name == material.name1) { fragmentShader.SetValue("texture1", texture.texture); textureIndex[1] = index; }
-                                else if (texture.name == material.name2) { fragmentShader.SetValue("texture2", texture.texture); textureIndex[2] = index; }
-                                index++;
+                                RenderBase.OMaterialAnimation materialAnimation = (RenderBase.OMaterialAnimation)model.materialAnimation.list[ctrlMA.CurrentAnimation];
+                                foreach (CustomTexture texture in textures)
+                                {
+                                    if (texture.name == (textureId[0] > -1 ? materialAnimation.textureName[textureId[0]] : material.name0)) fragmentShader.SetValue("texture0", texture.texture);
+                                    else if (texture.name == (textureId[1] > -1 ? materialAnimation.textureName[textureId[1]] : material.name1)) fragmentShader.SetValue("texture1", texture.texture);
+                                    else if (texture.name == (textureId[2] > -1 ? materialAnimation.textureName[textureId[2]] : material.name2)) fragmentShader.SetValue("texture2", texture.texture);
+                                }
                             }
-
-                            #region "Material Animation"
-                            if (textureId[0] > -1) fragmentShader.SetValue("texture0", textures[textureIndex[0] + textureId[0]].texture);
-                            if (textureId[1] > -1) fragmentShader.SetValue("texture1", textures[textureIndex[1] + textureId[1]].texture);
-                            if (textureId[2] > -1) fragmentShader.SetValue("texture2", textures[textureIndex[2] + textureId[2]].texture);
-                            #endregion
+                            else
+                            {
+                                foreach (CustomTexture texture in textures)
+                                {
+                                    if (texture.name == material.name0) fragmentShader.SetValue("texture0", texture.texture);
+                                    else if (texture.name == material.name1) fragmentShader.SetValue("texture1", texture.texture);
+                                    else if (texture.name == material.name2) fragmentShader.SetValue("texture2", texture.texture);
+                                }
+                            }
 
                             #endregion
                         }
@@ -601,19 +605,26 @@ namespace Ohana3DS_Rebirth.Ohana
                             device.SetTexture(0, null);
 
                             //Texture
-                            int[] textureIndex = new int[3];
-                            int index = 0;
-                            foreach (CustomTexture texture in textures)
+                            if (ctrlMA.animate)
                             {
-                                if (texture.name == material.name0) { device.SetTexture(0, texture.texture); legacyUsedTexture = 0; textureIndex[0] = index; }
-                                else if (texture.name == material.name1) { device.SetTexture(0, texture.texture); legacyUsedTexture = 1; textureIndex[1] = index; }
-                                else if (texture.name == material.name2) { device.SetTexture(0, texture.texture); legacyUsedTexture = 2; textureIndex[2] = index; }
-                                index++;
+                                RenderBase.OMaterialAnimation materialAnimation = (RenderBase.OMaterialAnimation)model.materialAnimation.list[ctrlMA.CurrentAnimation];
+                                foreach (CustomTexture texture in textures)
+                                {
+                                    if (texture.name == (textureId[0] > -1 ? materialAnimation.textureName[textureId[0]] : material.name0)) { device.SetTexture(0, texture.texture); legacyUsedTexture = 0; }
+                                    else if (texture.name == (textureId[1] > -1 ? materialAnimation.textureName[textureId[1]] : material.name1)) { device.SetTexture(0, texture.texture); legacyUsedTexture = 1; }
+                                    else if (texture.name == (textureId[2] > -1 ? materialAnimation.textureName[textureId[2]] : material.name2)) { device.SetTexture(0, texture.texture); legacyUsedTexture = 2; }
+                                }
+                            }
+                            else
+                            {
+                                foreach (CustomTexture texture in textures)
+                                {
+                                    if (texture.name == material.name0) { device.SetTexture(0, texture.texture); legacyUsedTexture = 0; }
+                                    else if (texture.name == material.name1) { device.SetTexture(0, texture.texture); legacyUsedTexture = 1; }
+                                    else if (texture.name == material.name2) { device.SetTexture(0, texture.texture); legacyUsedTexture = 2; }
+                                }
                             }
 
-                            #region "Material Animation"
-                            if (textureId[0] > -1) device.SetTexture(0, textures[textureIndex[0] + textureId[0]].texture);
-                            #endregion
                         }
 
                         #region "Texture Filtering/Addressing Setup"

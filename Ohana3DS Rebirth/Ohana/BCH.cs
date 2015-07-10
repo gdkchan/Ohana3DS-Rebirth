@@ -304,7 +304,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 uint textureHeaderOffset = input.ReadUInt32() + header.descriptionOffset;
                 uint textureHeaderEntries = input.ReadUInt32();
                 data.Seek(0x14, SeekOrigin.Current);
-                String textureName = readString(input, header);
+                string textureName = readString(input, header);
 
                 data.Seek(textureHeaderOffset, SeekOrigin.Begin);
                 ushort textureHeight = input.ReadUInt16();
@@ -677,6 +677,16 @@ namespace Ohana3DS_Rebirth.Ohana
                 materialAnimation.frameSize = input.ReadSingle();
                 uint dataTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
                 uint dataTableEntries = input.ReadUInt32();
+                input.ReadUInt32();
+                uint textureNameTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                uint textureNameTableEntries = input.ReadUInt32();
+
+                data.Seek(textureNameTableOffset, SeekOrigin.Begin);
+                for (int i = 0; i < textureNameTableEntries; i++)
+                {
+                    string name = readString(input, header);
+                    materialAnimation.textureName.Add(name);
+                }
 
                 for (int i = 0; i < dataTableEntries; i++)
                 {
@@ -1391,7 +1401,8 @@ namespace Ohana3DS_Rebirth.Ohana
                             switch (header.backwardCompatibility)
                             {
                                 case 0x20: vertexDataOffset += header.dataOffset; break;
-                                case 0x21: case 0x22:
+                                case 0x21:
+                                case 0x22:
                                     switch (flags)
                                     {
                                         case 0x4c: vertexDataOffset += header.dataOffset; dbgVertexDataOffsetCheck = true; break;
@@ -1465,15 +1476,18 @@ namespace Ohana3DS_Rebirth.Ohana
                                 switch (header.backwardCompatibility)
                                 {
                                     case 0x20: faceDataOffset += header.dataOffset; break;
-                                    case 0x21: case 0x22:
+                                    case 0x21:
+                                    case 0x22:
                                         switch (flags)
                                         {
-                                            case 0x4e: case 0x50:
+                                            case 0x4e:
+                                            case 0x50:
                                                 faceDataOffset += header.dataOffset;
                                                 faceDataFormat = flags;
                                                 dbgFaceDataOffsetCheck = true;
                                                 break;
-                                            case 0x58: case 0x5a:
+                                            case 0x58:
+                                            case 0x5a:
                                                 faceDataOffset += header.dataExtendedOffset;
                                                 faceDataFormat = flags;
                                                 dbgFaceDataOffsetCheck = true;
@@ -1580,11 +1594,14 @@ namespace Ohana3DS_Rebirth.Ohana
                                         default: throw new Exception("BCH: Unknow Face Data Format! STOP!");
                                     }
                                     break;
-                                case 0x21: case 0x22:
+                                case 0x21:
+                                case 0x22:
                                     switch (faceDataFormat)
                                     {
-                                        case 0x4e: case 0x58: indice = input.ReadUInt16(); break;
-                                        case 0x50: case 0x5a: indice = input.ReadByte(); break;
+                                        case 0x4e:
+                                        case 0x58: indice = input.ReadUInt16(); break;
+                                        case 0x50:
+                                        case 0x5a: indice = input.ReadByte(); break;
                                         default: throw new Exception("BCH: Unknow Face Data Format! STOP!");
                                     }
                                     break;
@@ -1820,8 +1837,10 @@ namespace Ohana3DS_Rebirth.Ohana
 
             switch (entryFormat)
             {
-                case 1: case 7: maxValue = getCustomFloat(rawMaxValue, 107); break;
-                case 2: case 4: maxValue = getCustomFloat(rawMaxValue, 111); break;
+                case 1:
+                case 7: maxValue = getCustomFloat(rawMaxValue, 107); break;
+                case 2:
+                case 4: maxValue = getCustomFloat(rawMaxValue, 111); break;
                 case 5: maxValue = getCustomFloat(rawMaxValue, 115); break;
             }
             maxValue = minValue + maxValue;

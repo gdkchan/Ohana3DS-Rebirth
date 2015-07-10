@@ -1133,10 +1133,6 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
-        public class OStepFloat
-        {
-        }
-
         public enum OInterpolationMode
         {
             step = 0,
@@ -1302,10 +1298,12 @@ namespace Ohana3DS_Rebirth.Ohana
             public override float frameSize { get; set; }
             public override OLoopMode loopMode { get; set; }
             public List<OMaterialAnimationData> data;
+            public List<string> textureName;
 
             public OMaterialAnimation()
             {
                 data = new List<OMaterialAnimationData>();
+                textureName = new List<string>();
             }
         }
 
