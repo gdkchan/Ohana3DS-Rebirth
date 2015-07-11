@@ -172,19 +172,19 @@ namespace Ohana3DS_Rebirth.Ohana
         const uint codeFaceUnknow5 = 0x000f0231;
         const uint codeFaceUnknow6 = 0x0008025e;
 
-        const uint codeVerticeVectorsPerEntry = 0x000b02b9;
-        const uint codeVerticeVectorOrder = 0x00010242;
-        const uint codeVerticeUnknow1 = 0x000f02bb;
-        const uint codeVerticeUnknow2 = 0x000f02bc;
-        const uint codeVerticeHeaderData = 0x805f0200;
-        const uint codeVerticeUnknow3 = 0x803f0232;
-        const uint codeVerticePositionOffset = 0x804f02c0;
-        const uint codeVerticeColorScale = 0x000f02c0;
-        const uint codeVerticeScale = 0x007f02c1;
+        const uint codeVertexComponentTypeCount = 0x000b02b9;
+        const uint codeVertexComponentType = 0x00010242;
+        const uint codeVertexUnknow1 = 0x000f02bb;
+        const uint codeVertexUnknow2 = 0x000f02bc;
+        const uint codeVertexComponentHeader = 0x805f0200;
+        const uint codeVertexUnknow3 = 0x803f0232;
+        const uint codeVertexPositionOffset = 0x804f02c0;
+        const uint codeVertexColorScale = 0x000f02c0;
+        const uint codeVertexScale = 0x007f02c1;
 
         const uint codeBlockEnd = 0x000f023d;
 
-        private enum quantization
+        private enum vectorQuantization
         {
             qByte = 0,
             qUByte = 1,
@@ -200,10 +200,19 @@ namespace Ohana3DS_Rebirth.Ohana
             vector4 = 3
         }
 
+        private struct vectorData
+        {
+            public float scale;
+            public vectorQuantization quantization;
+            public vectorType type;
+            public bool isPresent;
+            public bool isUsed;
+        }
+
         #region "Import"
         public static RenderBase.OModelGroup load(string fileName)
         {
-            return load(new FileStream(fileName, FileMode.Open));
+            return load(new MemoryStream(File.ReadAllBytes(fileName)));
         }
 
         public static RenderBase.OModelGroup load(Stream data)
@@ -882,8 +891,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     switch (header.backwardCompatibility)
                     {
                         case 0x20: data.Seek(objectsHeader.materialsTableOffset + (index * 0x58), SeekOrigin.Begin); break;
-                        case 0x21:
-                        case 0x22: data.Seek(objectsHeader.materialsTableOffset + (index * 0x2c), SeekOrigin.Begin); break;
+                        case 0x21: case 0x22: data.Seek(objectsHeader.materialsTableOffset + (index * 0x2c), SeekOrigin.Begin); break;
                         default: throw new Exception(String.Format("BCH: Unknow BCH version r{0}, can't parse Material texture header! STOP!", header.version.ToString()));
                     }
 
@@ -903,8 +911,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             materialCoordinatorOffset = (uint)data.Position;
                             data.Seek(0x30, SeekOrigin.Current);
                             break;
-                        case 0x21:
-                        case 0x22: materialCoordinatorOffset = input.ReadUInt32() + header.mainHeaderOffset; break;
+                        case 0x21: case 0x22: materialCoordinatorOffset = input.ReadUInt32() + header.mainHeaderOffset; break;
                     }
 
                     material.name0 = readString(input, header);
@@ -1201,11 +1208,13 @@ namespace Ohana3DS_Rebirth.Ohana
 
                     uint boneFlags = input.ReadUInt32();
                     bone.billboardMode = (RenderBase.OBillboardMode)((boneFlags >> 16) & 0xf);
+                    bone.isSegmentScaleCompensate = (boneFlags & 0x00400000) > 0;
                     bone.parentId = input.ReadInt16();
                     ushort boneSpacer = input.ReadUInt16();
                     bone.scale = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
                     bone.rotation = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
                     bone.translation = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                    bone.absoluteScale = new RenderBase.OVector3(bone.scale);
 
                     RenderBase.OMatrix boneMatrix = new RenderBase.OMatrix();
                     boneMatrix.M11 = input.ReadSingle();
@@ -1316,20 +1325,24 @@ namespace Ohana3DS_Rebirth.Ohana
 
                     RenderBase.OVector3 positionOffset = new RenderBase.OVector3();
                     uint vertexDataPointerOffset = 0;
-                    uint vertexVectorsPerEntry = 0;
-                    uint vertexVectorOrder = 0;
+                    uint vertexComponentTypeCount = 0;
+                    uint vertexComponentType = 0;
+                    uint vertexComponentIndex = 0;
+                    uint vertexComponentFlags = 0;
                     uint vertexFlags = 0;
                     uint vertexDataOffset = 0;
-                    byte vertexEntryLength = 0;
+                    byte vertexStride = 0;
+                    byte vertexComponentCount = 0;
 
-                    float positionScale = 0;
-                    float normalScale = 0;
-                    float tangentScale = 0;
-                    float colorScale = 0;
-                    float texture0Scale = 0;
-                    float texture1Scale = 0;
-                    float texture2Scale = 0;
-                    float weightScale = 0;
+                    vectorData position = new vectorData();
+                    vectorData normal = new vectorData();
+                    vectorData tangent = new vectorData();
+                    vectorData color = new vectorData();
+                    vectorData texture0 = new vectorData(); //Texture
+                    vectorData texture1 = new vectorData();
+                    vectorData texture2 = new vectorData();
+                    vectorData boneIndex = new vectorData(); //Rigging
+                    vectorData boneWeight = new vectorData();
 
                     uint vertexVectorFlags = input.ReadUInt32();
                     if (vertexVectorFlags == 0xffffffff) break; //No vertex data
@@ -1339,22 +1352,24 @@ namespace Ohana3DS_Rebirth.Ohana
 
                         switch (code)
                         {
-                            case codeVerticeVectorsPerEntry: vertexVectorsPerEntry = input.ReadUInt32(); entry++; break;
-                            case codeVerticeVectorOrder: vertexVectorOrder = input.ReadUInt32(); entry++; break;
-                            case codeVerticeUnknow1: input.ReadUInt32(); entry++; break;
-                            case codeVerticeUnknow2: input.ReadUInt32(); entry++; break;
-                            case codeVerticeHeaderData:
+                            case codeVertexComponentTypeCount: vertexComponentTypeCount = input.ReadUInt32(); entry++; break;
+                            case codeVertexComponentType: vertexComponentType = input.ReadUInt32(); entry++; break;
+                            case codeVertexUnknow1: input.ReadUInt32(); entry++; break;
+                            case codeVertexUnknow2: input.ReadUInt32(); entry++; break;
+                            case codeVertexComponentHeader:
                                 vertexFlags = input.ReadUInt32();
-                                input.ReadUInt32(); //TODO: Figure out what all this data is
+                                vertexComponentFlags = input.ReadUInt32();
                                 vertexDataPointerOffset = (uint)data.Position - header.descriptionOffset;
                                 vertexDataOffset = input.ReadUInt32();
-                                input.ReadUInt32();
-                                vertexEntryLength = (byte)((input.ReadUInt32() >> 16) & 0xff);
-                                input.ReadUInt32();
+                                vertexComponentIndex = input.ReadUInt32();
+                                uint value = input.ReadUInt32();
+                                vertexStride = (byte)((value >> 16) & 0xff);
+                                vertexComponentCount = (byte)(value >> 28);
+                                input.ReadUInt32(); //TODO
                                 input.ReadUInt32();
                                 entry += 7;
                                 break;
-                            case codeVerticeUnknow3:
+                            case codeVertexUnknow3:
                                 input.ReadUInt32();
                                 input.ReadUInt32();
                                 input.ReadUInt32();
@@ -1362,7 +1377,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                 input.ReadUInt32();
                                 entry += 5;
                                 break;
-                            case codeVerticePositionOffset:
+                            case codeVertexPositionOffset:
                                 input.ReadSingle();
                                 positionOffset.z = input.ReadSingle();
                                 positionOffset.y = input.ReadSingle();
@@ -1370,15 +1385,15 @@ namespace Ohana3DS_Rebirth.Ohana
                                 input.ReadSingle();
                                 entry += 5;
                                 break;
-                            case codeVerticeColorScale: colorScale = input.ReadSingle(); entry++; break;
-                            case codeVerticeScale:
-                                tangentScale = input.ReadSingle();
-                                normalScale = input.ReadSingle();
-                                positionScale = input.ReadSingle();
-                                weightScale = input.ReadSingle();
-                                texture2Scale = input.ReadSingle();
-                                texture1Scale = input.ReadSingle();
-                                texture0Scale = input.ReadSingle();
+                            case codeVertexColorScale: color.scale = input.ReadSingle(); entry++; break;
+                            case codeVertexScale:
+                                tangent.scale = input.ReadSingle();
+                                normal.scale = input.ReadSingle();
+                                position.scale = input.ReadSingle();
+                                boneWeight.scale = input.ReadSingle();
+                                texture2.scale = input.ReadSingle();
+                                texture1.scale = input.ReadSingle();
+                                texture0.scale = input.ReadSingle();
                                 input.ReadSingle(); //Custom scales
                                 input.ReadSingle();
                                 input.ReadSingle();
@@ -1401,8 +1416,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             switch (header.backwardCompatibility)
                             {
                                 case 0x20: vertexDataOffset += header.dataOffset; break;
-                                case 0x21:
-                                case 0x22:
+                                case 0x21: case 0x22:
                                     switch (flags)
                                     {
                                         case 0x4c: vertexDataOffset += header.dataOffset; dbgVertexDataOffsetCheck = true; break;
@@ -1476,18 +1490,15 @@ namespace Ohana3DS_Rebirth.Ohana
                                 switch (header.backwardCompatibility)
                                 {
                                     case 0x20: faceDataOffset += header.dataOffset; break;
-                                    case 0x21:
-                                    case 0x22:
+                                    case 0x21: case 0x22:
                                         switch (flags)
                                         {
-                                            case 0x4e:
-                                            case 0x50:
+                                            case 0x4e: case 0x50:
                                                 faceDataOffset += header.dataOffset;
                                                 faceDataFormat = flags;
                                                 dbgFaceDataOffsetCheck = true;
                                                 break;
-                                            case 0x58:
-                                            case 0x5a:
+                                            case 0x58: case 0x5a:
                                                 faceDataOffset += header.dataExtendedOffset;
                                                 faceDataFormat = flags;
                                                 dbgFaceDataOffsetCheck = true;
@@ -1503,81 +1514,45 @@ namespace Ohana3DS_Rebirth.Ohana
                         if (!dbgFaceDataOffsetCheck) throw new Exception("BCH: Face Data Offset pointer not found on Relocation Table! STOP!");
 
                         #region "Vertex types/quantizations"
-                        uint positionQuantization = 0;
-                        uint normalQuantization = 0;
-                        uint tangentQuantization = 0;
-                        uint colorQuantization = 0;
-                        uint texture0Quantization = 0;
-                        uint texture1Quantization = 0;
-                        uint texture2Quantization = 0;
-                        uint boneIndexQuantization = 0;
-                        uint boneWeightQuantization = 0;
-
-                        uint positionType = 0;
-                        uint normalType = 0;
-                        uint tangentType = 0;
-                        uint colorType = 0;
-                        uint texture0Type = 0;
-                        uint texture1Type = 0;
-                        uint texture2Type = 0;
-                        uint boneIndexType = 0;
-                        uint boneWeightType = 0;
-
                         int uvCount = 0;
 
-                        for (int nibble = 0; nibble <= vertexVectorsPerEntry; nibble++)
+                        for (int nibble = 0; nibble < vertexComponentTypeCount + 1; nibble++)
                         {
-                            byte value = (byte)((vertexVectorOrder >> (nibble * 4)) & 0xf);
+                            byte value = (byte)((vertexComponentType >> (nibble * 4)) & 0xf);
                             byte vectorFlags = (byte)((vertexFlags >> (nibble * 4)) & 0xf);
+                            vectorType type = (vectorType)(vectorFlags >> 2);
+                            vectorQuantization quantization = (vectorQuantization)(vectorFlags & 3);
+
+                            //Check if the current index exists on the uint with index nibbles.
+                            //It it doesnt, then it will be necessary to add default values (at least for weights and bone index)
+                            bool present = false;
+                            for (int n2 = 0; n2 < vertexComponentCount; n2++)
+                            {
+                                if (((vertexComponentIndex >> (n2 * 4)) & 0xf) == nibble)
+                                {
+                                    present = true;
+                                    break;
+                                }
+                            }
 
                             switch (value)
                             {
-                                case 0:
-                                    positionType = (uint)(vectorFlags >> 2);
-                                    positionQuantization = (uint)(vectorFlags & 3);
-                                    break;
-                                case 1:
-                                    normalType = (uint)(vectorFlags >> 2);
-                                    normalQuantization = (uint)(vectorFlags & 3);
-                                    break;
-                                case 2:
-                                    tangentType = (uint)(vectorFlags >> 2);
-                                    tangentQuantization = (uint)(vectorFlags & 3);
-                                    break;
-                                case 3:
-                                    colorType = (uint)(vectorFlags >> 2);
-                                    colorQuantization = (uint)(vectorFlags & 3);
-                                    break;
-                                case 4:
-                                    texture0Type = (uint)(vectorFlags >> 2);
-                                    texture0Quantization = (uint)(vectorFlags & 3);
-                                    uvCount++;
-                                    break;
-                                case 5:
-                                    texture1Type = (uint)(vectorFlags >> 2);
-                                    texture1Quantization = (uint)(vectorFlags & 3);
-                                    uvCount++;
-                                    break;
-                                case 6:
-                                    texture2Type = (uint)(vectorFlags >> 2);
-                                    texture2Quantization = (uint)(vectorFlags & 3);
-                                    uvCount++;
-                                    break;
-                                case 7:
-                                    boneIndexType = (uint)(vectorFlags >> 2);
-                                    boneIndexQuantization = (uint)(vectorFlags & 3);
-                                    break;
-                                case 8:
-                                    boneWeightType = (uint)(vectorFlags >> 2);
-                                    boneWeightQuantization = (uint)(vectorFlags & 3);
-                                    break;
+                                case 0: position.type = type; position.quantization = quantization; break;
+                                case 1: normal.type = type; normal.quantization = quantization; normal.isPresent = present; normal.isUsed = true; break;
+                                case 2: tangent.type = type; tangent.quantization = quantization; break;
+                                case 3: color.type = type; color.quantization = quantization; break;
+                                case 4: texture0.type = type; texture0.quantization = quantization; uvCount++; break;
+                                case 5: texture1.type = type; texture1.quantization = quantization; uvCount++; break;
+                                case 6: texture2.type = type; texture2.quantization = quantization; uvCount++; break;
+                                case 7: boneIndex.type = type; boneIndex.quantization = quantization; boneIndex.isPresent = present; boneIndex.isUsed = true; break;
+                                case 8: boneWeight.type = type; boneWeight.quantization = quantization; boneWeight.isPresent = present; boneWeight.isUsed = true; break;
                             }
                         }
 
                         obj.texUVCount = uvCount;
                         #endregion
 
-                        obj.hasNormal = (vectorType)normalType == vectorType.vector3;
+                        obj.hasNormal = normal.isPresent && normal.isUsed;
 
                         data.Seek(faceDataOffset, SeekOrigin.Begin);
                         for (int faceIndex = 0; faceIndex < faceDataEntries; faceIndex++)
@@ -1594,112 +1569,90 @@ namespace Ohana3DS_Rebirth.Ohana
                                         default: throw new Exception("BCH: Unknow Face Data Format! STOP!");
                                     }
                                     break;
-                                case 0x21:
-                                case 0x22:
+                                case 0x21: case 0x22:
                                     switch (faceDataFormat)
                                     {
-                                        case 0x4e:
-                                        case 0x58: indice = input.ReadUInt16(); break;
-                                        case 0x50:
-                                        case 0x5a: indice = input.ReadByte(); break;
+                                        case 0x4e: case 0x58: indice = input.ReadUInt16(); break;
+                                        case 0x50: case 0x5a: indice = input.ReadByte(); break;
                                         default: throw new Exception("BCH: Unknow Face Data Format! STOP!");
                                     }
                                     break;
                                 default: throw new Exception(String.Format("BCH: Unknow BCH version r{0}, can't parse Face Data Format! STOP!", header.version.ToString()));
                             }
 
-                            long position = data.Position;
-
-                            data.Seek(vertexDataOffset + (indice * vertexEntryLength), SeekOrigin.Begin);
+                            long dataPosition = data.Position;
+                            long vertexOffset = vertexDataOffset + (indice * vertexStride);
+                            data.Seek(vertexOffset, SeekOrigin.Begin);
+                            
                             RenderBase.OVertex vertex = new RenderBase.OVertex();
                             vertex.diffuseColor = 0xffffffff;
 
-                            for (int vector = 0; vector <= vertexVectorsPerEntry; vector++)
+                            for (int component = 0; component < vertexComponentCount; component++)
                             {
-                                byte value = (byte)((vertexVectorOrder >> (vector * 4)) & 0xf);
+                                int componentIndex = (int)((vertexComponentIndex >> (component * 4)) & 0xf);
+                                byte value = (byte)((vertexComponentType >> (componentIndex * 4)) & 0xf);
 
                                 switch (value)
                                 {
                                     case 0: //Position
-                                        RenderBase.OVector4 positionVector = getVector(input, (quantization)positionQuantization, (vectorType)positionType);
-                                        float x = (positionVector.x * positionScale) + positionOffset.x;
-                                        float y = (positionVector.y * positionScale) + positionOffset.y;
-                                        float z = (positionVector.z * positionScale) + positionOffset.z;
+                                        RenderBase.OVector4 positionVector = getVector(input, position.quantization, position.type);
+                                        float x = (positionVector.x * position.scale) + positionOffset.x;
+                                        float y = (positionVector.y * position.scale) + positionOffset.y;
+                                        float z = (positionVector.z * position.scale) + positionOffset.z;
                                         vertex.position = new RenderBase.OVector3(x, y, z);
                                         break;
                                     case 1: //Normal
-                                        RenderBase.OVector4 normalVector = getVector(input, (quantization)normalQuantization, (vectorType)normalType);
-                                        if ((vectorType)normalType == vectorType.vector3) vertex.normal = new RenderBase.OVector3(normalVector.x * normalScale, normalVector.y * normalScale, normalVector.z * normalScale);
+                                        RenderBase.OVector4 normalVector = getVector(input, normal.quantization, normal.type);
+                                        vertex.normal = new RenderBase.OVector3(normalVector.x * normal.scale, normalVector.y * normal.scale, normalVector.z * normal.scale);
                                         break;
                                     case 2: //Tangent
-                                        RenderBase.OVector4 tangentVector = getVector(input, (quantization)tangentQuantization, (vectorType)tangentType);
-                                        if ((vectorType)tangentType == vectorType.vector3) vertex.tangent = new RenderBase.OVector3(tangentVector.x * tangentScale, tangentVector.y * tangentScale, tangentVector.z * tangentScale);
+                                        RenderBase.OVector4 tangentVector = getVector(input, tangent.quantization, tangent.type);
+                                        vertex.tangent = new RenderBase.OVector3(tangentVector.x * tangent.scale, tangentVector.y * tangent.scale, tangentVector.z * tangent.scale);
                                         break;
                                     case 3: //Color
-                                        RenderBase.OVector4 color = getVector(input, (quantization)colorQuantization, (vectorType)colorType);
-
-                                        if ((quantization)colorQuantization == quantization.qUByte && (vectorType)colorType == vectorType.vector4)
-                                        {
-                                            uint r = (uint)color.x;
-                                            uint g = (uint)color.y;
-                                            uint b = (uint)color.z;
-                                            uint a = (uint)color.w;
-                                            vertex.diffuseColor = b | (g << 8) | (r << 16) | (a << 24);
-                                        }
+                                        RenderBase.OVector4 colorRgba = getVector(input, color.quantization, color.type);
+                                        uint r = (uint)((colorRgba.x * color.scale) * 0xff);
+                                        uint g = (uint)((colorRgba.y * color.scale) * 0xff);
+                                        uint b = (uint)((colorRgba.z * color.scale) * 0xff);
+                                        uint a = (uint)((colorRgba.w * color.scale) * 0xff);
+                                        vertex.diffuseColor = b | (g << 8) | (r << 16) | (a << 24);
                                         break;
                                     case 4: //Texture 0
-                                        RenderBase.OVector4 tex0Vector = getVector(input, (quantization)texture0Quantization, (vectorType)texture0Type);
-                                        vertex.texture0 = new RenderBase.OVector2(tex0Vector.x * texture0Scale, tex0Vector.y * texture0Scale);
+                                        RenderBase.OVector4 tex0Vector = getVector(input, texture0.quantization, texture0.type);
+                                        vertex.texture0 = new RenderBase.OVector2(tex0Vector.x * texture0.scale, tex0Vector.y * texture0.scale);
                                         break;
                                     case 5: //Texture 1
-                                        RenderBase.OVector4 tex1Vector = getVector(input, (quantization)texture1Quantization, (vectorType)texture1Type);
-                                        vertex.texture1 = new RenderBase.OVector2(tex1Vector.x * texture1Scale, tex1Vector.y * texture1Scale);
+                                        RenderBase.OVector4 tex1Vector = getVector(input, texture1.quantization, texture1.type);
+                                        vertex.texture1 = new RenderBase.OVector2(tex1Vector.x * texture1.scale, tex1Vector.y * texture1.scale);
                                         break;
                                     case 6: //Texture 2
-                                        RenderBase.OVector4 tex2Vector = getVector(input, (quantization)texture2Quantization, (vectorType)texture2Type);
-                                        vertex.texture2 = new RenderBase.OVector2(tex2Vector.x * texture2Scale, tex2Vector.y * texture2Scale);
+                                        RenderBase.OVector4 tex2Vector = getVector(input, texture2.quantization, texture2.type);
+                                        vertex.texture2 = new RenderBase.OVector2(tex2Vector.x * texture2.scale, tex2Vector.y * texture2.scale);
                                         break;
                                     case 7: //Bone Index
-                                        for (int b = 0; b < boneIndexType + 1; b++)
-                                        {
-                                            if ((quantization)boneIndexQuantization == quantization.qUByte)
-                                            {
-                                                byte nodeIndex = input.ReadByte();
-                                                if (nodeIndex < nodeList.Count) vertex.addNode(nodeList[nodeIndex]);
-                                            }
-                                            else
-                                            {
-                                                vertex.addNode(nodeList[0]); //???
-                                            }
-                                        }
+                                        RenderBase.OVector4 bone = getVector(input, boneIndex.quantization, boneIndex.type);
+                                        vertex.addNode(nodeList[(int)bone.x]);
+                                        if (boneIndex.type > vectorType.vector1) vertex.addNode(nodeList[(int)bone.y]);
+                                        if (boneIndex.type > vectorType.vector2) vertex.addNode(nodeList[(int)bone.z]);
+                                        if (boneIndex.type > vectorType.vector3) vertex.addNode(nodeList[(int)bone.w]);
                                         break;
                                     case 8: //Bone Weight
-                                        for (int b = 0; b < boneWeightType + 1; b++)
-                                        {
-                                            float boneWeight;
-                                            switch ((quantization)boneWeightQuantization)
-                                            {
-                                                case quantization.qUByte:
-                                                    boneWeight = (float)input.ReadByte() * weightScale;
-                                                    vertex.addWeight(boneWeight);
-                                                    break;
-                                                case quantization.qShort:
-                                                    boneWeight = (float)input.ReadInt16() * weightScale;
-                                                    vertex.addWeight(boneWeight);
-                                                    break;
-                                                case quantization.qFloat: vertex.addWeight(input.ReadSingle()); break;
-                                                default: vertex.addWeight(1.0f); break;
-                                            }
-                                        }
+                                        RenderBase.OVector4 weight = getVector(input, boneWeight.quantization, boneWeight.type);
+                                        vertex.addWeight(weight.x * boneWeight.scale);
+                                        if (boneWeight.type > vectorType.vector1) vertex.addWeight(weight.y * boneWeight.scale);
+                                        if (boneWeight.type > vectorType.vector2) vertex.addWeight(weight.z * boneWeight.scale);
+                                        if (boneWeight.type > vectorType.vector3) vertex.addWeight(weight.w * boneWeight.scale);
                                         break;
                                 }
                             }
+
+                            if (!boneIndex.isPresent && boneIndex.isUsed) vertex.addNode(nodeList[0]);
+                            if (!boneWeight.isPresent && boneWeight.isUsed) vertex.addWeight(1);
 
                             if (skinningMode == RenderBase.OSkinningMode.rigidSkinning && vertex.node.Count > 0)
                             {
                                 //Note: Rigid skinning can have only one bone per vertex
                                 //Note2: Vertex with Rigid skinning seems to be always have meshes centered, so is necessary to make them follow the skeleton
-                                //^ but I'm not sure :/
                                 vertex.position = RenderBase.OVector3.transform(vertex.position, skeletonTransform[vertex.node[0]]);
                             }
 
@@ -1714,12 +1667,17 @@ namespace Ohana3DS_Rebirth.Ohana
                             obj.addVertex(vertex);
                             vertexBuffer.Add(RenderBase.convertVertex(vertex));
 
-                            data.Seek(position, SeekOrigin.Begin);
+                            data.Seek(dataPosition, SeekOrigin.Begin);
                         }
                     }
 
                     obj.renderBuffer = vertexBuffer.ToArray();
                     model.addObject(obj);
+                }
+
+                for (int index = 0; index < objectsHeader.skeletonEntries; index++)
+                {
+                    scaleSkeleton(model.skeleton, index, index);
                 }
 
                 models.addModel(model);
@@ -1732,6 +1690,28 @@ namespace Ohana3DS_Rebirth.Ohana
         }
 
         /// <summary>
+        ///     Scales all child bones of the current bone.
+        /// </summary>
+        /// <param name="skeleton">The complete skeleton</param>
+        /// <param name="index">Index of the child bone</param>
+        /// <param name="scale">Index of the parent bone</param>
+        private static void scaleSkeleton(List<RenderBase.OBone> skeleton, int index, int parentIndex)
+        {
+            if (index != parentIndex)
+            {
+                skeleton[parentIndex].absoluteScale.x *= skeleton[index].scale.x;
+                skeleton[parentIndex].absoluteScale.y *= skeleton[index].scale.y;
+                skeleton[parentIndex].absoluteScale.z *= skeleton[index].scale.z;
+
+                skeleton[parentIndex].translation.x *= skeleton[index].scale.x;
+                skeleton[parentIndex].translation.y *= skeleton[index].scale.y;
+                skeleton[parentIndex].translation.z *= skeleton[index].scale.z;
+            }
+
+            if (skeleton[index].parentId > -1) scaleSkeleton(skeleton, skeleton[index].parentId, parentIndex);
+        }
+
+        /// <summary>
         ///     Transforms a Skeleton from relative to absolute positions.
         /// </summary>
         /// <param name="skeleton">The skeleton</param>
@@ -1739,6 +1719,7 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="target">Target matrix to save bone transformation</param>
         private static void transformSkeleton(List<RenderBase.OBone> skeleton, int index, ref RenderBase.OMatrix target)
         {
+            target *= RenderBase.OMatrix.scale(skeleton[index].scale);
             target *= RenderBase.OMatrix.rotateX(skeleton[index].rotation.x);
             target *= RenderBase.OMatrix.rotateY(skeleton[index].rotation.y);
             target *= RenderBase.OMatrix.rotateZ(skeleton[index].rotation.z);
@@ -1746,31 +1727,31 @@ namespace Ohana3DS_Rebirth.Ohana
             if (skeleton[index].parentId > -1) transformSkeleton(skeleton, skeleton[index].parentId, ref target);
         }
 
-        private static RenderBase.OVector4 getVector(BinaryReader input, quantization quantization, vectorType type)
+        private static RenderBase.OVector4 getVector(BinaryReader input, vectorQuantization quantization, vectorType type)
         {
             RenderBase.OVector4 output = new RenderBase.OVector4();
 
             switch (quantization)
             {
-                case quantization.qByte:
+                case vectorQuantization.qByte:
                     output.x = (sbyte)input.ReadByte();
                     if (type > vectorType.vector1) output.y = (sbyte)input.ReadByte();
                     if (type > vectorType.vector2) output.z = (sbyte)input.ReadByte();
                     if (type > vectorType.vector3) output.w = (sbyte)input.ReadByte();
                     break;
-                case quantization.qUByte:
+                case vectorQuantization.qUByte:
                     output.x = input.ReadByte();
                     if (type > vectorType.vector1) output.y = input.ReadByte();
                     if (type > vectorType.vector2) output.z = input.ReadByte();
                     if (type > vectorType.vector3) output.w = input.ReadByte();
                     break;
-                case quantization.qShort:
+                case vectorQuantization.qShort:
                     output.x = input.ReadInt16();
                     if (type > vectorType.vector1) output.y = input.ReadInt16();
                     if (type > vectorType.vector2) output.z = input.ReadInt16();
                     if (type > vectorType.vector3) output.w = input.ReadInt16();
                     break;
-                case quantization.qFloat:
+                case vectorQuantization.qFloat:
                     output.x = input.ReadSingle();
                     if (type > vectorType.vector1) output.y = input.ReadSingle();
                     if (type > vectorType.vector2) output.z = input.ReadSingle();
@@ -1837,10 +1818,8 @@ namespace Ohana3DS_Rebirth.Ohana
 
             switch (entryFormat)
             {
-                case 1:
-                case 7: maxValue = getCustomFloat(rawMaxValue, 107); break;
-                case 2:
-                case 4: maxValue = getCustomFloat(rawMaxValue, 111); break;
+                case 1: case 7: maxValue = getCustomFloat(rawMaxValue, 107); break;
+                case 2: case 4: maxValue = getCustomFloat(rawMaxValue, 111); break;
                 case 5: maxValue = getCustomFloat(rawMaxValue, 115); break;
             }
             maxValue = minValue + maxValue;
@@ -1887,7 +1866,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                 break;
                             case 1:
                                 value = input.ReadUInt32();
-                                hermitePoint.frame = (float)(value & 0xfff);
+                                hermitePoint.frame = frame.startFrame + (float)(value & 0xfff);
                                 interpolation = (float)(value >> 12) / 0x100000;
                                 hermitePoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
                                 hermitePoint.inSlope = (float)input.ReadInt16() / 256;
@@ -1896,7 +1875,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             case 2:
                                 value = input.ReadUInt32();
                                 uint inSlopeLow = value >> 24;
-                                hermitePoint.frame = (float)(value & 0xff);
+                                hermitePoint.frame = frame.startFrame + (float)(value & 0xff);
                                 interpolation = (float)((value >> 8) & 0xffff) / 0x10000;
                                 hermitePoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
                                 value = input.ReadUInt16();
@@ -1920,7 +1899,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                 break;
                             case 5:
                                 value = input.ReadUInt32();
-                                hermitePoint.frame = (float)(value & 0xff) * frameScale;
+                                hermitePoint.frame = frame.startFrame + ((float)(value & 0xff) * frameScale);
                                 interpolation = (float)((value >> 8) & 0xfff) / 0x1000;
                                 hermitePoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
                                 hermitePoint.inSlope = get12bValue((int)(value >> 20));

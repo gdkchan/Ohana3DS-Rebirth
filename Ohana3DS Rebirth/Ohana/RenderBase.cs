@@ -226,6 +226,12 @@ namespace Ohana3DS_Rebirth.Ohana
             public float u2, v2;
         }
 
+        /// <summary>
+        ///     Converts OVertex to CustomVertex.
+        ///     A CustomVertex buffer can be directly passed to the renderer.
+        /// </summary>
+        /// <param name="input">The OVertex to be converted</param>
+        /// <returns>The CustomVertex</returns>
         public static CustomVertex convertVertex(OVertex input)
         {
             CustomVertex vertex;
@@ -480,9 +486,11 @@ namespace Ohana3DS_Rebirth.Ohana
             public OVector3 translation;
             public OVector3 rotation;
             public OVector3 scale;
+            public OVector3 absoluteScale;
             public short parentId;
             public string name = null;
             public OBillboardMode billboardMode;
+            public bool isSegmentScaleCompensate;
 
             /// <summary>
             ///     Creates a new Bone.

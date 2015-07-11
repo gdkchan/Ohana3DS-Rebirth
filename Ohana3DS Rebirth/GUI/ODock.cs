@@ -1110,14 +1110,13 @@ namespace Ohana3DS_Rebirth.GUI
         {
             Control window = (Control)sender;
             int infoIndex = getWindowInfoIndex((int)window.Tag);
+            windowInfo[infoIndex].window.BringToFront();
 
             if (windowInfo[infoIndex].dock != dockMode.Floating)
             {
-                // dockMode oldDock = windowInfo[infoIndex].dock;
                 windowInfo[infoIndex].dock = dockMode.Floating;
                 windowInfo[infoIndex].window.Size = windowInfo[infoIndex].originalSize;
-                windowInfo[infoIndex].window.BringToFront();
-
+                
                 autoArrangeAll();
 
                 calculateProportions();

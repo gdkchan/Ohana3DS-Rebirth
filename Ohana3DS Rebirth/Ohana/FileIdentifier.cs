@@ -39,6 +39,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
             switch (magic2b)
             {
+                case "PC":
                 case "GR":
                 case "MM":
                     return fileFormat.PkmnContainer;

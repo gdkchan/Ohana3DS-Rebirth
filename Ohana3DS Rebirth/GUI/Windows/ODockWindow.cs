@@ -112,8 +112,8 @@ namespace Ohana3DS_Rebirth.GUI
         {
             if (drag)
             {
-                int x = Math.Max(0, Math.Min(container.Width - 1, Cursor.Position.X - mouseX));
-                int y = Math.Max(0, Math.Min(container.Height - 1, Cursor.Position.Y - mouseY));
+                int x = Math.Max(-(WindowTop.Width - 40), Math.Min(container.Width - 8, Cursor.Position.X - mouseX));
+                int y = Math.Max(-(WindowTop.Height - 8), Math.Min(container.Height - 8, Cursor.Position.Y - mouseY));
                 Location = new Point(x, y);
                 BringToFront();
             }

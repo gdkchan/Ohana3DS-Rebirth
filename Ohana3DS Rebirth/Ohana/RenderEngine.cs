@@ -283,7 +283,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
                 if (currentCamera == -1)
                 {
-                    device.Transform.Projection = Matrix.PerspectiveFovLH((float)Math.PI / 4, (float)pParams.BackBufferWidth / pParams.BackBufferHeight, 0.1f, 500.0f);
+                    device.Transform.Projection = Matrix.PerspectiveFovLH((float)Math.PI / 4, (float)pParams.BackBufferWidth / pParams.BackBufferHeight, 0.01f, 1000.0f);
                     device.Transform.View = Matrix.LookAtLH(new Vector3(0.0f, 0.0f, 20.0f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 0.0f));
                 }
                 else
@@ -421,7 +421,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                         if (b.translation.exists)
                                         {
                                             RenderBase.OVector4 t = b.translation.vector[(int)ctrlSA.Frame % b.translation.vector.Count];
-                                            newBone.translation = new RenderBase.OVector3(t.x, t.y, t.z);
+                                            newBone.translation = new RenderBase.OVector3(t.x * mdl.skeleton[index].absoluteScale.x, t.y * mdl.skeleton[index].absoluteScale.y, t.z * mdl.skeleton[index].absoluteScale.z);
                                         }
                                     }
                                     else
@@ -429,9 +429,21 @@ namespace Ohana3DS_Rebirth.Ohana
                                         if (b.rotationX.exists) newBone.rotation.x = AnimationHelper.getKey(b.rotationX, AnimationHelper.getFrameNumber(b.rotationX, ctrlSA.Frame));
                                         if (b.rotationY.exists) newBone.rotation.y = AnimationHelper.getKey(b.rotationY, AnimationHelper.getFrameNumber(b.rotationY, ctrlSA.Frame));
                                         if (b.rotationZ.exists) newBone.rotation.z = AnimationHelper.getKey(b.rotationZ, AnimationHelper.getFrameNumber(b.rotationZ, ctrlSA.Frame));
-                                        if (b.translationX.exists) newBone.translation.x = AnimationHelper.getKey(b.translationX, AnimationHelper.getFrameNumber(b.translationX, ctrlSA.Frame));
-                                        if (b.translationY.exists) newBone.translation.y = AnimationHelper.getKey(b.translationY, AnimationHelper.getFrameNumber(b.translationY, ctrlSA.Frame));
-                                        if (b.translationZ.exists) newBone.translation.z = AnimationHelper.getKey(b.translationZ, AnimationHelper.getFrameNumber(b.translationZ, ctrlSA.Frame));
+                                        if (b.translationX.exists)
+                                        {
+                                            newBone.translation.x = AnimationHelper.getKey(b.translationX, AnimationHelper.getFrameNumber(b.translationX, ctrlSA.Frame));
+                                            newBone.translation.x *= mdl.skeleton[index].absoluteScale.x;
+                                        }
+                                        if (b.translationY.exists)
+                                        {
+                                            newBone.translation.y = AnimationHelper.getKey(b.translationY, AnimationHelper.getFrameNumber(b.translationY, ctrlSA.Frame));
+                                            newBone.translation.y *= mdl.skeleton[index].absoluteScale.y;
+                                        }
+                                        if (b.translationZ.exists)
+                                        {
+                                            newBone.translation.z = AnimationHelper.getKey(b.translationZ, AnimationHelper.getFrameNumber(b.translationZ, ctrlSA.Frame));
+                                            newBone.translation.z *= mdl.skeleton[index].absoluteScale.z;
+                                        }
                                     }
 
                                     break;
@@ -764,12 +776,15 @@ namespace Ohana3DS_Rebirth.Ohana
                                 Vector4 p = new Vector4();
 
                                 int weightIndex = 0;
+                                float weightSum = 0;
                                 foreach (int boneIndex in input.node)
                                 {
                                     float weight = 1;
                                     if (weightIndex < input.weight.Count) weight = input.weight[weightIndex++];
+                                    weightSum += weight;
                                     p += Vector3.Transform(position, animationSkeletonTransform[boneIndex]) * weight;
                                 }
+                                if (weightSum < 1) p += (new Vector4(position.X, position.Y, position.Z, 0) * (1 - weightSum));
 
                                 buffer[vertex].x = p.X;
                                 buffer[vertex].y = p.Y;

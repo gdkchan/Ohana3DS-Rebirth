@@ -34,7 +34,7 @@
             this.WindowManager = new Ohana3DS_Rebirth.GUI.OWindowManager(this.components);
             this.MainMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.mnuOpen = new System.Windows.Forms.ToolStripMenuItem();
-            this.mnuImport = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.ContentContainer.SuspendLayout();
             this.MainMenu.SuspendLayout();
             this.SuspendLayout();
@@ -81,22 +81,23 @@
             // 
             this.MainMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mnuOpen,
-            this.mnuImport});
+            this.mnuAbout});
             this.MainMenu.Name = "MainMenu";
-            this.MainMenu.Size = new System.Drawing.Size(111, 48);
+            this.MainMenu.Size = new System.Drawing.Size(153, 70);
             // 
             // mnuOpen
             // 
             this.mnuOpen.Name = "mnuOpen";
-            this.mnuOpen.Size = new System.Drawing.Size(110, 22);
+            this.mnuOpen.Size = new System.Drawing.Size(152, 22);
             this.mnuOpen.Text = "&Open";
             this.mnuOpen.Click += new System.EventHandler(this.mnuOpen_Click);
             // 
-            // mnuImport
+            // mnuAbout
             // 
-            this.mnuImport.Name = "mnuImport";
-            this.mnuImport.Size = new System.Drawing.Size(110, 22);
-            this.mnuImport.Text = "&Import";
+            this.mnuAbout.Name = "mnuAbout";
+            this.mnuAbout.Size = new System.Drawing.Size(152, 22);
+            this.mnuAbout.Text = "&About";
+            this.mnuAbout.Click += new System.EventHandler(this.mnuAbout_Click);
             // 
             // FrmMain
             // 
@@ -122,6 +123,6 @@
         private GUI.OWindowManager WindowManager;
         private System.Windows.Forms.ContextMenuStrip MainMenu;
         private System.Windows.Forms.ToolStripMenuItem mnuOpen;
-        private System.Windows.Forms.ToolStripMenuItem mnuImport;
+        private System.Windows.Forms.ToolStripMenuItem mnuAbout;
     }
 }

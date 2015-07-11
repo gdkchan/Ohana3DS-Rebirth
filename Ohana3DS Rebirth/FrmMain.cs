@@ -40,6 +40,11 @@ namespace Ohana3DS_Rebirth
             if (e.Button == MouseButtons.Left) MainMenu.Show(Left + LblTitle.Left, Top + LblTitle.Top + LblTitle.Height);
         }
 
+        private void mnuAbout_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Ohana3DS Rebirth made by gdkchan.", "About", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
         private void mnuOpen_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openDlg = new OpenFileDialog())
@@ -76,11 +81,20 @@ namespace Ohana3DS_Rebirth
 
             switch (format)
             {
-                case FileIdentifier.fileFormat.H3D: launchModel(BCH.load(data), name); break;
+                case FileIdentifier.fileFormat.H3D:
+                    byte[] buffer = new byte[data.Length];
+                    data.Read(buffer, 0, buffer.Length);
+                    data.Close();
+                    data.Dispose();
+                    launchModel(BCH.load(new MemoryStream(buffer)), name);
+                    break;
                 case FileIdentifier.fileFormat.PkmnContainer:
                     Ohana.Containers.GenericContainer.OContainer container = Ohana.Containers.PkmnContainer.load(data);
                     switch (container.fileIdentifier)
                     {
+                        case "PC": //Pokémon model
+                            launchModel(BCH.load(new MemoryStream(container.content[0].data)), name);
+                            break;
                         case "MM": //Pokémon Overworld model
                             launchModel(BCH.load(new MemoryStream(container.content[0].data)), name);
                             break;

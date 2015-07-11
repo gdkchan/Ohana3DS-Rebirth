@@ -39,9 +39,9 @@ namespace Ohana3DS_Rebirth.Ohana.GenericFormats
                 foreach (RenderBase.OBone bone in mdl.skeleton)
                 {
                     string line = index.ToString();
-                    line += " " + getString(bone.translation.x * bone.scale.x);
-                    line += " " + getString(bone.translation.y * bone.scale.y);
-                    line += " " + getString(bone.translation.z * bone.scale.z);
+                    line += " " + getString(bone.translation.x);
+                    line += " " + getString(bone.translation.y);
+                    line += " " + getString(bone.translation.z);
                     line += " " + getString(bone.rotation.x);
                     line += " " + getString(bone.rotation.y);
                     line += " " + getString(bone.rotation.z);
@@ -69,18 +69,30 @@ namespace Ohana3DS_Rebirth.Ohana.GenericFormats
                                 if (b.rotationX.exists) newBone.rotation.x = AnimationHelper.getKey(b.rotationX, AnimationHelper.getFrameNumber(b.rotationX, frame));
                                 if (b.rotationY.exists) newBone.rotation.y = AnimationHelper.getKey(b.rotationY, AnimationHelper.getFrameNumber(b.rotationY, frame));
                                 if (b.rotationZ.exists) newBone.rotation.z = AnimationHelper.getKey(b.rotationZ, AnimationHelper.getFrameNumber(b.rotationZ, frame));
-                                if (b.translationX.exists) newBone.translation.x = AnimationHelper.getKey(b.translationX, AnimationHelper.getFrameNumber(b.translationX, frame));
-                                if (b.translationY.exists) newBone.translation.y = AnimationHelper.getKey(b.translationY, AnimationHelper.getFrameNumber(b.translationY, frame));
-                                if (b.translationZ.exists) newBone.translation.z = AnimationHelper.getKey(b.translationZ, AnimationHelper.getFrameNumber(b.translationZ, frame));
+                                if (b.translationX.exists)
+                                {
+                                    newBone.translation.x = AnimationHelper.getKey(b.translationX, AnimationHelper.getFrameNumber(b.translationX, frame));
+                                    newBone.translation.x *= mdl.skeleton[index].absoluteScale.x;
+                                }
+                                if (b.translationY.exists)
+                                {
+                                    newBone.translation.y = AnimationHelper.getKey(b.translationY, AnimationHelper.getFrameNumber(b.translationY, frame));
+                                    newBone.translation.y *= mdl.skeleton[index].absoluteScale.y;
+                                }
+                                if (b.translationZ.exists)
+                                {
+                                    newBone.translation.z = AnimationHelper.getKey(b.translationZ, AnimationHelper.getFrameNumber(b.translationZ, frame));
+                                    newBone.translation.z *= mdl.skeleton[index].absoluteScale.z;
+                                }
 
                                 break;
                             }
                         }
 
                         string line = index.ToString();
-                        line += " " + getString(newBone.translation.x * mdl.skeleton[index].scale.x);
-                        line += " " + getString(newBone.translation.y * mdl.skeleton[index].scale.y);
-                        line += " " + getString(newBone.translation.z * mdl.skeleton[index].scale.z);
+                        line += " " + getString(newBone.translation.x);
+                        line += " " + getString(newBone.translation.y);
+                        line += " " + getString(newBone.translation.z);
                         line += " " + getString(newBone.rotation.x);
                         line += " " + getString(newBone.rotation.y);
                         line += " " + getString(newBone.rotation.z);
