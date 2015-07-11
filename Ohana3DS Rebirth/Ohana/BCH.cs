@@ -1649,7 +1649,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             if (!boneIndex.isPresent && boneIndex.isUsed) vertex.addNode(nodeList[0]);
                             if (!boneWeight.isPresent && boneWeight.isUsed) vertex.addWeight(1);
 
-                            if (skinningMode == RenderBase.OSkinningMode.rigidSkinning && vertex.node.Count > 0)
+                            if ((skinningMode == RenderBase.OSkinningMode.rigidSkinning || skinningMode == RenderBase.OSkinningMode.none) && vertex.node.Count > 0)
                             {
                                 //Note: Rigid skinning can have only one bone per vertex
                                 //Note2: Vertex with Rigid skinning seems to be always have meshes centered, so is necessary to make them follow the skeleton

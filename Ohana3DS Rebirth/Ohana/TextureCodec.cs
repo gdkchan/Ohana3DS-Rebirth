@@ -32,6 +32,7 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             byte[] output = new byte[width * height * 4];
             long dataOffset = 0;
+            bool toggle = false;
 
             switch (format)
             {
@@ -259,19 +260,15 @@ namespace Ohana3DS_Rebirth.Ohana
                             {
                                 int x = tileOrder[pixel] % 8;
                                 int y = (tileOrder[pixel] - x) / 8;
-                                long outputOffset = ((tX * 8) + x + (((tY * 8 + y)) * width)) * 8;
+                                long outputOffset = ((tX * 8) + x + (((tY * 8 + y)) * width)) * 4;
 
-                                output[outputOffset] = (byte)(data[dataOffset / 2] >> 4);
-                                output[outputOffset + 1] = (byte)(data[dataOffset / 2] >> 4);
-                                output[outputOffset + 2] = (byte)(data[dataOffset / 2] >> 4);
+                                byte c = toggle ? (byte)((data[dataOffset++] & 0xf0) >> 4) : (byte)(data[dataOffset] & 0xf);
+                                toggle = !toggle;
+                                c = (byte)((c << 4) | c);
+                                output[outputOffset] = c;
+                                output[outputOffset + 1] = c;
+                                output[outputOffset + 2] = c;
                                 output[outputOffset + 3] = 0xff;
-
-                                output[outputOffset + 4] = (byte)(data[dataOffset / 2] & 0xf);
-                                output[outputOffset + 5] = (byte)(data[dataOffset / 2] & 0xf);
-                                output[outputOffset + 6] = (byte)(data[dataOffset / 2] & 0xf);
-                                output[outputOffset + 7] = 0xff;
-
-                                dataOffset++;
                             }
                         }
                     }
@@ -286,19 +283,14 @@ namespace Ohana3DS_Rebirth.Ohana
                             {
                                 int x = tileOrder[pixel] % 8;
                                 int y = (tileOrder[pixel] - x) / 8;
-                                long outputOffset = ((tX * 8) + x + (((tY * 8 + y)) * width)) * 8;
+                                long outputOffset = ((tX * 8) + x + (((tY * 8 + y)) * width)) * 4;
 
                                 output[outputOffset] = 0xff;
                                 output[outputOffset + 1] = 0xff;
                                 output[outputOffset + 2] = 0xff;
-                                output[outputOffset + 3] = (byte)(data[dataOffset / 2] >> 4);
-
-                                output[outputOffset + 4] = 0xff;
-                                output[outputOffset + 5] = 0xff;
-                                output[outputOffset + 6] = 0xff;
-                                output[outputOffset + 7] = (byte)(data[dataOffset / 2] & 0xf);
-
-                                dataOffset++;
+                                byte a = toggle ? (byte)((data[dataOffset++] & 0xf0) >> 4) : (byte)(data[dataOffset] & 0xf);
+                                toggle = !toggle;
+                                output[outputOffset + 3] = (byte)((a << 4) | a);
                             }
                         }
                     }
@@ -394,13 +386,8 @@ namespace Ohana3DS_Rebirth.Ohana
             bool flip = (blockTop & 0x1000000) != 0;
             bool difference = (blockTop & 0x2000000) != 0;
 
-            uint r1;
-            uint g1;
-            uint b1;
-
-            uint r2;
-            uint g2;
-            uint b2;
+            uint r1, g1, b1;
+            uint r2, g2, b2;
 
             if (difference)
             {

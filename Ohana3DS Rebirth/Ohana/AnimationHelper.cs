@@ -7,6 +7,13 @@ namespace Ohana3DS_Rebirth.Ohana
 {
     class AnimationHelper
     {
+        /// <summary>
+        ///     Gets the smaller point between two Key Frames.
+        ///     It doesn't actually interpolates anything, just returns the closest value.
+        /// </summary>
+        /// <param name="keyFrames">The list with all available Key Frames (Linear format)</param>
+        /// <param name="frame">The frame number that should be returned</param>
+        /// <returns>The closest smaller frame value</returns>
         private static float interpolateStep(List<RenderBase.OLinearFloat> keyFrames, float frame)
         {
             float minFrame = 0;
