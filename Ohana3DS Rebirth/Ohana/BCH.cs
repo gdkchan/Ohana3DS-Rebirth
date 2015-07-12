@@ -1327,7 +1327,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     RenderBase.OModelObject obj = new RenderBase.OModelObject();
                     obj.materialId = objects[index].materialId;
                     obj.renderPriority = objects[index].renderPriority;
-                    obj.name = objectName[objects[index].nodeId];
+                    if (objects[index].nodeId < objectName.Length) obj.name = objectName[objects[index].nodeId]; else obj.name = "mesh" + index.ToString();
                     obj.visible = (nodeVisibility & (1 << objects[index].nodeId)) > 0;
 
                     //Vertices
