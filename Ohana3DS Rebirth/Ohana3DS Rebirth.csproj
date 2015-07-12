@@ -227,6 +227,7 @@
     <Compile Include="Ohana\Compressions\BLZ.cs" />
     <Compile Include="Ohana\FileIdentifier.cs" />
     <Compile Include="Ohana\FileIO.cs" />
+    <Compile Include="Ohana\GenericFormats\DAE.cs" />
     <Compile Include="Ohana\GenericFormats\SMD.cs" />
     <Compile Include="Ohana\IOUtils.cs" />
     <Compile Include="Ohana\RenderBase.cs" />

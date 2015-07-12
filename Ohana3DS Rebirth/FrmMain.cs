@@ -48,12 +48,13 @@ namespace Ohana3DS_Rebirth
         {
             using (OpenFileDialog openDlg = new OpenFileDialog())
             {
-                openDlg.Filter = "All supported files|*.bch;*.cx;*.pc;*.mm;*.gr";
+                openDlg.Filter = "All supported files|*.bch;*.cx;*.mm;*.gr;*.pc";
                 openDlg.Filter += "|Binary CTR H3D|*.bch";
                 openDlg.Filter += "|CTR Compressed file|*.cx";
                 openDlg.Filter += "|Pokémon model|*.pc";
                 openDlg.Filter += "|Pokémon Overworld model|*.mm";
                 openDlg.Filter += "|Pokémon Map model|*.gr";
+                openDlg.Filter += "|Pokémon Species model|*.pc";
                 openDlg.Filter += "|All files|*.*";
                 if (openDlg.ShowDialog() != DialogResult.OK) return;
                 open(openDlg.FileName, openDlg.FilterIndex);

@@ -78,12 +78,16 @@ namespace Ohana3DS_Rebirth.Ohana
                     case fileType.model:
                         saveDlg.Title = "Export Model";
                         saveDlg.Filter = "Source Model|*.smd";
+                        saveDlg.Filter += "|Collada Model|*.dae";
                         if (saveDlg.ShowDialog() == DialogResult.OK)
                         {
                             switch (saveDlg.FilterIndex)
                             {
                                 case 1:
                                     GenericFormats.SMD.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0]);
+                                    break;
+                                case 2:
+                                    GenericFormats.DAE.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0]);
                                     break;
                             }
                         }
