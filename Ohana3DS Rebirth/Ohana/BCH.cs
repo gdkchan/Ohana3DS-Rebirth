@@ -113,8 +113,8 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public ushort materialId;
             public bool isSilhouette;
+            public ushort nodeId;
             public ushort renderPriority;
-            public RenderBase.OTranslucencyKind translucencyKind;
             public uint verticesHeaderOffset;
             public uint verticesHeaderEntries;
             public uint facesHeaderOffset;
@@ -668,7 +668,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     skeletalAnimation.bone.Add(bone);
                 }
 
-                models.addSekeletalAnimaton(skeletalAnimation);
+                models.addSkeletalAnimaton(skeletalAnimation);
             }
 
             //Material Animations
@@ -882,6 +882,15 @@ namespace Ohana3DS_Rebirth.Ohana
 
                 model.transform = objectsHeader.worldTransform;
                 model.name = objectsHeader.modelName;
+
+                string[] objectName = new string[objectsHeader.objectsNodeNameEntries];
+                data.Seek(objectsHeader.objectsNodeNameOffset + 0xc, SeekOrigin.Begin);
+                for (int i = 0; i < objectsHeader.objectsNodeNameEntries; i++)
+                {
+                    input.ReadUInt32();
+                    input.ReadUInt32();
+                    objectName[i] = readString(input, header);
+                }
 
                 //Materials
                 for (int index = 0; index < objectsHeader.materialsTableEntries; index++)
@@ -1295,8 +1304,8 @@ namespace Ohana3DS_Rebirth.Ohana
                     objectEntry.materialId = input.ReadUInt16();
                     ushort flags = input.ReadUInt16();
                     objectEntry.isSilhouette = (flags & 1) > 0;
+                    objectEntry.nodeId = input.ReadUInt16();
                     objectEntry.renderPriority = input.ReadUInt16();
-                    objectEntry.translucencyKind = (RenderBase.OTranslucencyKind)input.ReadUInt16();
                     objectEntry.verticesHeaderOffset = input.ReadUInt32() + header.descriptionOffset;
                     objectEntry.verticesHeaderEntries = input.ReadUInt32();
                     objectEntry.facesHeaderOffset = input.ReadUInt32() + header.mainHeaderOffset;
@@ -1318,7 +1327,8 @@ namespace Ohana3DS_Rebirth.Ohana
                     RenderBase.OModelObject obj = new RenderBase.OModelObject();
                     obj.materialId = objects[index].materialId;
                     obj.renderPriority = objects[index].renderPriority;
-                    obj.visible = (nodeVisibility & (1 << index)) > 0;
+                    obj.name = objectName[objects[index].nodeId];
+                    obj.visible = (nodeVisibility & (1 << objects[index].nodeId)) > 0;
 
                     //Vertices
                     data.Seek(objects[index].verticesHeaderOffset, SeekOrigin.Begin);

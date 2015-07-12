@@ -36,7 +36,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
         private bool keepRendering;
 
-        private bool useLegacyTexturing = false; //Set to True to disable Fragment Shader
+        private bool useLegacyTexturing = true; //Set to True to disable Fragment Shader
         private const bool showGrid = true;
 
         public class animationControl

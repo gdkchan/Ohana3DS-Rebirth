@@ -452,8 +452,8 @@ namespace Ohana3DS_Rebirth.Ohana
             public int texUVCount;
             public ushort materialId;
             public ushort renderPriority;
+            public string name;
             public bool visible;
-            public String objName = null;
 
             public OModelObject()
             {
@@ -1442,7 +1442,7 @@ namespace Ohana3DS_Rebirth.Ohana
             ///     Adds a new Skeletal Animation.
             /// </summary>
             /// <param name="_skeletalAnimation">The Skeletal Animation</param>
-            public void addSekeletalAnimaton(OSkeletalAnimation _skeletalAnimation)
+            public void addSkeletalAnimaton(OSkeletalAnimation _skeletalAnimation)
             {
                 skeletalAnimation.list.Add(_skeletalAnimation);
             }
