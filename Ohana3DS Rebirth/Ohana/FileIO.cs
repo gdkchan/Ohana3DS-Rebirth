@@ -16,7 +16,8 @@ namespace Ohana3DS_Rebirth.Ohana
             texture,
             camera,
             skeletalAnimation,
-            materialAnimation
+            materialAnimation,
+            visibilityAnimation
         }
 
         /// <summary>

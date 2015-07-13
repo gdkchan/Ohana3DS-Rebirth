@@ -33,12 +33,16 @@
             this.MaterialAnimationControl = new Ohana3DS_Rebirth.GUI.OGenericAnimationControls();
             this.SkeletalAnimationsGroup = new Ohana3DS_Rebirth.GUI.OGroupBox();
             this.SkeletalAnimationControl = new Ohana3DS_Rebirth.GUI.OGenericAnimationControls();
+            this.VisibilityAnimationsGroup = new Ohana3DS_Rebirth.GUI.OGroupBox();
+            this.VisibilityAnimationControl = new Ohana3DS_Rebirth.GUI.OGenericAnimationControls();
             this.Content.ContentArea.SuspendLayout();
             this.Content.SuspendLayout();
             this.MaterialAnimationsGroup.ContentArea.SuspendLayout();
             this.MaterialAnimationsGroup.SuspendLayout();
             this.SkeletalAnimationsGroup.ContentArea.SuspendLayout();
             this.SkeletalAnimationsGroup.SuspendLayout();
+            this.VisibilityAnimationsGroup.ContentArea.SuspendLayout();
+            this.VisibilityAnimationsGroup.SuspendLayout();
             this.SuspendLayout();
             // 
             // Content
@@ -49,11 +53,12 @@
             // 
             this.Content.ContentArea.AutoSize = true;
             this.Content.ContentArea.BackColor = System.Drawing.Color.Transparent;
+            this.Content.ContentArea.Controls.Add(this.VisibilityAnimationsGroup);
             this.Content.ContentArea.Controls.Add(this.MaterialAnimationsGroup);
             this.Content.ContentArea.Controls.Add(this.SkeletalAnimationsGroup);
             this.Content.ContentArea.Location = new System.Drawing.Point(0, 0);
             this.Content.ContentArea.Name = "ContentArea";
-            this.Content.ContentArea.Size = new System.Drawing.Size(256, 512);
+            this.Content.ContentArea.Size = new System.Drawing.Size(256, 768);
             this.Content.ContentArea.TabIndex = 0;
             this.Content.Dock = System.Windows.Forms.DockStyle.Fill;
             this.Content.Location = new System.Drawing.Point(0, 16);
@@ -64,6 +69,7 @@
             // MaterialAnimationsGroup
             // 
             this.MaterialAnimationsGroup.BackColor = System.Drawing.Color.Black;
+            this.MaterialAnimationsGroup.Collapsed = false;
             // 
             // MaterialAnimationsGroup.ContentArea
             // 
@@ -75,6 +81,7 @@
             this.MaterialAnimationsGroup.ContentArea.TabIndex = 0;
             this.MaterialAnimationsGroup.ContentColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
             this.MaterialAnimationsGroup.Dock = System.Windows.Forms.DockStyle.Top;
+            this.MaterialAnimationsGroup.ExpandedHeight = 256;
             this.MaterialAnimationsGroup.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.MaterialAnimationsGroup.Location = new System.Drawing.Point(0, 256);
             this.MaterialAnimationsGroup.Name = "MaterialAnimationsGroup";
@@ -95,6 +102,7 @@
             // SkeletalAnimationsGroup
             // 
             this.SkeletalAnimationsGroup.BackColor = System.Drawing.Color.Black;
+            this.SkeletalAnimationsGroup.Collapsed = false;
             // 
             // SkeletalAnimationsGroup.ContentArea
             // 
@@ -106,6 +114,7 @@
             this.SkeletalAnimationsGroup.ContentArea.TabIndex = 0;
             this.SkeletalAnimationsGroup.ContentColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
             this.SkeletalAnimationsGroup.Dock = System.Windows.Forms.DockStyle.Top;
+            this.SkeletalAnimationsGroup.ExpandedHeight = 256;
             this.SkeletalAnimationsGroup.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.SkeletalAnimationsGroup.Location = new System.Drawing.Point(0, 0);
             this.SkeletalAnimationsGroup.Name = "SkeletalAnimationsGroup";
@@ -122,6 +131,39 @@
             this.SkeletalAnimationControl.Name = "SkeletalAnimationControl";
             this.SkeletalAnimationControl.Size = new System.Drawing.Size(254, 239);
             this.SkeletalAnimationControl.TabIndex = 0;
+            // 
+            // VisibilityAnimationsGroup
+            // 
+            this.VisibilityAnimationsGroup.BackColor = System.Drawing.Color.Black;
+            this.VisibilityAnimationsGroup.Collapsed = false;
+            // 
+            // VisibilityAnimationsGroup.ContentArea
+            // 
+            this.VisibilityAnimationsGroup.ContentArea.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
+            this.VisibilityAnimationsGroup.ContentArea.Controls.Add(this.VisibilityAnimationControl);
+            this.VisibilityAnimationsGroup.ContentArea.Location = new System.Drawing.Point(1, 16);
+            this.VisibilityAnimationsGroup.ContentArea.Name = "ContentArea";
+            this.VisibilityAnimationsGroup.ContentArea.Size = new System.Drawing.Size(254, 239);
+            this.VisibilityAnimationsGroup.ContentArea.TabIndex = 0;
+            this.VisibilityAnimationsGroup.ContentColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
+            this.VisibilityAnimationsGroup.Dock = System.Windows.Forms.DockStyle.Top;
+            this.VisibilityAnimationsGroup.ExpandedHeight = 256;
+            this.VisibilityAnimationsGroup.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.VisibilityAnimationsGroup.Location = new System.Drawing.Point(0, 512);
+            this.VisibilityAnimationsGroup.Name = "VisibilityAnimationsGroup";
+            this.VisibilityAnimationsGroup.Size = new System.Drawing.Size(256, 256);
+            this.VisibilityAnimationsGroup.TabIndex = 3;
+            this.VisibilityAnimationsGroup.Title = "Visibility Animations";
+            // 
+            // VisibilityAnimationControl
+            // 
+            this.VisibilityAnimationControl.BackColor = System.Drawing.Color.Transparent;
+            this.VisibilityAnimationControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.VisibilityAnimationControl.ForeColor = System.Drawing.Color.White;
+            this.VisibilityAnimationControl.Location = new System.Drawing.Point(0, 0);
+            this.VisibilityAnimationControl.Name = "VisibilityAnimationControl";
+            this.VisibilityAnimationControl.Size = new System.Drawing.Size(254, 239);
+            this.VisibilityAnimationControl.TabIndex = 0;
             // 
             // OAnimationsWindow
             // 
@@ -140,6 +182,9 @@
             this.SkeletalAnimationsGroup.ContentArea.ResumeLayout(false);
             this.SkeletalAnimationsGroup.ResumeLayout(false);
             this.SkeletalAnimationsGroup.PerformLayout();
+            this.VisibilityAnimationsGroup.ContentArea.ResumeLayout(false);
+            this.VisibilityAnimationsGroup.ResumeLayout(false);
+            this.VisibilityAnimationsGroup.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -151,6 +196,8 @@
         private OGroupBox MaterialAnimationsGroup;
         private OGenericAnimationControls MaterialAnimationControl;
         private OGenericAnimationControls SkeletalAnimationControl;
+        private OGroupBox VisibilityAnimationsGroup;
+        private OGenericAnimationControls VisibilityAnimationControl;
 
     }
 }

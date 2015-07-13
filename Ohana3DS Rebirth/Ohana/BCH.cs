@@ -1,5 +1,6 @@
-﻿//BCH Importer/Exporter
-//Note: Still need to figure out a LOT of stuff, and a bunch of things before the bare-bones model can be rendered
+﻿//BCH Importer/Exporter made by gdkchan for Ohana3DS.
+//Please add credits if you use in your project.
+//It is about 92% complete, information here is not guaranteed to be accurate.
 
 /*
  * BCH Version Chart
@@ -81,9 +82,21 @@ namespace Ohana3DS_Rebirth.Ohana
             public uint materialAnimationsPointerTableOffset;
             public uint materialAnimationsPointerTableEntries;
             public uint materialAnimationsNameOffset;
+            public uint visibilityAnimationsPointerTableOffset;
+            public uint visibilityAnimationsPointerTableEntries;
+            public uint visibilityAnimationsNameOffset;
+            public uint lightAnimationsPointerTableOffset;
+            public uint lightAnimationsPointerTableEntries;
+            public uint lightAnimationsNameOffset;
             public uint cameraAnimationsPointerTableOffset;
             public uint cameraAnimationsPointerTableEntries;
             public uint cameraAnimationsNameOffset;
+            public uint fogAnimationsPointerTableOffset;
+            public uint fogAnimationsPointerTableEntries;
+            public uint fogAnimationsNameOffset;
+            public uint scenePointerTableOffset;
+            public uint scenePointerTableEntries;
+            public uint sceneNameOffset;
         }
 
         private struct bchObjectsHeader
@@ -210,11 +223,22 @@ namespace Ohana3DS_Rebirth.Ohana
         }
 
         #region "Import"
+        /// <summary>
+        ///     Loads a BCH file.
+        /// </summary>
+        /// <param name="fileName">File Name of the BCH file</param>
+        /// <returns></returns>
         public static RenderBase.OModelGroup load(string fileName)
         {
             return load(new MemoryStream(File.ReadAllBytes(fileName)));
         }
 
+        /// <summary>
+        ///     Loads a BCH file.
+        ///     Note that BCH must start at offset 0x0 (don't try using it for BCHs inside containers).
+        /// </summary>
+        /// <param name="data">Stream of the BCH file</param>
+        /// <returns></returns>
         public static RenderBase.OModelGroup load(Stream data)
         {
             BinaryReader input = new BinaryReader(data);
@@ -250,47 +274,54 @@ namespace Ohana3DS_Rebirth.Ohana
 
             //Content header
             data.Seek(header.mainHeaderOffset, SeekOrigin.Begin);
-            bchContentHeader contentHeader = new bchContentHeader();
-            contentHeader.modelsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.modelsPointerTableEntries = input.ReadUInt32();
-            contentHeader.modelsNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.materialsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.materialsPointerTableEntries = input.ReadUInt32();
-            contentHeader.materialsNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.shadersPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.shadersPointerTableEntries = input.ReadUInt32();
-            contentHeader.shadersNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.texturesPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.texturesPointerTableEntries = input.ReadUInt32();
-            contentHeader.texturesNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.materialsLUTPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.materialsLUTPointerTableEntries = input.ReadUInt32();
-            contentHeader.materialsLUTNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.lightsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.lightsPointerTableEntries = input.ReadUInt32();
-            contentHeader.lightsNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.camerasPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.camerasPointerTableEntries = input.ReadUInt32();
-            contentHeader.camerasNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.fogsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.fogsPointerTableEntries = input.ReadUInt32();
-            contentHeader.fogsNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.skeletalAnimationsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.skeletalAnimationsPointerTableEntries = input.ReadUInt32();
-            contentHeader.skeletalAnimationsNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.materialAnimationsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.materialAnimationsPointerTableEntries = input.ReadUInt32();
-            contentHeader.materialAnimationsNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            input.ReadUInt32();
-            input.ReadUInt32();
-            input.ReadUInt32();
-            input.ReadUInt32();
-            input.ReadUInt32();
-            input.ReadUInt32();
-            contentHeader.cameraAnimationsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            contentHeader.cameraAnimationsPointerTableEntries = input.ReadUInt32();
-            contentHeader.cameraAnimationsNameOffset = input.ReadUInt32() + header.mainHeaderOffset;
-            //Note: 15 enntries total, all have the same pattern: Table Offset/Table Entries/Name Offset
+            bchContentHeader contentHeader = new bchContentHeader
+            {
+                modelsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                modelsPointerTableEntries = input.ReadUInt32(),
+                modelsNameOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                materialsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                materialsPointerTableEntries = input.ReadUInt32(),
+                materialsNameOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                shadersPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                shadersPointerTableEntries = input.ReadUInt32(),
+                shadersNameOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                texturesPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                texturesPointerTableEntries = input.ReadUInt32(),
+                texturesNameOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                materialsLUTPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                materialsLUTPointerTableEntries = input.ReadUInt32(),
+                materialsLUTNameOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                lightsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                lightsPointerTableEntries = input.ReadUInt32(),
+                lightsNameOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                camerasPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                camerasPointerTableEntries = input.ReadUInt32(),
+                camerasNameOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                fogsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                fogsPointerTableEntries = input.ReadUInt32(),
+                fogsNameOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                skeletalAnimationsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                skeletalAnimationsPointerTableEntries = input.ReadUInt32(),
+                skeletalAnimationsNameOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                materialAnimationsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                materialAnimationsPointerTableEntries = input.ReadUInt32(),
+                materialAnimationsNameOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                visibilityAnimationsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                visibilityAnimationsPointerTableEntries = input.ReadUInt32(),
+                visibilityAnimationsNameOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                lightAnimationsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                lightAnimationsPointerTableEntries = input.ReadUInt32(),
+                lightAnimationsNameOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                cameraAnimationsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                cameraAnimationsPointerTableEntries = input.ReadUInt32(),
+                cameraAnimationsNameOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                fogAnimationsPointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                fogAnimationsPointerTableEntries = input.ReadUInt32(),
+                fogAnimationsNameOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                scenePointerTableOffset = input.ReadUInt32() + header.mainHeaderOffset,
+                scenePointerTableEntries = input.ReadUInt32(),
+                sceneNameOffset = input.ReadUInt32() + header.mainHeaderOffset
+            };
 
             //Shaders
             for (int index = 0; index < contentHeader.shadersPointerTableEntries; index++)
@@ -490,9 +521,10 @@ namespace Ohana3DS_Rebirth.Ohana
                 fog.transformRotate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
                 fog.transformTranslate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
 
-                uint fogFlags = input.ReadUInt32() >> 8;
-                fog.isZFlip = (fogFlags & 1) > 0;
-                fog.isAttenuateDistance = (fogFlags & 2) > 0;
+                uint fogFlags = input.ReadUInt32();
+                fog.fogUpdater = (RenderBase.OFogUpdater)(fogFlags & 0xf);
+                fog.isZFlip = (fogFlags & 0x100) > 0;
+                fog.isAttenuateDistance = (fogFlags & 0x200) > 0;
 
                 fog.fogColor = getColor(input);
 
@@ -538,8 +570,8 @@ namespace Ohana3DS_Rebirth.Ohana
                     switch ((animationTypeFlags >> 16) & 0xf)
                     {
                         case 4:
-                            bool rotationExists = (flags & 0x300000) == 0;
-                            bool translationExists = (flags & 0xc00000) == 0;
+                            bone.rotationExists = (flags & 0x300000) == 0;
+                            bone.translationExists = (flags & 0xc00000) == 0;
 
                             for (int j = 0; j < 6; j++)
                             {
@@ -547,13 +579,12 @@ namespace Ohana3DS_Rebirth.Ohana
 
                                 data.Seek(offset + 0x18 + (j * 4), SeekOrigin.Begin);
                                 bool inline = ((flags >> 8) & (1 << shiftTable[j])) > 0;
-                                if ((j < 3 && rotationExists) || (j > 2 && translationExists))
+                                if ((j < 3 && bone.rotationExists) || (j > 2 && bone.translationExists))
                                 {
                                     if (inline)
                                     {
                                         frame.interpolation = RenderBase.OInterpolationMode.linear;
-                                        frame.linearFrame.Add(new RenderBase.OLinearFloat(input.ReadSingle(), 0.0f));
-                                        frame.exists = true;
+                                        frame.keyFrames.Add(new RenderBase.OInterpolationFloat(input.ReadSingle(), 0.0f));
                                     }
                                     else
                                     {
@@ -735,7 +766,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             if (inline)
                             {
                                 frame.interpolation = RenderBase.OInterpolationMode.linear;
-                                frame.linearFrame.Add(new RenderBase.OLinearFloat(input.ReadSingle(), 0.0f));
+                                frame.keyFrames.Add(new RenderBase.OInterpolationFloat(input.ReadSingle(), 0.0f));
                             }
                             else
                             {
@@ -755,8 +786,139 @@ namespace Ohana3DS_Rebirth.Ohana
                 models.addMaterialAnimation(materialAnimation);
             }
 
-            //Camera Animations
+            //Visibility Animations
+            for (int index = 0; index < contentHeader.visibilityAnimationsPointerTableEntries; index++)
+            {
+                data.Seek(contentHeader.visibilityAnimationsPointerTableOffset + (index * 4), SeekOrigin.Begin);
+                uint dataOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                data.Seek(dataOffset, SeekOrigin.Begin);
+
+                RenderBase.OVisibilityAnimation visibilityAnimation = new RenderBase.OVisibilityAnimation();
+
+                visibilityAnimation.name = readString(input, header);
+                uint animationFlags = input.ReadUInt32();
+                visibilityAnimation.loopMode = (RenderBase.OLoopMode)(animationFlags & 1);
+                visibilityAnimation.frameSize = input.ReadSingle();
+                uint dataTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                uint dataTableEntries = input.ReadUInt32();
+                input.ReadUInt32();
+                input.ReadUInt32();
+
+                for (int i = 0; i < dataTableEntries; i++)
+                {
+                    data.Seek(dataTableOffset + (i * 4), SeekOrigin.Begin);
+                    uint offset = input.ReadUInt32() + header.mainHeaderOffset;
+
+                    RenderBase.OVisibilityAnimationData animationData = new RenderBase.OVisibilityAnimationData();
+
+                    data.Seek(offset, SeekOrigin.Begin);
+                    animationData.name = readString(input, header);
+                    uint animationTypeFlags = input.ReadUInt32();
+                    uint flags = input.ReadUInt32();
+
+                    RenderBase.OSegmentType segmentType = (RenderBase.OSegmentType)((animationTypeFlags >> 16) & 0xf);
+                    if (segmentType == RenderBase.OSegmentType.boolean)
+                    {
+                        RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
+                        if (segmentType == RenderBase.OSegmentType.boolean) frame = getAnimationKeyFrameBool(input, header);
+                        animationData.visibilityList = frame;
+                    }
+
+                    visibilityAnimation.data.Add(animationData);
+                }
+
+                models.addVisibilityAnimation(visibilityAnimation);
+            }
+
             shiftTable = new byte[] { 6, 7, 8, 9, 10, 11, 13, 14, 15 };
+
+            //Light Animations
+            for (int index = 0; index < contentHeader.lightAnimationsPointerTableEntries; index++)
+            {
+                data.Seek(contentHeader.lightAnimationsPointerTableOffset + (index * 4), SeekOrigin.Begin);
+                uint dataOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                data.Seek(dataOffset, SeekOrigin.Begin);
+
+                RenderBase.OLightAnimation lightAnimation = new RenderBase.OLightAnimation();
+
+                lightAnimation.name = readString(input, header);
+                uint animationFlags = input.ReadUInt32();
+                lightAnimation.loopMode = (RenderBase.OLoopMode)(animationFlags & 1);
+                lightAnimation.frameSize = input.ReadSingle();
+                uint dataTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                uint dataTableEntries = input.ReadUInt32();
+                input.ReadUInt32();
+                uint typeFlags = input.ReadUInt32();
+                lightAnimation.lightType = (RenderBase.OLightType)((typeFlags & 3) - 1);
+                lightAnimation.lightUse = (RenderBase.OLightUse)((typeFlags >> 2) & 3);
+
+                for (int i = 0; i < dataTableEntries; i++)
+                {
+                    data.Seek(dataTableOffset + (i * 4), SeekOrigin.Begin);
+                    uint offset = input.ReadUInt32() + header.mainHeaderOffset;
+
+                    RenderBase.OLightAnimationData animationData = new RenderBase.OLightAnimationData();
+
+                    data.Seek(offset, SeekOrigin.Begin);
+                    animationData.name = readString(input, header);
+                    uint animationTypeFlags = input.ReadUInt32();
+                    uint flags = input.ReadUInt32();
+
+                    animationData.type = (RenderBase.OLightAnimationType)(animationTypeFlags & 0xff);
+                    RenderBase.OSegmentType segmentType = (RenderBase.OSegmentType)((animationTypeFlags >> 16) & 0xf);
+
+                    int segmentCount = 0;
+                    switch (segmentType)
+                    {
+                        case RenderBase.OSegmentType.transform: segmentCount = 9; break;
+                        case RenderBase.OSegmentType.rgbaColor: segmentCount = 4; break;
+                        case RenderBase.OSegmentType.vector3: segmentCount = 3; break;
+                        case RenderBase.OSegmentType.single: segmentCount = 1; break;
+                        case RenderBase.OSegmentType.boolean: segmentCount = 1; break;
+                    }
+
+                    for (int j = 0; j < segmentCount; j++)
+                    {
+                        RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
+
+                        data.Seek(offset + 0xc + (j * 4), SeekOrigin.Begin);
+
+                        frame.exists = ((flags >> (segmentType == RenderBase.OSegmentType.transform ? 16 : 8)) & (1 << j)) == 0;
+
+                        if (frame.exists)
+                        {
+                            if (segmentType == RenderBase.OSegmentType.boolean)
+                            {
+                                frame = getAnimationKeyFrameBool(input, header);
+                            }
+                            else
+                            {
+                                bool inline = (flags & (1 << (segmentType == RenderBase.OSegmentType.transform ? shiftTable[j] : j))) > 0;
+
+                                if (inline)
+                                {
+                                    frame.interpolation = RenderBase.OInterpolationMode.linear;
+                                    frame.keyFrames.Add(new RenderBase.OInterpolationFloat(input.ReadSingle(), 0.0f));
+                                }
+                                else
+                                {
+                                    uint frameOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                                    data.Seek(frameOffset, SeekOrigin.Begin);
+                                    frame = getAnimationKeyFrame(input, header);
+                                }
+                            }
+                        }
+
+                        animationData.frameList.Add(frame);
+                    }
+
+                    lightAnimation.data.Add(animationData);
+                }
+
+                models.addLightAnimation(lightAnimation);
+            }
+
+            //Camera Animations
             for (int index = 0; index < contentHeader.cameraAnimationsPointerTableEntries; index++)
             {
                 data.Seek(contentHeader.cameraAnimationsPointerTableOffset + (index * 4), SeekOrigin.Begin);
@@ -813,7 +975,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             if (inline)
                             {
                                 frame.interpolation = RenderBase.OInterpolationMode.linear;
-                                frame.linearFrame.Add(new RenderBase.OLinearFloat(input.ReadSingle(), 0.0f));
+                                frame.keyFrames.Add(new RenderBase.OInterpolationFloat(input.ReadSingle(), 0.0f));
                             }
                             else
                             {
@@ -830,6 +992,118 @@ namespace Ohana3DS_Rebirth.Ohana
                 }
 
                 models.addCameraAnimation(cameraAnimation);
+            }
+
+            //Fog Animations
+            for (int index = 0; index < contentHeader.fogAnimationsPointerTableEntries; index++)
+            {
+                data.Seek(contentHeader.fogAnimationsPointerTableOffset + (index * 4), SeekOrigin.Begin);
+                uint dataOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                data.Seek(dataOffset, SeekOrigin.Begin);
+
+                RenderBase.OFogAnimation fogAnimation = new RenderBase.OFogAnimation();
+
+                fogAnimation.name = readString(input, header);
+                uint animationFlags = input.ReadUInt32();
+                fogAnimation.loopMode = (RenderBase.OLoopMode)(animationFlags & 1);
+                fogAnimation.frameSize = input.ReadSingle();
+                uint dataTableOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                uint dataTableEntries = input.ReadUInt32();
+                input.ReadUInt32();
+                input.ReadUInt32();
+
+                for (int i = 0; i < dataTableEntries; i++)
+                {
+                    data.Seek(dataTableOffset + (i * 4), SeekOrigin.Begin);
+                    uint offset = input.ReadUInt32() + header.mainHeaderOffset;
+
+                    RenderBase.OFogAnimationData animationData = new RenderBase.OFogAnimationData();
+
+                    data.Seek(offset, SeekOrigin.Begin);
+                    animationData.name = readString(input, header);
+                    uint animationTypeFlags = input.ReadUInt32();
+                    uint flags = input.ReadUInt32();
+
+                    RenderBase.OSegmentType segmentType = (RenderBase.OSegmentType)((animationTypeFlags >> 16) & 0xf);
+                    int segmentCount = segmentType == RenderBase.OSegmentType.rgbaColor ? 4 : 0;
+
+                    for (int j = 0; j < segmentCount; j++)
+                    {
+                        RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
+
+                        data.Seek(offset + 0xc + (j * 4), SeekOrigin.Begin);
+
+                        frame.exists = ((flags >> 8) & (1 << j)) == 0;
+
+                        if (frame.exists)
+                        {
+                            bool inline = (flags & (1 << j)) > 0;
+
+                            if (inline)
+                            {
+                                frame.interpolation = RenderBase.OInterpolationMode.linear;
+                                frame.keyFrames.Add(new RenderBase.OInterpolationFloat(input.ReadSingle(), 0.0f));
+                            }
+                            else
+                            {
+                                uint frameOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                                data.Seek(frameOffset, SeekOrigin.Begin);
+                                frame = getAnimationKeyFrame(input, header);
+                            }
+                        }
+
+                        animationData.colorList.Add(frame);
+                    }
+
+                    fogAnimation.data.Add(animationData);
+                }
+
+                models.addFogAnimation(fogAnimation);
+            }
+
+            //Scene Environment
+            for (int index = 0; index < contentHeader.scenePointerTableEntries; index++)
+            {
+                data.Seek(contentHeader.scenePointerTableOffset + (index * 4), SeekOrigin.Begin);
+                uint dataOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                data.Seek(dataOffset, SeekOrigin.Begin);
+
+                RenderBase.OScene scene = new RenderBase.OScene();
+                scene.name = readString(input, header);
+
+                uint cameraReferenceOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                uint cameraReferenceEntries = input.ReadUInt32();
+                uint lightReferenceOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                uint lightReferenceEntries = input.ReadUInt32();
+                uint fogReferenceOffset = input.ReadUInt32() + header.mainHeaderOffset;
+                uint fogReferenceEntries = input.ReadUInt32();
+
+                data.Seek(cameraReferenceOffset, SeekOrigin.Begin);
+                for (int i = 0; i < cameraReferenceEntries; i++)
+                {
+                    RenderBase.OSceneReference reference = new RenderBase.OSceneReference();
+                    reference.slotIndex = input.ReadUInt32();
+                    reference.name = readString(input, header);
+                    scene.cameras.Add(reference);
+                }
+
+                data.Seek(lightReferenceOffset, SeekOrigin.Begin);
+                for (int i = 0; i < lightReferenceEntries; i++)
+                {
+                    RenderBase.OSceneReference reference = new RenderBase.OSceneReference();
+                    reference.slotIndex = input.ReadUInt32();
+                    reference.name = readString(input, header);
+                    scene.lights.Add(reference);
+                }
+
+                data.Seek(fogReferenceOffset, SeekOrigin.Begin);
+                for (int i = 0; i < fogReferenceEntries; i++)
+                {
+                    RenderBase.OSceneReference reference = new RenderBase.OSceneReference();
+                    reference.slotIndex = input.ReadUInt32();
+                    reference.name = readString(input, header);
+                    scene.fogs.Add(reference);
+                }
             }
 
             //Model
@@ -1328,7 +1602,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     obj.materialId = objects[index].materialId;
                     obj.renderPriority = objects[index].renderPriority;
                     if (objects[index].nodeId < objectName.Length) obj.name = objectName[objects[index].nodeId]; else obj.name = "mesh" + index.ToString();
-                    obj.visible = (nodeVisibility & (1 << objects[index].nodeId)) > 0;
+                    obj.isVisible = (nodeVisibility & (1 << objects[index].nodeId)) > 0;
 
                     //Vertices
                     data.Seek(objects[index].verticesHeaderOffset, SeekOrigin.Begin);
@@ -1737,6 +2011,14 @@ namespace Ohana3DS_Rebirth.Ohana
             if (skeleton[index].parentId > -1) transformSkeleton(skeleton, skeleton[index].parentId, ref target);
         }
 
+        /// <summary>
+        ///     Gets a Vector4 from Data.
+        ///     Number of used elements of the Vector4 will depend on the vector type.
+        /// </summary>
+        /// <param name="input">BCH reader</param>
+        /// <param name="quantization">Quantization used on the vector (ubyte, byte, short or float)</param>
+        /// <param name="type">Size of the vector (vector1, 2, 3 or 4)</param>
+        /// <returns></returns>
         private static RenderBase.OVector4 getVector(BinaryReader input, vectorQuantization quantization, vectorType type)
         {
             RenderBase.OVector4 output = new RenderBase.OVector4();
@@ -1772,6 +2054,11 @@ namespace Ohana3DS_Rebirth.Ohana
             return output;
         }
 
+        /// <summary>
+        ///     Reads a Color from the Data.
+        /// </summary>
+        /// <param name="input">BCH reader</param>
+        /// <returns></returns>
         private static Color getColor(BinaryReader input)
         {
             byte r = (byte)input.ReadByte();
@@ -1782,6 +2069,15 @@ namespace Ohana3DS_Rebirth.Ohana
             return Color.FromArgb(a, r, g, b);
         }
 
+        /// <summary>
+        ///     Search a string on the Relocation table.
+        ///     If it is present, read the string from the Data and return it.
+        ///     If it doesn't exist on the Relocation table, return an empty string.
+        ///     Position advances 4 bytes only.
+        /// </summary>
+        /// <param name="input">BCH reader</param>
+        /// <param name="header">BCH header</param>
+        /// <returns></returns>
         private static string readString(BinaryReader input, bchHeader header)
         {
             long dataPosition = input.BaseStream.Position;
@@ -1803,6 +2099,13 @@ namespace Ohana3DS_Rebirth.Ohana
             return null;
         }
 
+        /// <summary>
+        ///     Gets an Animation Key frame from the BCH file.
+        ///     The Reader position must be set to the beggining of the Key Frame Data.
+        /// </summary>
+        /// <param name="input">The BCH file Reader</param>
+        /// <param name="header">The BCH file header</param>
+        /// <returns></returns>
         private static RenderBase.OAnimationKeyFrame getAnimationKeyFrame(BinaryReader input, bchHeader header)
         {
             RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
@@ -1840,94 +2143,139 @@ namespace Ohana3DS_Rebirth.Ohana
             input.BaseStream.Seek(rawDataOffset, SeekOrigin.Begin);
             for (int k = 0; k < entries; k++)
             {
+                RenderBase.OInterpolationFloat keyFrame = new RenderBase.OInterpolationFloat();
+
                 switch (frame.interpolation)
                 {
                     case RenderBase.OInterpolationMode.step:
                     case RenderBase.OInterpolationMode.linear:
-                        RenderBase.OLinearFloat linearPoint = new RenderBase.OLinearFloat();
                         switch (entryFormat)
                         {
                             case 6:
-                                linearPoint.frame = input.ReadSingle();
-                                linearPoint.value = input.ReadSingle();
+                                keyFrame.frame = input.ReadSingle();
+                                keyFrame.value = input.ReadSingle();
                                 break;
                             case 7:
                                 value = input.ReadUInt32();
                                 interpolation = (float)(value >> 12) / 0x100000;
-                                linearPoint.frame = frame.startFrame + (float)(value & 0xfff);
-                                linearPoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
+                                keyFrame.frame = frame.startFrame + (float)(value & 0xfff);
+                                keyFrame.value = (minValue * (1 - interpolation) + maxValue * interpolation);
                                 break;
                             default:
                                 Debug.WriteLine(String.Format("[BCH] Animation: Unsupported quantization format {0} on Linear...", entryFormat));
                                 frame.exists = false;
                                 break;
                         }
-                        frame.linearFrame.Add(linearPoint);
+
                         break;
                     case RenderBase.OInterpolationMode.hermite:
-                        RenderBase.OHermiteFloat hermitePoint = new RenderBase.OHermiteFloat();
                         switch (entryFormat)
                         {
                             case 0:
-                                hermitePoint.frame = input.ReadSingle();
-                                hermitePoint.value = input.ReadSingle();
-                                hermitePoint.inSlope = input.ReadSingle();
-                                hermitePoint.outSlope = input.ReadSingle();
+                                keyFrame.frame = input.ReadSingle();
+                                keyFrame.value = input.ReadSingle();
+                                keyFrame.inSlope = input.ReadSingle();
+                                keyFrame.outSlope = input.ReadSingle();
                                 break;
                             case 1:
                                 value = input.ReadUInt32();
-                                hermitePoint.frame = frame.startFrame + (float)(value & 0xfff);
+                                keyFrame.frame = frame.startFrame + (float)(value & 0xfff);
                                 interpolation = (float)(value >> 12) / 0x100000;
-                                hermitePoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
-                                hermitePoint.inSlope = (float)input.ReadInt16() / 256;
-                                hermitePoint.outSlope = (float)input.ReadInt16() / 256;
+                                keyFrame.value = (minValue * (1 - interpolation) + maxValue * interpolation);
+                                keyFrame.inSlope = (float)input.ReadInt16() / 256;
+                                keyFrame.outSlope = (float)input.ReadInt16() / 256;
                                 break;
                             case 2:
                                 value = input.ReadUInt32();
                                 uint inSlopeLow = value >> 24;
-                                hermitePoint.frame = frame.startFrame + (float)(value & 0xff);
+                                keyFrame.frame = frame.startFrame + (float)(value & 0xff);
                                 interpolation = (float)((value >> 8) & 0xffff) / 0x10000;
-                                hermitePoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
+                                keyFrame.value = (minValue * (1 - interpolation) + maxValue * interpolation);
                                 value = input.ReadUInt16();
-                                hermitePoint.inSlope = get12bValue((int)(((value & 0xf) << 8) | inSlopeLow));
-                                hermitePoint.outSlope = get12bValue((int)((value >> 4) & 0xfff));
+                                keyFrame.inSlope = get12bValue((int)(((value & 0xf) << 8) | inSlopeLow));
+                                keyFrame.outSlope = get12bValue((int)((value >> 4) & 0xfff));
                                 break;
                             case 3:
-                                hermitePoint.frame = input.ReadSingle();
-                                hermitePoint.value = input.ReadSingle();
-                                hermitePoint.inSlope = input.ReadSingle();
-                                hermitePoint.outSlope = hermitePoint.inSlope;
+                                keyFrame.frame = input.ReadSingle();
+                                keyFrame.value = input.ReadSingle();
+                                keyFrame.inSlope = input.ReadSingle();
+                                keyFrame.outSlope = keyFrame.inSlope;
                                 break;
                             case 4:
                                 //TODO: Implement support for different inSlope and outSlope
                                 //Note: they are added with another frame with same number, but the inSlope is actually the outSlope
-                                hermitePoint.frame = (float)input.ReadInt16() / 32;
+                                keyFrame.frame = (float)input.ReadInt16() / 32;
                                 interpolation = (float)input.ReadUInt16() / 0x10000;
-                                hermitePoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
-                                hermitePoint.inSlope = (float)input.ReadInt16() / 256;
-                                hermitePoint.outSlope = hermitePoint.inSlope;
+                                keyFrame.value = (minValue * (1 - interpolation) + maxValue * interpolation);
+                                keyFrame.inSlope = (float)input.ReadInt16() / 256;
+                                keyFrame.outSlope = keyFrame.inSlope;
                                 break;
                             case 5:
                                 value = input.ReadUInt32();
-                                hermitePoint.frame = frame.startFrame + ((float)(value & 0xff) * frameScale);
+                                keyFrame.frame = frame.startFrame + ((float)(value & 0xff) * frameScale);
                                 interpolation = (float)((value >> 8) & 0xfff) / 0x1000;
-                                hermitePoint.value = (minValue * (1 - interpolation) + maxValue * interpolation);
-                                hermitePoint.inSlope = get12bValue((int)(value >> 20));
-                                hermitePoint.outSlope = hermitePoint.inSlope;
+                                keyFrame.value = (minValue * (1 - interpolation) + maxValue * interpolation);
+                                keyFrame.inSlope = get12bValue((int)(value >> 20));
+                                keyFrame.outSlope = keyFrame.inSlope;
                                 break;
                             default:
                                 Debug.WriteLine(String.Format("[BCH] Animation: Unsupported quantization format {0} on Hermite...", entryFormat));
                                 frame.exists = false;
                                 break;
                         }
-                        frame.hermiteFrame.Add(hermitePoint);
+
                         break;
+                }
+
+                frame.keyFrames.Add(keyFrame);
+            }
+
+            return frame;
+        }
+
+        /// <summary>
+        ///     Gets an Animation Key frame from the BCH file.
+        ///     The Reader position must be set to the beggining of the Key Frame Data.
+        ///     This function should be ONLY used with Bool values, since they're stored in a different way.
+        /// </summary>
+        /// <param name="input">The BCH file Reader</param>
+        /// <param name="header">The BCH file header</param>
+        /// <returns></returns>
+        private static RenderBase.OAnimationKeyFrame getAnimationKeyFrameBool(BinaryReader input, bchHeader header)
+        {
+            RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
+
+            frame.exists = true;
+            frame.startFrame = 0;
+
+            frame.defaultValue = ((input.ReadUInt32() >> 24) & 1) > 0;
+            input.ReadUInt32();
+            uint offset = input.ReadUInt32() + header.mainHeaderOffset;
+            uint entries = input.ReadUInt32();
+            frame.endFrame = entries - 1;
+
+            input.BaseStream.Seek(offset, SeekOrigin.Begin);
+            uint mask = 1;
+            byte value = input.ReadByte();
+            for (int i = 0; i < entries; i++)
+            {
+                frame.keyFrames.Add(new RenderBase.OInterpolationFloat((value & mask) > 0, i));
+                if ((mask <<= 1) > 0x80)
+                {
+                    value = input.ReadByte();
+                    mask = 1;
                 }
             }
 
             return frame;
         }
 
+        /// <summary>
+        ///     Gets a custom Float value found on BCH animations.
+        /// </summary>
+        /// <param name="value">Raw value of the floating point value</param>
+        /// <param name="exponentBias">The bias used on the exponent</param>
+        /// <returns></returns>
         private static float getCustomFloat(uint value, int exponentBias)
         {
             float mantissa = 1.0f;
@@ -1945,6 +2293,11 @@ namespace Ohana3DS_Rebirth.Ohana
             return (float)(Math.Pow(2, rawExponent) * mantissa);
         }
 
+        /// <summary>
+        ///     Gets the custom quantized Floating point value found on BCH animations.
+        /// </summary>
+        /// <param name="value">Raw value</param>
+        /// <returns></returns>
         private static float get12bValue(int value)
         {
             if ((value & 0x800) > 0) value -= 0x1000;

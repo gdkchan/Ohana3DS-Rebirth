@@ -182,9 +182,9 @@ namespace Ohana3DS_Rebirth.Ohana
             ///     Creates a new Vertex.
             /// </summary>
             /// <param name="_position">The position of the Vertex on the 3-D space</param>
-            /// <param name="_normal">The normal Vector (optional)</param>
-            /// <param name="_texture0">The texture U/V coordinates (optional)</param>
-            /// <param name="_color">The diffuse color (optional)</param>
+            /// <param name="_normal">The normal Vector</param>
+            /// <param name="_texture0">The texture U/V coordinates</param>
+            /// <param name="_color">The diffuse color</param>
             public OVertex(OVector3 _position, OVector3 _normal, OVector2 _texture0, uint _color)
             {
                 node = new List<int>();
@@ -453,15 +453,16 @@ namespace Ohana3DS_Rebirth.Ohana
             public ushort materialId;
             public ushort renderPriority;
             public string name;
-            public bool visible;
+            public bool isVisible;
 
             public OModelObject()
             {
                 obj = new List<OVertex>();
+                isVisible = true;
             }
 
             /// <summary>
-            ///     Add a new Vertex to the Object.
+            ///     Adds a new Vertex to the Object.
             /// </summary>
             /// <param name="Vertex">The Vertex</param>
             public void addVertex(OVertex Vertex)
@@ -1062,6 +1063,13 @@ namespace Ohana3DS_Rebirth.Ohana
             public bool isInheritingUpRotate;
         }
 
+        public enum OFogUpdater
+        {
+            linear = 0,
+            exponent = 1,
+            exponentSquare = 2
+        }
+
         public class OFog
         {
             public string name;
@@ -1072,8 +1080,8 @@ namespace Ohana3DS_Rebirth.Ohana
 
             public Color fogColor;
 
-            public float minFogDepth, maxFogDepth;
-            public float fogDensity;
+            public OFogUpdater fogUpdater;
+            public float minFogDepth, maxFogDepth, fogDensity;
 
             public bool isZFlip;
             public bool isAttenuateDistance;
@@ -1087,21 +1095,23 @@ namespace Ohana3DS_Rebirth.Ohana
             relativeRepeat = 3
         }
 
-        public class OHermiteFloat
+        public class OInterpolationFloat
         {
+            public float frame;
             public float value;
             public float inSlope;
             public float outSlope;
-            public float frame;
+            public bool bValue;
 
             /// <summary>
-            ///     Creates a new Hermite Float.
+            ///     Creates a new Interpolation Float.
+            ///     This Interpolation Float can be used on Hermite Interpolation.
             /// </summary>
             /// <param name="_value">The point value</param>
             /// <param name="_inSlope">The input slope</param>
             /// <param name="_outSlope">The output slope</param>
             /// <param name="_frame">The frame number</param>
-            public OHermiteFloat(float _value, float _inSlope, float _outSlope, float _frame)
+            public OInterpolationFloat(float _value, float _inSlope, float _outSlope, float _frame)
             {
                 value = _value;
                 inSlope = _inSlope;
@@ -1110,34 +1120,39 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Creates a new Hermite Float.
-            /// </summary>
-            public OHermiteFloat()
-            {
-            }
-        }
-
-        public class OLinearFloat
-        {
-            public float value;
-            public float frame;
-
-            /// <summary>
-            ///     Creates a new Linear Float.
+            ///     Creates a new Interpolation Float.
+            ///     This Interpolation Float can be used on Linear or Step interpolation.
             /// </summary>
             /// <param name="_value">The point value</param>
             /// <param name="_frame">The frame number</param>
-            public OLinearFloat(float _value, float _frame)
+            public OInterpolationFloat(float _value, float _frame)
             {
                 value = _value;
                 frame = _frame;
             }
 
             /// <summary>
-            ///     Creates a new Linear Float.
+            ///     Creates a new Interpolation Float.
+            ///     This Interpolation Float can be used on Boolean values animation.
             /// </summary>
-            public OLinearFloat()
+            /// <param name="_value">The point value</param>
+            /// <param name="_frame">The frame number</param>
+            public OInterpolationFloat(bool _value, float _frame)
             {
+                bValue = _value;
+                frame = _frame;
+            }
+
+            /// <summary>
+            ///     Creates a new Interpolation Float.
+            /// </summary>
+            public OInterpolationFloat()
+            {
+            }
+
+            public override string ToString()
+            {
+                return String.Format("Frame:{0}; Value (float):{1}; Value (boolean):{2}; InSlope:{3}; OutSlope:{4}", frame, value, bValue, inSlope, outSlope);
             }
         }
 
@@ -1150,19 +1165,18 @@ namespace Ohana3DS_Rebirth.Ohana
 
         public class OAnimationKeyFrame
         {
-            public List<OHermiteFloat> hermiteFrame;
-            public List<OLinearFloat> linearFrame;
+            public List<OInterpolationFloat> keyFrames;
             public OInterpolationMode interpolation;
             public float startFrame, endFrame;
             public bool exists;
+            public bool defaultValue;
 
             public ORepeatMethod preRepeat;
             public ORepeatMethod postRepeat;
 
             public OAnimationKeyFrame()
             {
-                hermiteFrame = new List<OHermiteFloat>();
-                linearFrame = new List<OLinearFloat>();
+                keyFrames = new List<OInterpolationFloat>();
             }
         }
 
@@ -1184,12 +1198,12 @@ namespace Ohana3DS_Rebirth.Ohana
         public enum OSegmentType
         {
             single = 0,
-            boolean = 1,
             vector2 = 2,
             vector3 = 3,
             transform = 4,
             rgbaColor = 5,
-            integer = 6
+            integer = 6,
+            boolean = 8
         }
 
         public class OSkeletalAnimationBone
@@ -1197,6 +1211,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public string name;
             public OAnimationKeyFrame rotationX, rotationY, rotationZ;
             public OAnimationKeyFrame translationX, translationY, translationZ;
+            public bool rotationExists, translationExists;
 
             public OAnimationFrame rotationQuaternion;
             public OAnimationFrame translation;
@@ -1315,6 +1330,77 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        public class OVisibilityAnimationData
+        {
+            public string name;
+            public OAnimationKeyFrame visibilityList;
+
+            public OVisibilityAnimationData()
+            {
+                visibilityList = new OAnimationKeyFrame();
+            }
+        }
+
+        public class OVisibilityAnimation : OAnimationBase
+        {
+            public override string name { get; set; }
+            public override float frameSize { get; set; }
+            public override OLoopMode loopMode { get; set; }
+            public List<OVisibilityAnimationData> data;
+
+            public OVisibilityAnimation()
+            {
+                data = new List<OVisibilityAnimationData>();
+            }
+        }
+
+        public enum OLightAnimationType
+        {
+            transform = 0x1c,
+            ambient = 0x1d,
+            diffuse = 0x1e,
+            specular0 = 0x1f,
+            specular1 = 0x20,
+            direction = 0x21,
+            distanceAttenuationStart = 0x22,
+            distanceAttenuationEnd = 0x23,
+            isLightEnabled = 0x24
+        }
+
+        public class OLightAnimationData
+        {
+            public string name;
+            public OLightAnimationType type;
+            public List<OAnimationKeyFrame> frameList;
+
+            public OLightAnimationData()
+            {
+                frameList = new List<OAnimationKeyFrame>();
+            }
+        }
+
+        public enum OLightUse
+        {
+            hemiSphere = 0,
+            vertex = 1,
+            fragment = 2
+        }
+
+        public class OLightAnimation : OAnimationBase
+        {
+            public override string name { get; set; }
+            public override float frameSize { get; set; }
+            public override OLoopMode loopMode { get; set; }
+            public OLightType lightType;
+            public OLightUse lightUse;
+            public List<OLightAnimationData> data;
+
+            public OLightAnimation()
+            {
+                data = new List<OLightAnimationData>();
+            }
+        }
+
         public enum OCameraAnimationType
         {
             transform = 5,
@@ -1356,6 +1442,51 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        public class OFogAnimationData
+        {
+            public string name;
+            public List<OAnimationKeyFrame> colorList;
+
+            public OFogAnimationData()
+            {
+                colorList = new List<OAnimationKeyFrame>();
+            }
+        }
+
+        public class OFogAnimation : OAnimationBase
+        {
+            public override string name { get; set; }
+            public override float frameSize { get; set; }
+            public override OLoopMode loopMode { get; set; }
+            public List<OFogAnimationData> data;
+
+            public OFogAnimation()
+            {
+                data = new List<OFogAnimationData>();
+            }
+        }
+
+        public struct OSceneReference
+        {
+            public uint slotIndex;
+            public string name;
+        }
+
+        public class OScene
+        {
+            public string name;
+            public List<OSceneReference> cameras;
+            public List<OSceneReference> lights;
+            public List<OSceneReference> fogs;
+
+            public OScene()
+            {
+                cameras = new List<OSceneReference>();
+                lights = new List<OSceneReference>();
+                fogs = new List<OSceneReference>();
+            }
+        }
+
         public class OModelGroup
         {
             public List<OModel> model;
@@ -1366,7 +1497,11 @@ namespace Ohana3DS_Rebirth.Ohana
             public List<OFog> fog;
             public OAnimationListBase skeletalAnimation;
             public OAnimationListBase materialAnimation;
+            public OAnimationListBase visibilityAnimation;
+            public OAnimationListBase lightAnimation;
             public OAnimationListBase cameraAnimation;
+            public OAnimationListBase fogAnimation;
+            public List<OScene> scene;
             public OVector3 minVector, maxVector;
 
             public OModelGroup()
@@ -1379,7 +1514,11 @@ namespace Ohana3DS_Rebirth.Ohana
                 fog = new List<OFog>();
                 skeletalAnimation = new OAnimationListBase();
                 materialAnimation = new OAnimationListBase();
+                visibilityAnimation = new OAnimationListBase();
+                lightAnimation = new OAnimationListBase();
                 cameraAnimation = new OAnimationListBase();
+                fogAnimation = new OAnimationListBase();
+                scene = new List<OScene>();
                 minVector = new OVector3();
                 maxVector = new OVector3();
             }
@@ -1457,12 +1596,48 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
+            ///     Adds a new Visibility Animation.
+            /// </summary>
+            /// <param name="_visibilityAnimation">The Visibility Animation</param>
+            public void addVisibilityAnimation(OVisibilityAnimation _visibilityAnimation)
+            {
+                visibilityAnimation.list.Add(_visibilityAnimation);
+            }
+
+            /// <summary>
+            ///     Adds a new Light Animation.
+            /// </summary>
+            /// <param name="_lightAnimation">The Light Animation</param>
+            public void addLightAnimation(OLightAnimation _lightAnimation)
+            {
+                lightAnimation.list.Add(_lightAnimation);
+            }
+
+            /// <summary>
             ///     Adds a new Camera Animation.
             /// </summary>
             /// <param name="_cameraAnimation">The Camera Animation</param>
             public void addCameraAnimation(OCameraAnimation _cameraAnimation)
             {
                 cameraAnimation.list.Add(_cameraAnimation);
+            }
+
+            /// <summary>
+            ///     Adds a new Fog Animation.
+            /// </summary>
+            /// <param name="_fogAnimation">The Fog Animation</param>
+            public void addFogAnimation(OFogAnimation _fogAnimation)
+            {
+                fogAnimation.list.Add(_fogAnimation);
+            }
+
+            /// <summary>
+            ///     Adds a new Scene Environment.
+            /// </summary>
+            /// <param name="_scene">The Scene Environment</param>
+            public void addScene(OScene _scene)
+            {
+                scene.Add(_scene);
             }
         }
     }

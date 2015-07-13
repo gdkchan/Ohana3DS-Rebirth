@@ -18,7 +18,7 @@ namespace Ohana3DS_Rebirth.Ohana.GenericFormats
         /// <param name="model">The Model that will be exported</param>
         /// <param name="fileName">The output File Name</param>
         /// <param name="modelIndex">Index of the model to be exported</param>
-        /// <param name="skeletalAnimationIndex">(Optional) Index of the skeletal animation.</param>
+        /// <param name="skeletalAnimationIndex">(Optional) Index of the skeletal animation</param>
         public static void export(RenderBase.OModelGroup model, string fileName, int modelIndex, int skeletalAnimationIndex = -1)
         {
             RenderBase.OModel mdl = model.model[modelIndex];
@@ -66,22 +66,21 @@ namespace Ohana3DS_Rebirth.Ohana.GenericFormats
                             if (b.isFrameFormat || b.isFullBakedFormat) error = true;
                             if (b.name == mdl.skeleton[index].name && !b.isFrameFormat && !b.isFullBakedFormat)
                             {
-                                if (b.rotationX.exists) newBone.rotation.x = AnimationHelper.getKey(b.rotationX, AnimationHelper.getFrameNumber(b.rotationX, frame));
-                                if (b.rotationY.exists) newBone.rotation.y = AnimationHelper.getKey(b.rotationY, AnimationHelper.getFrameNumber(b.rotationY, frame));
-                                if (b.rotationZ.exists) newBone.rotation.z = AnimationHelper.getKey(b.rotationZ, AnimationHelper.getFrameNumber(b.rotationZ, frame));
-                                if (b.translationX.exists)
+                                if (b.rotationExists)
                                 {
-                                    newBone.translation.x = AnimationHelper.getKey(b.translationX, AnimationHelper.getFrameNumber(b.translationX, frame));
+                                    newBone.rotation.x = AnimationHelper.getKey(b.rotationX, AnimationHelper.getFrame(b.rotationX, frame));
+                                    newBone.rotation.y = AnimationHelper.getKey(b.rotationY, AnimationHelper.getFrame(b.rotationY, frame));
+                                    newBone.rotation.z = AnimationHelper.getKey(b.rotationZ, AnimationHelper.getFrame(b.rotationZ, frame));
+                                }
+
+                                if (b.translationExists)
+                                {
+                                    newBone.translation.x = AnimationHelper.getKey(b.translationX, AnimationHelper.getFrame(b.translationX, frame));
+                                    newBone.translation.y = AnimationHelper.getKey(b.translationY, AnimationHelper.getFrame(b.translationY, frame));
+                                    newBone.translation.z = AnimationHelper.getKey(b.translationZ, AnimationHelper.getFrame(b.translationZ, frame));
+                                    
                                     newBone.translation.x *= mdl.skeleton[index].absoluteScale.x;
-                                }
-                                if (b.translationY.exists)
-                                {
-                                    newBone.translation.y = AnimationHelper.getKey(b.translationY, AnimationHelper.getFrameNumber(b.translationY, frame));
                                     newBone.translation.y *= mdl.skeleton[index].absoluteScale.y;
-                                }
-                                if (b.translationZ.exists)
-                                {
-                                    newBone.translation.z = AnimationHelper.getKey(b.translationZ, AnimationHelper.getFrameNumber(b.translationZ, frame));
                                     newBone.translation.z *= mdl.skeleton[index].absoluteScale.z;
                                 }
 

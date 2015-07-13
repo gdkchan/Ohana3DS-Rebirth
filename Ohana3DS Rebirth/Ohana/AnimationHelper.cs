@@ -8,28 +8,41 @@ namespace Ohana3DS_Rebirth.Ohana
     class AnimationHelper
     {
         /// <summary>
+        ///     Gets the smaller and closest frame to the given Key Frame.
+        /// </summary>
+        /// <param name="keyFrames">List with the Key Frames</param>
+        /// <param name="frame">The frame number used as reference</param>
+        /// <returns></returns>
+        public static RenderBase.OInterpolationFloat getSmallerPoint(List<RenderBase.OInterpolationFloat> keyFrames, float frame)
+        {
+            RenderBase.OInterpolationFloat value = new RenderBase.OInterpolationFloat();
+            foreach (RenderBase.OInterpolationFloat key in keyFrames) if (key.frame >= value.frame && key.frame <= frame) value = key;
+            return value;
+        }
+
+        /// <summary>
+        ///     Gets the larger and closest frame to the given Key Frame.
+        /// </summary>
+        /// <param name="keyFrames">List with the Key Frames</param>
+        /// <param name="frame">The frame number used as reference</param>
+        /// <returns></returns>
+        public static RenderBase.OInterpolationFloat getLargerPoint(List<RenderBase.OInterpolationFloat> keyFrames, float frame)
+        {
+            RenderBase.OInterpolationFloat value = new RenderBase.OInterpolationFloat(0, 0, 0, float.MaxValue);
+            foreach (RenderBase.OInterpolationFloat key in keyFrames) if (key.frame <= value.frame && key.frame >= frame) value = key;
+            return value;
+        }
+
+        /// <summary>
         ///     Gets the smaller point between two Key Frames.
         ///     It doesn't actually interpolates anything, just returns the closest value.
         /// </summary>
         /// <param name="keyFrames">The list with all available Key Frames (Linear format)</param>
         /// <param name="frame">The frame number that should be returned</param>
         /// <returns>The closest smaller frame value</returns>
-        private static float interpolateStep(List<RenderBase.OLinearFloat> keyFrames, float frame)
+        public static float interpolateStep(List<RenderBase.OInterpolationFloat> keyFrames, float frame)
         {
-            float minFrame = 0;
-            float a = 0;
-
-            foreach (RenderBase.OLinearFloat key in keyFrames)
-            {
-                if (key.frame >= minFrame && key.frame <= frame)
-                {
-                    minFrame = key.frame;
-                    a = key.value;
-                }
-
-            }
-
-            return a;
+            return getSmallerPoint(keyFrames, frame).value;
         }
 
         /// <summary>
@@ -38,39 +51,63 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="keyFrames">The list with all available Key Frames (Linear format)</param>
         /// <param name="frame">The frame number that should be interpolated</param>
         /// <returns>The interpolated frame value</returns>
-        public static float interpolate(List<RenderBase.OLinearFloat> keyFrames, float frame)
+        public static float interpolateLinear(List<RenderBase.OInterpolationFloat> keyFrames, float frame)
         {
-            float minFrame = 0;
-            float maxFrame = float.MaxValue;
+            RenderBase.OInterpolationFloat a = getSmallerPoint(keyFrames, frame);
+            RenderBase.OInterpolationFloat b = getLargerPoint(keyFrames, frame);
+            if (a.frame == b.frame) return a.value;
 
-            float a = 0;
-            float b = 0;
-
-            foreach (RenderBase.OLinearFloat key in keyFrames)
-            {
-                if (key.frame >= minFrame && key.frame <= frame)
-                {
-                    minFrame = key.frame;
-                    a = key.value;
-                }
-
-                if (key.frame <= maxFrame && key.frame >= frame)
-                {
-                    maxFrame = key.frame;
-                    b = key.value;
-                }
-            }
-            if (minFrame == maxFrame) return a;
-
-            float mu = (frame - minFrame) / (maxFrame - minFrame);
-            return (a * (1 - mu) + b * mu);
+            float mu = (frame - a.frame) / (b.frame - a.frame);
+            return (a.value * (1 - mu) + b.value * mu);
         }
 
-        private struct hermite
+        /// <summary>
+        ///     Interpolates a point between two vectors using Linear Interpolation.
+        /// </summary>
+        /// <param name="a">First vector</param>
+        /// <param name="b">Second vector</param>
+        /// <param name="mu">Value between 0-1 of the interpolation amount</param>
+        /// <returns></returns>
+        public static RenderBase.OVector3 interpolateLinear(RenderBase.OVector3 a, RenderBase.OVector3 b, float mu)
         {
-            public float value;
-            public float inSlope;
-            public float outSlope;
+            RenderBase.OVector3 output = new RenderBase.OVector3();
+
+            output.x = interpolateLinear(a.x, b.x, mu);
+            output.y = interpolateLinear(a.y, b.y, mu);
+            output.z = interpolateLinear(a.z, b.z, mu);
+
+            return output;
+        }
+
+        /// <summary>
+        ///     Interpolates a point between two vectors using Linear Interpolation.
+        /// </summary>
+        /// <param name="a">First vector</param>
+        /// <param name="b">Second vector</param>
+        /// <param name="mu">Value between 0-1 of the interpolation amount</param>
+        /// <returns></returns>
+        public static RenderBase.OVector4 interpolateLinear(RenderBase.OVector4 a, RenderBase.OVector4 b, float mu)
+        {
+            RenderBase.OVector4 output = new RenderBase.OVector4();
+
+            output.x = interpolateLinear(a.x, b.x, mu);
+            output.y = interpolateLinear(a.y, b.y, mu);
+            output.z = interpolateLinear(a.z, b.z, mu);
+            output.w = interpolateLinear(a.w, b.w, mu);
+
+            return output;
+        }
+
+        /// <summary>
+        ///     Interpolates a point between two points using Linear Interpolation.
+        /// </summary>
+        /// <param name="a">First point</param>
+        /// <param name="b">Second point</param>
+        /// <param name="mu">Value between 0-1 of the interpolation amount</param>
+        /// <returns></returns>
+        public static float interpolateLinear(float a, float b, float mu)
+        {
+            return (a * (1 - mu) + b * mu);
         }
 
         /// <summary>
@@ -79,35 +116,13 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="keyFrames">The list with all available Key Frames (Hermite format)</param>
         /// <param name="frame">The frame number that should be interpolated</param>
         /// <returns>The interpolated frame value</returns>
-        public static float interpolate(List<RenderBase.OHermiteFloat> keyFrames, float frame)
+        public static float interpolateHermite(List<RenderBase.OInterpolationFloat> keyFrames, float frame)
         {
-            float minFrame = 0;
-            float maxFrame = float.MaxValue;
+            RenderBase.OInterpolationFloat a = getSmallerPoint(keyFrames, frame);
+            RenderBase.OInterpolationFloat b = getLargerPoint(keyFrames, frame);
+            if (a.frame == b.frame) return a.value;
 
-            hermite a = new hermite();
-            hermite b = new hermite();
-
-            foreach (RenderBase.OHermiteFloat key in keyFrames)
-            {
-                if (key.frame >= minFrame && key.frame <= frame)
-                {
-                    minFrame = key.frame;
-                    a.value = key.value;
-                    a.inSlope = key.inSlope;
-                    a.outSlope = key.outSlope;
-                }
-
-                if (key.frame <= maxFrame && key.frame >= frame)
-                {
-                    maxFrame = key.frame;
-                    b.value = key.value;
-                    b.inSlope = key.inSlope;
-                    b.outSlope = key.outSlope;
-                }
-            }
-            if (minFrame == maxFrame) return a.value;
-
-            float mu = (frame - minFrame) / (maxFrame - minFrame);
+            float mu = (frame - a.frame) / (b.frame - a.frame);
             float mu2 = mu * mu;
             float mu3 = mu2 * mu;
             float m0 = a.outSlope / 2;
@@ -132,9 +147,9 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             switch (sourceFrame.interpolation)
             {
-                case RenderBase.OInterpolationMode.step: return interpolateStep(sourceFrame.linearFrame, frame);
-                case RenderBase.OInterpolationMode.linear: return interpolate(sourceFrame.linearFrame, frame);
-                case RenderBase.OInterpolationMode.hermite: return interpolate(sourceFrame.hermiteFrame, frame);
+                case RenderBase.OInterpolationMode.step: return interpolateStep(sourceFrame.keyFrames, frame);
+                case RenderBase.OInterpolationMode.linear: return interpolateLinear(sourceFrame.keyFrames, frame);
+                case RenderBase.OInterpolationMode.hermite: return interpolateHermite(sourceFrame.keyFrames, frame);
                 default: return 0; //Shouldn't happen
             }
         }
@@ -145,7 +160,7 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="sourceFrame">The list of key frames</param>
         /// <param name="frame">The frame that should be verified</param>
         /// <returns></returns>
-        public static float getFrameNumber(RenderBase.OAnimationKeyFrame sourceFrame, float frame)
+        public static float getFrame(RenderBase.OAnimationKeyFrame sourceFrame, float frame)
         {
             //TODO
             if (frame < sourceFrame.startFrame)
