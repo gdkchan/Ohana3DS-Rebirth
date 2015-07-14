@@ -1203,7 +1203,9 @@ namespace Ohana3DS_Rebirth.Ohana
             transform = 4,
             rgbaColor = 5,
             integer = 6,
-            boolean = 8
+            transformQuaternion = 7,
+            boolean = 8,
+            transformMatrix = 9
         }
 
         public class OSkeletalAnimationBone

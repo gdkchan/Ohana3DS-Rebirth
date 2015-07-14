@@ -106,17 +106,6 @@ namespace Ohana3DS_Rebirth.GUI
             windowList.Add(window);
         }
 
-        private void triggerVisibility(Object sender, EventArgs e)
-        {
-            ToolStripMenuItem item = (ToolStripMenuItem)sender;
-            ODockWindow window = (ODockWindow)item.Tag;
-
-            window.Visible = !window.Visible;
-            item.Checked = window.Visible;
-
-            Refresh();
-        }
-
         protected override void OnPaint(PaintEventArgs e)
         {
             int left = scrollX * -1;
@@ -159,18 +148,18 @@ namespace Ohana3DS_Rebirth.GUI
         {
             if (e.Button == MouseButtons.Left)
             {
-                Rectangle mouseRect = new Rectangle(PointToClient(Cursor.Position), new Size(1, 1));
+                Point mousePoint = PointToClient(Cursor.Position);
                 Rectangle leftScrollRect = new Rectangle(0, ((Height / 2) - 8) + 2, 16, 16);
                 Rectangle rightScrollRect = new Rectangle(Width - 16, ((Height / 2) - 8) + 2, 16, 16);
 
-                if (hasLeftScroll && mouseRect.IntersectsWith(leftScrollRect))
+                if (hasLeftScroll && leftScrollRect.Contains(mousePoint))
                 {
                     scrollGoal -= windowWidth / 8;
                     smoothScroll.Enabled = true;
                     return;
                 }
 
-                if (hasRightScroll && mouseRect.IntersectsWith(rightScrollRect))
+                if (hasRightScroll && rightScrollRect.Contains(mousePoint))
                 {
                     scrollGoal += windowWidth / 8;
                     smoothScroll.Enabled = true;
@@ -182,7 +171,7 @@ namespace Ohana3DS_Rebirth.GUI
                 {
                     Rectangle rect = new Rectangle(left, 4, windowWidth, Height - 8);
                     
-                    if (mouseRect.IntersectsWith(rect))
+                    if (rect.Contains(mousePoint))
                     {
                         w.Visible = !w.Visible;
                         Refresh();

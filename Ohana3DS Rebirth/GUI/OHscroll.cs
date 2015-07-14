@@ -134,8 +134,7 @@ namespace Ohana3DS_Rebirth.GUI
             if (e.Button == MouseButtons.Left)
             {
                 Rectangle scrollRect = new Rectangle(scrollBarX, 0, scrollBarSize, Height);
-                Rectangle mouseRect = new Rectangle(e.X, e.Y, 1, 1);
-                if (scrollRect.IntersectsWith(mouseRect))
+                if (scrollRect.Contains(e.Location))
                 {
                     scroll = e.X - scrollBarX;
                     mouseDrag = true;
@@ -155,8 +154,7 @@ namespace Ohana3DS_Rebirth.GUI
         protected override void OnMouseMove(MouseEventArgs e)
         {
             Rectangle scrollRect = new Rectangle(scrollBarX, 0, scrollBarSize, Height);
-            Rectangle mouseRect = new Rectangle(e.X, e.Y, 1, 1);
-            if (scrollRect.IntersectsWith(mouseRect))
+            if (scrollRect.Contains(e.Location))
             {
                 if (foreColor != barColorHover)
                 {

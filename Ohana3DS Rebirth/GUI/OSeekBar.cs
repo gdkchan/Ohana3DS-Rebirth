@@ -135,8 +135,7 @@ namespace Ohana3DS_Rebirth.GUI
             if (e.Button == MouseButtons.Left)
             {
                 Rectangle knobRect = new Rectangle(knobX, (Height / 2) - (knobSize / 2), knobSize, knobSize);
-                Rectangle mouseRect = new Rectangle(e.X, e.Y, 1, 1);
-                if (knobRect.IntersectsWith(mouseRect))
+                if (knobRect.Contains(e.Location))
                 {
                     seek = e.X - knobX;
                     mouseDrag = true;
@@ -171,9 +170,6 @@ namespace Ohana3DS_Rebirth.GUI
 
         protected override void OnMouseMove(MouseEventArgs e)
         {
-            Rectangle knobRect = new Rectangle(knobX, (Height / 2) - (knobSize / 2), knobSize, knobSize);
-            Rectangle mouseRect = new Rectangle(e.X, e.Y, 1, 1);
-
             if (e.Button == MouseButtons.Left)
             {
                 if (mouseDrag)

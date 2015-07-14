@@ -11,11 +11,16 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Runtime.InteropServices;
 
 namespace Ohana3DS_Rebirth.GUI
 {
     public partial class ODock : Control
     {
+        [DllImport("user32.dll")]
+        public static extern int SendMessage(IntPtr hWnd, int wMsg, int wParam, int lParam);
+        private const int WM_SETREDRAW = 11;
+
         const int minimumWidth = 128;
         const int minimumHeight = 64;
 
@@ -72,6 +77,10 @@ namespace Ohana3DS_Rebirth.GUI
         public ODock()
         {
             SetStyle(ControlStyles.SupportsTransparentBackColor, true);
+            SetStyle(ControlStyles.UserPaint, true);
+            SetStyle(ControlStyles.AllPaintingInWmPaint, true);
+            SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
+
             Resize += Control_Resize;
             MouseMove += Control_MouseMove;
             MouseDown += Control_MouseDown;
@@ -91,6 +100,17 @@ namespace Ohana3DS_Rebirth.GUI
             {
                 base.Text = value;
             }
+        }
+
+        public void SuspendDrawing()
+        {
+            SendMessage(Handle, WM_SETREDRAW, 0, 0);
+        }
+
+        public void ResumeDrawing()
+        {
+            SendMessage(Handle, WM_SETREDRAW, 1, 0);
+            Refresh();
         }
 
         /// <summary>
@@ -249,6 +269,7 @@ namespace Ohana3DS_Rebirth.GUI
             if (drag)
             {
                 Rectangle rect = new Rectangle(0, 0, Width, Height);
+                SuspendDrawing();
 
                 if (dragMode == resizeMode.entireSide)
                 {
@@ -300,18 +321,10 @@ namespace Ohana3DS_Rebirth.GUI
 
                                 foreach (windowInfoStruct w in windowInfo.Where(w => w.dock == dragSide))
                                 {
-                                    w.window.SuspendDrawing();
                                     w.window.Width = rightDockWidth;
                                     w.window.Left = (rect.X + rect.Width) - rightDockWidth;
                                 }
-
-                                foreach (windowInfoStruct w in windowInfo.Where(w => w.dock == dragSide))
-                                {
-                                    w.window.ResumeDrawing();
-                                }
                             }
-
-                            Refresh();
 
                             break;
 
@@ -339,7 +352,6 @@ namespace Ohana3DS_Rebirth.GUI
                                 if (windowCount(dockMode.Bottom) > 0)
                                 {
                                     int bottomWindowIndex = getLeftmostWindow(dockMode.Bottom);
-                                    windowInfo[bottomWindowIndex].window.SuspendDrawing();
                                     windowInfo[bottomWindowIndex].window.Left -= diff;
                                     windowInfo[bottomWindowIndex].window.Width += diff;
                                 }
@@ -347,7 +359,6 @@ namespace Ohana3DS_Rebirth.GUI
                                 if (windowCount(dockMode.Center) > 0)
                                 {
                                     int centerWindowIndex = getCenterWindow();
-                                    windowInfo[centerWindowIndex].window.SuspendDrawing();
                                     windowInfo[centerWindowIndex].window.Left -= diff;
                                     windowInfo[centerWindowIndex].window.Width += diff;
                                 }
@@ -355,7 +366,6 @@ namespace Ohana3DS_Rebirth.GUI
                                 if (windowCount(dockMode.Top) > 0)
                                 {
                                     int topWindowIndex = getLeftmostWindow(dockMode.Top);
-                                    windowInfo[topWindowIndex].window.SuspendDrawing();
                                     windowInfo[topWindowIndex].window.Left -= diff;
                                     windowInfo[topWindowIndex].window.Width += diff;
                                 }
@@ -366,13 +376,6 @@ namespace Ohana3DS_Rebirth.GUI
                                 leftDockWidth = newWidthLeft;
                                 foreach (windowInfoStruct w in windowInfo.Where(w => w.dock == dragSide)) w.window.Width = leftDockWidth;
                             }
-
-                            foreach (windowInfoStruct w in windowInfo)
-                            {
-                                w.window.ResumeDrawing();
-                            }
-
-                            Refresh();
                             
                             break;
 
@@ -410,18 +413,10 @@ namespace Ohana3DS_Rebirth.GUI
 
                                 foreach (windowInfoStruct w in windowInfo.Where(w => w.dock == dragSide))
                                 {
-                                    w.window.SuspendDrawing();
                                     w.window.Height = bottomDockHeight;
                                     w.window.Top = (rect.Y + rect.Height) - bottomDockHeight;
                                 }
-
-                                foreach (windowInfoStruct w in windowInfo.Where(w => w.dock == dragSide))
-                                {
-                                    w.window.ResumeDrawing();
-                                }
                             }
-
-                            Refresh();
 
                             break;
 
@@ -449,7 +444,6 @@ namespace Ohana3DS_Rebirth.GUI
                                 if (windowCount(dockMode.Center) > 0)
                                 {
                                     int centerWindowIndex = getCenterWindow();
-                                    windowInfo[centerWindowIndex].window.SuspendDrawing();
                                     windowInfo[centerWindowIndex].window.Top -= diff;
                                     windowInfo[centerWindowIndex].window.Height += diff;
                                 }
@@ -460,13 +454,6 @@ namespace Ohana3DS_Rebirth.GUI
                                 topDockHeight = newTopHeight;
                                 foreach (windowInfoStruct w in windowInfo.Where(w => w.dock == dragSide)) w.window.Height = topDockHeight;
                             }
-
-                            foreach (windowInfoStruct w in windowInfo)
-                            {
-                                w.window.ResumeDrawing();
-                            }
-
-                            Refresh();
 
                             break;
                     }
@@ -482,19 +469,12 @@ namespace Ohana3DS_Rebirth.GUI
                             int dragDistanceY = Cursor.Position.Y - dragMousePosition.Y;
 
                             int belowWindow = getBelowWindow(getRectangle(windowInfo[dragIndex].window), windowInfo[dragIndex].dock, dragIndex);
-                            if (belowWindow == -1) return; //Should never happen, if this happens then theres a bug somewhere
-                            windowInfo[dragIndex].window.SuspendDrawing();
-                            windowInfo[belowWindow].window.SuspendDrawing();
                             int belowBelowWindow = getBelowWindow(getRectangle(windowInfo[belowWindow].window), windowInfo[dragIndex].dock, belowWindow);
                             int belowWindowHeight;
                             if (windowInfo[belowWindow].hasGrip)
-                            {
                                 belowWindowHeight = (windowInfo[belowBelowWindow].window.Top - (dragNearWindowLocation.Y + dragDistanceY)) - gripSize;
-                            }
                             else
-                            {
                                 belowWindowHeight = (rect.Top + rect.Height) - (dragNearWindowLocation.Y + dragDistanceY);
-                            }
 
                             if ((dragSize.Height + dragDistanceY >= minimumHeight) && (belowWindowHeight >= minimumHeight || (windowInfo[belowWindow].window.Height < minimumHeight && belowWindowHeight >= windowInfo[belowWindow].window.Height)))
                             {
@@ -502,31 +482,25 @@ namespace Ohana3DS_Rebirth.GUI
                                 windowInfo[belowWindow].window.Top = windowInfo[dragIndex].window.Top + windowInfo[dragIndex].window.Height + gripSize;
                                 windowInfo[belowWindow].window.Height = belowWindowHeight;
                             }
-                            else if (dragSize.Height + dragDistanceY < minimumHeight)
+                            else if ((dragSize.Height + dragDistanceY < minimumHeight) && (windowInfo[dragIndex].window.Height > minimumHeight))
                             {
                                 windowInfo[dragIndex].window.Height = minimumHeight;
                                 windowInfo[belowWindow].window.Top = (windowInfo[dragIndex].window.Top + windowInfo[dragIndex].window.Height) + gripSize;
+                                
                                 if (windowInfo[belowWindow].hasGrip)
-                                {
                                     windowInfo[belowWindow].window.Height = (windowInfo[belowBelowWindow].window.Top - windowInfo[belowWindow].window.Top) - gripSize;
-                                }
                                 else
-                                {
                                     windowInfo[belowWindow].window.Height = (rect.Top + rect.Height) - windowInfo[belowWindow].window.Top;
-                                }
+
                             }
                             else if (belowWindowHeight < minimumHeight)
                             {
                                 int top;
-                                
+
                                 if (windowInfo[belowWindow].hasGrip)
-                                {
                                     top = (windowInfo[belowBelowWindow].window.Top - minimumHeight) - gripSize;
-                                }
                                 else
-                                {
                                     top = (rect.Top + rect.Height) - minimumHeight;
-                                }
 
                                 int height = (windowInfo[belowWindow].window.Top - windowInfo[dragIndex].window.Top) - gripSize;
                                 if (height < minimumHeight) return;
@@ -535,30 +509,19 @@ namespace Ohana3DS_Rebirth.GUI
                                 windowInfo[dragIndex].window.Height = height;
                             }
 
-                            windowInfo[dragIndex].window.ResumeDrawing();
-                            windowInfo[belowWindow].window.ResumeDrawing();
                             Refresh();
-
                             break;
-
                         case dockMode.Bottom:
                         case dockMode.Top:
                             int dragDistanceX = Cursor.Position.X - dragMousePosition.X;
 
                             int rightWindow = getRightWindow(getRectangle(windowInfo[dragIndex].window), windowInfo[dragIndex].dock, dragIndex);
-                            if (rightWindow == -1) return; //Should never happen, if this happens then theres a bug somewhere
-                            windowInfo[dragIndex].window.SuspendDrawing();
-                            windowInfo[rightWindow].window.SuspendDrawing();
                             int rightRightWindow = getRightWindow(getRectangle(windowInfo[rightWindow].window), windowInfo[dragIndex].dock, rightWindow);
                             int rightWindowWidth;
                             if (windowInfo[rightWindow].hasGrip)
-                            {
                                 rightWindowWidth = (windowInfo[rightRightWindow].window.Left - (dragNearWindowLocation.X + dragDistanceX)) - gripSize;
-                            }
                             else
-                            {
                                 rightWindowWidth = (rect.Left + rect.Width) - (dragNearWindowLocation.X + dragDistanceX);
-                            }
 
                             if (dragSize.Width + dragDistanceX >= minimumWidth && (rightWindowWidth >= minimumWidth || (windowInfo[rightWindow].window.Width < minimumWidth && rightWindowWidth >= windowInfo[rightWindow].window.Width)))
                             {
@@ -566,31 +529,24 @@ namespace Ohana3DS_Rebirth.GUI
                                 windowInfo[rightWindow].window.Left = windowInfo[dragIndex].window.Left + windowInfo[dragIndex].window.Width + gripSize;
                                 windowInfo[rightWindow].window.Width = rightWindowWidth;
                             }
-                            else if (dragSize.Width + dragDistanceX < minimumWidth)
+                            else if ((dragSize.Width + dragDistanceX < minimumWidth) && (windowInfo[dragIndex].window.Width > minimumWidth))
                             {
                                 windowInfo[dragIndex].window.Width = minimumWidth;
                                 windowInfo[rightWindow].window.Left = (windowInfo[dragIndex].window.Left + windowInfo[dragIndex].window.Width) + gripSize;
+                                
                                 if (windowInfo[rightWindow].hasGrip)
-                                {
                                     windowInfo[rightWindow].window.Width = (windowInfo[rightRightWindow].window.Left - windowInfo[rightWindow].window.Left) - gripSize;
-                                }
                                 else
-                                {
                                     windowInfo[rightWindow].window.Width = (rect.Left + rect.Width) - windowInfo[rightWindow].window.Left;
-                                }
                             }
                             else if (rightWindowWidth < minimumWidth)
                             {
                                 int left;
-                                
+
                                 if (windowInfo[rightWindow].hasGrip)
-                                {
-                                    left = (windowInfo[rightRightWindow].window.Left - minimumWidth) - gripSize;
-                                }
+                                     left = (windowInfo[rightRightWindow].window.Left - minimumWidth) - gripSize;
                                 else
-                                {
                                     left = (rect.Left + rect.Width) - minimumWidth;
-                                }
 
                                 int width = (windowInfo[rightWindow].window.Left - windowInfo[dragIndex].window.Left) - gripSize;
                                 if (width < minimumWidth) return;
@@ -599,20 +555,17 @@ namespace Ohana3DS_Rebirth.GUI
                                 windowInfo[dragIndex].window.Width = width;
                             }
 
-                            windowInfo[dragIndex].window.ResumeDrawing();
-                            windowInfo[rightWindow].window.ResumeDrawing();
-                            Refresh();
-
                             break;
                     }
                 }
 
                 calculateProportions();
+                ResumeDrawing();
             }
             else
             {
                 Rectangle rect = new Rectangle(0, 0, Width, Height);
-                Rectangle mouseRect = new Rectangle(PointToClient(Cursor.Position), new Size(1, 1));
+                Point mousePoint = PointToClient(Cursor.Position);
 
                 foreach (windowInfoStruct w in windowInfo.Where(w => w.hasGrip))
                 {
@@ -621,13 +574,13 @@ namespace Ohana3DS_Rebirth.GUI
                         case dockMode.Right:
                         case dockMode.Left:
                             Rectangle gripRectRL = new Rectangle(w.window.Left, w.window.Top + w.window.Height, w.window.Width, gripSize);
-                            if (mouseRect.IntersectsWith(gripRectRL)) Cursor.Current = Cursors.HSplit;
+                            if (gripRectRL.Contains(mousePoint)) Cursor.Current = Cursors.HSplit;
                             break;
 
                         case dockMode.Bottom:
                         case dockMode.Top:
                             Rectangle gripRectBT = new Rectangle(w.window.Left + w.window.Width, w.window.Top, gripSize, w.window.Height);
-                            if (mouseRect.IntersectsWith(gripRectBT)) Cursor.Current = Cursors.VSplit;
+                            if (gripRectBT.Contains(mousePoint)) Cursor.Current = Cursors.VSplit;
                             break;
                     }
                 }
@@ -637,17 +590,17 @@ namespace Ohana3DS_Rebirth.GUI
                 Rectangle bottomDockDrag = new Rectangle(rect.X, ((rect.Y + rect.Height) - bottomDockHeight) - gripSize, rect.Width, gripSize);
                 Rectangle topDockDrag = new Rectangle(rect.X, rect.Y + topDockHeight, rect.Width, gripSize);
 
-                if ((windowCount(dockMode.Right) > 0) && mouseRect.IntersectsWith(rightDockDrag)) Cursor.Current = Cursors.VSplit;
-                if ((windowCount(dockMode.Left) > 0) && mouseRect.IntersectsWith(leftDockDrag)) Cursor.Current = Cursors.VSplit;
-                if ((windowCount(dockMode.Bottom) > 0) && mouseRect.IntersectsWith(bottomDockDrag)) Cursor.Current = Cursors.HSplit;
-                if ((windowCount(dockMode.Top) > 0) && mouseRect.IntersectsWith(topDockDrag)) Cursor.Current = Cursors.HSplit;
+                if ((windowCount(dockMode.Right) > 0) && rightDockDrag.Contains(mousePoint)) Cursor.Current = Cursors.VSplit;
+                if ((windowCount(dockMode.Left) > 0) && leftDockDrag.Contains(mousePoint)) Cursor.Current = Cursors.VSplit;
+                if ((windowCount(dockMode.Bottom) > 0) && bottomDockDrag.Contains(mousePoint)) Cursor.Current = Cursors.HSplit;
+                if ((windowCount(dockMode.Top) > 0) && topDockDrag.Contains(mousePoint)) Cursor.Current = Cursors.HSplit;
             }
         }
 
         private void Control_MouseDown(Object sender, MouseEventArgs e)
         {
             Rectangle rect = new Rectangle(0, 0, Width, Height);
-            Rectangle mouseRect = new Rectangle(PointToClient(Cursor.Position), new Size(1, 1));
+            Point mousePoint = PointToClient(Cursor.Position);
 
             for (int i = 0; i < windowInfo.Count; i++)
             {
@@ -659,7 +612,7 @@ namespace Ohana3DS_Rebirth.GUI
                         case dockMode.Left:
                             Rectangle gripRectRL = new Rectangle(windowInfo[i].window.Left, windowInfo[i].window.Top + windowInfo[i].window.Height, windowInfo[i].window.Width, gripSize);
 
-                            if (mouseRect.IntersectsWith(gripRectRL))
+                            if (gripRectRL.Contains(mousePoint))
                             {
                                 Cursor.Current = Cursors.HSplit;
                                 drag = true;
@@ -677,7 +630,7 @@ namespace Ohana3DS_Rebirth.GUI
                         case dockMode.Top:
                             Rectangle gripRectBT = new Rectangle(windowInfo[i].window.Left + windowInfo[i].window.Width, windowInfo[i].window.Top, gripSize, windowInfo[i].window.Height);
 
-                            if (mouseRect.IntersectsWith(gripRectBT))
+                            if (gripRectBT.Contains(mousePoint))
                             {
                                 Cursor.Current = Cursors.VSplit;
                                 drag = true;
@@ -699,7 +652,7 @@ namespace Ohana3DS_Rebirth.GUI
             Rectangle bottomDockDrag = new Rectangle(rect.X, ((rect.Y + rect.Height) - bottomDockHeight) - gripSize, rect.Width, gripSize);
             Rectangle topDockDrag = new Rectangle(rect.X, rect.Y + topDockHeight, rect.Width, gripSize);
 
-            if ((windowCount(dockMode.Right) > 0) && mouseRect.IntersectsWith(rightDockDrag))
+            if ((windowCount(dockMode.Right) > 0) && rightDockDrag.Contains(mousePoint))
             {
                 Cursor.Current = Cursors.VSplit;
                 drag = true;
@@ -707,7 +660,7 @@ namespace Ohana3DS_Rebirth.GUI
                 dragMode = resizeMode.entireSide;
                 dragSide = dockMode.Right;
             }
-            else if ((windowCount(dockMode.Left) > 0) && mouseRect.IntersectsWith(leftDockDrag))
+            else if ((windowCount(dockMode.Left) > 0) && leftDockDrag.Contains(mousePoint))
             {
                 Cursor.Current = Cursors.VSplit;
                 drag = true;
@@ -715,7 +668,7 @@ namespace Ohana3DS_Rebirth.GUI
                 dragMode = resizeMode.entireSide;
                 dragSide = dockMode.Left;
             }
-            else if ((windowCount(dockMode.Bottom) > 0) && mouseRect.IntersectsWith(bottomDockDrag))
+            else if ((windowCount(dockMode.Bottom) > 0) && bottomDockDrag.Contains(mousePoint))
             {
                 Cursor.Current = Cursors.HSplit;
                 drag = true;
@@ -723,7 +676,7 @@ namespace Ohana3DS_Rebirth.GUI
                 dragMode = resizeMode.entireSide;
                 dragSide = dockMode.Bottom;
             }
-            else if ((windowCount(dockMode.Top) > 0) && mouseRect.IntersectsWith(topDockDrag))
+            else if ((windowCount(dockMode.Top) > 0) && topDockDrag.Contains(mousePoint))
             {
                 Cursor.Current = Cursors.HSplit;
                 drag = true;
@@ -748,25 +701,17 @@ namespace Ohana3DS_Rebirth.GUI
 
             ODockWindow window = (ODockWindow)sender;
             int infoIndex = getWindowInfoIndex((int)window.Tag);
-
             if (!windowInfo[infoIndex].window.Drag) return;
 
-            Rectangle rightDock = getDockRect(dockMode.Right);
-            Rectangle leftDock = getDockRect(dockMode.Left);
-            Rectangle bottomDock = getDockRect(dockMode.Bottom);
-            Rectangle topDock = getDockRect(dockMode.Top);
-            Rectangle centerDock = getDockRect(dockMode.Center);
-
             Rectangle dockRect = new Rectangle(window.Location, window.Size);
-
             Rectangle windowDockRect = new Rectangle();
             switch (windowInfo[infoIndex].dock)
             {
-                case dockMode.Right: windowDockRect = rightDock; break;
-                case dockMode.Left: windowDockRect = leftDock; break;
-                case dockMode.Bottom: windowDockRect = bottomDock; break;
-                case dockMode.Top: windowDockRect = topDock; break;
-                case dockMode.Center: windowDockRect = centerDock; break;
+                case dockMode.Right: windowDockRect = getDockRect(dockMode.Right); break;
+                case dockMode.Left: windowDockRect = getDockRect(dockMode.Left); break;
+                case dockMode.Bottom: windowDockRect = getDockRect(dockMode.Bottom); break;
+                case dockMode.Top: windowDockRect = getDockRect(dockMode.Top); break;
+                case dockMode.Center: windowDockRect = getDockRect(dockMode.Center); break;
             }
 
             if (!dockRect.IntersectsWith(windowDockRect))
@@ -774,7 +719,6 @@ namespace Ohana3DS_Rebirth.GUI
                 dockMode oldDock = windowInfo[infoIndex].dock;
                 windowInfo[infoIndex].dock = dockMode.Floating;
                 windowInfo[infoIndex].hasGrip = false;
-                windowInfo[infoIndex].window.Size = windowInfo[infoIndex].originalSize;
                 windowInfo[infoIndex].window.BringToFront();
                 autoArrange(oldDock, windowDockRect);
 
@@ -814,6 +758,7 @@ namespace Ohana3DS_Rebirth.GUI
 
                 if (windowCount(dockMode.Center) > 0)
                 {
+                    Rectangle centerDock = getDockRect(dockMode.Center);
                     int centerWindowIndex = getCenterWindow();
                     windowInfo[centerWindowIndex].window.Location = centerDock.Location;
                     windowInfo[centerWindowIndex].window.Size = centerDock.Size;
@@ -828,11 +773,11 @@ namespace Ohana3DS_Rebirth.GUI
         {
             Control window = (Control)sender;
             int infoIndex = getWindowInfoIndex((int)window.Tag);
+            windowInfo[infoIndex].dock = dockMode.Floating;
 
             if (!windowInfo[infoIndex].dockable)
             {
                 dockMode oldDock = windowInfo[infoIndex].dock;
-                windowInfo[infoIndex].dock = dockMode.Floating;
                 windowInfo[infoIndex].window.Size = windowInfo[infoIndex].originalSize;
                 windowInfo[infoIndex].window.BringToFront();
 
@@ -857,8 +802,11 @@ namespace Ohana3DS_Rebirth.GUI
 
             //Código que verifica se um Dock deve ocorrer, e posiciona caso isso ocorra
             Rectangle dockRect = new Rectangle(window.Location, window.Size);
+            Point mousePoint = PointToClient(Cursor.Position);
+            mousePoint.X = Math.Max(Math.Min(mousePoint.X, Width), 0);
+            mousePoint.Y = Math.Max(Math.Min(mousePoint.Y, Height), 0);
 
-            if (dockRect.IntersectsWith(centerDock) && (windowCount(dockMode.Center) == 0 | (windowCount(dockMode.Center) == 1 && windowInfo[infoIndex].dock == dockMode.Center)))
+            if (centerDock.Contains(mousePoint) && (windowCount(dockMode.Center) == 0 || (windowCount(dockMode.Center) == 1 && windowInfo[infoIndex].dock == dockMode.Center)))
             {
                 if (centerDock.Width >= minimumWidth && centerDock.Height >= minimumHeight)
                 {
@@ -870,22 +818,22 @@ namespace Ohana3DS_Rebirth.GUI
                     windowInfo[infoIndex].dock = dockMode.Center;
                 }
             }
-            else if (dockRect.IntersectsWith(rightDock) || dockRect.IntersectsWith(leftDock)) //Lados esquerdo e direito
+            else if (rightDock.Contains(mousePoint) || leftDock.Contains(mousePoint)) //Lados esquerdo e direito
             {
                 dockMode currentDock;
                 Rectangle currentRect;
 
                 bool deny = false;
 
-                if (dockRect.IntersectsWith(rightDock))
-                {
-                    currentDock = dockMode.Right;
-                    currentRect = rightDock;
-                }
-                else
+                if (leftDock.Contains(mousePoint))
                 {
                     currentDock = dockMode.Left;
                     currentRect = leftDock;
+                }
+                else
+                {
+                    currentDock = dockMode.Right;
+                    currentRect = rightDock;
                 }
 
                 if (windowCount(currentDock) == 0)
@@ -900,9 +848,6 @@ namespace Ohana3DS_Rebirth.GUI
                 if (!deny)
                 {
                     window.SuspendLayout();
-
-                    windowInfo[infoIndex].dock = dockMode.Floating;
-                    windowInfo[infoIndex].window.Size = windowInfo[infoIndex].originalSize;
                     autoArrange(currentDock, currentRect);
 
                     int aboveWindow = getAboveWindow(dockRect, currentDock, infoIndex);
@@ -980,22 +925,22 @@ namespace Ohana3DS_Rebirth.GUI
                     window.ResumeLayout();
                 }
             }
-            else if (dockRect.IntersectsWith(bottomDock) || dockRect.IntersectsWith(topDock))
+            else if (bottomDock.Contains(mousePoint) || topDock.Contains(mousePoint))
             {
                 dockMode currentDock;
                 Rectangle currentRect;
 
                 bool deny = false;
 
-                if (dockRect.IntersectsWith(bottomDock))
-                {
-                    currentDock = dockMode.Bottom;
-                    currentRect = bottomDock;
-                }
-                else
+                if (topDock.Contains(mousePoint))
                 {
                     currentDock = dockMode.Top;
                     currentRect = topDock;
+                }
+                else
+                {
+                    currentDock = dockMode.Bottom;
+                    currentRect = bottomDock;
                 }
 
                 if (windowCount(currentDock) == 0)
@@ -1010,9 +955,6 @@ namespace Ohana3DS_Rebirth.GUI
                 if (!deny)
                 {
                     window.SuspendLayout();
-
-                    windowInfo[infoIndex].dock = dockMode.Floating;
-                    windowInfo[infoIndex].window.Size = windowInfo[infoIndex].originalSize;
                     autoArrange(currentDock, currentRect);
 
                     int leftWindow = getLeftWindow(dockRect, currentDock, infoIndex);
@@ -1091,8 +1033,15 @@ namespace Ohana3DS_Rebirth.GUI
                 }
             }
 
-            autoArrangeAll();
+            if (windowInfo[infoIndex].dock == dockMode.Floating)
+            {
+                windowInfo[infoIndex].window.Size = windowInfo[infoIndex].originalSize;
 
+                //Don't let the Form go to a unreachable position.
+                if (windowInfo[infoIndex].window.Left + windowInfo[infoIndex].window.Width < 40)
+                    windowInfo[infoIndex].window.Left = 40 - windowInfo[infoIndex].window.Width;
+            }
+            autoArrangeAll();
             calculateProportions(true);
             calculateMinimumSize();
         }
@@ -1147,7 +1096,7 @@ namespace Ohana3DS_Rebirth.GUI
         /// </summary>
         public void flush()
         {
-            for (int i = Controls.Count - 1; i >= 0; --i) Controls[i].Dispose();
+            for (int i = Controls.Count - 1; i >= 0; i--) Controls[i].Dispose();
             Controls.Clear();
             windowInfo.Clear();
         }
@@ -1537,7 +1486,7 @@ namespace Ohana3DS_Rebirth.GUI
                         centerHasSpace = true;
                     }
 
-                    //Redimensiona e reposiciona os *Windows/Controles* para dar espaço ao novo Dock Side
+                    //Redimensiona e reposiciona os Windows para dar espaço ao novo Dock Side
                     bool result = (bottomIndex > -1 || windowCount(dockMode.Bottom) == 0) && (topIndex > -1 || windowCount(dockMode.Top) == 0) && (centerHasSpace || windowCount(dockMode.Center) == 0);
                     if (width + (windowCount(dockMode.Right) > 0 ? rightDockWidth : 0) + (windowCount(dockMode.Left) > 0 ? leftDockWidth : 0) + gripSize * 2 > Width) result = false;
 

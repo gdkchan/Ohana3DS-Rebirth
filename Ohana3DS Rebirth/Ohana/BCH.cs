@@ -567,9 +567,11 @@ namespace Ohana3DS_Rebirth.Ohana
                     uint flags = input.ReadUInt32();
                     input.ReadUInt32();
 
-                    switch ((animationTypeFlags >> 16) & 0xf)
+                    RenderBase.OSegmentType segmentType = (RenderBase.OSegmentType)((animationTypeFlags >> 16) & 0xf);
+
+                    switch (segmentType)
                     {
-                        case 4:
+                        case RenderBase.OSegmentType.transform:
                             bone.rotationExists = (flags & 0x300000) == 0;
                             bone.translationExists = (flags & 0xc00000) == 0;
 
@@ -605,7 +607,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                 }
                             }
                             break;
-                        case 7:
+                        case RenderBase.OSegmentType.transformQuaternion:
                             bone.isFrameFormat = true;
 
                             long originalPos = data.Position;
@@ -663,7 +665,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             }
 
                             break;
-                        case 9:
+                        case RenderBase.OSegmentType.transformMatrix:
                             bone.isFullBakedFormat = true;
 
                             input.ReadUInt32();
@@ -693,7 +695,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             }
 
                             break;
-                        default: throw new Exception(String.Format("BCH: Unknow flag {0} on Skeletal Animation bone {1}! STOP!", flags.ToString("X8"), bone.name));
+                        default: throw new Exception(String.Format("BCH: Unknow Segment Type {0} on Skeletal Animation bone {1}! STOP!", segmentType, bone.name));
                     }
 
                     skeletalAnimation.bone.Add(bone);
@@ -2284,7 +2286,7 @@ namespace Ohana3DS_Rebirth.Ohana
             uint rawMantissa = value & 0x7fffff;
             int rawExponent = (int)(value >> 23) - exponentBias;
 
-            for (int bit = 22; bit >= 0; --bit)
+            for (int bit = 22; bit >= 0; bit--)
             {
                 if ((rawMantissa & (1 << bit)) > 0) mantissa += m;
                 m *= 0.5f;

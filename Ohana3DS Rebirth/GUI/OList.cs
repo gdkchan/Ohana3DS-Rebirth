@@ -301,17 +301,15 @@ namespace Ohana3DS_Rebirth.GUI
                     if (startY > Height) break;
 
                     Rectangle itemRect = new Rectangle(0, startY, Width, tileSize);
-                    Rectangle mouseRect = new Rectangle(mousePosition, new Size(1, 1));
 
                     //Selecionado
                     if (clicked)
                     {
-                        if (itemRect.IntersectsWith(mouseRect))
+                        if (itemRect.Contains(mousePosition))
                         {
                             e.Graphics.FillRectangle(new SolidBrush(selectedColor), new Rectangle(0, startY, Width, tileSize));
                             selectedIndex = index;
                             if (selectedIndex != oldIndex && SelectedIndexChanged != null) SelectedIndexChanged(this, EventArgs.Empty);
-                            oldIndex = selectedIndex;
                             clicked = false;
                         }
                     }
@@ -362,6 +360,7 @@ namespace Ohana3DS_Rebirth.GUI
                 selectedIndex = -1;
                 if (selectedIndex != oldIndex && SelectedIndexChanged != null) SelectedIndexChanged(this, EventArgs.Empty);
             }
+            oldIndex = selectedIndex;
             clicked = false;
 
             base.OnPaint(e);

@@ -41,8 +41,8 @@ namespace Ohana3DS_Rebirth.Ohana
 
         public class animationControl
         {
-            public float animationStep;
-            private int currentAnimation;
+            public float animationStep = 1;
+            private int currentAnimation = -1;
             private float frame;
             public bool animate;
             public bool paused;
@@ -122,14 +122,7 @@ namespace Ohana3DS_Rebirth.Ohana
             /// <param name="frameSize">The total number of frames</param>
             public void advanceFrame(float frameSize)
             {
-                if (!paused)
-                {
-                    if (frame < frameSize) Frame += animationStep; else Frame = 0;
-                }
-                else
-                {
-                    frame = 0;
-                }
+                if (!paused) if (frame < frameSize) Frame += animationStep; else Frame = 0;
             }
         }
         public animationControl ctrlSA = new animationControl();
@@ -189,12 +182,6 @@ namespace Ohana3DS_Rebirth.Ohana
                 //Some crap GPUs only works with Software vertex processing
                 device = new Device(0, DeviceType.Hardware, handle, CreateFlags.SoftwareVertexProcessing, pParams);
             }
-
-            //Spare parts
-            ctrlSA.CurrentAnimation = -1;
-            ctrlMA.CurrentAnimation = -1;
-            ctrlSA.animationStep = 1.0f;
-            ctrlMA.animationStep = 1.0f;
         }
 
         /// <summary>
@@ -399,7 +386,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     RenderBase.OModel mdl = model.model[currentModel];
                     device.Transform.World = getMatrix(mdl.transform) * baseTransform;
 
-                    #region "Animation"
+                    #region "Skeletal Animation"
                     Matrix[] animationSkeletonTransform = new Matrix[mdl.skeleton.Count];
                     if (ctrlSA.animate)
                     {
@@ -522,7 +509,8 @@ namespace Ohana3DS_Rebirth.Ohana
                         {
                             foreach (RenderBase.OVisibilityAnimationData data in ((RenderBase.OVisibilityAnimation)model.visibilityAnimation.list[ctrlVA.CurrentAnimation]).data)
                             {
-                                int frame = (int)Math.Floor(ctrlVA.Frame) % data.visibilityList.keyFrames.Count;
+
+                                int frame = (int)AnimationHelper.getFrame(data.visibilityList, ctrlVA.Frame);
                                 if (data.name == obj.name) isVisible = data.visibilityList.keyFrames[frame].bValue;
                             }
                         }
@@ -1114,10 +1102,10 @@ namespace Ohana3DS_Rebirth.Ohana
         #region "Material Animation"
         private void getMaterialAnimationColor(RenderBase.OMaterialAnimationData data, ref Color baseColor)
         {
-            float r = AnimationHelper.getKey(data.frameList[0], ctrlMA.Frame);
-            float g = AnimationHelper.getKey(data.frameList[1], ctrlMA.Frame);
-            float b = AnimationHelper.getKey(data.frameList[2], ctrlMA.Frame);
-            float a = AnimationHelper.getKey(data.frameList[3], ctrlMA.Frame);
+            float r = AnimationHelper.getKey(data.frameList[0], AnimationHelper.getFrame(data.frameList[0], ctrlMA.Frame));
+            float g = AnimationHelper.getKey(data.frameList[1], AnimationHelper.getFrame(data.frameList[1], ctrlMA.Frame));
+            float b = AnimationHelper.getKey(data.frameList[2], AnimationHelper.getFrame(data.frameList[2], ctrlMA.Frame));
+            float a = AnimationHelper.getKey(data.frameList[3], AnimationHelper.getFrame(data.frameList[3], ctrlMA.Frame));
 
             byte R = data.frameList[0].exists ? (byte)(r * 0xff) : baseColor.R;
             byte G = data.frameList[1].exists ? (byte)(g * 0xff) : baseColor.G;
@@ -1129,18 +1117,18 @@ namespace Ohana3DS_Rebirth.Ohana
 
         private void getMaterialAnimationVector2(RenderBase.OMaterialAnimationData data, ref Vector2 baseVector)
         {
-            if (data.frameList[0].exists) baseVector.X = AnimationHelper.getKey(data.frameList[0], ctrlMA.Frame);
-            if (data.frameList[1].exists) baseVector.Y = AnimationHelper.getKey(data.frameList[1], ctrlMA.Frame);
+            if (data.frameList[0].exists) baseVector.X = AnimationHelper.getKey(data.frameList[0], AnimationHelper.getFrame(data.frameList[0], ctrlMA.Frame));
+            if (data.frameList[1].exists) baseVector.Y = AnimationHelper.getKey(data.frameList[1], AnimationHelper.getFrame(data.frameList[1], ctrlMA.Frame));
         }
 
         private void getMaterialAnimationFloat(RenderBase.OMaterialAnimationData data, ref float baseFloat)
         {
-            if (data.frameList[0].exists) baseFloat = AnimationHelper.getKey(data.frameList[0], ctrlMA.Frame);
+            if (data.frameList[0].exists) baseFloat = AnimationHelper.getKey(data.frameList[0], AnimationHelper.getFrame(data.frameList[0], ctrlMA.Frame));
         }
 
         private void getMaterialAnimationInt(RenderBase.OMaterialAnimationData data, ref int baseInt)
         {
-            if (data.frameList[0].exists) baseInt = (int)AnimationHelper.getKey(data.frameList[0], ctrlMA.Frame);
+            if (data.frameList[0].exists) baseInt = (int)AnimationHelper.getKey(data.frameList[0], AnimationHelper.getFrame(data.frameList[0], ctrlMA.Frame));
         }
         #endregion
 

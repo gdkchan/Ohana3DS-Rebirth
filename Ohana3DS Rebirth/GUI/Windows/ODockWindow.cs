@@ -4,7 +4,6 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-using System.Runtime.InteropServices;
 
 using Ohana3DS_Rebirth.Properties;
 
@@ -12,10 +11,6 @@ namespace Ohana3DS_Rebirth.GUI
 {
     public partial class ODockWindow : UserControl
     {
-        [DllImport("user32.dll")]
-        public static extern int SendMessage(IntPtr hWnd, int wMsg, int wParam, int lParam);
-        private const int WM_SETREDRAW = 11;
-
         private bool drag;
         private int mouseX;
         private int mouseY;
@@ -47,17 +42,6 @@ namespace Ohana3DS_Rebirth.GUI
             SetStyle(ControlStyles.AllPaintingInWmPaint, true);
             SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
             InitializeComponent();
-        }
-
-        public void SuspendDrawing()
-        {
-            SendMessage(Handle, WM_SETREDRAW, 0, 0);
-        }
-
-        public void ResumeDrawing()
-        {
-            SendMessage(Handle, WM_SETREDRAW, 1, 0);
-            Refresh();
         }
 
         private void ODockWindow_Layout(object sender, LayoutEventArgs e)

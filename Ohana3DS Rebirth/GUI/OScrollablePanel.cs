@@ -54,16 +54,16 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void recalc()
         {
-            int maxTop = 0, maxHeight = 0;
+            int maxY = 0;
             foreach (Control child in ContentPanel.Controls)
             {
-                if (child.Top > maxTop || (child.Top == maxTop && child.Height > maxHeight))
+                int y = child.Top + child.Height;
+                if (y > maxY)
                 {
-                    maxTop = child.Top;
-                    maxHeight = child.Height;
+                    maxY = y;
                 }
             }
-            int height = maxTop + maxHeight;
+            int height = maxY;
             PnlVScroll.Visible = height > Height;
             ContentPanel.Size = new Size(Width - (PnlVScroll.Visible ? PnlVScroll.Width : 0), height);
             if (!PnlVScroll.Visible) ContentPanel.Top = 0;
@@ -106,6 +106,7 @@ namespace Ohana3DS_Rebirth.GUI
         private void VScroll_ScrollChanged(object sender, EventArgs e)
         {
             ContentPanel.Top = -PnlVScroll.Value;
+            ContentPanel.Refresh();
         }
     }
 }

@@ -89,22 +89,28 @@ namespace Ohana3DS_Rebirth.GUI
         {
             if (e.Button != MouseButtons.Left) return;
             BtnPlayPause.Image = Properties.Resources.icn_big_play;
-            paused = true;
             control.stop();
+            paused = true;
         }
 
         private void BtnPrevious_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button != MouseButtons.Left) return;
-            if (control.CurrentAnimation > 0) control.load(control.CurrentAnimation - 1);
-            AnimationsList.SelectedIndex--;
+            if (control.CurrentAnimation > 0)
+            {
+                control.load(control.CurrentAnimation - 1);
+                AnimationsList.SelectedIndex--;
+            }
         }
 
         private void BtnNext_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button != MouseButtons.Left) return;
-            if (control.CurrentAnimation < animations.list.Count - 1) control.load(control.CurrentAnimation + 1);
-            AnimationsList.SelectedIndex++;
+            if (control.CurrentAnimation < animations.list.Count - 1)
+            {
+                control.load(control.CurrentAnimation + 1);
+                AnimationsList.SelectedIndex++;
+            }
         }
 
         private void Control_FrameChanged(object sender, EventArgs e)
