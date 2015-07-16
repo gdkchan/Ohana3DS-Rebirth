@@ -12,8 +12,8 @@ namespace Ohana3DS_Rebirth.GUI
         private Color bgColor1 = Color.FromArgb(24, 24, 24);
         private Color bgColor2 = Color.Black;
         private Color itemColor = Color.WhiteSmoke;
-        private Color itemHover = Color.FromArgb(0x5f, 15, 82, 186);
-        private Color itemSelect = Color.FromArgb(0x7f, 15, 82, 186);
+        private Color itemHover = Color.FromArgb(0x5f, ColorManager.hover);
+        private Color itemSelect = Color.FromArgb(0x7f, ColorManager.hover);
 
         public OMenuStrip()
         {

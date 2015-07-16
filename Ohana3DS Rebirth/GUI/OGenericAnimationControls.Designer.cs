@@ -151,7 +151,6 @@
             this.AnimationsList.Location = new System.Drawing.Point(0, 24);
             this.AnimationsList.Name = "AnimationsList";
             this.AnimationsList.SelectedIndex = -1;
-            this.AnimationsList.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(15)))), ((int)(((byte)(82)))), ((int)(((byte)(186)))));
             this.AnimationsList.Size = new System.Drawing.Size(346, 248);
             this.AnimationsList.TabIndex = 7;
             this.AnimationsList.SelectedIndexChanged += new System.EventHandler(this.AnimationsList_SelectedIndexChanged);
@@ -215,7 +214,6 @@
             // Seeker
             // 
             this.Seeker.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.Seeker.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(21)))), ((int)(((byte)(46)))), ((int)(((byte)(84)))));
             this.Seeker.Location = new System.Drawing.Point(0, 288);
             this.Seeker.MaximumSeek = 100;
             this.Seeker.Name = "Seeker";
@@ -229,7 +227,6 @@
             // Speed
             // 
             this.Speed.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.Speed.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(21)))), ((int)(((byte)(46)))), ((int)(((byte)(84)))));
             this.Speed.Location = new System.Drawing.Point(0, 272);
             this.Speed.MaximumSeek = 100;
             this.Speed.Name = "Speed";

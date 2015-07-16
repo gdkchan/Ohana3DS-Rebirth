@@ -33,7 +33,7 @@ namespace Ohana3DS_Rebirth.GUI
                 using (Graphics g2 = Graphics.FromImage(hoverBlue))
                 {
                     g1.FillRectangle(new SolidBrush(Color.FromArgb(0x7f, ColorManager.hoverClose)), new Rectangle(1, 1, hoverRed.Width - 2, hoverRed.Height - 2));
-                    g2.FillRectangle(new SolidBrush(Color.FromArgb(0x7f, ColorManager.hover)), new Rectangle(1, 1, hoverBlue.Width - 2, hoverBlue.Height - 2));
+                    g2.FillRectangle(new SolidBrush(ColorManager.highlight), new Rectangle(1, 1, hoverBlue.Width - 2, hoverBlue.Height - 2));
                 }
             }
 

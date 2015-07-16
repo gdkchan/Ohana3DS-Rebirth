@@ -53,21 +53,6 @@ namespace Ohana3DS_Rebirth.GUI
         }
 
         /// <summary>
-        ///     Color of elapsed portion of the Seek Bar.
-        /// </summary>
-        public Color FillColor
-        {
-            get
-            {
-                return fillColor;
-            }
-            set
-            {
-                fillColor = value;
-            }
-        }
-
-        /// <summary>
         ///     The maximum Value the seek can have.
         /// </summary>
         public int MaximumSeek

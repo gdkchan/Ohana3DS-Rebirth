@@ -76,6 +76,7 @@ namespace Ohana3DS_Rebirth.GUI
             e.Graphics.DrawLine(new Pen(lineColor), new Point(0, Height - 1), new Point(Width - 1, Height - 1));
             e.Graphics.DrawLine(new Pen(lineColor), new Point(0, Height - 1), new Point(0, Height - 2));
             e.Graphics.DrawLine(new Pen(lineColor), new Point(Width - 1, Height - 1), new Point(Width - 1, Height - 2));
+            
             base.OnPaint(e);
         }
 
@@ -83,6 +84,8 @@ namespace Ohana3DS_Rebirth.GUI
         {
             textBox.Location = new Point(2, ((Height - 1) / 2) - (textBox.Height / 2));
             textBox.Size = new Size(Width - 4, textBox.Height);
+            Refresh();
+
             base.OnLayout(levent);
         }
 

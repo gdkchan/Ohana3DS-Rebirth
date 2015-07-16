@@ -191,6 +191,7 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="height">New height</param>
         public void resize(int width, int height)
         {
+            if (width == 0 || height == 0) return;
             pParams.BackBufferWidth = width;
             pParams.BackBufferHeight = height;
             device.Reset(pParams);

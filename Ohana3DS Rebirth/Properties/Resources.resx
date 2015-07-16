@@ -208,4 +208,16 @@
   <data name="icn_camera" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\icn_camera.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="icn_lightbulb" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\icn_lightbulb.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ui_alpha_grid" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_alpha_grid.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ui_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_down.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ui_up" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_up.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

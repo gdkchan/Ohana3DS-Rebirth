@@ -21,6 +21,7 @@ namespace Ohana3DS_Rebirth.GUI
         private String title;
         private int originalHeight = 256;
         private bool collapsed;
+        private bool autoSize;
 
         public OGroupBox()
         {
@@ -70,6 +71,23 @@ namespace Ohana3DS_Rebirth.GUI
         }
 
         /// <summary>
+        ///     Set the expanded Height equal to the size of all controls.
+        ///     It will NOT work if a Control uses the Dock Fill property, for obvious reasons.
+        /// </summary>
+        public bool AutomaticSize
+        {
+            get
+            {
+                return autoSize;
+            }
+            set
+            {
+                autoSize = value;
+                recalc();
+            }
+        }
+
+        /// <summary>
         ///     GroupBox Title text.
         /// </summary>
         public string Title
@@ -101,18 +119,57 @@ namespace Ohana3DS_Rebirth.GUI
         }
 
         /// <summary>
-        ///     Total Height of the control when it is expanded.
+        ///     The Height of the control content when it is expanded.
+        ///     It's not necessary to set this when AutomaticSize is enabled.
         /// </summary>
         public int ExpandedHeight
         {
             get
             {
-                return originalHeight;
+                return originalHeight - 17;
             }
             set
             {
-                originalHeight = value;
+                originalHeight = value + 17;
             }
+        }
+
+        protected override void OnControlAdded(ControlEventArgs e)
+        {
+            e.Control.Layout += Control_Layout;
+
+            base.OnControlAdded(e);
+        }
+
+        private void Control_Layout(Object sender, EventArgs e)
+        {
+            recalc();
+        }
+
+        private void recalc()
+        {
+            if (autoSize)
+            {
+                int maxY = 0;
+                foreach (Control child in ContentPanel.Controls)
+                {
+                    int y = child.Top + child.Height;
+                    if (child.Visible && y > maxY)
+                    {
+                        maxY = y;
+                    }
+                }
+                originalHeight = maxY + 17; //16 = Top, 1 = Bottom border
+                if (!collapsed) Height = originalHeight;
+            }
+        }
+
+        /// <summary>
+        ///     Forces the size to be recalculated, if AutomaticSize is enabled.
+        /// </summary>
+        public void recalculateSize()
+        {
+            recalc();
         }
 
         private void OGroupBox_Layout(object sender, LayoutEventArgs e)
@@ -122,9 +179,14 @@ namespace Ohana3DS_Rebirth.GUI
             updateTitle();
         }
 
+        private void OGroupBox_EnabledChanged(object sender, EventArgs e)
+        {
+            BtnToggle.Visible = Enabled;
+        } 
+
         private void BtnToggle_MouseEnter(object sender, EventArgs e)
         {
-            BtnToggle.BackColor = Color.FromArgb(0x7f, ColorManager.hover);
+            BtnToggle.BackColor = ColorManager.highlight;
         }
 
         private void BtnToggle_MouseLeave(object sender, EventArgs e)
@@ -145,16 +207,17 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void expand()
         {
+            recalc();
+            collapsed = false;
             BtnToggle.Image = Properties.Resources.icn_collapse;
             Height = originalHeight;
-            collapsed = false;
         }
 
         private void collapse()
         {
+            collapsed = true;
             BtnToggle.Image = Properties.Resources.icn_expand;
             Height = 16;
-            collapsed = true;
         }
 
         public class OGroupBoxDesigner : ParentControlDesigner
@@ -168,6 +231,6 @@ namespace Ohana3DS_Rebirth.GUI
                     this.EnableDesignMode(((OGroupBox)this.Control).ContentArea, "ContentArea");
                 }
             }
-        } 
+        }
     }
 }

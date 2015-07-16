@@ -57,6 +57,7 @@
             // LblTitle
             // 
             this.LblTitle.AutoSize = true;
+            this.LblTitle.BackColor = System.Drawing.Color.Transparent;
             this.LblTitle.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblTitle.ForeColor = System.Drawing.Color.White;
             this.LblTitle.Location = new System.Drawing.Point(0, 0);
@@ -70,12 +71,13 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Black;
-            this.Controls.Add(this.LblTitle);
             this.Controls.Add(this.BtnToggle);
+            this.Controls.Add(this.LblTitle);
             this.Controls.Add(this.ContentPanel);
             this.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "OGroupBox";
             this.Size = new System.Drawing.Size(256, 256);
+            this.EnabledChanged += new System.EventHandler(this.OGroupBox_EnabledChanged);
             this.Layout += new System.Windows.Forms.LayoutEventHandler(this.OGroupBox_Layout);
             ((System.ComponentModel.ISupportInitialize)(this.BtnToggle)).EndInit();
             this.ResumeLayout(false);

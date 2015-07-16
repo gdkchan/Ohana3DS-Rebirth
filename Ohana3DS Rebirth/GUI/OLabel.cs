@@ -10,26 +10,16 @@ namespace Ohana3DS_Rebirth.GUI
 {
     public partial class OLabel : Control
     {
-        Bitmap img;
-        bool autoSize;
+        private bool autoSize;
+        private bool centered;
 
         public OLabel()
         {
             SetStyle(ControlStyles.SupportsTransparentBackColor, true);
+            SetStyle(ControlStyles.UserPaint, true);
+            SetStyle(ControlStyles.AllPaintingInWmPaint, true);
+            SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
             InitializeComponent();
-        }
-
-        public Bitmap Image
-        {
-            get
-            {
-                return img;
-            }
-            set
-            {
-                img = value;
-                Refresh();
-            }
         }
 
         public bool AutomaticSize
@@ -45,19 +35,38 @@ namespace Ohana3DS_Rebirth.GUI
             }
         }
 
+        public override string Text
+        {
+            get
+            {
+                return base.Text;
+            }
+            set
+            {
+                base.Text = value;
+                Refresh();
+            }
+        }
+
+        public bool Centered
+        {
+            get
+            {
+                return centered;
+            }
+            set
+            {
+                centered = value;
+            }
+        }
+
         protected override void OnPaint(PaintEventArgs e)
         {
-            int imgWidth = 0, imgHeight = 0;
-            if (img != null)
-            {
-                imgWidth = img.Width;
-                imgHeight = img.Height;
-                e.Graphics.DrawImage(img, new Rectangle(0, (Height / 2) - (img.Height / 2), img.Width, img.Height));
-            }
-
-            SizeF textSize = e.Graphics.MeasureString(Text, Font);
-            if (autoSize) Size = new Size(imgWidth + (int)textSize.Width, Math.Max(imgHeight, (int)textSize.Height));
-            e.Graphics.DrawString(Text, Font, new SolidBrush(ForeColor), new Point(imgWidth + (((Width - imgWidth) / 2) - ((int)textSize.Width / 2)), 0));
+            string text = DrawingHelper.clampText(Text, Font, Width);
+            SizeF textSize = e.Graphics.MeasureString(text, Font);
+            if (autoSize) Size = new Size((int)textSize.Width, (int)textSize.Height);
+            int x = centered ? (Width / 2) - ((int)textSize.Width / 2) : 0;
+            e.Graphics.DrawString(text, Font, new SolidBrush(Enabled ? ForeColor : Color.Silver), new Point(x, (Height / 2) - ((int)textSize.Height / 2)));
 
             base.OnPaint(e);
         }

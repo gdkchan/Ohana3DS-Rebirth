@@ -13,24 +13,12 @@ namespace Ohana3DS_Rebirth
         {
             InitializeComponent();
             WindowManager.initialize(DockContainer);
-
-            MaximumSize = Screen.PrimaryScreen.WorkingArea.Size;
             MainMenu.Renderer = new GUI.OMenuStrip();
         }
 
         private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
             WindowManager.flush();
-        }
-
-        private void LblTitle_MouseEnter(object sender, EventArgs e)
-        {
-            LblTitle.BackColor = Color.FromArgb(0x7f, 15, 82, 186);
-        }
-
-        private void LblTitle_MouseLeave(object sender, EventArgs e)
-        {
-            LblTitle.BackColor = Color.Transparent;
         }
 
         private void LblTitle_MouseDown(object sender, MouseEventArgs e)
@@ -122,12 +110,14 @@ namespace Ohana3DS_Rebirth
             GUI.OViewportWindow viewportWindow = new GUI.OViewportWindow();
             GUI.OModelWindow modelWindow = new GUI.OModelWindow();
             GUI.OTextureWindow textureWindow = new GUI.OTextureWindow();
+            GUI.OLightWindow lightWindow = new GUI.OLightWindow();
             GUI.OCameraWindow cameraWindow = new GUI.OCameraWindow();
             GUI.OAnimationsWindow animationWindow = new GUI.OAnimationsWindow();
 
             viewportWindow.Title = name;
             modelWindow.Title = "Models";
             textureWindow.Title = "Textures";
+            lightWindow.Title = "Lights";
             cameraWindow.Title = "Cameras";
             animationWindow.Title = "Animations";
 
@@ -138,6 +128,7 @@ namespace Ohana3DS_Rebirth
             DockContainer.dockMainWindow();
             launchWindow(modelWindow, false);
             launchWindow(textureWindow, false);
+            launchWindow(lightWindow, false);
             launchWindow(cameraWindow, false);
             launchWindow(animationWindow, false);
 
@@ -145,6 +136,7 @@ namespace Ohana3DS_Rebirth
 
             modelWindow.initialize(renderer);
             textureWindow.initialize(renderer);
+            lightWindow.initialize(renderer);
             cameraWindow.initialize(renderer);
             animationWindow.initialize(renderer);
             viewportWindow.initialize(renderer);

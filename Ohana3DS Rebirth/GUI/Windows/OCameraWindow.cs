@@ -39,86 +39,25 @@ namespace Ohana3DS_Rebirth.GUI
             CameraList.Refresh();
         }
 
-        private void RadioPersp_CheckedChanged(object sender, EventArgs e)
-        {
-            camera.projection = RenderBase.OCameraProjection.perspective;
-            ProjectionGroup.SuspendDrawing();
-            PPFovy.Enabled = true;
-            OPHeight.Enabled = false;
-            PPARatio.Enabled = true;
-            BtnARTop.Enabled = true;
-            BtnARBottom.Enabled = true;
-            ProjectionGroup.ResumeDrawing();
-        }
-
-        private void RadioOrtho_CheckedChanged(object sender, EventArgs e)
-        {
-            camera.projection = RenderBase.OCameraProjection.orthogonal;
-            ProjectionGroup.SuspendDrawing();
-            PPFovy.Enabled = false;
-            OPHeight.Enabled = true;
-            PPARatio.Enabled = false;
-            BtnARTop.Enabled = false;
-            BtnARBottom.Enabled = false;
-            ProjectionGroup.ResumeDrawing();
-        }
-
-        private void RadioVAT_CheckedChanged(object sender, EventArgs e)
-        {
-            camera.view = RenderBase.OCameraView.aimTarget;
-            ViewGroup.SuspendDrawing();
-            TargetX.Enabled = true;
-            TargetY.Enabled = true;
-            TargetZ.Enabled = true;
-            RRotX.Enabled = false;
-            RRotY.Enabled = false;
-            RRotZ.Enabled = false;
-            LAUpVecX.Enabled = false;
-            LAUpVecY.Enabled = false;
-            LAUpVecZ.Enabled = false;
-            ATwist.Enabled = true;
-            ViewGroup.ResumeDrawing();
-        }
-
-        private void RadioVLAT_CheckedChanged(object sender, EventArgs e)
-        {
-            camera.view = RenderBase.OCameraView.lookAtTarget;
-            ViewGroup.SuspendDrawing();
-            TargetX.Enabled = true;
-            TargetY.Enabled = true;
-            TargetZ.Enabled = true;
-            RRotX.Enabled = false;
-            RRotY.Enabled = false;
-            RRotZ.Enabled = false;
-            LAUpVecX.Enabled = true;
-            LAUpVecY.Enabled = true;
-            LAUpVecZ.Enabled = true;
-            ATwist.Enabled = false;
-            ViewGroup.ResumeDrawing();
-        }
-
-        private void RadioVR_CheckedChanged(object sender, EventArgs e)
-        {
-            camera.view = RenderBase.OCameraView.rotate;
-            ViewGroup.SuspendDrawing();
-            TargetX.Enabled = false;
-            TargetY.Enabled = false;
-            TargetZ.Enabled = false;
-            RRotX.Enabled = true;
-            RRotY.Enabled = true;
-            RRotZ.Enabled = true;
-            LAUpVecX.Enabled = false;
-            LAUpVecY.Enabled = false;
-            LAUpVecZ.Enabled = false;
-            ATwist.Enabled = false;
-            ViewGroup.ResumeDrawing();
-        }
-
         private void CameraList_SelectedIndexChanged(object sender, EventArgs e)
         {
             camera = null;
             renderer.currentCamera = CameraList.SelectedIndex;
-            if (CameraList.SelectedIndex == -1) return;
+            if (CameraList.SelectedIndex == -1)
+            {
+                NameGroup.Enabled = false;
+                TransformGroup.Enabled = false;
+                ViewGroup.Enabled = false;
+                ProjectionGroup.Enabled = false;
+                return;
+            }
+            else
+            {
+                NameGroup.Enabled = true;
+                TransformGroup.Enabled = true;
+                ViewGroup.Enabled = true;
+                ProjectionGroup.Enabled = true;
+            }
 
             camera = renderer.model.camera[CameraList.SelectedIndex];
 
@@ -164,6 +103,123 @@ namespace Ohana3DS_Rebirth.GUI
             PPARatio.Value = camera.aspectRatio;
 
             renderer.resetCamera();
+        }
+
+        private void RadioPersp_CheckedChanged(object sender, EventArgs e)
+        {
+            if (camera != null) camera.projection = RenderBase.OCameraProjection.perspective;
+
+            ProjectionGroup.SuspendDrawing();
+
+            LblFovy.Enabled = true;
+            PPFovy.Enabled = true;
+            LblHeight.Enabled = false;
+            OPHeight.Enabled = false;
+            LblARatio.Enabled = true;
+            PPARatio.Enabled = true;
+            BtnARTop.Enabled = true;
+            BtnARBottom.Enabled = true;
+
+            ProjectionGroup.ResumeDrawing();
+        }
+
+        private void RadioOrtho_CheckedChanged(object sender, EventArgs e)
+        {
+            if (camera != null) camera.projection = RenderBase.OCameraProjection.orthogonal;
+
+            ProjectionGroup.SuspendDrawing();
+
+            LblFovy.Enabled = false;
+            PPFovy.Enabled = false;
+            LblHeight.Enabled = true;
+            OPHeight.Enabled = true;
+            LblARatio.Enabled = false;
+            PPARatio.Enabled = false;
+            BtnARTop.Enabled = false;
+            BtnARBottom.Enabled = false;
+
+            ProjectionGroup.ResumeDrawing();
+        }
+
+        private void RadioVAT_CheckedChanged(object sender, EventArgs e)
+        {
+            if (camera != null) camera.view = RenderBase.OCameraView.aimTarget;
+
+            ViewGroup.SuspendDrawing();
+
+            LblTargetPos.Enabled = true;
+            TargetX.Enabled = true;
+            TargetY.Enabled = true;
+            TargetZ.Enabled = true;
+
+            LblRotation.Enabled = false;
+            RRotX.Enabled = false;
+            RRotY.Enabled = false;
+            RRotZ.Enabled = false;
+
+            LblUpVector.Enabled = false;
+            LAUpVecX.Enabled = false;
+            LAUpVecY.Enabled = false;
+            LAUpVecZ.Enabled = false;
+
+            LblTwist.Enabled = true;
+            ATwist.Enabled = true;
+
+            ViewGroup.ResumeDrawing();
+        }
+
+        private void RadioVLAT_CheckedChanged(object sender, EventArgs e)
+        {
+            if (camera != null) camera.view = RenderBase.OCameraView.lookAtTarget;
+
+            ViewGroup.SuspendDrawing();
+
+            LblTargetPos.Enabled = true;
+            TargetX.Enabled = true;
+            TargetY.Enabled = true;
+            TargetZ.Enabled = true;
+
+            LblRotation.Enabled = false;
+            RRotX.Enabled = false;
+            RRotY.Enabled = false;
+            RRotZ.Enabled = false;
+
+            LblUpVector.Enabled = true;
+            LAUpVecX.Enabled = true;
+            LAUpVecY.Enabled = true;
+            LAUpVecZ.Enabled = true;
+
+            LblTwist.Enabled = false;
+            ATwist.Enabled = false;
+
+            ViewGroup.ResumeDrawing();
+        }
+
+        private void RadioVR_CheckedChanged(object sender, EventArgs e)
+        {
+            if (camera != null) camera.view = RenderBase.OCameraView.rotate;
+
+            ViewGroup.SuspendDrawing();
+
+            LblTargetPos.Enabled = false;
+            TargetX.Enabled = false;
+            TargetY.Enabled = false;
+            TargetZ.Enabled = false;
+
+            LblRotation.Enabled = true;
+            RRotX.Enabled = true;
+            RRotY.Enabled = true;
+            RRotZ.Enabled = true;
+
+            LblUpVector.Enabled = false;
+            LAUpVecX.Enabled = false;
+            LAUpVecY.Enabled = false;
+            LAUpVecZ.Enabled = false;
+
+            LblTwist.Enabled = false;
+            ATwist.Enabled = false;
+
+            ViewGroup.ResumeDrawing();
         }
 
         private void TTransX_ValueChanged(object sender, EventArgs e)

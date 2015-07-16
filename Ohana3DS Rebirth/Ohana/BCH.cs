@@ -433,28 +433,79 @@ namespace Ohana3DS_Rebirth.Ohana
                 light.transformTranslate = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
 
                 uint lightFlags = input.ReadUInt32();
+                switch (lightFlags & 0xf)
+                {
+                    case 1: light.lightUse = RenderBase.OLightUse.hemiSphere; break;
+                    case 2: light.lightUse = RenderBase.OLightUse.ambient; break;
+                    case 5:
+                    case 6:
+                    case 7:
+                        light.lightUse = RenderBase.OLightUse.vertex;
+                        switch (lightFlags & 0xf)
+                        {
+                            case 5: light.lightType = RenderBase.OLightType.directional; break;
+                            case 6: light.lightType = RenderBase.OLightType.point; break;
+                            case 7: light.lightType = RenderBase.OLightType.spot; break;
+                            
+                        }
+                        break;
+                    case 9:
+                    case 0xa:
+                    case 0xb:
+                        light.lightUse = RenderBase.OLightUse.fragment;
+                        switch (lightFlags & 0xf)
+                        {
+                            case 9: light.lightType = RenderBase.OLightType.directional; break;
+                            case 0xa: light.lightType = RenderBase.OLightType.point; break;
+                            case 0xb: light.lightType = RenderBase.OLightType.spot; break;
+                        }
+                        break;
+                    default: Debug.WriteLine(String.Format("BCH: Warning - Unknow Light Flags {0}", lightFlags.ToString("X8"))); break;
+                }
                 light.isLightEnabled = (lightFlags & 0x100) > 0;
                 light.isTwoSideDiffuse = (lightFlags & 0x10000) > 0;
-                light.lightType = (RenderBase.OLightType)((lightFlags >> 16) & 0xf);
+                light.isDistanceAttenuationEnabled = (lightFlags & 0x20000) > 0;
                 light.angleSampler.input = (RenderBase.OFragmentSamplerInput)((lightFlags >> 24) & 0xf);
                 light.angleSampler.scale = (RenderBase.OFragmentSamplerScale)((lightFlags >> 28) & 0xf);
 
                 input.ReadUInt32();
-                light.ambient = getColor(input);
-                light.diffuse = getColor(input);
-                light.specular0 = getColor(input);
-                light.specular1 = getColor(input);
-                light.direction = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
-                input.ReadUInt32();
-                input.ReadUInt32();
-                light.attenuationStart = input.ReadSingle();
-                light.attenuationEnd = input.ReadSingle();
+                switch (light.lightUse)
+                {
+                    case RenderBase.OLightUse.hemiSphere:
+                        light.groundColor = getColorFloat(input);
+                        light.skyColor = getColorFloat(input);
+                        light.direction = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                        light.lerpFactor = input.ReadSingle();
+                        break;
+                    case RenderBase.OLightUse.ambient: light.ambient = getColor(input); break;
+                    case RenderBase.OLightUse.vertex:
+                        light.ambient = getColorFloat(input);
+                        light.diffuse = getColorFloat(input);
+                        light.direction = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                        light.distanceAttenuationConstant = input.ReadSingle();
+                        light.distanceAttenuationLinear = input.ReadSingle();
+                        light.distanceAttenuationQuadratic = input.ReadSingle();
+                        light.spotExponent = input.ReadSingle();
+                        light.spotCutoffAngle = input.ReadSingle();
+                        break;
+                    case RenderBase.OLightUse.fragment:
+                        light.ambient = getColor(input);
+                        light.diffuse = getColor(input);
+                        light.specular0 = getColor(input);
+                        light.specular1 = getColor(input);
+                        light.direction = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                        input.ReadUInt32();
+                        input.ReadUInt32();
+                        light.attenuationStart = input.ReadSingle();
+                        light.attenuationEnd = input.ReadSingle();
 
-                input.ReadUInt32();
-                input.ReadUInt32();
+                        light.distanceSampler.materialLUTName = readString(input, header);
+                        light.distanceSampler.samplerName = readString(input, header);
 
-                light.angleSampler.materialLUTName = readString(input, header);
-                light.angleSampler.samplerName = readString(input, header);
+                        light.angleSampler.materialLUTName = readString(input, header);
+                        light.angleSampler.samplerName = readString(input, header);
+                        break;
+                }
 
                 models.addLight(light);
             }
@@ -2067,6 +2118,21 @@ namespace Ohana3DS_Rebirth.Ohana
             byte g = (byte)input.ReadByte();
             byte b = (byte)input.ReadByte();
             byte a = (byte)input.ReadByte();
+
+            return Color.FromArgb(a, r, g, b);
+        }
+
+        /// <summary>
+        ///     Reads a Color stored in Float format from the Data.
+        /// </summary>
+        /// <param name="input">BCH reader</param>
+        /// <returns></returns>
+        private static Color getColorFloat(BinaryReader input)
+        {
+            byte r = (byte)(input.ReadSingle() * 0xff);
+            byte g = (byte)(input.ReadSingle() * 0xff);
+            byte b = (byte)(input.ReadSingle() * 0xff);
+            byte a = (byte)(input.ReadSingle() * 0xff);
 
             return Color.FromArgb(a, r, g, b);
         }

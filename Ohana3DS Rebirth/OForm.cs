@@ -196,7 +196,7 @@ namespace Ohana3DS_Rebirth
                 else
                 {
                     BtnMinMax.Image = Resources.btnnormal;
-                    MaximumSize = Screen.PrimaryScreen.WorkingArea.Size;
+                    MaximumSize = Screen.FromControl(this).WorkingArea.Size;
                     WindowState = FormWindowState.Maximized;
                 }
 

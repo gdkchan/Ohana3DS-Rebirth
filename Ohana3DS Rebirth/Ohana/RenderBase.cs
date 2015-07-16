@@ -1002,6 +1002,14 @@ namespace Ohana3DS_Rebirth.Ohana
             spot = 2
         }
 
+        public enum OLightUse
+        {
+            hemiSphere = 0,
+            vertex = 1,
+            fragment = 2,
+            ambient = 3
+        }
+
         public class OLight
         {
             public string name;
@@ -1023,8 +1031,22 @@ namespace Ohana3DS_Rebirth.Ohana
             public bool isTwoSideDiffuse;
             public bool isDistanceAttenuationEnabled;
             public OLightType lightType;
+            public OLightUse lightUse;
+
+            //Vertex
+            public float distanceAttenuationConstant;
+            public float distanceAttenuationLinear;
+            public float distanceAttenuationQuadratic;
+            public float spotExponent;
+            public float spotCutoffAngle;
+
+            //HemiSphere
+            public Color groundColor;
+            public Color skyColor;
+            public float lerpFactor;
 
             public OFragmentSampler angleSampler;
+            public OFragmentSampler distanceSampler;
         }
 
         public enum OCameraView
@@ -1379,13 +1401,6 @@ namespace Ohana3DS_Rebirth.Ohana
             {
                 frameList = new List<OAnimationKeyFrame>();
             }
-        }
-
-        public enum OLightUse
-        {
-            hemiSphere = 0,
-            vertex = 1,
-            fragment = 2
         }
 
         public class OLightAnimation : OAnimationBase

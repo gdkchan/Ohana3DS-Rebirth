@@ -65,21 +65,6 @@ namespace Ohana3DS_Rebirth.GUI
         }
 
         /// <summary>
-        ///     Color of the bar when a item is selected.
-        /// </summary>
-        public Color SelectionColor
-        {
-            get
-            {
-                return selectedColor;
-            }
-            set
-            {
-                selectedColor = value;
-            }
-        }
-
-        /// <summary>
         ///     The height of each item on the list.
         /// </summary>
         public int ItemHeight
@@ -123,9 +108,9 @@ namespace Ohana3DS_Rebirth.GUI
                 if (value >= -1 && value < list.Count)
                 {
                     selectedIndex = value;
-                    updateScroll();
                     if (selectedIndex != oldIndex && SelectedIndexChanged != null) SelectedIndexChanged(this, EventArgs.Empty);
                     oldIndex = selectedIndex;
+                    if (selectedIndex > -1) updateScroll(); else Refresh();
                 }
             }
         }
@@ -171,6 +156,33 @@ namespace Ohana3DS_Rebirth.GUI
             listItemGroup newItem = new listItemGroup();
             newItem.columns.Add(new listItem(text));
             addItem(newItem);
+        }
+
+        /// <summary>
+        ///     Adds a Collection of listItemGroup to the list.
+        /// </summary>
+        /// <param name="itemList">The Collection</param>
+        public void addRange(IEnumerable<listItemGroup> itemList)
+        {
+            list.AddRange(itemList);
+        }
+
+        /// <summary>
+        ///     Adds a Array of listItem to the list.
+        /// </summary>
+        /// <param name="itemList">The Array</param>
+        public void addRange(listItem[] itemList)
+        {
+            foreach (listItem item in itemList) addItem(item);
+        }
+
+        /// <summary>
+        ///     Adds a Array of String to the list.
+        /// </summary>
+        /// <param name="itemList">The Array</param>
+        public void addRange(string[] itemList)
+        {
+            foreach (string item in itemList) addItem(item);
         }
 
         /// <summary>
@@ -227,6 +239,17 @@ namespace Ohana3DS_Rebirth.GUI
         }
 
         /// <summary>
+        ///     Returns the text of the Item at the given Index.
+        /// </summary>
+        /// <param name="index">Index where the item is located</param>
+        /// <returns></returns>
+        public string itemAt(int index)
+        {
+            if (index >= list.Count || index < 0) return null;
+            return list[index].columns[0].text;
+        }
+
+        /// <summary>
         ///     Erase the list.
         /// </summary>
         public void flush()
@@ -268,7 +291,7 @@ namespace Ohana3DS_Rebirth.GUI
             if (showHeader)
             {
                 int columnX = 0;
-                
+
                 foreach (columnHeader header in columns)
                 {
                     int columnWidth;
@@ -310,6 +333,7 @@ namespace Ohana3DS_Rebirth.GUI
                             e.Graphics.FillRectangle(new SolidBrush(selectedColor), new Rectangle(0, startY, Width, tileSize));
                             selectedIndex = index;
                             if (selectedIndex != oldIndex && SelectedIndexChanged != null) SelectedIndexChanged(this, EventArgs.Empty);
+                            oldIndex = selectedIndex;
                             clicked = false;
                         }
                     }
@@ -359,8 +383,8 @@ namespace Ohana3DS_Rebirth.GUI
             {
                 selectedIndex = -1;
                 if (selectedIndex != oldIndex && SelectedIndexChanged != null) SelectedIndexChanged(this, EventArgs.Empty);
+                oldIndex = selectedIndex;
             }
-            oldIndex = selectedIndex;
             clicked = false;
 
             base.OnPaint(e);
@@ -382,8 +406,8 @@ namespace Ohana3DS_Rebirth.GUI
         {
             if (ListScroll.Visible)
             {
-                ListScroll.Value = e.Delta > 0 
-                    ? Math.Max(ListScroll.Value - 32, 0) 
+                ListScroll.Value = e.Delta > 0
+                    ? Math.Max(ListScroll.Value - 32, 0)
                     : Math.Min(ListScroll.Value + 32, ListScroll.MaximumScroll);
 
                 Refresh();

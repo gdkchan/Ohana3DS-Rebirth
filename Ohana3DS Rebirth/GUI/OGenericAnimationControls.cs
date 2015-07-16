@@ -60,7 +60,7 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void Control_MouseEnter(object sender, EventArgs e)
         {
-            ((Control)sender).BackColor = Color.FromArgb(0x7f, ColorManager.hover);
+            ((Control)sender).BackColor = ColorManager.highlight;
         }
 
         private void Control_MouseLeave(object sender, EventArgs e)

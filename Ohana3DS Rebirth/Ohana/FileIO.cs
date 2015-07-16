@@ -14,6 +14,7 @@ namespace Ohana3DS_Rebirth.Ohana
             none,
             model,
             texture,
+            light,
             camera,
             skeletalAnimation,
             materialAnimation,

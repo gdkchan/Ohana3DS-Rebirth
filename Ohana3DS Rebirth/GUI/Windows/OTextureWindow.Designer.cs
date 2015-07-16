@@ -48,7 +48,6 @@
             this.TextureList.Location = new System.Drawing.Point(0, 40);
             this.TextureList.Name = "TextureList";
             this.TextureList.SelectedIndex = -1;
-            this.TextureList.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(15)))), ((int)(((byte)(82)))), ((int)(((byte)(186)))));
             this.TextureList.Size = new System.Drawing.Size(256, 360);
             this.TextureList.TabIndex = 1;
             // 

@@ -16,11 +16,11 @@ namespace Ohana3DS_Rebirth.GUI
         /// <param name="font">The font that will be used to render the text</param>
         /// <param name="maxWidth">The maximum space the text can use</param>
         /// <returns></returns>
-        public static String clampText(String text, Font font, int maxWidth)
+        public static String clampText(string text, Font font, int maxWidth)
         {
-            String outText = text;
+            string outText = text;
             int i = 1;
-            while (TextRenderer.MeasureText(outText, font).Width - 1 > maxWidth)
+            while (TextRenderer.MeasureText(outText, font).Width - 6 > maxWidth)
             {
                 if (text.Length - i <= 0) return null;
                 while (text.Substring(text.Length - (i + 1), 1) == " ")

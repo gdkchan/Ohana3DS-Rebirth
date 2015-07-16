@@ -54,8 +54,6 @@
             this.LblTitle.Size = new System.Drawing.Size(86, 19);
             this.LblTitle.Text = "Ohana3DS";
             this.LblTitle.MouseDown += new System.Windows.Forms.MouseEventHandler(this.LblTitle_MouseDown);
-            this.LblTitle.MouseEnter += new System.EventHandler(this.LblTitle_MouseEnter);
-            this.LblTitle.MouseLeave += new System.EventHandler(this.LblTitle_MouseLeave);
             // 
             // DockContainer
             // 

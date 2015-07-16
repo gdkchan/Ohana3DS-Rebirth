@@ -491,7 +491,6 @@ namespace Ohana3DS_Rebirth.GUI
                                     windowInfo[belowWindow].window.Height = (windowInfo[belowBelowWindow].window.Top - windowInfo[belowWindow].window.Top) - gripSize;
                                 else
                                     windowInfo[belowWindow].window.Height = (rect.Top + rect.Height) - windowInfo[belowWindow].window.Top;
-
                             }
                             else if (belowWindowHeight < minimumHeight)
                             {
@@ -509,7 +508,6 @@ namespace Ohana3DS_Rebirth.GUI
                                 windowInfo[dragIndex].window.Height = height;
                             }
 
-                            Refresh();
                             break;
                         case dockMode.Bottom:
                         case dockMode.Top:
@@ -765,7 +763,6 @@ namespace Ohana3DS_Rebirth.GUI
                 }
 
                 calculateProportions();
-                calculateMinimumSize();
             }
         }
 
@@ -803,8 +800,8 @@ namespace Ohana3DS_Rebirth.GUI
             //Código que verifica se um Dock deve ocorrer, e posiciona caso isso ocorra
             Rectangle dockRect = new Rectangle(window.Location, window.Size);
             Point mousePoint = PointToClient(Cursor.Position);
-            mousePoint.X = Math.Max(Math.Min(mousePoint.X, Width), 0);
-            mousePoint.Y = Math.Max(Math.Min(mousePoint.Y, Height), 0);
+            mousePoint.X = Math.Max(Math.Min(mousePoint.X, Width - 1), 0);
+            mousePoint.Y = Math.Max(Math.Min(mousePoint.Y, Height - 1), 0);
 
             if (centerDock.Contains(mousePoint) && (windowCount(dockMode.Center) == 0 || (windowCount(dockMode.Center) == 1 && windowInfo[infoIndex].dock == dockMode.Center)))
             {
@@ -1038,12 +1035,10 @@ namespace Ohana3DS_Rebirth.GUI
                 windowInfo[infoIndex].window.Size = windowInfo[infoIndex].originalSize;
 
                 //Don't let the Form go to a unreachable position.
-                if (windowInfo[infoIndex].window.Left + windowInfo[infoIndex].window.Width < 40)
-                    windowInfo[infoIndex].window.Left = 40 - windowInfo[infoIndex].window.Width;
+                if (windowInfo[infoIndex].window.Left + windowInfo[infoIndex].window.Width < 40) windowInfo[infoIndex].window.Location = Point.Empty;
             }
             autoArrangeAll();
             calculateProportions(true);
-            calculateMinimumSize();
         }
 
         private void autoArrangeAll()
@@ -1069,7 +1064,6 @@ namespace Ohana3DS_Rebirth.GUI
                 autoArrangeAll();
 
                 calculateProportions();
-                calculateMinimumSize();
             }
         }
 
@@ -1442,8 +1436,8 @@ namespace Ohana3DS_Rebirth.GUI
         /// <summary>
         ///     Try to get enough space to create a dock side, reducing existing dock sides.
         /// </summary>
-        /// <param name="dock"></param>
-        /// <param name="newSpace"></param>
+        /// <param name="dock">Target dock side</param>
+        /// <param name="newSpace">Necessary space to be freed</param>
         /// <returns>Returns true if it get enough space or false if it doesn't</returns>
         private bool getSpaceToCreateDockSide(dockMode dock, int newSpace)
         {
@@ -1566,7 +1560,6 @@ namespace Ohana3DS_Rebirth.GUI
                     }
 
                     return result;
-
                 case dockMode.Bottom:
                     int bottomHeight = newSpace + gripSize;
                     bool hasBottom = windowCount(dockMode.Top) == 0 || ((Height - topDockHeight) >= bottomHeight);
@@ -1708,35 +1701,6 @@ namespace Ohana3DS_Rebirth.GUI
             leftDockProportionW = (float)leftDockWidth / rect.Width;
             bottomDockProportionH = (float)bottomDockHeight / rect.Height;
             topDockProportionH = (float)topDockHeight / rect.Height;
-        }
-
-        /// <summary>
-        ///     Calculates the minimum size of this control, so all Windows can have at least one pixel of Width/Height and the resize grip.
-        /// </summary>
-        private void calculateMinimumSize()
-        {
-            int width = 0, height = 0;
-
-            int bottomCount = windowCount(dockMode.Bottom);
-            int topCount = windowCount(dockMode.Top);
-            bool hasCenter = windowCount(dockMode.Center) > 0;
-            if (bottomCount > 0 || topCount > 0)
-            {
-                width = ((Math.Max(bottomCount, topCount) * (1 + gripSize)) - gripSize);
-            }
-            else if (hasCenter)
-            {
-                width = 1; //Center
-            }
-            if (windowCount(dockMode.Right) > 0) width += 1 + gripSize;
-            if (windowCount(dockMode.Left) > 0) width += 1 + gripSize;
-
-            int rightCount = windowCount(dockMode.Right);
-            int leftCount = windowCount(dockMode.Left);
-            if (rightCount > 0 || leftCount > 0) height = ((Math.Max(rightCount, leftCount) * (1 + gripSize)) - gripSize);
-            height = Math.Max(height, (bottomCount > 0 ? 1 + gripSize : 0) + (topCount > 0 ? 1 + gripSize : 0) + (hasCenter ? 1 + gripSize : 0));
-
-            MinimumSize = new Size(width, height);
         }
 
         /// <summary>

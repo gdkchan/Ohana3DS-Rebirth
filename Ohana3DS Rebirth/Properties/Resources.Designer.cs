@@ -263,6 +263,16 @@ namespace Ohana3DS_Rebirth.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap icn_lightbulb {
+            get {
+                object obj = ResourceManager.GetObject("icn_lightbulb", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap icn_locked {
             get {
                 object obj = ResourceManager.GetObject("icn_locked", resourceCulture);
@@ -361,9 +371,39 @@ namespace Ohana3DS_Rebirth.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap ui_alpha_grid {
+            get {
+                object obj = ResourceManager.GetObject("ui_alpha_grid", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap ui_down {
+            get {
+                object obj = ResourceManager.GetObject("ui_down", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap ui_knob {
             get {
                 object obj = ResourceManager.GetObject("ui_knob", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap ui_up {
+            get {
+                object obj = ResourceManager.GetObject("ui_up", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

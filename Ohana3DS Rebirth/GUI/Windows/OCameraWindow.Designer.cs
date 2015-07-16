@@ -35,33 +35,33 @@
             this.BtnARBottom = new Ohana3DS_Rebirth.GUI.OButton();
             this.BtnARTop = new Ohana3DS_Rebirth.GUI.OButton();
             this.PPARatio = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
-            this.LblARatio = new System.Windows.Forms.Label();
+            this.LblARatio = new Ohana3DS_Rebirth.GUI.OLabel();
             this.OPHeight = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
-            this.LblHeight = new System.Windows.Forms.Label();
+            this.LblHeight = new Ohana3DS_Rebirth.GUI.OLabel();
             this.PPFovy = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
-            this.LblFovy = new System.Windows.Forms.Label();
+            this.LblFovy = new Ohana3DS_Rebirth.GUI.OLabel();
             this.PZFar = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
-            this.LblZFar = new System.Windows.Forms.Label();
+            this.LblZFar = new Ohana3DS_Rebirth.GUI.OLabel();
             this.PZNear = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
-            this.LblZNear = new System.Windows.Forms.Label();
+            this.LblZNear = new Ohana3DS_Rebirth.GUI.OLabel();
             this.ProjectionTypePanel = new System.Windows.Forms.TableLayoutPanel();
             this.RadioOrtho = new Ohana3DS_Rebirth.GUI.ORadioButton();
             this.RadioPersp = new Ohana3DS_Rebirth.GUI.ORadioButton();
             this.ViewGroup = new Ohana3DS_Rebirth.GUI.OGroupBox();
             this.ATwist = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
-            this.LblTwist = new System.Windows.Forms.Label();
+            this.LblTwist = new Ohana3DS_Rebirth.GUI.OLabel();
             this.LAUpVecZ = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
             this.LAUpVecY = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
             this.LAUpVecX = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
-            this.LblUpVector = new System.Windows.Forms.Label();
+            this.LblUpVector = new Ohana3DS_Rebirth.GUI.OLabel();
             this.RRotZ = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
             this.RRotY = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
             this.RRotX = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
-            this.LblRotation = new System.Windows.Forms.Label();
+            this.LblRotation = new Ohana3DS_Rebirth.GUI.OLabel();
             this.TargetZ = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
             this.TargetY = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
             this.TargetX = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
-            this.LblTargetPos = new System.Windows.Forms.Label();
+            this.LblTargetPos = new Ohana3DS_Rebirth.GUI.OLabel();
             this.ViewTypePanel = new System.Windows.Forms.TableLayoutPanel();
             this.RadioVR = new Ohana3DS_Rebirth.GUI.ORadioButton();
             this.RadioVLAT = new Ohana3DS_Rebirth.GUI.ORadioButton();
@@ -74,13 +74,13 @@
             this.TxtCameraName = new Ohana3DS_Rebirth.GUI.OTextBox();
             this.CameraList = new Ohana3DS_Rebirth.GUI.OList();
             this.TopControlsExtended = new System.Windows.Forms.TableLayoutPanel();
+            this.BtnReset = new Ohana3DS_Rebirth.GUI.OButton();
             this.BtnDelete = new Ohana3DS_Rebirth.GUI.OButton();
             this.BtnAdd = new Ohana3DS_Rebirth.GUI.OButton();
             this.TopControls = new System.Windows.Forms.TableLayoutPanel();
             this.BtnClear = new Ohana3DS_Rebirth.GUI.OButton();
             this.BtnExport = new Ohana3DS_Rebirth.GUI.OButton();
             this.BtnImport = new Ohana3DS_Rebirth.GUI.OButton();
-            this.BtnReset = new Ohana3DS_Rebirth.GUI.OButton();
             this.Content.ContentArea.SuspendLayout();
             this.Content.SuspendLayout();
             this.ProjectionGroup.ContentArea.SuspendLayout();
@@ -119,11 +119,12 @@
             this.Content.Dock = System.Windows.Forms.DockStyle.Fill;
             this.Content.Location = new System.Drawing.Point(0, 16);
             this.Content.Name = "Content";
-            this.Content.Size = new System.Drawing.Size(256, 977);
+            this.Content.Size = new System.Drawing.Size(256, 979);
             this.Content.TabIndex = 1;
             // 
             // ProjectionGroup
             // 
+            this.ProjectionGroup.AutomaticSize = true;
             this.ProjectionGroup.BackColor = System.Drawing.Color.Black;
             this.ProjectionGroup.Collapsed = false;
             // 
@@ -144,15 +145,16 @@
             this.ProjectionGroup.ContentArea.Controls.Add(this.ProjectionTypePanel);
             this.ProjectionGroup.ContentArea.Location = new System.Drawing.Point(1, 16);
             this.ProjectionGroup.ContentArea.Name = "ContentArea";
-            this.ProjectionGroup.ContentArea.Size = new System.Drawing.Size(254, 222);
+            this.ProjectionGroup.ContentArea.Size = new System.Drawing.Size(254, 223);
             this.ProjectionGroup.ContentArea.TabIndex = 0;
             this.ProjectionGroup.ContentColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
             this.ProjectionGroup.Dock = System.Windows.Forms.DockStyle.Top;
-            this.ProjectionGroup.ExpandedHeight = 239;
+            this.ProjectionGroup.Enabled = false;
+            this.ProjectionGroup.ExpandedHeight = 223;
             this.ProjectionGroup.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ProjectionGroup.Location = new System.Drawing.Point(0, 738);
+            this.ProjectionGroup.Location = new System.Drawing.Point(0, 737);
             this.ProjectionGroup.Name = "ProjectionGroup";
-            this.ProjectionGroup.Size = new System.Drawing.Size(256, 239);
+            this.ProjectionGroup.Size = new System.Drawing.Size(256, 240);
             this.ProjectionGroup.TabIndex = 20;
             this.ProjectionGroup.Title = "Projection";
             // 
@@ -160,8 +162,8 @@
             // 
             this.ARButtonsPanel.Controls.Add(this.BtnARBottom);
             this.ARButtonsPanel.Controls.Add(this.BtnARTop);
-            this.ARButtonsPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.ARButtonsPanel.Location = new System.Drawing.Point(0, 198);
+            this.ARButtonsPanel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.ARButtonsPanel.Location = new System.Drawing.Point(0, 199);
             this.ARButtonsPanel.Name = "ARButtonsPanel";
             this.ARButtonsPanel.Size = new System.Drawing.Size(254, 24);
             this.ARButtonsPanel.TabIndex = 27;
@@ -205,6 +207,8 @@
             // 
             // LblARatio
             // 
+            this.LblARatio.AutomaticSize = false;
+            this.LblARatio.Centered = false;
             this.LblARatio.Dock = System.Windows.Forms.DockStyle.Top;
             this.LblARatio.Location = new System.Drawing.Point(0, 164);
             this.LblARatio.Name = "LblARatio";
@@ -230,7 +234,10 @@
             // 
             // LblHeight
             // 
+            this.LblHeight.AutomaticSize = false;
+            this.LblHeight.Centered = false;
             this.LblHeight.Dock = System.Windows.Forms.DockStyle.Top;
+            this.LblHeight.Enabled = false;
             this.LblHeight.Location = new System.Drawing.Point(0, 129);
             this.LblHeight.Name = "LblHeight";
             this.LblHeight.Size = new System.Drawing.Size(254, 13);
@@ -254,6 +261,8 @@
             // 
             // LblFovy
             // 
+            this.LblFovy.AutomaticSize = false;
+            this.LblFovy.Centered = false;
             this.LblFovy.Dock = System.Windows.Forms.DockStyle.Top;
             this.LblFovy.Location = new System.Drawing.Point(0, 94);
             this.LblFovy.Name = "LblFovy";
@@ -278,6 +287,8 @@
             // 
             // LblZFar
             // 
+            this.LblZFar.AutomaticSize = false;
+            this.LblZFar.Centered = false;
             this.LblZFar.Dock = System.Windows.Forms.DockStyle.Top;
             this.LblZFar.Location = new System.Drawing.Point(0, 59);
             this.LblZFar.Name = "LblZFar";
@@ -302,6 +313,8 @@
             // 
             // LblZNear
             // 
+            this.LblZNear.AutomaticSize = false;
+            this.LblZNear.Centered = false;
             this.LblZNear.Dock = System.Windows.Forms.DockStyle.Top;
             this.LblZNear.Location = new System.Drawing.Point(0, 24);
             this.LblZNear.Name = "LblZNear";
@@ -358,6 +371,7 @@
             // 
             // ViewGroup
             // 
+            this.ViewGroup.AutomaticSize = true;
             this.ViewGroup.BackColor = System.Drawing.Color.Black;
             this.ViewGroup.Collapsed = false;
             // 
@@ -381,15 +395,16 @@
             this.ViewGroup.ContentArea.Controls.Add(this.ViewTypePanel);
             this.ViewGroup.ContentArea.Location = new System.Drawing.Point(1, 16);
             this.ViewGroup.ContentArea.Name = "ContentArea";
-            this.ViewGroup.ContentArea.Size = new System.Drawing.Size(254, 295);
+            this.ViewGroup.ContentArea.Size = new System.Drawing.Size(254, 296);
             this.ViewGroup.ContentArea.TabIndex = 0;
             this.ViewGroup.ContentColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
             this.ViewGroup.Dock = System.Windows.Forms.DockStyle.Top;
-            this.ViewGroup.ExpandedHeight = 312;
+            this.ViewGroup.Enabled = false;
+            this.ViewGroup.ExpandedHeight = 296;
             this.ViewGroup.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ViewGroup.Location = new System.Drawing.Point(0, 426);
+            this.ViewGroup.Location = new System.Drawing.Point(0, 424);
             this.ViewGroup.Name = "ViewGroup";
-            this.ViewGroup.Size = new System.Drawing.Size(256, 312);
+            this.ViewGroup.Size = new System.Drawing.Size(256, 313);
             this.ViewGroup.TabIndex = 10;
             this.ViewGroup.Title = "View";
             // 
@@ -410,6 +425,8 @@
             // 
             // LblTwist
             // 
+            this.LblTwist.AutomaticSize = false;
+            this.LblTwist.Centered = false;
             this.LblTwist.Dock = System.Windows.Forms.DockStyle.Top;
             this.LblTwist.Location = new System.Drawing.Point(0, 261);
             this.LblTwist.Name = "LblTwist";
@@ -467,7 +484,10 @@
             // 
             // LblUpVector
             // 
+            this.LblUpVector.AutomaticSize = false;
+            this.LblUpVector.Centered = false;
             this.LblUpVector.Dock = System.Windows.Forms.DockStyle.Top;
+            this.LblUpVector.Enabled = false;
             this.LblUpVector.Location = new System.Drawing.Point(0, 182);
             this.LblUpVector.Name = "LblUpVector";
             this.LblUpVector.Size = new System.Drawing.Size(254, 13);
@@ -524,7 +544,10 @@
             // 
             // LblRotation
             // 
+            this.LblRotation.AutomaticSize = false;
+            this.LblRotation.Centered = false;
             this.LblRotation.Dock = System.Windows.Forms.DockStyle.Top;
+            this.LblRotation.Enabled = false;
             this.LblRotation.Location = new System.Drawing.Point(0, 103);
             this.LblRotation.Name = "LblRotation";
             this.LblRotation.Size = new System.Drawing.Size(254, 13);
@@ -578,6 +601,8 @@
             // 
             // LblTargetPos
             // 
+            this.LblTargetPos.AutomaticSize = false;
+            this.LblTargetPos.Centered = false;
             this.LblTargetPos.Dock = System.Windows.Forms.DockStyle.Top;
             this.LblTargetPos.Location = new System.Drawing.Point(0, 24);
             this.LblTargetPos.Name = "LblTargetPos";
@@ -651,6 +676,7 @@
             // 
             // TransformGroup
             // 
+            this.TransformGroup.AutomaticSize = true;
             this.TransformGroup.BackColor = System.Drawing.Color.Black;
             this.TransformGroup.Collapsed = false;
             // 
@@ -662,15 +688,16 @@
             this.TransformGroup.ContentArea.Controls.Add(this.TTransX);
             this.TransformGroup.ContentArea.Location = new System.Drawing.Point(1, 16);
             this.TransformGroup.ContentArea.Name = "ContentArea";
-            this.TransformGroup.ContentArea.Size = new System.Drawing.Size(254, 65);
+            this.TransformGroup.ContentArea.Size = new System.Drawing.Size(254, 66);
             this.TransformGroup.ContentArea.TabIndex = 0;
             this.TransformGroup.ContentColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
             this.TransformGroup.Dock = System.Windows.Forms.DockStyle.Top;
-            this.TransformGroup.ExpandedHeight = 82;
+            this.TransformGroup.Enabled = false;
+            this.TransformGroup.ExpandedHeight = 66;
             this.TransformGroup.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.TransformGroup.Location = new System.Drawing.Point(0, 344);
+            this.TransformGroup.Location = new System.Drawing.Point(0, 341);
             this.TransformGroup.Name = "TransformGroup";
-            this.TransformGroup.Size = new System.Drawing.Size(256, 82);
+            this.TransformGroup.Size = new System.Drawing.Size(256, 83);
             this.TransformGroup.TabIndex = 9;
             this.TransformGroup.Title = "Position";
             // 
@@ -721,6 +748,7 @@
             // 
             // NameGroup
             // 
+            this.NameGroup.AutomaticSize = false;
             this.NameGroup.BackColor = System.Drawing.Color.Black;
             this.NameGroup.Collapsed = false;
             // 
@@ -730,15 +758,16 @@
             this.NameGroup.ContentArea.Controls.Add(this.TxtCameraName);
             this.NameGroup.ContentArea.Location = new System.Drawing.Point(1, 16);
             this.NameGroup.ContentArea.Name = "ContentArea";
-            this.NameGroup.ContentArea.Size = new System.Drawing.Size(254, 23);
+            this.NameGroup.ContentArea.Size = new System.Drawing.Size(254, 20);
             this.NameGroup.ContentArea.TabIndex = 0;
             this.NameGroup.ContentColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
             this.NameGroup.Dock = System.Windows.Forms.DockStyle.Top;
-            this.NameGroup.ExpandedHeight = 40;
+            this.NameGroup.Enabled = false;
+            this.NameGroup.ExpandedHeight = 20;
             this.NameGroup.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.NameGroup.Location = new System.Drawing.Point(0, 304);
             this.NameGroup.Name = "NameGroup";
-            this.NameGroup.Size = new System.Drawing.Size(256, 40);
+            this.NameGroup.Size = new System.Drawing.Size(256, 37);
             this.NameGroup.TabIndex = 10;
             this.NameGroup.Title = "Name";
             // 
@@ -749,7 +778,7 @@
             this.TxtCameraName.Dock = System.Windows.Forms.DockStyle.Fill;
             this.TxtCameraName.Location = new System.Drawing.Point(0, 0);
             this.TxtCameraName.Name = "TxtCameraName";
-            this.TxtCameraName.Size = new System.Drawing.Size(254, 23);
+            this.TxtCameraName.Size = new System.Drawing.Size(254, 20);
             this.TxtCameraName.TabIndex = 0;
             this.TxtCameraName.ChangedText += new System.EventHandler(this.TxtCameraName_ChangedText);
             // 
@@ -763,7 +792,6 @@
             this.CameraList.Location = new System.Drawing.Point(0, 48);
             this.CameraList.Name = "CameraList";
             this.CameraList.SelectedIndex = -1;
-            this.CameraList.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(15)))), ((int)(((byte)(82)))), ((int)(((byte)(186)))));
             this.CameraList.Size = new System.Drawing.Size(256, 256);
             this.CameraList.TabIndex = 8;
             this.CameraList.SelectedIndexChanged += new System.EventHandler(this.CameraList_SelectedIndexChanged);
@@ -784,6 +812,20 @@
             this.TopControlsExtended.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.TopControlsExtended.Size = new System.Drawing.Size(256, 24);
             this.TopControlsExtended.TabIndex = 21;
+            // 
+            // BtnReset
+            // 
+            this.BtnReset.BackColor = System.Drawing.Color.Transparent;
+            this.BtnReset.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.BtnReset.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnReset.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_camera;
+            this.BtnReset.Location = new System.Drawing.Point(170, 0);
+            this.BtnReset.Margin = new System.Windows.Forms.Padding(0);
+            this.BtnReset.Name = "BtnReset";
+            this.BtnReset.Size = new System.Drawing.Size(86, 24);
+            this.BtnReset.TabIndex = 14;
+            this.BtnReset.Text = "Reset";
+            this.BtnReset.Click += new System.EventHandler(this.BtnReset_Click);
             // 
             // BtnDelete
             // 
@@ -873,26 +915,12 @@
             this.BtnImport.Text = "Import";
             this.BtnImport.Click += new System.EventHandler(this.BtnImport_Click);
             // 
-            // BtnReset
-            // 
-            this.BtnReset.BackColor = System.Drawing.Color.Transparent;
-            this.BtnReset.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.BtnReset.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.BtnReset.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_camera;
-            this.BtnReset.Location = new System.Drawing.Point(170, 0);
-            this.BtnReset.Margin = new System.Windows.Forms.Padding(0);
-            this.BtnReset.Name = "BtnReset";
-            this.BtnReset.Size = new System.Drawing.Size(86, 24);
-            this.BtnReset.TabIndex = 14;
-            this.BtnReset.Text = "Reset";
-            this.BtnReset.Click += new System.EventHandler(this.BtnReset_Click);
-            // 
             // OCameraWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.Controls.Add(this.Content);
             this.Name = "OCameraWindow";
-            this.Size = new System.Drawing.Size(256, 993);
+            this.Size = new System.Drawing.Size(256, 995);
             this.Controls.SetChildIndex(this.Content, 0);
             this.Content.ContentArea.ResumeLayout(false);
             this.Content.ResumeLayout(false);
@@ -931,35 +959,35 @@
         private OFloatTextBox LAUpVecZ;
         private OFloatTextBox LAUpVecY;
         private OFloatTextBox LAUpVecX;
-        private System.Windows.Forms.Label LblUpVector;
+        private OLabel LblUpVector;
         private OFloatTextBox TargetZ;
         private OFloatTextBox TargetY;
         private OFloatTextBox TargetX;
-        private System.Windows.Forms.Label LblTargetPos;
+        private OLabel LblTargetPos;
         private System.Windows.Forms.TableLayoutPanel TopControls;
         private OButton BtnClear;
         private OButton BtnExport;
         private OButton BtnImport;
         private OGroupBox ProjectionGroup;
         private OFloatTextBox PPARatio;
-        private System.Windows.Forms.Label LblARatio;
+        private OLabel LblARatio;
         private OFloatTextBox PPFovy;
-        private System.Windows.Forms.Label LblFovy;
+        private OLabel LblFovy;
         private OFloatTextBox PZFar;
-        private System.Windows.Forms.Label LblZFar;
+        private OLabel LblZFar;
         private OFloatTextBox PZNear;
-        private System.Windows.Forms.Label LblZNear;
+        private OLabel LblZNear;
         private System.Windows.Forms.TableLayoutPanel ProjectionTypePanel;
         private ORadioButton RadioOrtho;
         private ORadioButton RadioPersp;
         private OFloatTextBox OPHeight;
-        private System.Windows.Forms.Label LblHeight;
+        private OLabel LblHeight;
         private OFloatTextBox ATwist;
-        private System.Windows.Forms.Label LblTwist;
+        private OLabel LblTwist;
         private OFloatTextBox RRotZ;
         private OFloatTextBox RRotY;
         private OFloatTextBox RRotX;
-        private System.Windows.Forms.Label LblRotation;
+        private OLabel LblRotation;
         private System.Windows.Forms.TableLayoutPanel ViewTypePanel;
         private ORadioButton RadioVR;
         private ORadioButton RadioVLAT;

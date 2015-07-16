@@ -7,12 +7,17 @@ using System.Text;
 using System.ComponentModel;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
+using System.Runtime.InteropServices;
 
 namespace Ohana3DS_Rebirth.GUI
 {
     [Designer(typeof(OScrollablePanelDesigner))]
     public partial class OScrollablePanel : UserControl
     {
+        [DllImport("user32.dll")]
+        public static extern int SendMessage(IntPtr hWnd, int wMsg, int wParam, int lParam);
+        private const int WM_SETREDRAW = 11;
+
         public OScrollablePanel()
         {
             init();
@@ -44,7 +49,19 @@ namespace Ohana3DS_Rebirth.GUI
         protected override void OnControlAdded(ControlEventArgs e)
         {
             e.Control.Layout += Control_Layout;
+
             base.OnControlAdded(e);
+        }
+
+        public void SuspendDrawing()
+        {
+            SendMessage(Handle, WM_SETREDRAW, 0, 0);
+        }
+
+        public void ResumeDrawing()
+        {
+            SendMessage(Handle, WM_SETREDRAW, 1, 0);
+            Refresh();
         }
 
         private void Control_Layout(Object sender, EventArgs e)
@@ -58,7 +75,7 @@ namespace Ohana3DS_Rebirth.GUI
             foreach (Control child in ContentPanel.Controls)
             {
                 int y = child.Top + child.Height;
-                if (y > maxY)
+                if (child.Visible && y > maxY)
                 {
                     maxY = y;
                 }

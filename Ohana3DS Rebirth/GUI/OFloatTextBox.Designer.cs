@@ -65,7 +65,6 @@
             // 
             this.SeekBar.BackColor = System.Drawing.Color.Transparent;
             this.SeekBar.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.SeekBar.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(21)))), ((int)(((byte)(46)))), ((int)(((byte)(84)))));
             this.SeekBar.Location = new System.Drawing.Point(64, 0);
             this.SeekBar.Margin = new System.Windows.Forms.Padding(0);
             this.SeekBar.MaximumSeek = 2000;

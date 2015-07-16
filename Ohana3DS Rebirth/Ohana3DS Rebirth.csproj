@@ -90,6 +90,18 @@
     </Compile>
     <Compile Include="GUI\ColorManager.cs" />
     <Compile Include="GUI\DrawingHelper.cs" />
+    <Compile Include="GUI\OCheckBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OCheckBox.Designer.cs">
+      <DependentUpon>OCheckBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OComboBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\OComboBox.Designer.cs">
+      <DependentUpon>OComboBox.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\OFloatTextBox.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -107,6 +119,12 @@
     </Compile>
     <Compile Include="GUI\ORadioButton.Designer.cs">
       <DependentUpon>ORadioButton.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\ORgbaColorBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\ORgbaColorBox.Designer.cs">
+      <DependentUpon>ORgbaColorBox.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\OSeekBar.cs">
       <SubType>Component</SubType>
@@ -178,6 +196,12 @@
     <Compile Include="GUI\OMenuStrip.Designer.cs">
       <DependentUpon>OMenuStrip.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\Windows\OLightWindow.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Windows\OLightWindow.Designer.cs">
+      <DependentUpon>OLightWindow.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\Windows\OModelWindow.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -239,11 +263,17 @@
     <EmbeddedResource Include="FrmMain.resx">
       <DependentUpon>FrmMain.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GUI\OComboBox.resx">
+      <DependentUpon>OComboBox.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\OFloatTextBox.resx">
       <DependentUpon>OFloatTextBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\OGenericAnimationControls.resx">
       <DependentUpon>OGenericAnimationControls.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\ORgbaColorBox.resx">
+      <DependentUpon>ORgbaColorBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\OTextBox.resx">
       <DependentUpon>OTextBox.cs</DependentUpon>
@@ -265,6 +295,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\OList.resx">
       <DependentUpon>OList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Windows\OLightWindow.resx">
+      <DependentUpon>OLightWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Windows\OModelWindow.resx">
       <DependentUpon>OModelWindow.cs</DependentUpon>
@@ -394,6 +427,18 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\icn_camera.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_lightbulb.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_alpha_grid.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_down.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_up.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

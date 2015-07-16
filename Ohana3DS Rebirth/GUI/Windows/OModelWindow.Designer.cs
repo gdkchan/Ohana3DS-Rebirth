@@ -123,7 +123,6 @@
             this.ModelList.Location = new System.Drawing.Point(0, 40);
             this.ModelList.Name = "ModelList";
             this.ModelList.SelectedIndex = -1;
-            this.ModelList.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(15)))), ((int)(((byte)(82)))), ((int)(((byte)(186)))));
             this.ModelList.Size = new System.Drawing.Size(256, 256);
             this.ModelList.TabIndex = 9;
             this.ModelList.SelectedIndexChanged += new System.EventHandler(this.ModelList_SelectedIndexChanged);

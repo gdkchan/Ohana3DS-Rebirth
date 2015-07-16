@@ -31,11 +31,12 @@ namespace Ohana3DS_Rebirth.GUI
             pevent.Graphics.Clear(BackColor);
             if (Checked) pevent.Graphics.FillRectangle(new SolidBrush(ColorManager.highlight), new Rectangle(0, 0, Width, Height));
 
-            SizeF textSize = pevent.Graphics.MeasureString(Text, Font);
+            string text = DrawingHelper.clampText(Text, Font, Width);
+            SizeF textSize = pevent.Graphics.MeasureString(text, Font);
             int width = (int)textSize.Width;
             int x = Math.Max(0, (Width / 2) - (width / 2));
             int yText = (Height / 2) - (int)(textSize.Height / 2);
-            pevent.Graphics.DrawString(DrawingHelper.clampText(Text, Font, Width), Font, new SolidBrush(ForeColor), new Point(x, yText));
+            pevent.Graphics.DrawString(text, Font, new SolidBrush(Enabled ? ForeColor : Color.Silver), new Point(x, yText));
         }
     }
 }
