@@ -330,6 +330,7 @@
             this.TxtLightName.Name = "TxtLightName";
             this.TxtLightName.Size = new System.Drawing.Size(254, 20);
             this.TxtLightName.TabIndex = 0;
+            this.TxtLightName.ChangedText += new System.EventHandler(this.TxtLightName_ChangedText);
             // 
             // LightGroup
             // 

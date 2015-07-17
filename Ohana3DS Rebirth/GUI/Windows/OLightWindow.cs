@@ -573,6 +573,15 @@ namespace Ohana3DS_Rebirth.GUI
             LightGroup.recalculateSize();
         }
 
+        private void TxtLightName_ChangedText(object sender, EventArgs e)
+        {
+            if (light != null)
+            {
+                light.name = TxtLightName.Text;
+                LightList.changeItem(LightList.SelectedIndex, light.name);
+            }
+        }
+
         private void BtnImport_Click(object sender, EventArgs e)
         {
             Object importedData = FileIO.import(FileIO.fileType.light);
@@ -599,7 +608,7 @@ namespace Ohana3DS_Rebirth.GUI
         {
             OAddLightDialog dlg = new OAddLightDialog();
             dlg.DialogCallback += AddWindow_Callback;
-            dlg.Show();
+            dlg.ShowDialog();
         }
 
         private void AddWindow_Callback(Object sender, OAddLightDialog.OAddLightEventArgs e)

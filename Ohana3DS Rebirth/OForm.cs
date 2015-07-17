@@ -21,19 +21,6 @@ namespace Ohana3DS_Rebirth
         [DllImport("user32.dll")]
         public static extern bool ReleaseCapture();
 
-        private const int WM_SETREDRAW = 11;
-
-        public void SuspendDrawing()
-        {
-            SendMessage(Handle, WM_SETREDRAW, 0, 0);
-        }
-
-        public void ResumeDrawing()
-        {
-            SendMessage(Handle, WM_SETREDRAW, 1, 0);
-            Refresh();
-        }
-
         public bool Resizable
         {
             get
@@ -58,24 +45,6 @@ namespace Ohana3DS_Rebirth
                 minimizeBox = value;
                 BtnMinimize.Visible = minimizeBox;
             }
-        }
-
-        private void OForm_Resize(object sender, EventArgs e)
-        {
-            if (this.WindowState != FormWindowState.Normal || DesignMode) return;
-            ResumeDrawing();
-            SuspendDrawing();
-        }
-
-        private void OForm_ResizeBegin(object sender, EventArgs e)
-        {
-            if (this.WindowState != FormWindowState.Normal || DesignMode) return;
-            SuspendDrawing();
-        }
-
-        private void OForm_ResizeEnd(object sender, EventArgs e)
-        {
-            ResumeDrawing();
         }
        
         #region "WndProc Form Resize"
@@ -227,8 +196,6 @@ namespace Ohana3DS_Rebirth
                     MaximumSize = Screen.FromControl(this).WorkingArea.Size;
                     WindowState = FormWindowState.Maximized;
                 }
-
-                ResumeDrawing();
             }
 
             private void BtnMinimize_Click(object sender, EventArgs e)

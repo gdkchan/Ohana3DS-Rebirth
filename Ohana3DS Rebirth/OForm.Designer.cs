@@ -136,11 +136,8 @@
             this.Name = "OForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Título";
-            this.ResizeBegin += new System.EventHandler(this.OForm_ResizeBegin);
-            this.ResizeEnd += new System.EventHandler(this.OForm_ResizeEnd);
             this.Layout += new System.Windows.Forms.LayoutEventHandler(this.OForm_Layout);
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.OForm_MouseDown);
-            this.Resize += new System.EventHandler(this.OForm_Resize);
             this.ContentContainer.ResumeLayout(false);
             this.TitleBar.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.BtnMinimize)).EndInit();

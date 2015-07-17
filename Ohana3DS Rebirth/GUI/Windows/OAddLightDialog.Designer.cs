@@ -144,6 +144,7 @@
             this.ForeColor = System.Drawing.Color.White;
             this.Name = "OAddLightDialog";
             this.Resizable = false;
+            this.ShowInTaskbar = false;
             this.ShowMinimize = false;
             this.Text = "OAddLightDialog";
             this.ContentContainer.ResumeLayout(false);
