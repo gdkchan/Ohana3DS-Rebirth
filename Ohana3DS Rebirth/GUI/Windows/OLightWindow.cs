@@ -52,15 +52,14 @@ namespace Ohana3DS_Rebirth.GUI
                 LightGroup.Enabled = true;
             }
 
+            //Set light
             light = renderer.model.light[LightList.SelectedIndex];
 
             //Name
             TxtLightName.Text = light.name;
 
-            //Transform
-            FPosX.Value = light.transformTranslate.x;
-            FPosY.Value = light.transformTranslate.y;
-            FPosZ.Value = light.transformTranslate.z;
+            Content.suspendUpdate();
+            Content.SuspendLayout();
 
             //Light
             switch (light.lightUse)
@@ -75,7 +74,9 @@ namespace Ohana3DS_Rebirth.GUI
                     SkyDirY.Value = light.direction.y;
                     SkyDirZ.Value = light.direction.z;
 
-                    RadioHemisphere.PerformClick();
+                    LerpFactor.Value = light.lerpFactor;
+
+                    setHemisphere();
 
                     break;
                 case RenderBase.OLightUse.ambient:
@@ -83,7 +84,7 @@ namespace Ohana3DS_Rebirth.GUI
 
                     AAmbientColor.Color = light.ambient;
 
-                    RadioAmbient.PerformClick();
+                    setAmbient();
 
                     break;
                 case RenderBase.OLightUse.vertex:
@@ -111,13 +112,14 @@ namespace Ohana3DS_Rebirth.GUI
                     LinearAtt.Value = light.distanceAttenuationLinear;
                     QuadraticAtt.Value = light.distanceAttenuationQuadratic;
 
-                    RadioVertex.PerformClick();
                     switch (light.lightType)
                     {
                         case RenderBase.OLightType.directional: VRadioDirectional.PerformClick(); break;
                         case RenderBase.OLightType.point: VRadioPoint.PerformClick(); break;
                         case RenderBase.OLightType.spot: VRadioSpot.PerformClick(); break;
                     }
+
+                    setVertex();
 
                     break;
                 case RenderBase.OLightUse.fragment:
@@ -157,10 +159,13 @@ namespace Ohana3DS_Rebirth.GUI
                         case RenderBase.OLightType.spot: FRadioSpot.PerformClick(); break;
                     }
 
-                    RadioFragment.PerformClick();
+                    setFragment();
                     
                     break;
             }
+
+            Content.ResumeLayout();
+            Content.resumeUpdate();
         }
 
         #region "Fragment"
@@ -521,99 +526,51 @@ namespace Ohana3DS_Rebirth.GUI
         {
             if (light != null) light.direction.z = SkyDirZ.Value;
         }
+
+        private void LerpFactor_ValueChanged(object sender, EventArgs e)
+        {
+            if (light != null) light.lerpFactor = LerpFactor.Value;
+        }
         #endregion
 
-        private void RadioHemisphere_CheckedChanged(object sender, EventArgs e)
+        private void setHemisphere()
         {
-            if (!RadioHemisphere.Checked) return;
-            Content.SuspendDrawing();
-
             HemisphereLightPanel.Visible = true;
             AmbientLightPanel.Visible = false;
             VertexLightPanel.Visible = false;
             FragmentLightPanel.Visible = false;
 
-            if (light != null)
-            {
-                light.lightUse = RenderBase.OLightUse.hemiSphere;
-                light.isLightEnabled = HLightEnabled.Checked;
-                light.direction = new RenderBase.OVector3(SkyDirX.Value, SkyDirY.Value, SkyDirZ.Value);
-            }
-
             LightGroup.recalculateSize();
-            Content.ResumeDrawing();
-            
         }
 
-        private void RadioAmbient_CheckedChanged(object sender, EventArgs e)
+        private void setAmbient()
         {
-            if (!RadioAmbient.Checked) return;
-            Content.SuspendDrawing();
-
             HemisphereLightPanel.Visible = false;
             AmbientLightPanel.Visible = true;
             VertexLightPanel.Visible = false;
             FragmentLightPanel.Visible = false;
 
-            if (light != null)
-            {
-                light.lightUse = RenderBase.OLightUse.ambient;
-                light.isLightEnabled = ALightEnabled.Checked;
-                light.ambient = AAmbientColor.Color;
-            }
-
             LightGroup.recalculateSize();
-            Content.ResumeDrawing();
         }
 
-        private void RadioVertex_CheckedChanged(object sender, EventArgs e)
+        private void setVertex()
         {
-            if (!RadioVertex.Checked) return;
-            Content.SuspendDrawing();
-
             HemisphereLightPanel.Visible = false;
             AmbientLightPanel.Visible = false;
             VertexLightPanel.Visible = true;
             FragmentLightPanel.Visible = false;
 
-            if (light != null)
-            {
-                light.lightUse = RenderBase.OLightUse.vertex;
-                light.isLightEnabled = ALightEnabled.Checked;
-                light.ambient = VAmbientColor.Color;
-                light.diffuse = VDiffuseColor.Color;
-                light.transformTranslate = new RenderBase.OVector3(VPosX.Value, VPosY.Value, VPosZ.Value);
-                light.direction = new RenderBase.OVector3(VDirX.Value, VDirY.Value, VDirZ.Value);
-                light.isDistanceAttenuationEnabled = VAttEnabled.Checked;
-            }
-
             LightGroup.recalculateSize();
-            Content.ResumeDrawing();
         }
 
-        private void RadioFragment_CheckedChanged(object sender, EventArgs e)
+        private void setFragment()
         {
-            if (!RadioFragment.Checked) return;
-            Content.SuspendDrawing();
-
             HemisphereLightPanel.Visible = false;
             AmbientLightPanel.Visible = false;
             VertexLightPanel.Visible = false;
             FragmentLightPanel.Visible = true;
 
-            if (light != null)
-            {
-                light.lightUse = RenderBase.OLightUse.fragment;
-                light.isLightEnabled = FLightEnabled.Checked;
-                light.ambient = FAmbientColor.Color;
-                light.diffuse = FDiffuseColor.Color;
-                light.transformTranslate = new RenderBase.OVector3(FPosX.Value, FPosY.Value, FPosZ.Value);
-                light.direction = new RenderBase.OVector3(FDirX.Value, FDirY.Value, FDirZ.Value);
-                light.isDistanceAttenuationEnabled = FAttEnabled.Checked;
-            }
-
             LightGroup.recalculateSize();
-            Content.ResumeDrawing();
         }
 
         private void BtnImport_Click(object sender, EventArgs e)
@@ -640,40 +597,38 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void BtnAdd_Click(object sender, EventArgs e)
         {
-            string currentName = null;
-            int i = 0;
+            OAddLightDialog dlg = new OAddLightDialog();
+            dlg.DialogCallback += AddWindow_Callback;
+            dlg.Show();
+        }
 
-            bool found = true;
-            while (found)
+        private void AddWindow_Callback(Object sender, OAddLightDialog.OAddLightEventArgs e)
+        {
+            if (e.response.ok)
             {
-                currentName = String.Format("light_{0}", i);
-                found = false;
-                foreach (RenderBase.OLight light in renderer.model.light) if (light.name == currentName) found = true;
-                i++;
+                RenderBase.OLight lgt = new RenderBase.OLight();
+                lgt.name = e.response.lightName;
+                lgt.transformTranslate = new RenderBase.OVector3(0, 10f, 0);
+                lgt.transformRotate = new RenderBase.OVector3();
+                lgt.transformScale = new RenderBase.OVector3(1, 1, 1);
+                lgt.direction = new RenderBase.OVector3();
+                lgt.ambient = Color.Black;
+                lgt.diffuse = Color.White;
+                lgt.specular0 = Color.White;
+                lgt.specular1 = Color.White;
+                lgt.lightUse = e.response.lightUse;
+                lgt.lightType = RenderBase.OLightType.point;
+                lgt.isDistanceAttenuationEnabled = true;
+                lgt.attenuationStart = 5;
+                lgt.attenuationEnd = 2;
+                lgt.distanceSampler.materialLUTName = "TableNameHere";
+                lgt.distanceSampler.samplerName = "SamplerNameHere";
+
+                renderer.model.light.Add(lgt);
+                LightList.addItem(e.response.lightName);
+                LightList.SelectedIndex = LightList.Count - 1;
+                LightList.Refresh();
             }
-
-            RenderBase.OLight lgt = new RenderBase.OLight();
-            lgt.name = currentName;
-            lgt.transformTranslate = new RenderBase.OVector3(0, 10f, 0);
-            lgt.transformRotate = new RenderBase.OVector3();
-            lgt.transformScale = new RenderBase.OVector3(1, 1, 1);
-            lgt.direction = new RenderBase.OVector3();
-            lgt.ambient = Color.Black;
-            lgt.diffuse = Color.White;
-            lgt.specular0 = Color.White;
-            lgt.specular1 = Color.White;
-            lgt.lightUse = RenderBase.OLightUse.fragment;
-            lgt.lightType = RenderBase.OLightType.point;
-            lgt.isDistanceAttenuationEnabled = true;
-            lgt.attenuationStart = 5;
-            lgt.attenuationEnd = 2;
-            lgt.distanceSampler.materialLUTName = "TableNameHere";
-            lgt.distanceSampler.samplerName = "SamplerNameHere";
-
-            renderer.model.light.Add(lgt);
-            LightList.addItem(currentName);
-            LightList.SelectedIndex = LightList.Count - 1;
-            LightList.Refresh();
         }
 
         private void BtnDelete_Click(object sender, EventArgs e)

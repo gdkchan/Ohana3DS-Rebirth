@@ -57,6 +57,7 @@ namespace Ohana3DS_Rebirth.GUI
             set
             {
                 centered = value;
+                Refresh();
             }
         }
 

@@ -138,6 +138,12 @@
     <Compile Include="GUI\OTextBox.Designer.cs">
       <DependentUpon>OTextBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\Windows\OAddLightDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Windows\OAddLightDialog.Designer.cs">
+      <DependentUpon>OAddLightDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\Windows\OAnimationsWindow.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -277,6 +283,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\OTextBox.resx">
       <DependentUpon>OTextBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Windows\OAddLightDialog.resx">
+      <DependentUpon>OAddLightDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Windows\OAnimationsWindow.resx">
       <DependentUpon>OAnimationsWindow.cs</DependentUpon>

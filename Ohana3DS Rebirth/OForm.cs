@@ -9,6 +9,8 @@ namespace Ohana3DS_Rebirth
     public partial class OForm : Form
     {
         const int gripSize = 4;
+        private bool resizable = true;
+        private bool minimizeBox = true;
 
         public const int WM_NCLBUTTONDOWN = 0xA1;
         public const int WM_NCHITTEST = 0x84;
@@ -32,16 +34,42 @@ namespace Ohana3DS_Rebirth
             Refresh();
         }
 
+        public bool Resizable
+        {
+            get
+            {
+                return resizable;
+            }
+            set
+            {
+                resizable = value;
+                BtnMinMax.Visible = value;
+            }
+        }
+
+        public bool ShowMinimize
+        {
+            get
+            {
+                return minimizeBox;
+            }
+            set
+            {
+                minimizeBox = value;
+                BtnMinimize.Visible = minimizeBox;
+            }
+        }
+
         private void OForm_Resize(object sender, EventArgs e)
         {
-            if (this.WindowState != FormWindowState.Normal) return;
+            if (this.WindowState != FormWindowState.Normal || DesignMode) return;
             ResumeDrawing();
             SuspendDrawing();
         }
 
         private void OForm_ResizeBegin(object sender, EventArgs e)
         {
-            if (this.WindowState != FormWindowState.Normal) return;
+            if (this.WindowState != FormWindowState.Normal || DesignMode) return;
             SuspendDrawing();
         }
 
@@ -62,7 +90,7 @@ namespace Ohana3DS_Rebirth
                 const int HTBOTTOMLEFT = 16;
                 const int HTBOTTOMRIGHT = 17;
                 
-                if (m.Msg == WM_NCHITTEST && WindowState == FormWindowState.Normal)
+                if (m.Msg == WM_NCHITTEST && WindowState == FormWindowState.Normal && resizable)
                 {
                     int x = m.LParam.ToInt32() & 0xffff;
                     int y = (int)((m.LParam.ToInt32() & 0xffff0000) >> 16);
@@ -131,7 +159,7 @@ namespace Ohana3DS_Rebirth
 
             private void OForm_Layout(object sender, LayoutEventArgs e)
             {
-                if (WindowState != FormWindowState.Maximized)
+                if (WindowState != FormWindowState.Maximized && resizable)
                 {
                     BtnMinMax.Image = Resources.btnmaximize;
                     

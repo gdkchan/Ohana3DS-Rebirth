@@ -50,6 +50,7 @@
             // 
             // LblTitle
             // 
+            this.LblTitle.Centered = true;
             this.LblTitle.Image = ((System.Drawing.Bitmap)(resources.GetObject("LblTitle.Image")));
             this.LblTitle.Size = new System.Drawing.Size(86, 19);
             this.LblTitle.Text = "Ohana3DS";
@@ -81,19 +82,19 @@
             this.mnuOpen,
             this.mnuAbout});
             this.MainMenu.Name = "MainMenu";
-            this.MainMenu.Size = new System.Drawing.Size(153, 70);
+            this.MainMenu.Size = new System.Drawing.Size(108, 48);
             // 
             // mnuOpen
             // 
             this.mnuOpen.Name = "mnuOpen";
-            this.mnuOpen.Size = new System.Drawing.Size(152, 22);
+            this.mnuOpen.Size = new System.Drawing.Size(107, 22);
             this.mnuOpen.Text = "&Open";
             this.mnuOpen.Click += new System.EventHandler(this.mnuOpen_Click);
             // 
             // mnuAbout
             // 
             this.mnuAbout.Name = "mnuAbout";
-            this.mnuAbout.Size = new System.Drawing.Size(152, 22);
+            this.mnuAbout.Size = new System.Drawing.Size(107, 22);
             this.mnuAbout.Text = "&About";
             this.mnuAbout.Click += new System.EventHandler(this.mnuAbout_Click);
             // 

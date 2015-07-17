@@ -68,8 +68,8 @@
             // 
             // BtnMinimize
             // 
-            this.BtnMinimize.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.BtnMinimize.BackColor = System.Drawing.Color.Transparent;
+            this.BtnMinimize.Dock = System.Windows.Forms.DockStyle.Right;
             this.BtnMinimize.Image = ((System.Drawing.Image)(resources.GetObject("BtnMinimize.Image")));
             this.BtnMinimize.Location = new System.Drawing.Point(592, 0);
             this.BtnMinimize.Name = "BtnMinimize";
@@ -82,8 +82,8 @@
             // 
             // BtnMinMax
             // 
-            this.BtnMinMax.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.BtnMinMax.BackColor = System.Drawing.Color.Transparent;
+            this.BtnMinMax.Dock = System.Windows.Forms.DockStyle.Right;
             this.BtnMinMax.Image = global::Ohana3DS_Rebirth.Properties.Resources.btnmaximize;
             this.BtnMinMax.Location = new System.Drawing.Point(608, 0);
             this.BtnMinMax.Name = "BtnMinMax";
@@ -96,8 +96,8 @@
             // 
             // BtnClose
             // 
-            this.BtnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.BtnClose.BackColor = System.Drawing.Color.Transparent;
+            this.BtnClose.Dock = System.Windows.Forms.DockStyle.Right;
             this.BtnClose.Image = ((System.Drawing.Image)(resources.GetObject("BtnClose.Image")));
             this.BtnClose.Location = new System.Drawing.Point(624, 0);
             this.BtnClose.Name = "BtnClose";
@@ -111,8 +111,11 @@
             // LblTitle
             // 
             this.LblTitle.BackColor = System.Drawing.Color.Transparent;
+            this.LblTitle.Centered = false;
             this.LblTitle.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblTitle.ForeColor = System.Drawing.Color.White;
+            this.LblTitle.Hover = false;
+            this.LblTitle.Image = null;
             this.LblTitle.Location = new System.Drawing.Point(0, 0);
             this.LblTitle.Name = "LblTitle";
             this.LblTitle.Size = new System.Drawing.Size(31, 19);

@@ -7,16 +7,13 @@ using System.Text;
 using System.ComponentModel;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
-using System.Runtime.InteropServices;
 
 namespace Ohana3DS_Rebirth.GUI
 {
     [Designer(typeof(OScrollablePanelDesigner))]
     public partial class OScrollablePanel : UserControl
     {
-        [DllImport("user32.dll")]
-        public static extern int SendMessage(IntPtr hWnd, int wMsg, int wParam, int lParam);
-        private const int WM_SETREDRAW = 11;
+        private bool suspended;
 
         public OScrollablePanel()
         {
@@ -53,20 +50,9 @@ namespace Ohana3DS_Rebirth.GUI
             base.OnControlAdded(e);
         }
 
-        public void SuspendDrawing()
-        {
-            SendMessage(Handle, WM_SETREDRAW, 0, 0);
-        }
-
-        public void ResumeDrawing()
-        {
-            SendMessage(Handle, WM_SETREDRAW, 1, 0);
-            Refresh();
-        }
-
         private void Control_Layout(Object sender, EventArgs e)
         {
-            recalc();
+            if (!suspended) recalc();
         }
 
         private void recalc()
@@ -91,6 +77,23 @@ namespace Ohana3DS_Rebirth.GUI
             }
             PnlVScroll.Left = Width - PnlVScroll.Width;
             PnlVScroll.Height = Height;
+        }
+
+        /// <summary>
+        ///     Stops calculating the scroll and size.
+        /// </summary>
+        public void suspendUpdate()
+        {
+            suspended = true;
+        }
+
+        /// <summary>
+        ///     Continues calculating the scroll and size and forces an update.
+        /// </summary>
+        public void resumeUpdate()
+        {
+            suspended = false;
+            recalc();
         }
 
         public class OScrollablePanelDesigner : ParentControlDesigner

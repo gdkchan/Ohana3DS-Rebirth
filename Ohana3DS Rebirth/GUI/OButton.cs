@@ -8,6 +8,8 @@ namespace Ohana3DS_Rebirth.GUI
     {
         private Color bgColor;
         private Bitmap img;
+        private bool centered = true;
+        private bool hover = true;
 
         public OButton()
         {
@@ -18,6 +20,9 @@ namespace Ohana3DS_Rebirth.GUI
             InitializeComponent();
         }
 
+        /// <summary>
+        ///     Optional image to show on the button.
+        /// </summary>
         public Bitmap Image
         {
             get
@@ -31,6 +36,9 @@ namespace Ohana3DS_Rebirth.GUI
             }
         }
 
+        /// <summary>
+        ///     Background color of the button, when not being hovered.
+        /// </summary>
         public override Color BackColor
         {
             get
@@ -42,6 +50,37 @@ namespace Ohana3DS_Rebirth.GUI
                 base.BackColor = value;
                 bgColor = value;
                 Refresh();
+            }
+        }
+
+        /// <summary>
+        ///     Center the text and image (if used) inside the button.
+        /// </summary>
+        public bool Centered
+        {
+            get
+            {
+                return centered;
+            }
+            set
+            {
+                centered = value;
+                Refresh();
+            }
+        }
+
+        /// <summary>
+        ///     Set to true to make Background change color when user hovers mouse on the button.
+        /// </summary>
+        public bool Hover
+        {
+            get
+            {
+                return hover;
+            }
+            set
+            {
+                hover = value;
             }
         }
 
@@ -58,7 +97,7 @@ namespace Ohana3DS_Rebirth.GUI
                 width += img.Width;
                 yImage = (Height / 2) - (img.Height / 2);
             }
-            int x = Math.Max(0, (Width / 2) - (width / 2));
+            int x = centered ? Math.Max(0, (Width / 2) - (width / 2)) : 0;
             int yText = (Height / 2) - (int)(textSize.Height / 2);
             if (img != null)
             {
@@ -75,7 +114,7 @@ namespace Ohana3DS_Rebirth.GUI
 
         protected override void OnMouseEnter(EventArgs e)
         {
-            bgColor = ColorManager.highlight;
+            if (hover) bgColor = ColorManager.highlight;
             Refresh();
 
             base.OnMouseEnter(e);

@@ -42,6 +42,8 @@
             this.TxtLightName = new Ohana3DS_Rebirth.GUI.OTextBox();
             this.LightGroup = new Ohana3DS_Rebirth.GUI.OGroupBox();
             this.HemisphereLightPanel = new System.Windows.Forms.Panel();
+            this.LerpFactor = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
+            this.LblLerpFactor = new Ohana3DS_Rebirth.GUI.OLabel();
             this.SkyDirZ = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
             this.SkyDirY = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
             this.SkyDirX = new Ohana3DS_Rebirth.GUI.OFloatTextBox();
@@ -124,11 +126,6 @@
             this.FAmbientColor = new Ohana3DS_Rebirth.GUI.ORgbaColorBox();
             this.LblFAmbientColor = new Ohana3DS_Rebirth.GUI.OLabel();
             this.FLightEnabled = new Ohana3DS_Rebirth.GUI.OCheckBox();
-            this.LightUsePanel = new System.Windows.Forms.TableLayoutPanel();
-            this.RadioVertex = new Ohana3DS_Rebirth.GUI.ORadioButton();
-            this.RadioFragment = new Ohana3DS_Rebirth.GUI.ORadioButton();
-            this.RadioHemisphere = new Ohana3DS_Rebirth.GUI.ORadioButton();
-            this.RadioAmbient = new Ohana3DS_Rebirth.GUI.ORadioButton();
             this.Content = new Ohana3DS_Rebirth.GUI.OScrollablePanel();
             this.TopControls.SuspendLayout();
             this.TopControlsExtended.SuspendLayout();
@@ -150,7 +147,6 @@
             this.FAngularAttGroup.ContentArea.SuspendLayout();
             this.FAngularAttGroup.SuspendLayout();
             this.FLightTypePanel.SuspendLayout();
-            this.LightUsePanel.SuspendLayout();
             this.Content.ContentArea.SuspendLayout();
             this.Content.SuspendLayout();
             this.SuspendLayout();
@@ -176,8 +172,10 @@
             // BtnClear
             // 
             this.BtnClear.BackColor = System.Drawing.Color.Transparent;
+            this.BtnClear.Centered = true;
             this.BtnClear.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnClear.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnClear.Hover = true;
             this.BtnClear.Image = ((System.Drawing.Bitmap)(resources.GetObject("BtnClear.Image")));
             this.BtnClear.Location = new System.Drawing.Point(170, 0);
             this.BtnClear.Margin = new System.Windows.Forms.Padding(0);
@@ -190,8 +188,10 @@
             // BtnExport
             // 
             this.BtnExport.BackColor = System.Drawing.Color.Transparent;
+            this.BtnExport.Centered = true;
             this.BtnExport.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnExport.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnExport.Hover = true;
             this.BtnExport.Image = ((System.Drawing.Bitmap)(resources.GetObject("BtnExport.Image")));
             this.BtnExport.Location = new System.Drawing.Point(85, 0);
             this.BtnExport.Margin = new System.Windows.Forms.Padding(0);
@@ -204,8 +204,10 @@
             // BtnImport
             // 
             this.BtnImport.BackColor = System.Drawing.Color.Transparent;
+            this.BtnImport.Centered = true;
             this.BtnImport.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnImport.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnImport.Hover = true;
             this.BtnImport.Image = ((System.Drawing.Bitmap)(resources.GetObject("BtnImport.Image")));
             this.BtnImport.Location = new System.Drawing.Point(0, 0);
             this.BtnImport.Margin = new System.Windows.Forms.Padding(0);
@@ -235,8 +237,10 @@
             // BtnReset
             // 
             this.BtnReset.BackColor = System.Drawing.Color.Transparent;
+            this.BtnReset.Centered = true;
             this.BtnReset.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnReset.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnReset.Hover = true;
             this.BtnReset.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_lightbulb;
             this.BtnReset.Location = new System.Drawing.Point(170, 0);
             this.BtnReset.Margin = new System.Windows.Forms.Padding(0);
@@ -249,8 +253,10 @@
             // BtnDelete
             // 
             this.BtnDelete.BackColor = System.Drawing.Color.Transparent;
+            this.BtnDelete.Centered = true;
             this.BtnDelete.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnDelete.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnDelete.Hover = true;
             this.BtnDelete.Image = ((System.Drawing.Bitmap)(resources.GetObject("BtnDelete.Image")));
             this.BtnDelete.Location = new System.Drawing.Point(85, 0);
             this.BtnDelete.Margin = new System.Windows.Forms.Padding(0);
@@ -263,8 +269,10 @@
             // BtnAdd
             // 
             this.BtnAdd.BackColor = System.Drawing.Color.Transparent;
+            this.BtnAdd.Centered = true;
             this.BtnAdd.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnAdd.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnAdd.Hover = true;
             this.BtnAdd.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_expand;
             this.BtnAdd.Location = new System.Drawing.Point(0, 0);
             this.BtnAdd.Margin = new System.Windows.Forms.Padding(0);
@@ -336,25 +344,26 @@
             this.LightGroup.ContentArea.Controls.Add(this.AmbientLightPanel);
             this.LightGroup.ContentArea.Controls.Add(this.VertexLightPanel);
             this.LightGroup.ContentArea.Controls.Add(this.FragmentLightPanel);
-            this.LightGroup.ContentArea.Controls.Add(this.LightUsePanel);
             this.LightGroup.ContentArea.Location = new System.Drawing.Point(1, 16);
             this.LightGroup.ContentArea.Name = "ContentArea";
-            this.LightGroup.ContentArea.Size = new System.Drawing.Size(254, 1941);
+            this.LightGroup.ContentArea.Size = new System.Drawing.Size(254, 1952);
             this.LightGroup.ContentArea.TabIndex = 0;
             this.LightGroup.ContentColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
             this.LightGroup.Dock = System.Windows.Forms.DockStyle.Top;
             this.LightGroup.Enabled = false;
-            this.LightGroup.ExpandedHeight = 1941;
+            this.LightGroup.ExpandedHeight = 1952;
             this.LightGroup.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LightGroup.Location = new System.Drawing.Point(0, 341);
             this.LightGroup.Name = "LightGroup";
-            this.LightGroup.Size = new System.Drawing.Size(256, 1958);
+            this.LightGroup.Size = new System.Drawing.Size(256, 1969);
             this.LightGroup.TabIndex = 26;
             this.LightGroup.Title = "Light";
             // 
             // HemisphereLightPanel
             // 
             this.HemisphereLightPanel.AutoSize = true;
+            this.HemisphereLightPanel.Controls.Add(this.LerpFactor);
+            this.HemisphereLightPanel.Controls.Add(this.LblLerpFactor);
             this.HemisphereLightPanel.Controls.Add(this.SkyDirZ);
             this.HemisphereLightPanel.Controls.Add(this.SkyDirY);
             this.HemisphereLightPanel.Controls.Add(this.SkyDirX);
@@ -365,11 +374,37 @@
             this.HemisphereLightPanel.Controls.Add(this.LblSkyColor);
             this.HemisphereLightPanel.Controls.Add(this.HLightEnabled);
             this.HemisphereLightPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.HemisphereLightPanel.Location = new System.Drawing.Point(0, 1644);
+            this.HemisphereLightPanel.Location = new System.Drawing.Point(0, 1620);
             this.HemisphereLightPanel.Name = "HemisphereLightPanel";
-            this.HemisphereLightPanel.Size = new System.Drawing.Size(254, 297);
+            this.HemisphereLightPanel.Size = new System.Drawing.Size(254, 332);
             this.HemisphereLightPanel.TabIndex = 37;
             this.HemisphereLightPanel.Visible = false;
+            // 
+            // LerpFactor
+            // 
+            this.LerpFactor.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
+            this.LerpFactor.DecimalPlaces = ((uint)(6u));
+            this.LerpFactor.Dock = System.Windows.Forms.DockStyle.Top;
+            this.LerpFactor.Location = new System.Drawing.Point(0, 310);
+            this.LerpFactor.Margin = new System.Windows.Forms.Padding(0);
+            this.LerpFactor.MaximumValue = 1F;
+            this.LerpFactor.MinimumValue = 0F;
+            this.LerpFactor.Name = "LerpFactor";
+            this.LerpFactor.Size = new System.Drawing.Size(254, 22);
+            this.LerpFactor.TabIndex = 74;
+            this.LerpFactor.Value = 0F;
+            this.LerpFactor.ValueChanged += new System.EventHandler(this.LerpFactor_ValueChanged);
+            // 
+            // LblLerpFactor
+            // 
+            this.LblLerpFactor.AutomaticSize = false;
+            this.LblLerpFactor.Centered = false;
+            this.LblLerpFactor.Dock = System.Windows.Forms.DockStyle.Top;
+            this.LblLerpFactor.Location = new System.Drawing.Point(0, 297);
+            this.LblLerpFactor.Name = "LblLerpFactor";
+            this.LblLerpFactor.Size = new System.Drawing.Size(254, 13);
+            this.LblLerpFactor.TabIndex = 73;
+            this.LblLerpFactor.Text = "Lerp factor:";
             // 
             // SkyDirZ
             // 
@@ -494,7 +529,7 @@
             this.AmbientLightPanel.Controls.Add(this.LblAAmbientColor);
             this.AmbientLightPanel.Controls.Add(this.ALightEnabled);
             this.AmbientLightPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.AmbientLightPanel.Location = new System.Drawing.Point(0, 1527);
+            this.AmbientLightPanel.Location = new System.Drawing.Point(0, 1503);
             this.AmbientLightPanel.Name = "AmbientLightPanel";
             this.AmbientLightPanel.Size = new System.Drawing.Size(254, 117);
             this.AmbientLightPanel.TabIndex = 36;
@@ -556,7 +591,7 @@
             this.VertexLightPanel.Controls.Add(this.LblVAmbientColor);
             this.VertexLightPanel.Controls.Add(this.VLightEnabled);
             this.VertexLightPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.VertexLightPanel.Location = new System.Drawing.Point(0, 902);
+            this.VertexLightPanel.Location = new System.Drawing.Point(0, 878);
             this.VertexLightPanel.Name = "VertexLightPanel";
             this.VertexLightPanel.Size = new System.Drawing.Size(254, 625);
             this.VertexLightPanel.TabIndex = 35;
@@ -1034,7 +1069,7 @@
             this.FragmentLightPanel.Controls.Add(this.LblFAmbientColor);
             this.FragmentLightPanel.Controls.Add(this.FLightEnabled);
             this.FragmentLightPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.FragmentLightPanel.Location = new System.Drawing.Point(0, 24);
+            this.FragmentLightPanel.Location = new System.Drawing.Point(0, 0);
             this.FragmentLightPanel.Name = "FragmentLightPanel";
             this.FragmentLightPanel.Size = new System.Drawing.Size(254, 878);
             this.FragmentLightPanel.TabIndex = 34;
@@ -1587,88 +1622,6 @@
             this.FLightEnabled.Text = "Light enabled";
             this.FLightEnabled.CheckedChanged += new System.EventHandler(this.FLightEnabled_CheckedChanged);
             // 
-            // LightUsePanel
-            // 
-            this.LightUsePanel.ColumnCount = 4;
-            this.LightUsePanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.LightUsePanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.LightUsePanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.LightUsePanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.LightUsePanel.Controls.Add(this.RadioVertex, 0, 0);
-            this.LightUsePanel.Controls.Add(this.RadioFragment, 0, 0);
-            this.LightUsePanel.Controls.Add(this.RadioHemisphere, 0, 0);
-            this.LightUsePanel.Controls.Add(this.RadioAmbient, 0, 0);
-            this.LightUsePanel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.LightUsePanel.Location = new System.Drawing.Point(0, 0);
-            this.LightUsePanel.Name = "LightUsePanel";
-            this.LightUsePanel.RowCount = 1;
-            this.LightUsePanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.LightUsePanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 24F));
-            this.LightUsePanel.Size = new System.Drawing.Size(254, 24);
-            this.LightUsePanel.TabIndex = 25;
-            // 
-            // RadioVertex
-            // 
-            this.RadioVertex.AutoSize = true;
-            this.RadioVertex.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
-            this.RadioVertex.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.RadioVertex.ForeColor = System.Drawing.Color.White;
-            this.RadioVertex.Location = new System.Drawing.Point(127, 1);
-            this.RadioVertex.Margin = new System.Windows.Forms.Padding(1);
-            this.RadioVertex.Name = "RadioVertex";
-            this.RadioVertex.Size = new System.Drawing.Size(61, 22);
-            this.RadioVertex.TabIndex = 7;
-            this.RadioVertex.Text = "Vertex";
-            this.RadioVertex.UseVisualStyleBackColor = false;
-            this.RadioVertex.CheckedChanged += new System.EventHandler(this.RadioVertex_CheckedChanged);
-            // 
-            // RadioFragment
-            // 
-            this.RadioFragment.AutoSize = true;
-            this.RadioFragment.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
-            this.RadioFragment.Checked = true;
-            this.RadioFragment.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.RadioFragment.ForeColor = System.Drawing.Color.White;
-            this.RadioFragment.Location = new System.Drawing.Point(190, 1);
-            this.RadioFragment.Margin = new System.Windows.Forms.Padding(1);
-            this.RadioFragment.Name = "RadioFragment";
-            this.RadioFragment.Size = new System.Drawing.Size(63, 22);
-            this.RadioFragment.TabIndex = 6;
-            this.RadioFragment.TabStop = true;
-            this.RadioFragment.Text = "Fragment";
-            this.RadioFragment.UseVisualStyleBackColor = false;
-            this.RadioFragment.CheckedChanged += new System.EventHandler(this.RadioFragment_CheckedChanged);
-            // 
-            // RadioHemisphere
-            // 
-            this.RadioHemisphere.AutoSize = true;
-            this.RadioHemisphere.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
-            this.RadioHemisphere.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.RadioHemisphere.ForeColor = System.Drawing.Color.White;
-            this.RadioHemisphere.Location = new System.Drawing.Point(1, 1);
-            this.RadioHemisphere.Margin = new System.Windows.Forms.Padding(1);
-            this.RadioHemisphere.Name = "RadioHemisphere";
-            this.RadioHemisphere.Size = new System.Drawing.Size(61, 22);
-            this.RadioHemisphere.TabIndex = 5;
-            this.RadioHemisphere.Text = "Hemisphere";
-            this.RadioHemisphere.UseVisualStyleBackColor = false;
-            this.RadioHemisphere.CheckedChanged += new System.EventHandler(this.RadioHemisphere_CheckedChanged);
-            // 
-            // RadioAmbient
-            // 
-            this.RadioAmbient.AutoSize = true;
-            this.RadioAmbient.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
-            this.RadioAmbient.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.RadioAmbient.ForeColor = System.Drawing.Color.White;
-            this.RadioAmbient.Location = new System.Drawing.Point(64, 1);
-            this.RadioAmbient.Margin = new System.Windows.Forms.Padding(1);
-            this.RadioAmbient.Name = "RadioAmbient";
-            this.RadioAmbient.Size = new System.Drawing.Size(61, 22);
-            this.RadioAmbient.TabIndex = 4;
-            this.RadioAmbient.Text = "Ambient";
-            this.RadioAmbient.UseVisualStyleBackColor = false;
-            this.RadioAmbient.CheckedChanged += new System.EventHandler(this.RadioAmbient_CheckedChanged);
-            // 
             // Content
             // 
             this.Content.BackColor = System.Drawing.Color.Transparent;
@@ -1683,12 +1636,12 @@
             this.Content.ContentArea.Controls.Add(this.TopControls);
             this.Content.ContentArea.Location = new System.Drawing.Point(0, 0);
             this.Content.ContentArea.Name = "ContentArea";
-            this.Content.ContentArea.Size = new System.Drawing.Size(256, 2299);
+            this.Content.ContentArea.Size = new System.Drawing.Size(256, 2310);
             this.Content.ContentArea.TabIndex = 2;
             this.Content.Dock = System.Windows.Forms.DockStyle.Fill;
             this.Content.Location = new System.Drawing.Point(0, 16);
             this.Content.Name = "Content";
-            this.Content.Size = new System.Drawing.Size(256, 2299);
+            this.Content.Size = new System.Drawing.Size(256, 2310);
             this.Content.TabIndex = 27;
             // 
             // OLightWindow
@@ -1697,7 +1650,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.Content);
             this.Name = "OLightWindow";
-            this.Size = new System.Drawing.Size(256, 2315);
+            this.Size = new System.Drawing.Size(256, 2326);
             this.Controls.SetChildIndex(this.Content, 0);
             this.TopControls.ResumeLayout(false);
             this.TopControlsExtended.ResumeLayout(false);
@@ -1728,8 +1681,6 @@
             this.FAngularAttGroup.PerformLayout();
             this.FLightTypePanel.ResumeLayout(false);
             this.FLightTypePanel.PerformLayout();
-            this.LightUsePanel.ResumeLayout(false);
-            this.LightUsePanel.PerformLayout();
             this.Content.ContentArea.ResumeLayout(false);
             this.Content.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -1750,11 +1701,6 @@
         private OGroupBox NameGroup;
         private OTextBox TxtLightName;
         private OGroupBox LightGroup;
-        private System.Windows.Forms.TableLayoutPanel LightUsePanel;
-        private ORadioButton RadioVertex;
-        private ORadioButton RadioFragment;
-        private ORadioButton RadioHemisphere;
-        private ORadioButton RadioAmbient;
         private OScrollablePanel Content;
         private System.Windows.Forms.Panel FragmentLightPanel;
         private OLabel LblFDirection;
@@ -1839,6 +1785,8 @@
         private OLabel LblSkyColor;
         private OCheckBox HLightEnabled;
         private OComboBox InputScale;
+        private OFloatTextBox LerpFactor;
+        private OLabel LblLerpFactor;
 
     }
 }
