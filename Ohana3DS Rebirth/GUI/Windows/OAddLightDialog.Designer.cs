@@ -56,7 +56,7 @@
             // 
             // LblTitle
             // 
-            this.LblTitle.Size = new System.Drawing.Size(100, 19);
+            this.LblTitle.Size = new System.Drawing.Size(62, 19);
             this.LblTitle.Text = "Add light";
             // 
             // LblLightName

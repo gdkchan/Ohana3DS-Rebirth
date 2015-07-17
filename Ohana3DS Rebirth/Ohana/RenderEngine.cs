@@ -223,11 +223,13 @@ namespace Ohana3DS_Rebirth.Ohana
 
         /// <summary>
         ///     Forces all textures to be updated.
-        ///     Call this if you add new textures to reflect changes.
+        ///     Call this if you add or remove textures to reflect changes.
         /// </summary>
         public void updateTextures()
         {
+            foreach (CustomTexture texture in textures) texture.texture.Dispose();
             textures.Clear();
+
             foreach (RenderBase.OTexture texture in model.texture)
             {
                 CustomTexture tex;
@@ -238,6 +240,17 @@ namespace Ohana3DS_Rebirth.Ohana
                 textures.Add(tex);
                 bmp.Dispose();
             }
+        }
+
+        /// <summary>
+        ///     Removes a texture at the given index.
+        /// </summary>
+        /// <param name="index">The index of the texture</param>
+        public void removeTexture(int index)
+        {
+            if (index < 0 || index > textures.Count - 1) return;
+            textures[index].texture.Dispose();
+            textures.RemoveAt(index);
         }
 
         public void render()

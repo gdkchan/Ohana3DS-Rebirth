@@ -21,7 +21,7 @@ namespace Ohana3DS_Rebirth.GUI
         public class listItem
         {
             public Bitmap thumbnail;
-            public String text;
+            public string text;
 
             public listItem(string _text, Bitmap _thumbnail = null)
             {
@@ -42,7 +42,7 @@ namespace Ohana3DS_Rebirth.GUI
         public class columnHeader
         {
             public int width;
-            public String text;
+            public string text;
 
             public columnHeader(int _width, string _text)
             {
@@ -203,6 +203,7 @@ namespace Ohana3DS_Rebirth.GUI
         {
             if (index >= list.Count || index < 0) return;
             if (selectedIndex == list.Count - 1) selectedIndex--;
+            foreach (listItem subItem in list[index].columns) if (subItem.thumbnail != null) subItem.thumbnail.Dispose();
             list.RemoveAt(index);
             recalcScroll();
             updateScroll();
@@ -254,6 +255,11 @@ namespace Ohana3DS_Rebirth.GUI
         /// </summary>
         public void flush()
         {
+            for (int i = 0; i < list.Count; i++)
+            {
+                foreach (listItem subItem in list[i].columns) if (subItem.thumbnail != null) subItem.thumbnail.Dispose();
+            }
+
             list.Clear();
             columns.Clear();
             selectedIndex = -1;
@@ -354,19 +360,16 @@ namespace Ohana3DS_Rebirth.GUI
                         int textX = x;
                         if (subItem.thumbnail != null)
                         {
-                            float aspectRatio = subItem.thumbnail.Width / subItem.thumbnail.Height;
-                            int width = (int)(tileSize * aspectRatio);
-                            if (width > columnWidth)
-                            {
-                                int height = Math.Min(tileSize, subItem.thumbnail.Height);
-                                e.Graphics.DrawImage(subItem.thumbnail, new Rectangle(x, startY + ((tileSize / 2) - (height / 2)), columnWidth, height), new Rectangle((subItem.thumbnail.Width / 2) - (columnWidth / 2), 0, columnWidth, subItem.thumbnail.Height), GraphicsUnit.Pixel);
-                            }
+                            int height = Math.Min(tileSize, subItem.thumbnail.Height);
+                            int y = startY + ((tileSize / 2) - (height / 2));
+                            if (subItem.thumbnail.Width > columnWidth)
+                                e.Graphics.DrawImage(subItem.thumbnail, new Rectangle(x, y, columnWidth, height), new Rectangle((subItem.thumbnail.Width / 2) - (columnWidth / 2), 0, columnWidth, subItem.thumbnail.Height), GraphicsUnit.Pixel);
                             else
-                            {
-                                e.Graphics.DrawImage(subItem.thumbnail, new Rectangle(x + ((columnWidth / 2) - (width / 2)), startY, width, tileSize));
-                            }
-                            textX += width;
+                                e.Graphics.DrawImage(subItem.thumbnail, new Rectangle(x + ((columnWidth / 2) - (subItem.thumbnail.Width / 2)), y, subItem.thumbnail.Width, height));
+                            
+                            textX += Math.Min(columnWidth, subItem.thumbnail.Width);
                         }
+
                         int textHeight = (int)e.Graphics.MeasureString(subItem.text, Font).Height;
                         e.Graphics.DrawString(DrawingHelper.clampText(subItem.text, Font, columnWidth), Font, new SolidBrush(ForeColor), new Point(textX, startY + ((tileSize / 2) - (textHeight / 2))));
 
@@ -459,6 +462,7 @@ namespace Ohana3DS_Rebirth.GUI
                     ListScroll.Value = (positionY + tileSize - 1) - Height;
                 }
             }
+
             Refresh();
         }
 

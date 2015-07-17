@@ -51,6 +51,7 @@
             // LblTitle
             // 
             this.LblTitle.Centered = true;
+            this.LblTitle.Hover = true;
             this.LblTitle.Image = ((System.Drawing.Bitmap)(resources.GetObject("LblTitle.Image")));
             this.LblTitle.Size = new System.Drawing.Size(86, 19);
             this.LblTitle.Text = "Ohana3DS";

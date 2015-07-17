@@ -63,7 +63,7 @@ namespace Ohana3DS_Rebirth.GUI
         {
             if (TextureList.SelectedIndex == -1) return;
             renderer.model.texture.RemoveAt(TextureList.SelectedIndex);
-            renderer.updateTextures();
+            renderer.removeTexture(TextureList.SelectedIndex);
             TextureList.removeItem(TextureList.SelectedIndex);
         }
 
