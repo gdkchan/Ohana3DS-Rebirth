@@ -41,12 +41,18 @@ namespace Ohana3DS_Rebirth.GUI
         public OAddLightDialog()
         {
             InitializeComponent();
+
+            LstLightType.addItem("Fragment");
+            LstLightType.addItem("Vertex");
+            LstLightType.addItem("Ambient");
+            LstLightType.addItem("Hemisphere");
+            LstLightType.SelectedIndex = 0;
         }
 
         private void BtnOk_Click(object sender, EventArgs e)
         {
             RenderBase.OLightUse lightUse;
-            switch (CmbLightType.SelectedIndex)
+            switch (LstLightType.SelectedIndex)
             {
                 case 0: lightUse = RenderBase.OLightUse.fragment; break;
                 case 1: lightUse = RenderBase.OLightUse.vertex; break;

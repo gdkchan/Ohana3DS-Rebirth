@@ -35,8 +35,16 @@ namespace Ohana3DS_Rebirth.Ohana
                 {
                     case fileType.model:
                         openDlg.Title = "Import Model";
-                        openDlg.Filter = "Binary CTR H3D|*.bch";
-                        if (openDlg.ShowDialog() == DialogResult.OK) return BCH.load(openDlg.FileName).model;
+                        openDlg.Filter = "Binary CTR H3D|*.bch|Source Model|*.smd";
+                        if (openDlg.ShowDialog() == DialogResult.OK)
+                        {
+                            switch (openDlg.FilterIndex)
+                            {
+                                case 1: return BCH.load(openDlg.FileName).model;
+                                case 2: return GenericFormats.SMD.import(openDlg.FileName).model;
+                                default: return null;
+                            }
+                        }
                         break;
                     case fileType.texture:
                         openDlg.Title = "Import Texture";
@@ -50,8 +58,16 @@ namespace Ohana3DS_Rebirth.Ohana
                         break;
                     case fileType.skeletalAnimation:
                         openDlg.Title = "Import Skeletal Animation";
-                        openDlg.Filter = "Binary CTR H3D|*.bch";
-                        if (openDlg.ShowDialog() == DialogResult.OK) return BCH.load(openDlg.FileName).skeletalAnimation;
+                        openDlg.Filter = "Binary CTR H3D|*.bch|Source Model|*.smd";
+                        if (openDlg.ShowDialog() == DialogResult.OK)
+                        {
+                            switch (openDlg.FilterIndex)
+                            {
+                                case 1: return BCH.load(openDlg.FileName).skeletalAnimation;
+                                case 2: return GenericFormats.SMD.import(openDlg.FileName).skeletalAnimation;
+                                default: return null;
+                            }
+                        }
                         break;
                     case fileType.materialAnimation:
                         openDlg.Title = "Import Material Animation";

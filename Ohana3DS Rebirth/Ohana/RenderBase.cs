@@ -464,10 +464,10 @@ namespace Ohana3DS_Rebirth.Ohana
             /// <summary>
             ///     Adds a new Vertex to the Object.
             /// </summary>
-            /// <param name="Vertex">The Vertex</param>
-            public void addVertex(OVertex Vertex)
+            /// <param name="vertex">The Vertex</param>
+            public void addVertex(OVertex vertex)
             {
-                obj.Add(Vertex);
+                obj.Add(vertex);
             }
         }
 

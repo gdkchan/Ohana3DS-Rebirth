@@ -31,8 +31,8 @@ namespace Ohana3DS_Rebirth.GUI
             pevent.Graphics.Clear(BackColor);
             if (Checked) pevent.Graphics.FillRectangle(new SolidBrush(ColorManager.highlight), new Rectangle(0, 0, Width, Height));
 
-            string text = DrawingHelper.clampText(Text, Font, Width);
-            SizeF textSize = pevent.Graphics.MeasureString(text, Font);
+            string text = DrawingHelper.clampText(pevent.Graphics, Text, Font, Width);
+            SizeF textSize = DrawingHelper.measureText(pevent.Graphics, text, Font);
             int width = (int)textSize.Width;
             int x = Math.Max(0, (Width / 2) - (width / 2));
             int yText = (Height / 2) - (int)(textSize.Height / 2);

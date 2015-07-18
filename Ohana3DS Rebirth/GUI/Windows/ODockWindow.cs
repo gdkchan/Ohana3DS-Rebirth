@@ -51,7 +51,10 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void updateTitle()
         {
-            LblTitle.Text = DrawingHelper.clampText(title, LblTitle.Font, Width - 32);
+            using (Graphics g = Graphics.FromHwnd(Handle))
+            {
+                LblTitle.Text = DrawingHelper.clampText(g, title, LblTitle.Font, Width - 32);
+            }
         }
 
         public string Title

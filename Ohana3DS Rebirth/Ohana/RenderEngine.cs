@@ -361,6 +361,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 #region "Grid Rendering"
                 device.RenderState.AlphaTestEnable = false;
                 device.RenderState.ZBufferEnable = true;
+                device.RenderState.ZBufferFunction = Compare.LessEqual;
                 device.RenderState.ZBufferWriteEnable = true;
                 device.RenderState.AlphaBlendEnable = false;
                 device.RenderState.StencilEnable = false;
@@ -935,14 +936,13 @@ namespace Ohana3DS_Rebirth.Ohana
         }
 
         /// <summary>
-        ///     Wrap a Rotation Angle between 0 and 2*PI.
+        ///     Wrap a Rotation Angle between -PI and PI.
         /// </summary>
         /// <param name="value">The angle in PI radians</param>
         /// <returns></returns>
         private float wrap(float value)
         {
-            if (value < 0.0f) return (float)((Math.PI * 2) + value);
-            return (float)(value % (Math.PI * 2));
+            return (float)(value - 2 * Math.PI * Math.Floor(value / (2 * Math.PI) + 0.5f));
         }
 
         /// <summary>

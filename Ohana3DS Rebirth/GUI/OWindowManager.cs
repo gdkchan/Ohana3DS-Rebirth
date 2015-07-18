@@ -65,6 +65,10 @@ namespace Ohana3DS_Rebirth.GUI
                 window.dispose();
             }
             windowList.Clear();
+            smoothScroll.Enabled = false;
+            scrollX = 0;
+            maxScrollX = 0;
+            scrollGoal = 0;
             Refresh();
         }
 
@@ -108,7 +112,7 @@ namespace Ohana3DS_Rebirth.GUI
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            int left = scrollX * -1;
+            int left = -scrollX;
             foreach (ODockWindow window in windowList)
             {
                 Rectangle rect = new Rectangle(left, 4, windowWidth, Height - 8);
@@ -126,7 +130,7 @@ namespace Ohana3DS_Rebirth.GUI
                 }
 
                 Font font = new Font("Segoe UI", 10);
-                e.Graphics.DrawString(DrawingHelper.clampText(window.Title, font, rect.Width - 16), font, new SolidBrush(Color.White), new Point(rect.Left + 16, rect.Top));
+                e.Graphics.DrawString(DrawingHelper.clampText(e.Graphics, window.Title, font, rect.Width - 16), font, new SolidBrush(Color.White), new Point(rect.Left + 16, rect.Top));
                 font.Dispose();
 
                 Rectangle iconRect = new Rectangle(rect.X, rect.Y + (rect.Height / 2) - 8, 16, 16);
@@ -166,7 +170,7 @@ namespace Ohana3DS_Rebirth.GUI
                     return;
                 }
 
-                int left = scrollX * -1;
+                int left = -scrollX;
                 foreach (ODockWindow w in windowList)
                 {
                     Rectangle rect = new Rectangle(left, 4, windowWidth, Height - 8);

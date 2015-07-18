@@ -80,7 +80,7 @@ namespace Ohana3DS_Rebirth.GUI
             e.Graphics.FillRectangle(new SolidBrush(boxColor), checkRect);
             if (_checked) e.Graphics.DrawImage(Resources.icn_ticked, checkRect);
 
-            string text = DrawingHelper.clampText(Text, Font, Width - Resources.icn_ticked.Width);
+            string text = DrawingHelper.clampText(e.Graphics, Text, Font, Width - Resources.icn_ticked.Width);
             SizeF textSize = e.Graphics.MeasureString(text, Font);
             e.Graphics.DrawString(text, Font, new SolidBrush(Enabled ? ForeColor : Color.Silver), new Point(checkRect.Width, (Height / 2) - ((int)textSize.Height / 2)));
 
