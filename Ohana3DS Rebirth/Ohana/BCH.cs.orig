@@ -160,6 +160,10 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <returns></returns>
         public static RenderBase.OModelGroup load(MemoryStream data)
         {
+<<<<<<< Updated upstream
+=======
+            //File.WriteAllBytes("D:\\debug.bch", data.ToArray());
+>>>>>>> Stashed changes
             BinaryReader input = new BinaryReader(data);
             BinaryWriter writer = new BinaryWriter(data);
 
@@ -451,7 +455,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             case 5: light.lightType = RenderBase.OLightType.directional; break;
                             case 6: light.lightType = RenderBase.OLightType.point; break;
                             case 7: light.lightType = RenderBase.OLightType.spot; break;
-
+                            
                         }
                         break;
                     case 9:
@@ -1351,7 +1355,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         material.fragmentShader.lighting.distribution1Sampler.scale = sScale.d1;
                         material.fragmentShader.lighting.fresnelSampler.scale = sScale.fresnel;
                         data.Seek(position + (4 * 6), SeekOrigin.Begin); //Just to be sure ;)
-
+                        
                         RenderBase.OConstantColor[] constantList = new RenderBase.OConstantColor[6];
                         uint constantColor = input.ReadUInt32();
                         for (int i = 0; i < 6; i++) constantList[i] = (RenderBase.OConstantColor)((constantColor >> (i * 4)) & 0xf);
@@ -1532,7 +1536,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     //Vertices
                     data.Seek(objects[objIndex].vshAttributesBufferCommandsOffset, SeekOrigin.Begin);
                     PICACommandReader vshCommands = new PICACommandReader(data, objects[objIndex].vshAttributesBufferCommandsWordCount);
-
+                    
                     Stack<float> vshAttributesUniformReg6 = vshCommands.getVSHFloatUniformData(6);
                     Stack<float> vshAttributesUniformReg7 = vshCommands.getVSHFloatUniformData(7);
                     RenderBase.OVector4 positionOffset = new RenderBase.OVector4(vshAttributesUniformReg6.Pop(),
@@ -1547,7 +1551,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     float normalScale = vshAttributesUniformReg7.Pop();
                     float tangentScale = vshAttributesUniformReg7.Pop();
                     float colorScale = vshAttributesUniformReg7.Pop();
-
+                    
                     List<RenderBase.CustomVertex> vshAttributesBuffer = new List<RenderBase.CustomVertex>();
 
                     //Faces
@@ -1609,14 +1613,14 @@ namespace Ohana3DS_Rebirth.Ohana
                             long dataPosition = data.Position;
                             long vertexOffset = vshAttributesBufferOffset + (index * vshAttributesBufferStride);
                             data.Seek(vertexOffset, SeekOrigin.Begin);
-
+                            
                             RenderBase.OVertex vertex = new RenderBase.OVertex();
                             vertex.diffuseColor = 0xffffffff;
                             for (int attribute = 0; attribute < vshTotalAttributes; attribute++)
                             {
                                 PICACommand.attributeFormat format = vshAttributesBufferFormat[vshAttributesBufferPermutation[attribute]];
                                 RenderBase.OVector4 vector = getVector(input, format);
-
+                                
                                 switch (vshMainAttributesBufferPermutation[vshAttributesBufferPermutation[attribute]])
                                 {
                                     case PICACommand.vshAttribute.position:
@@ -2350,7 +2354,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     RenderBase.OVector3 maxVector = new RenderBase.OVector3();
 
                     RenderBase.OVertex[] oldVertex = new RenderBase.OVertex[2];
-
+                    
                     foreach (RenderBase.OVertex vertex in modelObject.obj)
                     {
                         bool repeatedVertex = false;

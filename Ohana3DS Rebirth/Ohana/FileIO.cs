@@ -97,6 +97,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         saveDlg.Title = "Export Model";
                         saveDlg.Filter = "Source Model|*.smd";
                         saveDlg.Filter += "|Collada Model|*.dae";
+                        saveDlg.Filter += "|CTR Model|*.cmdl";
                         if (saveDlg.ShowDialog() == DialogResult.OK)
                         {
                             switch (saveDlg.FilterIndex)
@@ -106,6 +107,9 @@ namespace Ohana3DS_Rebirth.Ohana
                                     break;
                                 case 2:
                                     GenericFormats.DAE.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0]);
+                                    break;
+                                case 3:
+                                    GenericFormats.CMDL.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0]);
                                     break;
                             }
                         }
