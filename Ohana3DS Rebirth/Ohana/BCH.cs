@@ -1384,7 +1384,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         material.fragmentShader.alphaTest = fshCommands.getAlphaTest();
                         material.fragmentOperation.stencil = fshCommands.getStencilTest();
                         material.fragmentOperation.depth = fshCommands.getDepthTest();
-                        material.rasterization = fshCommands.getRasterization();
+                        material.rasterization.cullMode = fshCommands.getCullMode();
 
                         //Coordinator
                         data.Seek(materialCoordinatorOffset, SeekOrigin.Begin);

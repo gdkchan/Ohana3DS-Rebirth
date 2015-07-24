@@ -62,7 +62,7 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
         public const ushort stencilTestConfig = 0x105;
         public const ushort stencilOperationConfig = 0x106;
         public const ushort depthTestConfig = 0x107;
-        public const ushort rasterizationConfig = 0x108;
+        public const ushort cullModeConfig = 0x108;
         public const ushort fragmentShaderLookUpTableConfig = 0x1c5;
         public const ushort fragmentShaderLookUpTableData = 0x1c8;
         public const ushort reflectanceSamplerInput = 0x1d1;

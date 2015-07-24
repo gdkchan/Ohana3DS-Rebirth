@@ -279,8 +279,20 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
         {
             RenderBase.OTextureCombiner output = new RenderBase.OTextureCombiner();
 
+            ushort baseCommand = 0;
+            switch (stage)
+            {
+                case 0: baseCommand = PICACommand.tevStage0Config0; break;
+                case 1: baseCommand = PICACommand.tevStage1Config0; break;
+                case 2: baseCommand = PICACommand.tevStage2Config0; break;
+                case 3: baseCommand = PICACommand.tevStage3Config0; break;
+                case 4: baseCommand = PICACommand.tevStage4Config0; break;
+                case 5: baseCommand = PICACommand.tevStage5Config0; break;
+                default: throw new Exception("PICACommandReader: Invalid TevStage number!");
+            }
+
             //Source
-            uint source = getParameter((ushort)(PICACommand.tevStage0Config0 + (stage * 8)));
+            uint source = getParameter(baseCommand);
 
             output.rgbSource[0] = (RenderBase.OCombineSource)(source & 0xf);
             output.rgbSource[1] = (RenderBase.OCombineSource)((source >> 4) & 0xf);
@@ -291,7 +303,7 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
             output.alphaSource[2] = (RenderBase.OCombineSource)((source >> 24) & 0xf);
 
             //Operand
-            uint operand = getParameter((ushort)(PICACommand.tevStage0Config1 + (stage * 8)));
+            uint operand = getParameter((ushort)(baseCommand + 1));
 
             output.rgbOperand[0] = (RenderBase.OCombineOperandRgb)(operand & 0xf);
             output.rgbOperand[1] = (RenderBase.OCombineOperandRgb)((operand >> 4) & 0xf);
@@ -302,16 +314,16 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
             output.alphaOperand[2] = (RenderBase.OCombineOperandAlpha)((operand >> 20) & 0xf);
 
             //Operator
-            uint combine = getParameter((ushort)(PICACommand.tevStage0Config2 + (stage * 8)));
+            uint combine = getParameter((ushort)(baseCommand + 2));
 
-            output.combineRgb = (RenderBase.OCombineOperator)(combine >> 16);
-            output.combineAlpha = (RenderBase.OCombineOperator)(combine & 0xffff);
+            output.combineRgb = (RenderBase.OCombineOperator)(combine & 0xffff);
+            output.combineAlpha = (RenderBase.OCombineOperator)(combine >> 16);
 
             //Scale
-            uint scale = getParameter((ushort)(PICACommand.tevStage0Config3 + (stage * 8)));
+            uint scale = getParameter((ushort)(baseCommand + 4));
 
-            output.rgbScale = (ushort)((scale >> 16) + 1);
-            output.alphaScale = (ushort)((scale & 0xffff) + 1);
+            output.rgbScale = (ushort)((scale & 0xffff) + 1);
+            output.alphaScale = (ushort)((scale >> 16) + 1);
 
             return output;
         }
@@ -419,14 +431,10 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
         ///     Gets the Culling mode.
         /// </summary>
         /// <returns></returns>
-        public RenderBase.ORasterization getRasterization()
+        public RenderBase.OCullMode getCullMode()
         {
-            RenderBase.ORasterization output = new RenderBase.ORasterization();
-
-            uint value = getParameter(PICACommand.rasterizationConfig);
-            output.cullMode = (RenderBase.OCullMode)(value & 0xf);
-
-            return output;
+            uint value = getParameter(PICACommand.cullModeConfig);
+            return (RenderBase.OCullMode)(value & 0xf);
         }
 
         /// <summary>

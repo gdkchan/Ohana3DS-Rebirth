@@ -244,11 +244,11 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
 
                     //Set the number of elements on the attribute
                     if (i == 3 || i > 6)
-                        attBufferFormat |= (uint)(3 << (k + 2)); stride += 4; //Vector 4
+                        { attBufferFormat |= (uint)(3 << (k + 2)); stride += 4; } //Vector 4
                     else if (i < 3)
-                        attBufferFormat |= (uint)(2 << (k + 2)); stride += 12; //Vector 3
+                        { attBufferFormat |= (uint)(2 << (k + 2)); stride += 12; } //Vector 3
                     else
-                        attBufferFormat |= (uint)(1 << (k + 2)); stride += 8; //Vector 2
+                        { attBufferFormat |= (uint)(1 << (k + 2)); stride += 8; } //Vector 2
 
                     totalAttributes++;
                 }
@@ -394,7 +394,7 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
             setCommand(PICACommand.stencilOperationConfig, stencilOperation);
 
             //Rasterization
-            setCommand(PICACommand.rasterizationConfig, (uint)rasterization.cullMode & 0xf);
+            setCommand(PICACommand.cullModeConfig, (uint)rasterization.cullMode & 0xf);
 
             align(0xf, 8);
             setCommand(PICACommand.blockEnd, 1);
