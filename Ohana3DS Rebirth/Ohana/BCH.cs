@@ -160,7 +160,6 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <returns></returns>
         public static RenderBase.OModelGroup load(MemoryStream data)
         {
-            File.WriteAllBytes("D:\\debug.bch", data.ToArray());
             BinaryReader input = new BinaryReader(data);
             BinaryWriter writer = new BinaryWriter(data);
 
