@@ -244,20 +244,11 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
 
                     //Set the number of elements on the attribute
                     if (i == 3 || i > 6)
-                    {
-                        attBufferFormat |= (uint)(3 << (k + 2)); //Vector 4
-                        stride += 4;
-                    }
+                        attBufferFormat |= (uint)(3 << (k + 2)); stride += 4; //Vector 4
                     else if (i < 3)
-                    {
-                        attBufferFormat |= (uint)(2 << (k + 2)); //Vector 3
-                        stride += 12;
-                    }
+                        attBufferFormat |= (uint)(2 << (k + 2)); stride += 12; //Vector 3
                     else
-                    {
-                        attBufferFormat |= (uint)(1 << (k + 2)); //Vector 2
-                        stride += 8;
-                    }
+                        attBufferFormat |= (uint)(1 << (k + 2)); stride += 8; //Vector 2
 
                     totalAttributes++;
                 }

@@ -50,7 +50,8 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
                 uint extraParameters = (header >> 20) & 0x7ff;
                 bool consecutiveWriting = (header & 0x80000000) > 0;
 
-                if (id == PICACommand.vertexShaderFloatUniformConfig) currentRegister = parameter & 0xff;
+                if (id == PICACommand.blockEnd) break;
+                else if (id == PICACommand.vertexShaderFloatUniformConfig) currentRegister = parameter & 0xff;
                 commands[id].Add(new param((getParameter(id) & (~mask & 0xf)) | (parameter & (0xfffffff0 | mask)), currentRegister));
                 for (int i = 0; i < extraParameters; i++)
                 {
