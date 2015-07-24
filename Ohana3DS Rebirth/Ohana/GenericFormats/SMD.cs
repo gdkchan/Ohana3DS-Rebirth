@@ -423,11 +423,6 @@ namespace Ohana3DS_Rebirth.Ohana.GenericFormats
             material.fragmentOperation.depth.isTestEnabled = true;
             material.fragmentOperation.depth.testFunction = RenderBase.OTestFunction.lessOrEqual;
             material.fragmentOperation.depth.isMaskEnabled = true;
-            for (int i = 0; i < 3; i++)
-            {
-                material.textureMapper.Add(new RenderBase.OTextureMapper());
-                material.textureCoordinator.Add(new RenderBase.OTextureCoordinator());
-            }
             return material;
         }
 

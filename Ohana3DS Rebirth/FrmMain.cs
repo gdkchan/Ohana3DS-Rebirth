@@ -14,6 +14,10 @@ namespace Ohana3DS_Rebirth
             InitializeComponent();
             WindowManager.initialize(DockContainer);
             MainMenu.Renderer = new GUI.OMenuStrip();
+
+            //RenderBase.OModelGroup testModel = Ohana.GenericFormats.SMD.import("D:\\miku.smd");
+            //RenderBase.OModelGroup testModel = BCH.load("D:\\h3d\\girl.bch");
+            //File.WriteAllBytes("D:\\test.bch", BCH.save(testModel));
         }
 
         private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)

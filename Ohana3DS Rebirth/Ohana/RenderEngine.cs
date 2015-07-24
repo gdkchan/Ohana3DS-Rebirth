@@ -10,8 +10,10 @@ using Microsoft.DirectX.Direct3D;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
-    public class RenderEngine
+    public class RenderEngine : IDisposable
     {
+        private bool disposed;
+
         private Effect fragmentShader;
         private PresentParameters pParams;
         private Device device;
@@ -197,11 +199,16 @@ namespace Ohana3DS_Rebirth.Ohana
             device.Reset(pParams);
         }
 
-        /// <summary>
-        ///     Releases all resources used by DirectX.
-        /// </summary>
-        public void dispose()
+        public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed) return;
+
             keepRendering = false;
 
             foreach (CustomTexture texture in textures) texture.texture.Dispose();
@@ -219,6 +226,8 @@ namespace Ohana3DS_Rebirth.Ohana
             model.materialAnimation.list.Clear();
             model.cameraAnimation.list.Clear();
             model = null;
+
+            disposed = true;
         }
 
         /// <summary>
@@ -826,50 +835,53 @@ namespace Ohana3DS_Rebirth.Ohana
                             VertexBuffer vertexBuffer;
 
                             if (!useLegacyTexturing) fragmentShader.BeginPass(0);
-                            if (ctrlSA.animate)
+                            if (obj.renderBuffer.Length > 0)
                             {
-                                RenderBase.CustomVertex[] buffer = new RenderBase.CustomVertex[obj.renderBuffer.Length];
-
-                                for (int vertex = 0; vertex < obj.renderBuffer.Length; vertex++)
+                                if (ctrlSA.animate)
                                 {
-                                    buffer[vertex] = obj.renderBuffer[vertex];
-                                    RenderBase.OVertex input = obj.obj[vertex];
-                                    Vector3 position = new Vector3(input.position.x, input.position.y, input.position.z);
-                                    Vector4 p = new Vector4();
+                                    RenderBase.CustomVertex[] buffer = new RenderBase.CustomVertex[obj.renderBuffer.Length];
 
-                                    int weightIndex = 0;
-                                    float weightSum = 0;
-                                    foreach (int boneIndex in input.node)
+                                    for (int vertex = 0; vertex < obj.renderBuffer.Length; vertex++)
                                     {
-                                        float weight = 1;
-                                        if (weightIndex < input.weight.Count) weight = input.weight[weightIndex++];
-                                        weightSum += weight;
-                                        p += Vector3.Transform(position, animationSkeletonTransform[boneIndex]) * weight;
-                                    }
-                                    if (weightSum == 0 && input.node.Count > 0) p = Vector3.Transform(position, animationSkeletonTransform[input.node[0]]);
-                                    else if (weightSum < 1) p += (new Vector4(position.X, position.Y, position.Z, 0) * (1 - weightSum));
+                                        buffer[vertex] = obj.renderBuffer[vertex];
+                                        RenderBase.OVertex input = obj.obj[vertex];
+                                        Vector3 position = new Vector3(input.position.x, input.position.y, input.position.z);
+                                        Vector4 p = new Vector4();
 
-                                    buffer[vertex].x = p.X;
-                                    buffer[vertex].y = p.Y;
-                                    buffer[vertex].z = p.Z;
+                                        int weightIndex = 0;
+                                        float weightSum = 0;
+                                        foreach (int boneIndex in input.node)
+                                        {
+                                            float weight = 1;
+                                            if (weightIndex < input.weight.Count) weight = input.weight[weightIndex++];
+                                            weightSum += weight;
+                                            p += Vector3.Transform(position, animationSkeletonTransform[boneIndex]) * weight;
+                                        }
+                                        if (weightSum == 0 && input.node.Count > 0) p = Vector3.Transform(position, animationSkeletonTransform[input.node[0]]);
+                                        else if (weightSum < 1) p += (new Vector4(position.X, position.Y, position.Z, 0) * (1 - weightSum));
+
+                                        buffer[vertex].x = p.X;
+                                        buffer[vertex].y = p.Y;
+                                        buffer[vertex].z = p.Z;
+                                    }
+
+                                    vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), buffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
+                                    vertexBuffer.SetData(buffer, 0, LockFlags.None);
+                                    device.SetStreamSource(0, vertexBuffer, 0);
+
+                                    device.DrawPrimitives(PrimitiveType.TriangleList, 0, buffer.Length / 3);
+                                }
+                                else
+                                {
+                                    vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), obj.renderBuffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
+                                    vertexBuffer.SetData(obj.renderBuffer, 0, LockFlags.None);
+                                    device.SetStreamSource(0, vertexBuffer, 0);
+
+                                    device.DrawPrimitives(PrimitiveType.TriangleList, 0, obj.renderBuffer.Length / 3);
                                 }
 
-                                vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), buffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
-                                vertexBuffer.SetData(buffer, 0, LockFlags.None);
-                                device.SetStreamSource(0, vertexBuffer, 0);
-
-                                device.DrawPrimitives(PrimitiveType.TriangleList, 0, buffer.Length / 3);
+                                vertexBuffer.Dispose();
                             }
-                            else
-                            {
-                                vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), obj.renderBuffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
-                                vertexBuffer.SetData(obj.renderBuffer, 0, LockFlags.None);
-                                device.SetStreamSource(0, vertexBuffer, 0);
-
-                                device.DrawPrimitives(PrimitiveType.TriangleList, 0, obj.renderBuffer.Length / 3);
-                            }
-
-                            vertexBuffer.Dispose();
                             if (!useLegacyTexturing) fragmentShader.EndPass();
                             #endregion
 

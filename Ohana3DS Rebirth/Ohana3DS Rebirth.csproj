@@ -260,6 +260,9 @@
     <Compile Include="Ohana\GenericFormats\DAE.cs" />
     <Compile Include="Ohana\GenericFormats\SMD.cs" />
     <Compile Include="Ohana\IOUtils.cs" />
+    <Compile Include="Ohana\PICA200\PICACommand.cs" />
+    <Compile Include="Ohana\PICA200\PICACommandReader.cs" />
+    <Compile Include="Ohana\PICA200\PICACommandWriter.cs" />
     <Compile Include="Ohana\RenderBase.cs" />
     <Compile Include="Ohana\RenderEngine.cs" />
     <Compile Include="Ohana\TextureCodec.cs" />

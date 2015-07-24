@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
@@ -37,6 +38,29 @@ namespace Ohana3DS_Rebirth.Ohana
             /// </summary>
             public OVector2()
             {
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (obj == null) return false;
+                return this == (OVector2)obj;
+            }
+
+            public override int GetHashCode()
+            {
+                return x.GetHashCode() ^
+                    y.GetHashCode();
+            }
+
+            public static bool operator ==(OVector2 a, OVector2 b)
+            {
+                return a.x == b.x &&
+                    a.y == b.y;
+            }
+
+            public static bool operator !=(OVector2 a, OVector2 b)
+            {
+                return !(a == b);
             }
 
             public override string ToString()
@@ -97,6 +121,31 @@ namespace Ohana3DS_Rebirth.Ohana
                 return output;
             }
 
+            public override bool Equals(object obj)
+            {
+                if (obj == null) return false;
+                return this == (OVector3)obj;
+            }
+
+            public override int GetHashCode()
+            {
+                return x.GetHashCode() ^
+                    y.GetHashCode() ^
+                    z.GetHashCode();
+            }
+
+            public static bool operator ==(OVector3 a, OVector3 b)
+            {
+                return a.x == b.x &&
+                    a.y == b.y &&
+                    a.z == b.z;
+            }
+
+            public static bool operator !=(OVector3 a, OVector3 b)
+            {
+                return !(a == b);
+            }
+
             public override string ToString()
             {
                 return String.Format("X:{0}; Y:{1}; Z:{2}", x, y, z);
@@ -144,13 +193,40 @@ namespace Ohana3DS_Rebirth.Ohana
             {
             }
 
+            public override bool Equals(object obj)
+            {
+                if (obj == null) return false;
+                return this == (OVector4)obj;
+            }
+
+            public override int GetHashCode()
+            {
+                return x.GetHashCode() ^
+                    y.GetHashCode() ^
+                    z.GetHashCode() ^
+                    w.GetHashCode();
+            }
+
+            public static bool operator ==(OVector4 a, OVector4 b)
+            {
+                return a.x == b.x &&
+                    a.y == b.y &&
+                    a.z == b.z &&
+                    a.w == b.w;
+            }
+
+            public static bool operator !=(OVector4 a, OVector4 b)
+            {
+                return !(a == b);
+            }
+
             public override string ToString()
             {
                 return String.Format("X:{0}; Y:{1}; Z:{2}; W:{3}", x, y, z, w);
             }
         }
 
-        public class OVertex
+        public class OVertex : IEquatable<OVertex>
         {
             public OVector3 position;
             public OVector3 normal;
@@ -176,6 +252,25 @@ namespace Ohana3DS_Rebirth.Ohana
                 texture0 = new OVector2();
                 texture1 = new OVector2();
                 texture2 = new OVector2();
+            }
+
+            /// <summary>
+            ///     Creates a new Vertex.
+            /// </summary>
+            public OVertex(OVertex vertex)
+            {
+                node = new List<int>();
+                weight = new List<float>();
+
+                node.AddRange(vertex.node);
+                weight.AddRange(vertex.weight);
+
+                position = new OVector3(vertex.position);
+                normal = new OVector3(vertex.normal);
+                tangent = new OVector3(vertex.tangent);
+                texture0 = new OVector2(vertex.texture0);
+                texture1 = new OVector2(vertex.texture1);
+                texture2 = new OVector2(vertex.texture2);
             }
 
             /// <summary>
@@ -213,6 +308,24 @@ namespace Ohana3DS_Rebirth.Ohana
             public void addWeight(float _weight)
             {
                 weight.Add(_weight);
+            }
+
+            /// <summary>
+            ///     Checks if two vertex are equal by comparing each element.
+            /// </summary>
+            /// <param name="vertex">Vertex to compare</param>
+            /// <returns></returns>
+            public bool Equals(OVertex vertex)
+            {
+                return position == vertex.position &&
+                       normal == vertex.normal &&
+                       tangent == vertex.tangent &&
+                       texture0 == vertex.texture0 &&
+                       texture1 == vertex.texture1 &&
+                       texture2 == vertex.texture2 &&
+                       node.SequenceEqual(vertex.node) &&
+                       weight.SequenceEqual(vertex.weight) &&
+                       diffuseColor == vertex.diffuseColor;
             }
         }
 
@@ -449,6 +562,10 @@ namespace Ohana3DS_Rebirth.Ohana
             public List<OVertex> obj;
             public CustomVertex[] renderBuffer;
             public bool hasNormal;
+            public bool hasTangent;
+            public bool hasColor;
+            public bool hasNode;
+            public bool hasWeight;
             public int texUVCount;
             public ushort materialId;
             public ushort renderPriority;
@@ -708,7 +825,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public OFragmentSamplerInput input;
             public OFragmentSamplerScale scale;
             public string samplerName;
-            public string materialLUTName; //LookUp Table
+            public string tableName; //LookUp Table
         }
 
         public struct OFragmentLighting
@@ -734,17 +851,17 @@ namespace Ohana3DS_Rebirth.Ohana
             public ushort rgbScale, alphaScale;
             public OConstantColor constantColor;
             public OCombineOperator combineRgb, combineAlpha;
-            public List<OCombineSource> rgbSource;
-            public List<OCombineOperandRgb> rgbOperand;
-            public List<OCombineSource> alphaSource;
-            public List<OCombineOperandAlpha> alphaOperand;
+            public OCombineSource[] rgbSource;
+            public OCombineOperandRgb[] rgbOperand;
+            public OCombineSource[] alphaSource;
+            public OCombineOperandAlpha[] alphaOperand;
 
             public OTextureCombiner()
             {
-                rgbSource = new List<OCombineSource>();
-                rgbOperand = new List<OCombineOperandRgb>();
-                alphaSource = new List<OCombineSource>();
-                alphaOperand = new List<OCombineOperandAlpha>();
+                rgbSource = new OCombineSource[3];
+                rgbOperand = new OCombineOperandRgb[3];
+                alphaSource = new OCombineSource[3];
+                alphaOperand = new OCombineOperandAlpha[3];
             }
         }
 
@@ -761,12 +878,13 @@ namespace Ohana3DS_Rebirth.Ohana
             public Color bufferColor;
             public OFragmentBump bump;
             public OFragmentLighting lighting;
-            public List<OTextureCombiner> textureCombiner;
+            public OTextureCombiner[] textureCombiner;
             public OAlphaTest alphaTest;
 
             public OFragmentShader()
             {
-                textureCombiner = new List<OTextureCombiner>();
+                textureCombiner = new OTextureCombiner[6];
+                for (int i = 0; i < 6; i++) textureCombiner[i] = new OTextureCombiner();
             }
         }
 
@@ -890,8 +1008,8 @@ namespace Ohana3DS_Rebirth.Ohana
 
             public OMaterialColor materialColor;
             public ORasterization rasterization;
-            public List<OTextureCoordinator> textureCoordinator;
-            public List<OTextureMapper> textureMapper;
+            public OTextureCoordinator[] textureCoordinator;
+            public OTextureMapper[] textureMapper;
             public OFragmentShader fragmentShader;
             public OFragmentOperation fragmentOperation;
 
@@ -905,8 +1023,8 @@ namespace Ohana3DS_Rebirth.Ohana
 
             public OMaterial()
             {
-                textureCoordinator = new List<OTextureCoordinator>();
-                textureMapper = new List<OTextureMapper>();
+                textureCoordinator = new OTextureCoordinator[3];
+                textureMapper = new OTextureMapper[3];
                 fragmentShader = new OFragmentShader();
             }
         }

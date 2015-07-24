@@ -78,7 +78,7 @@ namespace Ohana3DS_Rebirth.GUI
             }
         }
 
-        public virtual void dispose()
+        public virtual void flush()
         {
             //Dispose all unmanaged stuff here!
             hoverRed.Dispose();

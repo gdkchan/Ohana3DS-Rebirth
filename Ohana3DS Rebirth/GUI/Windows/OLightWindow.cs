@@ -139,14 +139,14 @@ namespace Ohana3DS_Rebirth.GUI
                     FDirY.Value = light.direction.y;
                     FDirZ.Value = light.direction.z;
 
-                    if (light.angleSampler.materialLUTName != null && light.angleSampler.samplerName != null)
-                        TxtAngularAttLUT.Text = light.angleSampler.materialLUTName + "/" + light.angleSampler.samplerName;
+                    if (light.angleSampler.tableName != null && light.angleSampler.samplerName != null)
+                        TxtAngularAttLUT.Text = light.angleSampler.tableName + "/" + light.angleSampler.samplerName;
                     
                     InputAngle.SelectedIndex = (int)light.angleSampler.input;
                     InputScale.SelectedIndex = (int)light.angleSampler.scale;
 
-                    if (light.distanceSampler.materialLUTName != null && light.distanceSampler.samplerName != null)
-                        TxtDistanceAttLUT.Text = light.distanceSampler.materialLUTName + "/" + light.distanceSampler.samplerName;
+                    if (light.distanceSampler.tableName != null && light.distanceSampler.samplerName != null)
+                        TxtDistanceAttLUT.Text = light.distanceSampler.tableName + "/" + light.distanceSampler.samplerName;
                     
                     FAttEnabled.Checked = light.isDistanceAttenuationEnabled;
                     AttStart.Value = light.attenuationStart;
@@ -300,7 +300,7 @@ namespace Ohana3DS_Rebirth.GUI
             if (light != null && TxtAngularAttLUT.Text.Contains("/"))
             {
                 string[] names = TxtAngularAttLUT.Text.Split(Convert.ToChar("/"));
-                light.angleSampler.materialLUTName = names[0];
+                light.angleSampler.tableName = names[0];
                 light.angleSampler.samplerName = names[1];
             }
         }
@@ -325,7 +325,7 @@ namespace Ohana3DS_Rebirth.GUI
             if (light != null && TxtDistanceAttLUT.Text.Contains("/"))
             {
                 string[] names = TxtDistanceAttLUT.Text.Split(Convert.ToChar("/"));
-                light.distanceSampler.materialLUTName = names[0];
+                light.distanceSampler.tableName = names[0];
                 light.distanceSampler.samplerName = names[1];
             }
         }
@@ -630,7 +630,7 @@ namespace Ohana3DS_Rebirth.GUI
                 lgt.isDistanceAttenuationEnabled = true;
                 lgt.attenuationStart = 5;
                 lgt.attenuationEnd = 2;
-                lgt.distanceSampler.materialLUTName = "TableNameHere";
+                lgt.distanceSampler.tableName = "TableNameHere";
                 lgt.distanceSampler.samplerName = "SamplerNameHere";
 
                 renderer.model.light.Add(lgt);

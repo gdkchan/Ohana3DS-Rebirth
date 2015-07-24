@@ -35,11 +35,11 @@ namespace Ohana3DS_Rebirth.GUI
             renderer.render();
         }
 
-        public override void dispose()
+        public override void flush()
         {
-            renderer.dispose();
+            renderer.Dispose();
 
-            base.dispose();
+            base.flush();
         }
 
         private void Screen_MouseMove(object sender, MouseEventArgs e)

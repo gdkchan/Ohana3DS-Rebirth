@@ -62,7 +62,7 @@ namespace Ohana3DS_Rebirth.GUI
             parentDock.flush();
             foreach (ODockWindow window in windowList)
             {
-                window.dispose();
+                window.flush();
             }
             windowList.Clear();
             smoothScroll.Enabled = false;
