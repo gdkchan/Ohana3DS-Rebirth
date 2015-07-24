@@ -322,6 +322,18 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
             {
                 RenderBase.OTextureCombiner combiner = fragmentShader.textureCombiner[stage];
 
+                ushort baseCommand = 0;
+                switch (stage)
+                {
+                    case 0: baseCommand = PICACommand.tevStage0Config0; break;
+                    case 1: baseCommand = PICACommand.tevStage1Config0; break;
+                    case 2: baseCommand = PICACommand.tevStage2Config0; break;
+                    case 3: baseCommand = PICACommand.tevStage3Config0; break;
+                    case 4: baseCommand = PICACommand.tevStage4Config0; break;
+                    case 5: baseCommand = PICACommand.tevStage5Config0; break;
+                    default: throw new Exception("PICACommandReader: Invalid TevStage number!");
+                }
+
                 uint source;
                 source = (uint)combiner.rgbSource[0] & 0xf; //Color
                 source |= ((uint)combiner.rgbSource[1] & 0xf) << 4;
@@ -340,10 +352,10 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
                 operand |= ((uint)combiner.alphaOperand[1] & 0xf) << 16;
                 operand |= ((uint)combiner.alphaOperand[2] & 0xf) << 20;
 
-                uint combine = (uint)(((ushort)combiner.combineRgb << 16) | (ushort)combiner.combineAlpha);
-                uint scale = (uint)((((int)combiner.rgbScale - 1) << 16) | ((int)combiner.alphaScale - 1));
+                uint combine = (uint)(((ushort)combiner.combineAlpha << 16) | (ushort)combiner.combineRgb);
+                uint scale = (uint)((((int)combiner.alphaScale - 1) << 16) | ((int)combiner.rgbScale - 1));
 
-                setCommandConsecutive((ushort)(PICACommand.tevStage0Config0 + (stage * 8)), new List<uint> {source, operand, combine, scale});
+                setCommandConsecutive(baseCommand, new List<uint> { source, operand, combine, 0, scale });
             }
 
             //Fragment Buffer color

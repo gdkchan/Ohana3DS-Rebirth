@@ -16,7 +16,7 @@ namespace Ohana3DS_Rebirth
             MainMenu.Renderer = new GUI.OMenuStrip();
 
             //RenderBase.OModelGroup testModel = Ohana.GenericFormats.SMD.import("D:\\miku.smd");
-            //RenderBase.OModelGroup testModel = BCH.load("D:\\h3d\\girl.bch");
+            //RenderBase.OModelGroup testModel = BCH.load("D:\\h3d\\cube.bch");
             //File.WriteAllBytes("D:\\test.bch", BCH.save(testModel));
         }
 
