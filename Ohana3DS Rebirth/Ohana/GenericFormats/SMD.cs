@@ -334,6 +334,8 @@ namespace Ohana3DS_Rebirth.Ohana.GenericFormats
                         int materialId = 0;
                         string oldTexture = null;
 
+                        obj.hasNormal = true;
+
                         int count = 0;
                         while (parameters[0] != "end")
                         {
@@ -384,6 +386,9 @@ namespace Ohana3DS_Rebirth.Ohana.GenericFormats
 
                                         vertex.addNode(joint);
                                         vertex.addWeight(weight);
+
+                                        obj.hasNode = true;
+                                        obj.hasWeight = true;
                                     }
 
                                     vertex.position = new RenderBase.OVector3(x, y, z);
