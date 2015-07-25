@@ -1735,6 +1735,8 @@ namespace Ohana3DS_Rebirth.Ohana
                                 strStream.Close();
                                 break;
                         }
+
+                        model.addUserData(metaData);
                     }
                 }
 

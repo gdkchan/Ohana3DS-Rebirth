@@ -1063,7 +1063,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public List<OModelObject> modelObject;
             public List<OBone> skeleton;
             public List<OMaterial> material;
-            public List<OMetaData> metaData;
+            public List<OMetaData> userData;
             public OMatrix transform;
             public float height;
 
@@ -1072,6 +1072,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 modelObject = new List<OModelObject>();
                 skeleton = new List<OBone>();
                 material = new List<OMaterial>();
+                userData = new List<OMetaData>();
             }
 
             /// <summary>
@@ -1099,6 +1100,15 @@ namespace Ohana3DS_Rebirth.Ohana
             public void addMaterial(OMaterial mat)
             {
                 material.Add(mat);
+            }
+
+            /// <summary>
+            ///     Adds a User Data to the model.
+            /// </summary>
+            /// <param name="usr">The User Data</param>
+            public void addUserData(OMetaData usr)
+            {
+                userData.Add(usr);
             }
         }
 
