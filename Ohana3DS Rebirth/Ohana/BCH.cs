@@ -1706,34 +1706,37 @@ namespace Ohana3DS_Rebirth.Ohana
 
                         metaData.name = readString(input);
                         metaData.type = (RenderBase.OMetaDataValueType)input.ReadUInt16();
-                        ushort flags = input.ReadUInt16();
+                        ushort entries = input.ReadUInt16();
                         uint dataOffset = input.ReadUInt32();
 
                         data.Seek(dataOffset, SeekOrigin.Begin);
-                        switch (metaData.type)
+                        for (int i = 0; i < entries; i++)
                         {
-                            case RenderBase.OMetaDataValueType.integer: metaData.value = input.ReadInt32(); break;
-                            case RenderBase.OMetaDataValueType.single: metaData.value = input.ReadSingle(); break;
-                            case RenderBase.OMetaDataValueType.utf16String:
-                            case RenderBase.OMetaDataValueType.utf8String:
-                                data.Seek(input.ReadUInt32(), SeekOrigin.Begin);
-                                MemoryStream strStream = new MemoryStream();
-                                byte strChar = input.ReadByte();
-                                byte oldChar = 0xff;
-                                while ((metaData.type == RenderBase.OMetaDataValueType.utf8String && strChar != 0) || !(oldChar == 0 && strChar == 0))
-                                {
-                                    oldChar = strChar;
-                                    strStream.WriteByte(strChar);
-                                    strChar = input.ReadByte();
-                                }
+                            switch (metaData.type)
+                            {
+                                case RenderBase.OMetaDataValueType.integer: metaData.values.Add(input.ReadInt32()); break;
+                                case RenderBase.OMetaDataValueType.single: metaData.values.Add(input.ReadSingle()); break;
+                                case RenderBase.OMetaDataValueType.utf16String:
+                                case RenderBase.OMetaDataValueType.utf8String:
+                                    data.Seek(input.ReadUInt32(), SeekOrigin.Begin);
+                                    MemoryStream strStream = new MemoryStream();
+                                    byte strChar = input.ReadByte();
+                                    byte oldChar = 0xff;
+                                    while ((metaData.type == RenderBase.OMetaDataValueType.utf8String && strChar != 0) || !(oldChar == 0 && strChar == 0))
+                                    {
+                                        oldChar = strChar;
+                                        strStream.WriteByte(strChar);
+                                        strChar = input.ReadByte();
+                                    }
 
-                                if (metaData.type == RenderBase.OMetaDataValueType.utf16String)
-                                    metaData.value = Encoding.Unicode.GetString(strStream.ToArray());
-                                else
-                                    metaData.value = Encoding.UTF8.GetString(strStream.ToArray());
+                                    if (metaData.type == RenderBase.OMetaDataValueType.utf16String)
+                                        metaData.values.Add(Encoding.Unicode.GetString(strStream.ToArray()));
+                                    else
+                                        metaData.values.Add(Encoding.UTF8.GetString(strStream.ToArray()));
 
-                                strStream.Close();
-                                break;
+                                    strStream.Close();
+                                    break;
+                            }
                         }
 
                         model.addUserData(metaData);

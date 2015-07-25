@@ -1050,11 +1050,16 @@ namespace Ohana3DS_Rebirth.Ohana
             utf16String = 3
         }
 
-        public struct OMetaData
+        public class OMetaData
         {
             public string name;
             public OMetaDataValueType type;
-            public Object value;
+            public List<Object> values;
+
+            public OMetaData()
+            {
+                values = new List<Object>();
+            }
         }
 
         public class OModel
