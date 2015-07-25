@@ -1718,7 +1718,10 @@ namespace Ohana3DS_Rebirth.Ohana
                                 case RenderBase.OMetaDataValueType.single: metaData.values.Add(input.ReadSingle()); break;
                                 case RenderBase.OMetaDataValueType.utf16String:
                                 case RenderBase.OMetaDataValueType.utf8String:
-                                    data.Seek(input.ReadUInt32(), SeekOrigin.Begin);
+                                    uint offset = input.ReadUInt32();
+                                    long oldPosition = data.Position;
+                                    data.Seek(offset, SeekOrigin.Begin);
+
                                     MemoryStream strStream = new MemoryStream();
                                     byte strChar = input.ReadByte();
                                     byte oldChar = 0xff;
@@ -1735,6 +1738,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                         metaData.values.Add(Encoding.UTF8.GetString(strStream.ToArray()));
 
                                     strStream.Close();
+                                    data.Seek(oldPosition, SeekOrigin.Begin);
                                     break;
                             }
                         }
