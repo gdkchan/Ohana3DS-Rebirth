@@ -350,7 +350,6 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
             RenderBase.OBlendOperation output = new RenderBase.OBlendOperation();
 
             uint value = getParameter(PICACommand.blendConfig);
-            output.mode = RenderBase.OBlendMode.blend;
             output.rgbFunctionSource = (RenderBase.OBlendFunction)((value >> 16) & 0xf);
             output.rgbFunctionDestination = (RenderBase.OBlendFunction)((value >> 20) & 0xf);
             output.alphaFunctionSource = (RenderBase.OBlendFunction)((value >> 24) & 0xf);

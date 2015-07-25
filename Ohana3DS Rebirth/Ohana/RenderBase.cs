@@ -7,6 +7,9 @@ namespace Ohana3DS_Rebirth.Ohana
 {
     public class RenderBase
     {
+        /// <summary>
+        ///     2-D Vector.
+        /// </summary>
         public class OVector2
         {
             public float x;
@@ -69,6 +72,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     3-D Vector.
+        /// </summary>
         public class OVector3
         {
             public float x;
@@ -152,6 +158,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     4-D Vector.
+        /// </summary>
         public class OVector4
         {
             public float x;
@@ -226,6 +235,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Vertex structure, used to specify data of the various attributes of a vertice on a mesh.
+        /// </summary>
         public class OVertex : IEquatable<OVertex>
         {
             public OVector3 position;
@@ -371,6 +383,10 @@ namespace Ohana3DS_Rebirth.Ohana
             return vertex;
         }
 
+        /// <summary>
+        ///     Matrix, used to transform vertices on a model.
+        ///     Transformations includes rotation, translation and scaling.
+        /// </summary>
         public class OMatrix
         { //4x4
             float[,] matrix;
@@ -530,6 +546,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Oriented Bounding Box, can be used for collision testing.
+        /// </summary>
         public class OOrientedBoundingBox
         {
             public string name;
@@ -543,6 +562,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Translucency kind of a mesh.
+        /// </summary>
         public enum OTranslucencyKind
         {
             opaque = 0,
@@ -551,6 +573,10 @@ namespace Ohana3DS_Rebirth.Ohana
             additive = 3
         }
 
+        /// <summary>
+        ///     Skinning mode used on the Skeleton. Smooth skinning allows multiple bones (max 4) per vertex.
+        ///     Other bones allows only one bone, and meshes are on their relative positions by default.
+        /// </summary>
         public enum OSkinningMode
         {
             none = 0,
@@ -558,6 +584,10 @@ namespace Ohana3DS_Rebirth.Ohana
             rigidSkinning = 2
         }
 
+        /// <summary>
+        ///     Mesh of a model. A model is usually composed of several meshes.
+        ///     For example, a human character may have one mesh for the head, other for the body, other for members and so on...
+        /// </summary>
         public class OModelObject
         {
             public List<OVertex> obj;
@@ -601,6 +631,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Billboard mode used on the Skeleton.
+        /// </summary>
         public enum OBillboardMode
         {
             off = 0,
@@ -612,6 +645,9 @@ namespace Ohana3DS_Rebirth.Ohana
             yAxialViewpoint = 7
         }
 
+        /// <summary>
+        ///     Bone of the skeleton. All values are relative to the parent bone.
+        /// </summary>
         public class OBone
         {
             public OVector3 translation;
@@ -634,6 +670,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     The several colors contained in one Material.
+        /// </summary>
         public struct OMaterialColor
         {
             public Color emission;
@@ -651,6 +690,10 @@ namespace Ohana3DS_Rebirth.Ohana
             public float colorScale;
         }
 
+        /// <summary>
+        ///     Culling mode of a mesh.
+        ///     It is used to draw in clockwise or counter-clockwise direction.
+        /// </summary>
         public enum OCullMode
         {
             never = 0,
@@ -658,6 +701,9 @@ namespace Ohana3DS_Rebirth.Ohana
             backFace = 2
         }
 
+        /// <summary>
+        ///     Rasterization stage parameters.
+        /// </summary>
         public struct ORasterization
         {
             public OCullMode cullMode;
@@ -665,6 +711,10 @@ namespace Ohana3DS_Rebirth.Ohana
             public float polygonOffsetUnit;
         }
 
+        /// <summary>
+        ///     Filtering mode used when the rendered texture is smaller than the normal texture.
+        ///     ex: Object is too far from the Point of View.
+        /// </summary>
         public enum OTextureMinFilter
         {
             nearestMipmapNearest = 1,
@@ -673,12 +723,19 @@ namespace Ohana3DS_Rebirth.Ohana
             linearMipmapLinear = 5
         }
 
+        /// <summary>
+        ///     Filtering mode used when the rendered texture is bigger than the normal texture.
+        ///     ex: Object is too close to the Point of View.
+        /// </summary>
         public enum OTextureMagFilter
         {
             nearest = 0,
             linear = 1
         }
 
+        /// <summary>
+        ///     Wrapping mode when the UV is outside of 0...1 range.
+        /// </summary>
         public enum OTextureWrap
         {
             clampToEdge = 0,
@@ -687,6 +744,9 @@ namespace Ohana3DS_Rebirth.Ohana
             mirroredRepeat = 3
         }
 
+        /// <summary>
+        ///     Projection used on texture mapping.
+        /// </summary>
         public enum OTextureProjection
         {
             uvMap = 0,
@@ -695,6 +755,9 @@ namespace Ohana3DS_Rebirth.Ohana
             projectionMap = 3
         }
 
+        /// <summary>
+        ///     Type of a constant color.
+        /// </summary>
         public enum OConstantColor
         {
             constant0 = 0,
@@ -710,6 +773,9 @@ namespace Ohana3DS_Rebirth.Ohana
             specular1 = 0xa,
         }
 
+        /// <summary>
+        ///     Operation done on the TevStage on Fragment Shader.
+        /// </summary>
         public enum OCombineOperator
         {
             replace = 0,
@@ -724,6 +790,9 @@ namespace Ohana3DS_Rebirth.Ohana
             addMultiply = 9
         }
 
+        /// <summary>
+        ///     Input color of the operation done on Fragment Shader.
+        /// </summary>
         public enum OCombineSource
         {
             primaryColor = 0,
@@ -738,6 +807,9 @@ namespace Ohana3DS_Rebirth.Ohana
             previous = 0xf
         }
 
+        /// <summary>
+        ///     Input components of the color on operation done on Fragment Shader.
+        /// </summary>
         public enum OCombineOperandRgb
         {
             color = 0,
@@ -752,6 +824,9 @@ namespace Ohana3DS_Rebirth.Ohana
             oneMinusBlue = 0xd
         }
 
+        /// <summary>
+        ///     Input components of the alpha color on operation done on Fragment Shader.
+        /// </summary>
         public enum OCombineOperandAlpha
         {
             alpha = 0,
@@ -764,6 +839,9 @@ namespace Ohana3DS_Rebirth.Ohana
             oneMinusBlue = 7
         }
 
+        /// <summary>
+        ///     Parameters used to transform textures.
+        /// </summary>
         public struct OTextureCoordinator
         {
             public OTextureProjection projection;
@@ -773,6 +851,9 @@ namespace Ohana3DS_Rebirth.Ohana
             public float translateU, translateV;
         }
 
+        /// <summary>
+        ///     Parameters used to map textures on the surface.
+        /// </summary>
         public struct OTextureMapper
         {
             public OTextureMinFilter minFilter;
@@ -783,6 +864,9 @@ namespace Ohana3DS_Rebirth.Ohana
             public Color borderColor;
         }
 
+        /// <summary>
+        ///     Which texture is used as Bump Map?
+        /// </summary>
         public enum OBumpTexture
         {
             texture0 = 0,
@@ -791,6 +875,9 @@ namespace Ohana3DS_Rebirth.Ohana
             texture3 = 3
         }
 
+        /// <summary>
+        ///     Bump mode, how the bump texture is used.
+        /// </summary>
         public enum OBumpMode
         {
             notUsed = 0,
@@ -798,6 +885,9 @@ namespace Ohana3DS_Rebirth.Ohana
             asTangent = 2
         }
 
+        /// <summary>
+        ///     Fragment Shader bump parameters.
+        /// </summary>
         public struct OFragmentBump
         {
             public OBumpTexture texture;
@@ -805,6 +895,9 @@ namespace Ohana3DS_Rebirth.Ohana
             public bool isBumpRenormalize;
         }
 
+        /// <summary>
+        ///     Fresnel related configuration.
+        /// </summary>
         public enum OFresnelConfig
         {
             none = 0,
@@ -813,6 +906,9 @@ namespace Ohana3DS_Rebirth.Ohana
             primarySecondary = 3
         }
 
+        /// <summary>
+        ///     Value used as input of 1-D LUT on the Fragment Shader lighting.
+        /// </summary>
         public enum OFragmentSamplerInput
         {
             halfNormalCosine = 0, //N·H
@@ -823,6 +919,9 @@ namespace Ohana3DS_Rebirth.Ohana
             phiCosine = 5 //cosϕ
         }
 
+        /// <summary>
+        ///     Multiplier for the Input value on Fragment Shader.
+        /// </summary>
         public enum OFragmentSamplerScale
         {
             one = 0,
@@ -833,6 +932,9 @@ namespace Ohana3DS_Rebirth.Ohana
             half = 7
         }
 
+        /// <summary>
+        ///     Fragment Shader lighting LUT parameters.
+        /// </summary>
         public struct OFragmentSampler
         {
             public OFragmentSamplerInput input;
@@ -841,6 +943,9 @@ namespace Ohana3DS_Rebirth.Ohana
             public string tableName; //LookUp Table
         }
 
+        /// <summary>
+        ///     Fragment Shader lighting parameters.
+        /// </summary>
         public struct OFragmentLighting
         {
             public OFresnelConfig fresnelConfig;
@@ -859,6 +964,9 @@ namespace Ohana3DS_Rebirth.Ohana
             public OFragmentSampler fresnelSampler;
         }
 
+        /// <summary>
+        ///     Texture blending TevStages parameters.
+        /// </summary>
         public class OTextureCombiner
         {
             public ushort rgbScale, alphaScale;
@@ -878,6 +986,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Alpha testing parameters.
+        /// </summary>
         public struct OAlphaTest
         {
             public bool isTestEnabled;
@@ -885,6 +996,9 @@ namespace Ohana3DS_Rebirth.Ohana
             public uint testReference; 
         }
 
+        /// <summary>
+        ///     Fragment shader parameters.
+        /// </summary>
         public class OFragmentShader
         {
             public uint layerConfig;
@@ -901,6 +1015,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Comparator used on test functions.
+        /// </summary>
         public enum OTestFunction
         {
             never = 0,
@@ -913,6 +1030,9 @@ namespace Ohana3DS_Rebirth.Ohana
             greaterOrEqual = 7
         }
 
+        /// <summary>
+        ///     Depth operation parameters.
+        /// </summary>
         public struct ODepthOperation
         {
             public bool isTestEnabled;
@@ -920,6 +1040,9 @@ namespace Ohana3DS_Rebirth.Ohana
             public bool isMaskEnabled;
         }
 
+        /// <summary>
+        ///     Blending mode used on Alpha Blending.
+        /// </summary>
         public enum OBlendMode
         {
             logical = 0,
@@ -927,6 +1050,9 @@ namespace Ohana3DS_Rebirth.Ohana
             blend = 3
         }
 
+        /// <summary>
+        ///     Binary logical operations.
+        /// </summary>
         public enum OLogicalOperation
         {
             clear = 0,
@@ -946,7 +1072,10 @@ namespace Ohana3DS_Rebirth.Ohana
             orReverse = 0xe,
             orInverted = 0xf
         }
-
+        
+        /// <summary>
+        ///     Alpha blending functions.
+        /// </summary>
         public enum OBlendFunction
         {
             zero = 0,
@@ -966,6 +1095,9 @@ namespace Ohana3DS_Rebirth.Ohana
             sourceAlphaSaturate = 0xe
         }
 
+        /// <summary>
+        ///     Blending equations.
+        /// </summary>
         public enum OBlendEquation
         {
             add = 0,
@@ -975,6 +1107,9 @@ namespace Ohana3DS_Rebirth.Ohana
             max = 4
         }
 
+        /// <summary>
+        ///     Blending operation parameters.
+        /// </summary>
         public struct OBlendOperation
         {
             public OBlendMode mode;
@@ -985,7 +1120,10 @@ namespace Ohana3DS_Rebirth.Ohana
             public OBlendEquation alphaBlendEquation;
             public Color blendColor;
         }
-
+        
+        /// <summary>
+        ///     Stencil operation operation.
+        /// </summary>
         public enum OStencilOp
         {
             keep = 0,
@@ -997,6 +1135,9 @@ namespace Ohana3DS_Rebirth.Ohana
             decreaseWrap = 6
         }
 
+        /// <summary>
+        ///     Stencil operation parameters.
+        /// </summary>
         public struct OStencilOperation
         {
             public bool isTestEnabled;
@@ -1008,16 +1149,58 @@ namespace Ohana3DS_Rebirth.Ohana
             public OStencilOp passOperation;
         }
 
+        /// <summary>
+        ///     Fragment operations (Stencil, blending, depth).
+        /// </summary>
         public struct OFragmentOperation
         {
             public ODepthOperation depth;
             public OBlendOperation blend;
             public OStencilOperation stencil;
         }
+        /// <summary>
+        ///     The input format is the following: Id@Name.
+        ///     The Id is used to choose data inside the group "Name", Id can be another name or an index.
+        ///     The group may be a model, with Id being a Material, a Shader group with Id being the shader, and so on...
+        /// </summary>
+        public class OReference
+        {
+            public string id;
+            public string name;
 
+            /// <summary>
+            ///     Creates a new Reference.
+            /// </summary>
+            /// <param name="_name">String of reference on Id@Name format</param>
+            public OReference(string _name)
+            {
+                if (_name == null) return;
+                if (_name.Contains("@"))
+                {
+                    string[] names = _name.Split(Convert.ToChar("@"));
+                    id = names[0];
+                    name = names[1];
+                }
+                else
+                {
+                    name = _name;
+                }
+            }
+
+            public OReference()
+            {
+            }
+        }
+
+        /// <summary>
+        ///     Material parameters.
+        ///     It have references to textures, parameters used for blending said textures, and other Fragment Shader related data.
+        /// </summary>
         public class OMaterial
         {
-            public String name, name0, name1, name2;
+            public string name, name0, name1, name2;
+            public OReference shaderReference, modelReference;
+            public List<OMetaData> userData;
 
             public OMaterialColor materialColor;
             public ORasterization rasterization;
@@ -1036,12 +1219,16 @@ namespace Ohana3DS_Rebirth.Ohana
 
             public OMaterial()
             {
+                userData = new List<OMetaData>();
                 textureCoordinator = new OTextureCoordinator[3];
                 textureMapper = new OTextureMapper[3];
                 fragmentShader = new OFragmentShader();
             }
         }
 
+        /// <summary>
+        ///     Type of the value on Meta Data.
+        /// </summary>
         public enum OMetaDataValueType
         {
             integer = 0,
@@ -1050,6 +1237,13 @@ namespace Ohana3DS_Rebirth.Ohana
             utf16String = 3
         }
 
+        /// <summary>
+        ///     Meta Data.
+        ///     If type is integer, each value in "values" should be casted to (int).
+        ///     If is type is single, value should be casted to (float).
+        ///     If is utf8String or utf16String, value should be casted to (string).
+        ///     The string codification doesn't matter at this point, but may be useful on exporting.
+        /// </summary>
         public class OMetaData
         {
             public string name;
@@ -1062,6 +1256,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Model data, such as the meshes, materials and skeleton.
+        /// </summary>
         public class OModel
         {
             public string name;
@@ -1106,17 +1303,11 @@ namespace Ohana3DS_Rebirth.Ohana
             {
                 material.Add(mat);
             }
-
-            /// <summary>
-            ///     Adds a User Data to the model.
-            /// </summary>
-            /// <param name="usr">The User Data</param>
-            public void addUserData(OMetaData usr)
-            {
-                userData.Add(usr);
-            }
         }
 
+        /// <summary>
+        ///     Texture, constinas the texture name and Bitmap image.
+        /// </summary>
         public class OTexture
         {
             public Bitmap texture;
@@ -1135,6 +1326,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Sampler of a LookUp Table, contains the data.
+        /// </summary>
         public class OLookUpTableSampler
         {
             public string name;
@@ -1146,6 +1340,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     1-D LookUp table.
+        /// </summary>
         public class OLookUpTable
         {
             public string name;
@@ -1157,6 +1354,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Type of a light.
+        /// </summary>
         public enum OLightType
         {
             directional = 0,
@@ -1164,6 +1364,9 @@ namespace Ohana3DS_Rebirth.Ohana
             spot = 2
         }
 
+        /// <summary>
+        ///  Where and how the light data is used.
+        /// </summary>
         public enum OLightUse
         {
             hemiSphere = 0,
@@ -1172,6 +1375,9 @@ namespace Ohana3DS_Rebirth.Ohana
             ambient = 3
         }
 
+        /// <summary>
+        ///     Represents a light source.
+        /// </summary>
         public class OLight
         {
             public string name;
@@ -1211,6 +1417,9 @@ namespace Ohana3DS_Rebirth.Ohana
             public OFragmentSampler distanceSampler;
         }
 
+        /// <summary>
+        ///     View mode of a camera.
+        /// </summary>
         public enum OCameraView
         {
             aimTarget = 0,
@@ -1218,12 +1427,18 @@ namespace Ohana3DS_Rebirth.Ohana
             rotate = 2
         }
 
+        /// <summary>
+        ///     Projection mode of a camera.
+        /// </summary>
         public enum OCameraProjection
         {
             perspective = 0,
             orthogonal = 1
         }
 
+        /// <summary>
+        ///     Represents a camera on a scene.
+        /// </summary>
         public class OCamera
         {
             public string name;
@@ -1247,6 +1462,9 @@ namespace Ohana3DS_Rebirth.Ohana
             public bool isInheritingUpRotate;
         }
 
+        /// <summary>
+        ///     Fog update method.
+        /// </summary>
         public enum OFogUpdater
         {
             linear = 0,
@@ -1254,6 +1472,9 @@ namespace Ohana3DS_Rebirth.Ohana
             exponentSquare = 2
         }
 
+        /// <summary>
+        ///     Represents a fog on a scene.
+        /// </summary>
         public class OFog
         {
             public string name;
@@ -1271,6 +1492,9 @@ namespace Ohana3DS_Rebirth.Ohana
             public bool isAttenuateDistance;
         }
 
+        /// <summary>
+        ///     Repeat method of a animation.
+        /// </summary>
         public enum ORepeatMethod
         {
             none = 0,
@@ -1279,6 +1503,9 @@ namespace Ohana3DS_Rebirth.Ohana
             relativeRepeat = 3
         }
 
+        /// <summary>
+        ///     Value used on each Frame element of the animation
+        /// </summary>
         public class OInterpolationFloat
         {
             public float frame;
@@ -1340,6 +1567,12 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Interpolation mode of the animation.
+        ///     Step = Jump from key frames, like the big pointer of a clock.
+        ///     Linear =  Linear interpolation between values.
+        ///     Hermite = Hermite interpolation between values, have two slope values too.
+        /// </summary>
         public enum OInterpolationMode
         {
             step = 0,
@@ -1347,6 +1580,9 @@ namespace Ohana3DS_Rebirth.Ohana
             hermite = 2
         }
 
+        /// <summary>
+        ///     Key frame of an animation.
+        /// </summary>
         public class OAnimationKeyFrame
         {
             public List<OInterpolationFloat> keyFrames;
@@ -1364,6 +1600,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Normal frame of an animation.
+        /// </summary>
         public class OAnimationFrame
         {
             public List<OVector4> vector;
@@ -1379,6 +1618,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Type of an animation segment.
+        /// </summary>
         public enum OSegmentType
         {
             single = 0,
@@ -1392,6 +1634,9 @@ namespace Ohana3DS_Rebirth.Ohana
             transformMatrix = 9
         }
 
+        /// <summary>
+        ///     Bone of an Skeletal Animation.
+        /// </summary>
         public class OSkeletalAnimationBone
         {
             public string name;
@@ -1422,12 +1667,18 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Animation loop mode.
+        /// </summary>
         public enum OLoopMode
         {
             oneTime = 0,
             loop = 1
         }
 
+        /// <summary>
+        ///     Base animation class, all animations should inherit from this class.
+        /// </summary>
         public class OAnimationBase
         {
             public virtual string name { get; set; }
@@ -1435,6 +1686,10 @@ namespace Ohana3DS_Rebirth.Ohana
             public virtual OLoopMode loopMode { get; set; }
         }
 
+        /// <summary>
+        ///     Base class of list with animation.
+        ///     It is used as a generic way to access all animation, casting each list element as appropriate.
+        /// </summary>
         public class OAnimationListBase
         {
             public List<OAnimationBase> list;
@@ -1445,6 +1700,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Represents a Skeletal Animation.
+        /// </summary>
         public class OSkeletalAnimation : OAnimationBase
         {
             public override string name { get; set; }
@@ -1458,6 +1716,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Model data affected by the given Material Animation.
+        /// </summary>
         public enum OMaterialAnimationType
         {
             constant0 = 1,
@@ -1489,6 +1750,9 @@ namespace Ohana3DS_Rebirth.Ohana
             translateCoordinator2 = 0x1b
         }
 
+        /// <summary>
+        ///     Data of the Material Animation.
+        /// </summary>
         public class OMaterialAnimationData
         {
             public string name;
@@ -1501,6 +1765,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Represents a Material Animation.
+        /// </summary>
         public class OMaterialAnimation : OAnimationBase
         {
             public override string name { get; set; }
@@ -1516,6 +1783,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Data used on visibility animation.
+        /// </summary>
         public class OVisibilityAnimationData
         {
             public string name;
@@ -1527,6 +1797,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Represents visibility animation of a mesh.
+        /// </summary>
         public class OVisibilityAnimation : OAnimationBase
         {
             public override string name { get; set; }
@@ -1540,6 +1813,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Light data affected by the Light Animation.
+        /// </summary>
         public enum OLightAnimationType
         {
             transform = 0x1c,
@@ -1553,6 +1829,9 @@ namespace Ohana3DS_Rebirth.Ohana
             isLightEnabled = 0x24
         }
 
+        /// <summary>
+        ///     Data of the light animation.
+        /// </summary>
         public class OLightAnimationData
         {
             public string name;
@@ -1565,6 +1844,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Represents a Light Animation.
+        /// </summary>
         public class OLightAnimation : OAnimationBase
         {
             public override string name { get; set; }
@@ -1580,6 +1862,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Camera data affected by the Camera Animation.
+        /// </summary>
         public enum OCameraAnimationType
         {
             transform = 5,
@@ -1594,6 +1879,9 @@ namespace Ohana3DS_Rebirth.Ohana
             puHeight = 0xe
         }
         
+        /// <summary>
+        ///     Camera animation data.
+        /// </summary>
         public class OCameraAnimationData
         {
             public string name;
@@ -1606,6 +1894,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Represents a Camera Animation.
+        /// </summary>
         public class OCameraAnimation : OAnimationBase
         {
             public override string name { get; set; }
@@ -1621,6 +1912,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Data used on Fog Animation.
+        /// </summary>
         public class OFogAnimationData
         {
             public string name;
@@ -1632,6 +1926,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Represents a Fog Animation.
+        /// </summary>
         public class OFogAnimation : OAnimationBase
         {
             public override string name { get; set; }
@@ -1645,12 +1942,19 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Reference of a scene element.
+        /// </summary>
         public struct OSceneReference
         {
             public uint slotIndex;
             public string name;
         }
 
+        /// <summary>
+        ///     Represents a Scene Environment.
+        ///     It references other data used to compose a scene.
+        /// </summary>
         public class OScene
         {
             public string name;
@@ -1666,6 +1970,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Model Group, contains everything related to 3-D rendering.
+        /// </summary>
         public class OModelGroup
         {
             public List<OModel> model;

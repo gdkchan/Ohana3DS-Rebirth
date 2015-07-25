@@ -397,7 +397,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 uint dataOffset = input.ReadUInt32();
                 data.Seek(dataOffset, SeekOrigin.Begin);
 
-                input.ReadUInt32();
+                uint metaDataOffset = input.ReadUInt32();
                 uint samplersCount = input.ReadUInt32();
                 string name = readString(input);
 
@@ -1283,7 +1283,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         material.fragmentShader.lighting.isGeometryFactor0Enabled = (fragmentFlags & 0x10) > 0;
                         material.fragmentShader.lighting.isGeometryFactor1Enabled = (fragmentFlags & 0x20) > 0;
                         material.fragmentShader.lighting.isReflectionEnabled = (fragmentFlags & 0x40) > 0;
-                        material.fragmentOperation.blend.mode = (RenderBase.OBlendMode)((fragmentFlags >> 10) & 3);
+                        RenderBase.OBlendMode blendMode = (RenderBase.OBlendMode)((fragmentFlags >> 10) & 3);
 
                         input.ReadUInt32();
                         for (int i = 0; i < 3; i++)
@@ -1374,17 +1374,10 @@ namespace Ohana3DS_Rebirth.Ohana
                         material.fragmentShader.lighting.reflectanceGSampler.samplerName = readString(input);
                         material.fragmentShader.lighting.reflectanceBSampler.samplerName = readString(input);
 
-                        //Fragment Shader commands
-                        data.Seek(fshCommandsOffset, SeekOrigin.Begin);
-                        PICACommandReader fshCommands = new PICACommandReader(data, fshCommandsWordCount);
-                        for (byte stage = 0; stage < 6; stage++) material.fragmentShader.textureCombiner[stage] = fshCommands.getTevStage(stage);
-                        material.fragmentShader.bufferColor = fshCommands.getFragmentBufferColor();
-                        material.fragmentOperation.blend = fshCommands.getBlendOperation();
-                        material.fragmentOperation.blend.logicalOperation = fshCommands.getColorLogicOperation();
-                        material.fragmentShader.alphaTest = fshCommands.getAlphaTest();
-                        material.fragmentOperation.stencil = fshCommands.getStencilTest();
-                        material.fragmentOperation.depth = fshCommands.getDepthTest();
-                        material.rasterization.cullMode = fshCommands.getCullMode();
+                        material.shaderReference = new RenderBase.OReference(readString(input));
+                        material.modelReference = new RenderBase.OReference(readString(input));
+
+                        uint metaDataPointerOffset = input.ReadUInt32();
 
                         //Coordinator
                         data.Seek(materialCoordinatorOffset, SeekOrigin.Begin);
@@ -1403,6 +1396,26 @@ namespace Ohana3DS_Rebirth.Ohana
 
                             material.textureMapper[i] = mapper;
                         }
+
+                        //User Data
+                        if (metaDataPointerOffset != 0)
+                        {
+                            data.Seek(metaDataPointerOffset, SeekOrigin.Begin);
+                            material.userData = getMetaData(input);
+                        }
+
+                        //Fragment Shader commands
+                        data.Seek(fshCommandsOffset, SeekOrigin.Begin);
+                        PICACommandReader fshCommands = new PICACommandReader(data, fshCommandsWordCount);
+                        for (byte stage = 0; stage < 6; stage++) material.fragmentShader.textureCombiner[stage] = fshCommands.getTevStage(stage);
+                        material.fragmentShader.bufferColor = fshCommands.getFragmentBufferColor();
+                        material.fragmentOperation.blend = fshCommands.getBlendOperation();
+                        material.fragmentOperation.blend.logicalOperation = fshCommands.getColorLogicOperation();
+                        material.fragmentShader.alphaTest = fshCommands.getAlphaTest();
+                        material.fragmentOperation.stencil = fshCommands.getStencilTest();
+                        material.fragmentOperation.depth = fshCommands.getDepthTest();
+                        material.rasterization.cullMode = fshCommands.getCullMode();
+                        material.fragmentOperation.blend.mode = blendMode;
                     }
 
                     model.addMaterial(material);
@@ -1694,57 +1707,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 if (modelHeader.metaDataPointerOffset != 0)
                 {
                     data.Seek(modelHeader.metaDataPointerOffset, SeekOrigin.Begin);
-                    uint metaDataOffset = input.ReadUInt32();
-                    uint metaDataEntries = input.ReadUInt32();
-                    uint metaDataNameOffset = input.ReadUInt32();
-
-                    for (int index = 0; index < metaDataEntries; index++)
-                    {
-                        data.Seek(metaDataOffset + (index * 0xc), SeekOrigin.Begin);
-
-                        RenderBase.OMetaData metaData = new RenderBase.OMetaData();
-
-                        metaData.name = readString(input);
-                        metaData.type = (RenderBase.OMetaDataValueType)input.ReadUInt16();
-                        ushort entries = input.ReadUInt16();
-                        uint dataOffset = input.ReadUInt32();
-
-                        data.Seek(dataOffset, SeekOrigin.Begin);
-                        for (int i = 0; i < entries; i++)
-                        {
-                            switch (metaData.type)
-                            {
-                                case RenderBase.OMetaDataValueType.integer: metaData.values.Add(input.ReadInt32()); break;
-                                case RenderBase.OMetaDataValueType.single: metaData.values.Add(input.ReadSingle()); break;
-                                case RenderBase.OMetaDataValueType.utf16String:
-                                case RenderBase.OMetaDataValueType.utf8String:
-                                    uint offset = input.ReadUInt32();
-                                    long oldPosition = data.Position;
-                                    data.Seek(offset, SeekOrigin.Begin);
-
-                                    MemoryStream strStream = new MemoryStream();
-                                    byte strChar = input.ReadByte();
-                                    byte oldChar = 0xff;
-                                    while ((metaData.type == RenderBase.OMetaDataValueType.utf8String && strChar != 0) || !(oldChar == 0 && strChar == 0))
-                                    {
-                                        oldChar = strChar;
-                                        strStream.WriteByte(strChar);
-                                        strChar = input.ReadByte();
-                                    }
-
-                                    if (metaData.type == RenderBase.OMetaDataValueType.utf16String)
-                                        metaData.values.Add(Encoding.Unicode.GetString(strStream.ToArray()));
-                                    else
-                                        metaData.values.Add(Encoding.UTF8.GetString(strStream.ToArray()));
-
-                                    strStream.Close();
-                                    data.Seek(oldPosition, SeekOrigin.Begin);
-                                    break;
-                            }
-                        }
-
-                        model.addUserData(metaData);
-                    }
+                    model.userData = getMetaData(input);
                 }
 
                 for (int index = 0; index < modelHeader.skeletonEntries; index++)
@@ -1922,29 +1885,21 @@ namespace Ohana3DS_Rebirth.Ohana
             uint entries = frameFlags >> 16;
 
             float maxValue = 0;
-            uint maxValueEncoded = input.ReadUInt32();
+            switch (entryFormat)
+            {
+                case 1: case 7: maxValue = getCustomFloat(input.ReadUInt32(), 107); break;
+                case 2: case 4: maxValue = getCustomFloat(input.ReadUInt32(), 111); break;
+                case 5: maxValue = getCustomFloat(input.ReadUInt32(), 115); break;
+                default: input.ReadUInt32(); break;
+            }
             float minValue = input.ReadSingle();
+            maxValue = minValue + maxValue;
             float frameScale = input.ReadSingle();
             float valueScale = input.ReadSingle(); //Probably wrong
 
-            switch (entryFormat)
-            {
-                case 1:
-                case 7:
-                    maxValue = getCustomFloat(maxValueEncoded, 107);
-                    break;
-                case 2:
-                case 4:
-                    maxValue = getCustomFloat(maxValueEncoded, 111);
-                    break;
-                case 5: maxValue = getCustomFloat(maxValueEncoded, 115); break;
-            }
-            maxValue = minValue + maxValue;
-
             float interpolation;
             uint value;
-            uint rawDataOffset = input.ReadUInt32();
-            input.BaseStream.Seek(rawDataOffset, SeekOrigin.Begin);
+            input.BaseStream.Seek(input.ReadUInt32(), SeekOrigin.Begin);
             for (int k = 0; k < entries; k++)
             {
                 RenderBase.OInterpolationFloat keyFrame = new RenderBase.OInterpolationFloat();
@@ -2106,6 +2061,70 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             if ((value & 0x800) > 0) value -= 0x1000;
             return (float)value / 32;
+        }
+
+        /// <summary>
+        ///     Gets Meta Data from the BCH Stream.
+        /// </summary>
+        /// <param name="input">The BinaryReader of the Stream</param>
+        /// <returns></returns>
+        private static List<RenderBase.OMetaData> getMetaData(BinaryReader input)
+        {
+            List<RenderBase.OMetaData> output = new List<RenderBase.OMetaData>();
+
+            uint metaDataOffset = input.ReadUInt32();
+            uint metaDataEntries = input.ReadUInt32();
+            uint metaDataNameOffset = input.ReadUInt32();
+
+            for (int index = 0; index < metaDataEntries; index++)
+            {
+                input.BaseStream.Seek(metaDataOffset + (index * 0xc), SeekOrigin.Begin);
+
+                RenderBase.OMetaData metaData = new RenderBase.OMetaData();
+
+                metaData.name = readString(input);
+                metaData.type = (RenderBase.OMetaDataValueType)input.ReadUInt16();
+                ushort entries = input.ReadUInt16();
+                uint dataOffset = input.ReadUInt32();
+
+                input.BaseStream.Seek(dataOffset, SeekOrigin.Begin);
+                for (int i = 0; i < entries; i++)
+                {
+                    switch (metaData.type)
+                    {
+                        case RenderBase.OMetaDataValueType.integer: metaData.values.Add(input.ReadInt32()); break;
+                        case RenderBase.OMetaDataValueType.single: metaData.values.Add(input.ReadSingle()); break;
+                        case RenderBase.OMetaDataValueType.utf16String:
+                        case RenderBase.OMetaDataValueType.utf8String:
+                            uint offset = input.ReadUInt32();
+                            long oldPosition = input.BaseStream.Position;
+                            input.BaseStream.Seek(offset, SeekOrigin.Begin);
+
+                            MemoryStream strStream = new MemoryStream();
+                            byte strChar = input.ReadByte();
+                            byte oldChar = 0xff;
+                            while ((metaData.type == RenderBase.OMetaDataValueType.utf8String && strChar != 0) || !(oldChar == 0 && strChar == 0))
+                            {
+                                oldChar = strChar;
+                                strStream.WriteByte(strChar);
+                                strChar = input.ReadByte();
+                            }
+
+                            if (metaData.type == RenderBase.OMetaDataValueType.utf16String)
+                                metaData.values.Add(Encoding.Unicode.GetString(strStream.ToArray()));
+                            else
+                                metaData.values.Add(Encoding.UTF8.GetString(strStream.ToArray()));
+
+                            strStream.Close();
+                            input.BaseStream.Seek(oldPosition, SeekOrigin.Begin);
+                            break;
+                    }
+                }
+
+                output.Add(metaData);
+            }
+
+            return output;
         }
 
         #endregion
