@@ -121,7 +121,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public string modelName;
             public uint objectsNodeNameEntries;
             public uint objectsNodeNameOffset;
-            public uint boundingBoxAndMeasuresPointerOffset;
+            public uint metaDataPointerOffset;
         }
 
         private struct bchObjectEntry
@@ -1211,7 +1211,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 modelHeader.objectsNodeNameEntries = input.ReadUInt32();
                 modelHeader.objectsNodeNameOffset = input.ReadUInt32();
                 input.ReadUInt32(); //0x0
-                modelHeader.boundingBoxAndMeasuresPointerOffset = input.ReadUInt32();
+                modelHeader.metaDataPointerOffset = input.ReadUInt32();
 
                 model.transform = modelHeader.worldTransform;
                 model.name = modelHeader.modelName;
@@ -1454,42 +1454,6 @@ namespace Ohana3DS_Rebirth.Ohana
                     skeletonTransform.Add(transform);
                 }
 
-                //Bounding box
-                List<RenderBase.OOrientedBoundingBox> orientedBBox = new List<RenderBase.OOrientedBoundingBox>();
-                if (modelHeader.boundingBoxAndMeasuresPointerOffset != 0)
-                {
-                    data.Seek(modelHeader.boundingBoxAndMeasuresPointerOffset, SeekOrigin.Begin);
-                    uint measuresHeaderOffset = input.ReadUInt32();
-                    uint measuresHeaderEntries = input.ReadUInt32();
-
-                    for (int index = 0; index < measuresHeaderEntries; index++)
-                    {
-                        data.Seek(measuresHeaderOffset + (index * 0xc), SeekOrigin.Begin);
-                        uint nameOffset = input.ReadUInt32();
-                        uint flags = input.ReadUInt32();
-                        uint dataOffset = input.ReadUInt32();
-
-                        RenderBase.OOrientedBoundingBox bBox = new RenderBase.OOrientedBoundingBox();
-                        bBox.centerPosition = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
-
-                        bBox.orientationMatrix.M11 = input.ReadSingle();
-                        bBox.orientationMatrix.M21 = input.ReadSingle();
-                        bBox.orientationMatrix.M31 = input.ReadSingle();
-
-                        bBox.orientationMatrix.M12 = input.ReadSingle();
-                        bBox.orientationMatrix.M22 = input.ReadSingle();
-                        bBox.orientationMatrix.M32 = input.ReadSingle();
-
-                        bBox.orientationMatrix.M13 = input.ReadSingle();
-                        bBox.orientationMatrix.M23 = input.ReadSingle();
-                        bBox.orientationMatrix.M33 = input.ReadSingle();
-
-                        bBox.size = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
-
-                        orientedBBox.Add(bBox);
-                    }
-                }
-
                 data.Seek(modelHeader.objectsNodeVisibilityOffset, SeekOrigin.Begin);
                 uint nodeVisibility = input.ReadUInt32();
 
@@ -1684,8 +1648,94 @@ namespace Ohana3DS_Rebirth.Ohana
                         }
                     }
 
+                    //Bounding box
+                    if (objects[objIndex].boundingBoxOffset != 0)
+                    {
+                        data.Seek(objects[objIndex].boundingBoxOffset, SeekOrigin.Begin);
+                        uint bBoxDataOffset = input.ReadUInt32();
+                        uint bBoxEntries = input.ReadUInt32();
+                        uint bBoxNameOffset = input.ReadUInt32();
+
+                        for (int index = 0; index < bBoxEntries; index++)
+                        {
+                            data.Seek(bBoxDataOffset + (index * 0xc), SeekOrigin.Begin);
+
+                            RenderBase.OOrientedBoundingBox bBox = new RenderBase.OOrientedBoundingBox();
+
+                            bBox.name = readString(input);
+                            uint flags = input.ReadUInt32();
+                            uint dataOffset = input.ReadUInt32();
+
+                            data.Seek(dataOffset, SeekOrigin.Begin);
+                            bBox.centerPosition = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+
+                            bBox.orientationMatrix.M11 = input.ReadSingle();
+                            bBox.orientationMatrix.M21 = input.ReadSingle();
+                            bBox.orientationMatrix.M31 = input.ReadSingle();
+
+                            bBox.orientationMatrix.M12 = input.ReadSingle();
+                            bBox.orientationMatrix.M22 = input.ReadSingle();
+                            bBox.orientationMatrix.M32 = input.ReadSingle();
+
+                            bBox.orientationMatrix.M13 = input.ReadSingle();
+                            bBox.orientationMatrix.M23 = input.ReadSingle();
+                            bBox.orientationMatrix.M33 = input.ReadSingle();
+
+                            bBox.size = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+
+                            obj.addBoundingBox(bBox);
+                        }
+                    }
+    
                     obj.renderBuffer = vshAttributesBuffer.ToArray();
                     model.addObject(obj);
+                }
+
+                if (modelHeader.metaDataPointerOffset != 0)
+                {
+                    data.Seek(modelHeader.metaDataPointerOffset, SeekOrigin.Begin);
+                    uint metaDataOffset = input.ReadUInt32();
+                    uint metaDataEntries = input.ReadUInt32();
+                    uint metaDataNameOffset = input.ReadUInt32();
+
+                    for (int index = 0; index < metaDataEntries; index++)
+                    {
+                        data.Seek(metaDataOffset + (index * 0xc), SeekOrigin.Begin);
+
+                        RenderBase.OMetaData metaData = new RenderBase.OMetaData();
+
+                        metaData.name = readString(input);
+                        metaData.type = (RenderBase.OMetaDataValueType)input.ReadUInt16();
+                        ushort flags = input.ReadUInt16();
+                        uint dataOffset = input.ReadUInt32();
+
+                        data.Seek(dataOffset, SeekOrigin.Begin);
+                        switch (metaData.type)
+                        {
+                            case RenderBase.OMetaDataValueType.integer: metaData.value = input.ReadInt32(); break;
+                            case RenderBase.OMetaDataValueType.single: metaData.value = input.ReadSingle(); break;
+                            case RenderBase.OMetaDataValueType.utf16String:
+                            case RenderBase.OMetaDataValueType.utf8String:
+                                data.Seek(input.ReadUInt32(), SeekOrigin.Begin);
+                                MemoryStream strStream = new MemoryStream();
+                                byte strChar = input.ReadByte();
+                                byte oldChar = 0xff;
+                                while ((metaData.type == RenderBase.OMetaDataValueType.utf8String && strChar != 0) || !(oldChar == 0 && strChar == 0))
+                                {
+                                    oldChar = strChar;
+                                    strStream.WriteByte(strChar);
+                                    strChar = input.ReadByte();
+                                }
+
+                                if (metaData.type == RenderBase.OMetaDataValueType.utf16String)
+                                    metaData.value = Encoding.Unicode.GetString(strStream.ToArray());
+                                else
+                                    metaData.value = Encoding.UTF8.GetString(strStream.ToArray());
+
+                                strStream.Close();
+                                break;
+                        }
+                    }
                 }
 
                 for (int index = 0; index < modelHeader.skeletonEntries; index++)

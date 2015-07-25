@@ -331,7 +331,7 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
                     case 3: baseCommand = PICACommand.tevStage3Config0; break;
                     case 4: baseCommand = PICACommand.tevStage4Config0; break;
                     case 5: baseCommand = PICACommand.tevStage5Config0; break;
-                    default: throw new Exception("PICACommandReader: Invalid TevStage number!");
+                    default: throw new Exception("PICACommandWriter: Invalid TevStage number!");
                 }
 
                 uint source;

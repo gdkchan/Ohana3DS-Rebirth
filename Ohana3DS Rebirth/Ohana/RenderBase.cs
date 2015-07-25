@@ -532,6 +532,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
         public class OOrientedBoundingBox
         {
+            public string name;
             public OVector3 centerPosition;
             public OMatrix orientationMatrix;
             public OVector3 size;
@@ -561,20 +562,23 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public List<OVertex> obj;
             public CustomVertex[] renderBuffer;
+            public ushort materialId;
+            public ushort renderPriority;
+            public string name;
+            public bool isVisible;
+            public List<OOrientedBoundingBox> boundingBox;
+
             public bool hasNormal;
             public bool hasTangent;
             public bool hasColor;
             public bool hasNode;
             public bool hasWeight;
             public int texUVCount;
-            public ushort materialId;
-            public ushort renderPriority;
-            public string name;
-            public bool isVisible;
 
             public OModelObject()
             {
                 obj = new List<OVertex>();
+                boundingBox = new List<OOrientedBoundingBox>();
                 isVisible = true;
             }
 
@@ -585,6 +589,15 @@ namespace Ohana3DS_Rebirth.Ohana
             public void addVertex(OVertex vertex)
             {
                 obj.Add(vertex);
+            }
+
+            /// <summary>
+            ///     Adds a new Bounding Box to the Object.
+            /// </summary>
+            /// <param name="bBox">The Bounding Box</param>
+            public void addBoundingBox(OOrientedBoundingBox bBox)
+            {
+                boundingBox.Add(bBox);
             }
         }
 
@@ -1029,12 +1042,28 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        public enum OMetaDataValueType
+        {
+            integer = 0,
+            single = 1,
+            utf8String = 2,
+            utf16String = 3
+        }
+
+        public struct OMetaData
+        {
+            public string name;
+            public OMetaDataValueType type;
+            public Object value;
+        }
+
         public class OModel
         {
             public string name;
             public List<OModelObject> modelObject;
             public List<OBone> skeleton;
             public List<OMaterial> material;
+            public List<OMetaData> metaData;
             public OMatrix transform;
             public float height;
 
