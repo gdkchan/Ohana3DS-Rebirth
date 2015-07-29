@@ -656,8 +656,11 @@ namespace Ohana3DS_Rebirth.Ohana
             public OVector3 absoluteScale;
             public short parentId;
             public string name = null;
+
             public OBillboardMode billboardMode;
             public bool isSegmentScaleCompensate;
+
+            public List<OMetaData> userData;
 
             /// <summary>
             ///     Creates a new Bone.
@@ -667,6 +670,8 @@ namespace Ohana3DS_Rebirth.Ohana
                 translation = new OVector3();
                 rotation = new OVector3();
                 scale = new OVector3();
+
+                userData = new List<OMetaData>();
             }
         }
 
@@ -1257,11 +1262,22 @@ namespace Ohana3DS_Rebirth.Ohana
         }
 
         /// <summary>
+        ///     Culling mode of the Model.
+        /// </summary>
+        public enum OModelCullingMode
+        {
+            dynamic = 0,
+            always = 1,
+            never = 2
+        }
+
+        /// <summary>
         ///     Model data, such as the meshes, materials and skeleton.
         /// </summary>
         public class OModel
         {
             public string name;
+            public uint layerId;
             public List<OModelObject> modelObject;
             public List<OBone> skeleton;
             public List<OMaterial> material;
@@ -1306,7 +1322,7 @@ namespace Ohana3DS_Rebirth.Ohana
         }
 
         /// <summary>
-        ///     Texture, constinas the texture name and Bitmap image.
+        ///     Texture, contains the texture name and Bitmap image.
         /// </summary>
         public class OTexture
         {
@@ -1710,9 +1726,13 @@ namespace Ohana3DS_Rebirth.Ohana
             public override OLoopMode loopMode { get; set; }
             public List<OSkeletalAnimationBone> bone;
 
+            public List<OMetaData> userData;
+
             public OSkeletalAnimation()
             {
                 bone = new List<OSkeletalAnimationBone>();
+
+                userData = new List<OMetaData>();
             }
         }
 

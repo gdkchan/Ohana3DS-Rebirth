@@ -10,7 +10,8 @@ namespace Ohana3DS_Rebirth.Ohana
             Unsupported,
             H3D,
             PkmnContainer,
-            BLZCompressed
+            BLZCompressed,
+            CGFX
         }
 
         public static fileFormat identify(string fileName)
@@ -31,6 +32,11 @@ namespace Ohana3DS_Rebirth.Ohana
             string magic3b = IOUtils.readString(input, 0, 3);
             string magic4b = IOUtils.readString(input, 0, 4);
             data.Seek(0, SeekOrigin.Begin);
+
+            switch (magic4b)
+            {
+                case "CGFX": return fileFormat.CGFX;
+            }
 
             switch (magic3b)
             {

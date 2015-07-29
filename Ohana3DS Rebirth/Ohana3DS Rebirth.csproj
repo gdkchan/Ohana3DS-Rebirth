@@ -252,6 +252,8 @@
     </Compile>
     <Compile Include="Ohana\AnimationHelper.cs" />
     <Compile Include="Ohana\BCH.cs" />
+    <Compile Include="Ohana\CGFX.cs" />
+    <Compile Include="Ohana\Compressions\LZSS.cs" />
     <Compile Include="Ohana\Containers\GenericContainer.cs" />
     <Compile Include="Ohana\Containers\PkmnContainer.cs" />
     <Compile Include="Ohana\Compressions\BLZ.cs" />

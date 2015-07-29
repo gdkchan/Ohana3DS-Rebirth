@@ -352,6 +352,15 @@ namespace Ohana3DS_Rebirth.Ohana
                 sceneNameOffset = input.ReadUInt32()
             };
 
+            /*
+             * Note:
+             * All "NameOffset" uses an Radix tree.
+             * The root node have 0xc bytes, and after each node entry also have 0xc bytes.
+             * First UInt is reference, then comes two UShorts with left and right node index, and then the Name offset.
+             * On root node, first UInt is always 0xFFFFFFFF (-1), second UInt is the index of largest string, and thrid UInt is always 0.
+             * Note also that parsing that data isn't necessary for using the model, but may be handy when saving new files.
+             */
+
             //Shaders
             for (int index = 0; index < contentHeader.shadersPointerTableEntries; index++)
             {
@@ -397,7 +406,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 uint dataOffset = input.ReadUInt32();
                 data.Seek(dataOffset, SeekOrigin.Begin);
 
-                uint metaDataOffset = input.ReadUInt32();
+                input.ReadUInt32();
                 uint samplersCount = input.ReadUInt32();
                 string name = readString(input);
 
@@ -609,6 +618,13 @@ namespace Ohana3DS_Rebirth.Ohana
                 skeletalAnimation.frameSize = input.ReadSingle();
                 uint boneTableOffset = input.ReadUInt32();
                 uint boneTableEntries = input.ReadUInt32();
+                uint metaDataPointerOffset = input.ReadUInt32();
+
+                if (metaDataPointerOffset != 0)
+                {
+                    data.Seek(metaDataPointerOffset, SeekOrigin.Begin);
+                    skeletalAnimation.userData = getMetaData(input);
+                }
 
                 for (int i = 0; i < boneTableEntries; i++)
                 {
@@ -1217,11 +1233,15 @@ namespace Ohana3DS_Rebirth.Ohana
                 model.name = modelHeader.modelName;
 
                 string[] objectName = new string[modelHeader.objectsNodeNameEntries];
-                data.Seek(modelHeader.objectsNodeNameOffset + 0xc, SeekOrigin.Begin);
+                data.Seek(modelHeader.objectsNodeNameOffset, SeekOrigin.Begin);
+                int rootReference = input.ReadInt32(); //Radix tree
+                uint rootLeftNode = input.ReadUInt32();
+                uint rootRightNode = input.ReadUInt32();
                 for (int i = 0; i < modelHeader.objectsNodeNameEntries; i++)
                 {
-                    input.ReadUInt32();
-                    input.ReadUInt32();
+                    int referenceBit = input.ReadInt32();
+                    ushort leftNode = input.ReadUInt16();
+                    ushort rightNode = input.ReadUInt16();
                     objectName[i] = readString(input);
                 }
 
@@ -1454,7 +1474,15 @@ namespace Ohana3DS_Rebirth.Ohana
                     boneMatrix.M43 = input.ReadSingle();
 
                     bone.name = readString(input);
-                    input.ReadUInt32(); //TODO: Figure out
+                    uint metaDataPointerOffset = input.ReadUInt32();
+
+                    if (metaDataPointerOffset != 0)
+                    {
+                        long position = data.Position;
+                        data.Seek(metaDataPointerOffset, SeekOrigin.Begin);
+                        bone.userData = getMetaData(input);
+                        data.Seek(position, SeekOrigin.Begin);
+                    }
 
                     model.addBone(bone);
                 }
@@ -2083,6 +2111,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 RenderBase.OMetaData metaData = new RenderBase.OMetaData();
 
                 metaData.name = readString(input);
+                if (metaData.name.StartsWith("$")) metaData.name = metaData.name.Substring(1);
                 metaData.type = (RenderBase.OMetaDataValueType)input.ReadUInt16();
                 ushort entries = input.ReadUInt16();
                 uint dataOffset = input.ReadUInt32();
@@ -2128,676 +2157,5 @@ namespace Ohana3DS_Rebirth.Ohana
         }
 
         #endregion
-
-        #region "Export"
-        private class faceData
-        {
-            public byte[] buffer;
-            public byte[] nodes;
-
-            public faceData(BinaryWriter indices, List<ushort> nodeList)
-            {
-                buffer = ((MemoryStream)indices.BaseStream).ToArray();
-                indices.BaseStream.SetLength(0);
-                byte[] nodesBuffer = new byte[nodeList.Count * 2];
-                long offset = 0;
-                foreach (ushort node in nodeList)
-                {
-                    nodesBuffer[offset++] = (byte)(node & 0xff);
-                    nodesBuffer[offset++] = (byte)(node >> 8);
-                }
-                nodeList.Clear();
-                nodes = nodesBuffer;
-            }
-
-            public faceData()
-            {
-            }
-        }
-
-        private class vertexData
-        {
-            public List<faceData> faces;
-            public byte[] buffer;
-
-            public vertexData()
-            {
-                faces = new List<faceData>();
-            }
-        }
-
-        public static byte[] save(RenderBase.OModelGroup model)
-        {
-            BinaryWriter mainHeader = new BinaryWriter(new MemoryStream());
-            PICACommandWriter mainHeaderCommands = new PICACommandWriter(mainHeader.BaseStream);
-            BinaryWriter stringTable = new BinaryWriter(new MemoryStream());
-            PICACommandWriter gpuCommands = new PICACommandWriter(new MemoryStream());
-            BinaryWriter data = new BinaryWriter(new MemoryStream());
-            BinaryWriter dataExtended = new BinaryWriter(new MemoryStream());
-            BinaryWriter relocationTable = new BinaryWriter(new MemoryStream());
-
-            uint offset1 = 0;
-            uint offset2 = 12 * 15;
-
-            //Models
-            mainHeader.Write(0);
-            mainHeader.Write(model.model.Count);
-            writeRelocatableOffset((uint)mainHeader.BaseStream.Position, 0, relocationTable);
-            mainHeader.Write(offset2);
-            mainHeader.BaseStream.Seek(offset2, SeekOrigin.Begin);
-            mainHeader.Write(0);
-            mainHeader.Write(0);
-            mainHeader.Write(0); //Name thingy
-            offset2 += 12;
-            mainHeader.BaseStream.Seek(offset1, SeekOrigin.Begin);
-            writeRelocatableOffset((uint)mainHeader.BaseStream.Position, 0, relocationTable);
-            mainHeader.Write(offset2);
-            offset1 += 12;
-            offset2 += (uint)model.model.Count * 4;
-
-            //Placeholder until I write remaining sections
-            for (int i = 0; i < 14; i++)
-            {
-                mainHeader.BaseStream.Seek(offset1, SeekOrigin.Begin);
-                mainHeader.Write(0);
-                mainHeader.Write(0);
-                writeRelocatableOffset((uint)mainHeader.BaseStream.Position, 0, relocationTable);
-                mainHeader.Write(offset2);
-                mainHeader.BaseStream.Seek(offset2, SeekOrigin.Begin);
-                mainHeader.Write(0);
-                mainHeader.Write(0);
-                mainHeader.Write(0); //Name thingy
-                offset2 += 12;
-                offset1 += 12;
-            }
-
-            List<uint> modelsPointerTable = new List<uint>();
-            foreach (RenderBase.OModel mdl in model.model)
-            {
-                //Header do modelo
-                modelsPointerTable.Add((uint)mainHeader.BaseStream.Position);
-                mainHeader.Write(0);
-
-                mainHeader.Write(mdl.transform.M11);
-                mainHeader.Write(mdl.transform.M21);
-                mainHeader.Write(mdl.transform.M31);
-                mainHeader.Write(mdl.transform.M41);
-
-                mainHeader.Write(mdl.transform.M12);
-                mainHeader.Write(mdl.transform.M22);
-                mainHeader.Write(mdl.transform.M32);
-                mainHeader.Write(mdl.transform.M42);
-
-                mainHeader.Write(mdl.transform.M13);
-                mainHeader.Write(mdl.transform.M23);
-                mainHeader.Write(mdl.transform.M33);
-                mainHeader.Write(mdl.transform.M43);
-
-                long modelHeaderPosition = mainHeader.BaseStream.Position;
-                mainHeader.BaseStream.Seek(0x68, SeekOrigin.Current);
-                mainHeader.Write(0);
-
-                /*
-                 * Materials
-                 */
-                uint materialsTableOffset = (uint)mainHeader.BaseStream.Position;
-                foreach (RenderBase.OMaterial material in mdl.material)
-                {
-                    uint position = (uint)mainHeader.BaseStream.Position;
-                    writeRelocatableOffset(position, 0, relocationTable);
-                    mainHeader.Write(position + 0x70);
-                    mainHeader.Write(0);
-                    mainHeader.Write(0);
-                    mainHeader.Write(0);
-                    mainHeader.Write(0); //Texture header offset
-                    mainHeader.Write(0); //Texture header entries
-                    writeRelocatableOffset((uint)mainHeader.BaseStream.Position, 0, relocationTable);
-                    mainHeader.Write(position + 0x118); //Coordinator offset
-
-                    writeString(material.name0, mainHeader, stringTable, relocationTable);
-                    writeString(material.name1, mainHeader, stringTable, relocationTable);
-                    writeString(material.name2, mainHeader, stringTable, relocationTable);
-                    writeString(material.name, mainHeader, stringTable, relocationTable);
-
-                    mainHeader.Seek((int)(position + 0x70), SeekOrigin.Begin);
-                    mainHeader.Write(0);
-
-                    //Material flags
-                    ushort materialFlags = 0;
-                    if (material.isFragmentLightEnabled) materialFlags = 1;
-                    if (material.isVertexLightEnabled) materialFlags |= 2;
-                    if (material.isHemiSphereLightEnabled) materialFlags |= 4;
-                    if (material.isHemiSphereOcclusionEnabled) materialFlags |= 8;
-                    if (material.isFogEnabled) materialFlags |= 0x10;
-                    if (material.rasterization.isPolygonOffsetEnabled) materialFlags |= 0x20;
-                    mainHeader.Write(materialFlags);
-
-                    //Fragment Shader flags
-                    ushort fragmentFlags = 0;
-                    if (material.fragmentShader.bump.isBumpRenormalize) fragmentFlags = 1;
-                    if (material.fragmentShader.lighting.isClampHighLight) fragmentFlags |= 2;
-                    if (material.fragmentShader.lighting.isDistribution0Enabled) fragmentFlags |= 4;
-                    if (material.fragmentShader.lighting.isDistribution1Enabled) fragmentFlags |= 8;
-                    if (material.fragmentShader.lighting.isGeometryFactor0Enabled) fragmentFlags |= 0x10;
-                    if (material.fragmentShader.lighting.isGeometryFactor1Enabled) fragmentFlags |= 0x20;
-                    if (material.fragmentShader.lighting.isReflectionEnabled) fragmentFlags |= 0x40;
-                    fragmentFlags |= (ushort)(((uint)material.fragmentOperation.blend.mode & 3) << 10);
-                    mainHeader.Write(fragmentFlags);
-
-                    mainHeader.Write(0);
-
-                    //Coordinator
-                    for (int texture = 0; texture < 3; texture++)
-                    {
-                        RenderBase.OTextureCoordinator coordinator = material.textureCoordinator[texture];
-                        uint projectionAndCamera = ((uint)coordinator.projection << 16);
-                        projectionAndCamera |= coordinator.referenceCamera << 24;
-                        mainHeader.Write(projectionAndCamera);
-                        mainHeader.Write(coordinator.scaleU);
-                        mainHeader.Write(coordinator.scaleV);
-                        mainHeader.Write(coordinator.rotate);
-                        mainHeader.Write(coordinator.translateU);
-                        mainHeader.Write(coordinator.translateV);
-                    }
-
-                    mainHeader.Write((ushort)material.lightSetIndex);
-                    mainHeader.Write((ushort)material.fogIndex);
-
-                    //Material colors
-                    setColor(material.materialColor.emission, mainHeader);
-                    setColor(material.materialColor.ambient, mainHeader);
-                    setColor(material.materialColor.diffuse, mainHeader);
-                    setColor(material.materialColor.specular0, mainHeader);
-                    setColor(material.materialColor.specular1, mainHeader);
-                    setColor(material.materialColor.constant0, mainHeader);
-                    setColor(material.materialColor.constant1, mainHeader);
-                    setColor(material.materialColor.constant2, mainHeader);
-                    setColor(material.materialColor.constant3, mainHeader);
-                    setColor(material.materialColor.constant4, mainHeader);
-                    setColor(material.materialColor.constant5, mainHeader);
-                    setColor(material.fragmentOperation.blend.blendColor, mainHeader);
-                    mainHeader.Write(material.materialColor.colorScale);
-
-                    mainHeader.Write(0);
-                    mainHeader.Write(0);
-                    mainHeader.Write(0);
-                    mainHeader.Write(0);
-                    mainHeader.Write(0);
-                    mainHeader.Write(0);
-
-                    uint fragmentData;
-                    fragmentData = ((uint)material.fragmentShader.bump.texture & 0xff) << 24;
-                    fragmentData |= ((uint)material.fragmentShader.bump.mode & 0xff) << 16;
-                    fragmentData |= ((uint)material.fragmentShader.lighting.fresnelConfig & 0xff) << 8;
-                    fragmentData |= (uint)material.fragmentShader.layerConfig & 0xff;
-                    mainHeader.Write(fragmentData);
-
-                    mainHeaderCommands.setCommand(0x1d0, 0x2222222);
-
-                    //LookUp tables
-                    RenderBase.OFragmentLighting lighting = material.fragmentShader.lighting;
-
-                    //Input
-                    uint reflectanceInput;
-                    reflectanceInput = ((uint)lighting.reflectanceRSampler.input & 0xf) << 24;
-                    reflectanceInput |= ((uint)lighting.reflectanceGSampler.input & 0xf) << 20;
-                    reflectanceInput |= ((uint)lighting.reflectanceBSampler.input & 0xf) << 16;
-                    reflectanceInput |= (uint)lighting.distribution0Sampler.input & 0xf;
-                    reflectanceInput |= ((uint)lighting.distribution1Sampler.input & 0xf) << 4;
-                    reflectanceInput |= ((uint)lighting.fresnelSampler.input & 0xf) << 12;
-                    mainHeaderCommands.setCommand(PICACommand.reflectanceSamplerInput, reflectanceInput);
-
-                    //Scale
-                    uint reflectanceScale;
-                    reflectanceScale = ((uint)lighting.reflectanceRSampler.scale & 0xf) << 24;
-                    reflectanceScale |= ((uint)lighting.reflectanceGSampler.scale & 0xf) << 20;
-                    reflectanceScale |= ((uint)lighting.reflectanceBSampler.scale & 0xf) << 16;
-                    reflectanceScale |= (uint)lighting.distribution0Sampler.scale & 0xf;
-                    reflectanceScale |= ((uint)lighting.distribution1Sampler.scale & 0xf) << 4;
-                    reflectanceScale |= ((uint)lighting.fresnelSampler.scale & 0xf) << 12;
-                    mainHeaderCommands.setCommand(PICACommand.reflectanceSamplerInput, reflectanceScale);
-
-                    uint constantColor = 0;
-                    for (int tevStage = 0; tevStage < 6; tevStage++)
-                    {
-                        constantColor |= ((uint)material.fragmentShader.textureCombiner[tevStage].constantColor & 0xf) << (tevStage * 4);
-                    }
-                    mainHeader.Write(constantColor);
-
-                    mainHeader.Write(material.rasterization.polygonOffsetUnit);
-                    writeRelocatableOffset((uint)mainHeader.BaseStream.Position, 4, relocationTable);
-                    mainHeader.Write((uint)gpuCommands.BaseStream.Position);
-                    mainHeader.Write((uint)0x38); //Commands Word Count
-                    mainHeader.Write(0);
-
-                    writeString(lighting.distribution0Sampler.tableName, mainHeader, stringTable, relocationTable);
-                    writeString(lighting.distribution1Sampler.tableName, mainHeader, stringTable, relocationTable);
-                    writeString(lighting.fresnelSampler.tableName, mainHeader, stringTable, relocationTable);
-                    writeString(lighting.reflectanceRSampler.tableName, mainHeader, stringTable, relocationTable);
-                    writeString(lighting.reflectanceGSampler.tableName, mainHeader, stringTable, relocationTable);
-                    writeString(lighting.reflectanceBSampler.tableName, mainHeader, stringTable, relocationTable);
-
-                    writeString(lighting.distribution0Sampler.samplerName, mainHeader, stringTable, relocationTable);
-                    writeString(lighting.distribution1Sampler.samplerName, mainHeader, stringTable, relocationTable);
-                    writeString(lighting.fresnelSampler.samplerName, mainHeader, stringTable, relocationTable);
-                    writeString(lighting.reflectanceRSampler.samplerName, mainHeader, stringTable, relocationTable);
-                    writeString(lighting.reflectanceGSampler.samplerName, mainHeader, stringTable, relocationTable);
-                    writeString(lighting.reflectanceBSampler.samplerName, mainHeader, stringTable, relocationTable);
-
-                    gpuCommands.setFSHCommands(material.fragmentShader, material.fragmentOperation, material.rasterization);
-
-                    for (int texture = 0; texture < 3; texture++)
-                    {
-                        RenderBase.OTextureMapper mapper = material.textureMapper[texture];
-                        uint wrapAndMagFilter;
-                        uint levelOfDetailAndMinFilter;
-                        wrapAndMagFilter = ((uint)mapper.wrapU & 0xff) << 8;
-                        wrapAndMagFilter |= ((uint)mapper.wrapV & 0xff) << 16;
-                        wrapAndMagFilter |= ((uint)mapper.magFilter & 0xff) << 24;
-                        levelOfDetailAndMinFilter = (uint)mapper.minFilter & 0xff;
-                        levelOfDetailAndMinFilter |= (uint)(mapper.minLOD & 0xff) << 8;
-                        mainHeader.Write(wrapAndMagFilter);
-                        mainHeader.Write(levelOfDetailAndMinFilter);
-                        mainHeader.Write(mapper.LODBias);
-                        setColor(mapper.borderColor, mainHeader);
-                    }
-                }
-
-                /*
-                 * Meshes 
-                 */
-                int objIndex = 0;
-                uint meshNodeVisibility = 0;
-                uint verticesTableOffset = (uint)mainHeader.BaseStream.Position;
-                List<uint> faceCounts = new List<uint>();
-                BinaryWriter mainHeaderFace = new BinaryWriter(new MemoryStream());
-                foreach (RenderBase.OModelObject modelObject in mdl.modelObject)
-                {
-                    /*
-                     * Criação de objetos
-                     */
-                    List<vertexData> vertexList = new List<vertexData>();
-                    List<faceData> indexList = new List<faceData>();
-                    BinaryWriter vertices = new BinaryWriter(new MemoryStream());
-                    BinaryWriter indices = new BinaryWriter(new MemoryStream());
-                    List<ushort> nodeList = new List<ushort>();
-
-                    uint index = 0;
-                    uint totalIndex = 0;
-                    RenderBase.OVector3 minVector = new RenderBase.OVector3();
-                    RenderBase.OVector3 maxVector = new RenderBase.OVector3();
-
-                    RenderBase.OVertex[] oldVertex = new RenderBase.OVertex[2];
-
-                    foreach (RenderBase.OVertex vertex in modelObject.obj)
-                    {
-                        bool repeatedVertex = false;
-
-                        uint currentIndex = totalIndex;
-                        if (totalIndex > 1)
-                        {
-                            if (vertex.Equals(oldVertex[1]))
-                            {
-                                currentIndex = totalIndex - 2;
-                                repeatedVertex = true;
-                            }
-                            else if (vertex.Equals(oldVertex[1]))
-                            {
-                                currentIndex = totalIndex - 1;
-                                repeatedVertex = true;
-                            }
-                        }
-                        oldVertex[1] = oldVertex[0];
-                        oldVertex[0] = vertex;
-
-                        if (!repeatedVertex)
-                        {
-                            //Escreve vertices no buffer
-                            vertices.Write(vertex.position.x);
-                            vertices.Write(vertex.position.y);
-                            vertices.Write(vertex.position.z);
-
-                            if (modelObject.hasNormal)
-                            {
-                                vertices.Write(vertex.normal.x);
-                                vertices.Write(vertex.normal.y);
-                                vertices.Write(vertex.normal.z);
-                            }
-
-                            if (modelObject.hasTangent)
-                            {
-                                vertices.Write(vertex.tangent.x);
-                                vertices.Write(vertex.tangent.y);
-                                vertices.Write(vertex.tangent.z);
-                            }
-
-                            if (modelObject.hasColor)
-                            {
-                                vertices.Write((byte)((vertex.diffuseColor >> 16) & 0xff));
-                                vertices.Write((byte)((vertex.diffuseColor >> 8) & 0xff));
-                                vertices.Write((byte)(vertex.diffuseColor & 0xff));
-                                vertices.Write((byte)(vertex.diffuseColor >> 24));
-                            }
-
-                            if (modelObject.texUVCount > 0) { vertices.Write(vertex.texture0.x); vertices.Write(vertex.texture0.y); }
-                            if (modelObject.texUVCount > 1) { vertices.Write(vertex.texture1.x); vertices.Write(vertex.texture1.y); }
-                            if (modelObject.texUVCount > 2) { vertices.Write(vertex.texture2.x); vertices.Write(vertex.texture2.y); }
-
-                            if (modelObject.hasNode)
-                            {
-                                for (int i = 0; i < 4; i++)
-                                {
-                                    if (i < vertex.node.Count)
-                                    {
-                                        if (!nodeList.Contains((ushort)vertex.node[i])) nodeList.Add((ushort)vertex.node[i]);
-                                        vertices.Write((byte)nodeList.IndexOf((ushort)vertex.node[i]));
-                                    }
-                                    else
-                                    {
-                                        vertices.Write((byte)0);
-                                    }
-                                }
-                            }
-
-                            if (modelObject.hasWeight)
-                            {
-                                for (int i = 0; i < 4; i++)
-                                {
-                                    if (i < vertex.weight.Count)
-                                        vertices.Write((byte)(vertex.weight[i] * byte.MaxValue));
-                                    else
-                                        vertices.Write((byte)0);
-                                }
-                            }
-
-                            totalIndex++;
-                        }
-
-                        if (modelObject.obj.Count <= byte.MaxValue)
-                            indices.Write((byte)currentIndex);
-                        else
-                            indices.Write((ushort)currentIndex);
-
-                        if (totalIndex - 1 >= ushort.MaxValue)
-                        {
-                            //Força criação de um novo objeto, já que o limite do indice é 65535
-                            byte[] vBuffer = ((MemoryStream)vertices.BaseStream).ToArray();
-                            vertexData vData = new vertexData();
-                            vData.buffer = vBuffer;
-                            indexList.Add(new faceData(indices, nodeList));
-                            vData.faces.AddRange(indexList);
-                            vertexList.Add(vData);
-                            indexList.Clear();
-                            vertices.Close();
-                            vertices = new BinaryWriter(new MemoryStream());
-                            totalIndex = 0;
-                        }
-                        else if (nodeList.Count >= 16)
-                        {
-                            if (index + 1 < modelObject.obj.Count)
-                            {
-                                int count = nodeList.Count;
-                                for (int i = 0; i < modelObject.obj[(int)index + 1].node.Count; i++)
-                                {
-                                    if (!nodeList.Contains((ushort)modelObject.obj[(int)index + 1].node[i])) count++;
-                                }
-
-                                if (count >= 20) indexList.Add(new faceData(indices, nodeList)); //Força criação de uma nova Face, pois o máximo de nodes da nodeList é 20
-                            }
-                        }
-
-                        if (vertex.position.x < minVector.x || index == 0) minVector.x = vertex.position.x;
-                        if (vertex.position.y < minVector.y || index == 0) minVector.y = vertex.position.y;
-                        if (vertex.position.z < minVector.z || index == 0) minVector.z = vertex.position.z;
-
-                        if (vertex.position.x > maxVector.x) maxVector.x = vertex.position.x;
-                        if (vertex.position.y > maxVector.y) maxVector.y = vertex.position.y;
-                        if (vertex.position.z > maxVector.z) maxVector.z = vertex.position.z;
-
-                        index++;
-                    }
-
-                    //Guarda o último objeto
-                    byte[] vtxBuffer = ((MemoryStream)vertices.BaseStream).ToArray();
-                    vertexData vtxData = new vertexData();
-                    vtxData.buffer = vtxBuffer;
-                    indexList.Add(new faceData(indices, nodeList));
-                    indices.Close();
-                    vtxData.faces.AddRange(indexList);
-                    vertexList.Add(vtxData);
-                    vertices.Close();
-
-                    foreach (vertexData v in vertexList)
-                    {
-                        uint vshAttributesBufferAddress = (uint)data.BaseStream.Position;
-                        data.Write(v.buffer);
-
-                        uint vshAttributesBufferCommandsOffset = (uint)gpuCommands.BaseStream.Position;
-                        gpuCommands.setVSHAttributesCommands(vshAttributesBufferAddress, new List<bool> {true, 
-                            modelObject.hasNormal, 
-                            modelObject.hasTangent, 
-                            modelObject.hasColor,
-                            modelObject.texUVCount > 0, 
-                            modelObject.texUVCount > 1, 
-                            modelObject.texUVCount > 2, 
-                            modelObject.hasNode, 
-                            modelObject.hasWeight});
-
-                        writeRelocatableOffset(vshAttributesBufferCommandsOffset + 0x20, 0x5c, relocationTable);
-                        writeRelocatableOffset(vshAttributesBufferCommandsOffset + 0x30, 0x4c, relocationTable);
-
-                        //Header do objeto
-                        mainHeader.Write(modelObject.materialId);
-                        mainHeader.Write((ushort)0); //Flags
-                        mainHeader.Write((ushort)objIndex); //Node ID
-                        mainHeader.Write(modelObject.renderPriority);
-                        writeRelocatableOffset((uint)mainHeader.BaseStream.Position, 4, relocationTable);
-                        mainHeader.Write(vshAttributesBufferCommandsOffset);
-                        mainHeader.Write(0x24); //Commands Word Count
-                        mainHeader.Write(0); //Faces Header offset (place holder)
-                        mainHeader.Write(v.faces.Count);
-                        mainHeader.Write(vshAttributesBufferCommandsOffset + 0xf0); //Extra Commands Offset
-                        mainHeader.Write(0x1c); //Extra Commands Word Count
-                        mainHeader.Write((minVector.x + maxVector.x) / 2f); //Center position
-                        mainHeader.Write((minVector.y + maxVector.y) / 2f);
-                        mainHeader.Write((minVector.z + maxVector.z) / 2f);
-                        mainHeader.Write(0);
-                        mainHeader.Write(0);
-                        mainHeader.Write(0);
-
-                        /*
-                         * Faces 
-                         */
-                        uint faceCount = 0;
-                        foreach (faceData f in v.faces)
-                        {
-                            uint indexBufferAddress = (uint)data.BaseStream.Position;
-                            data.Write(f.buffer);
-
-                            //Face Data Header
-                            uint indexBufferCommandsOffset = (uint)gpuCommands.BaseStream.Position;
-                            gpuCommands.setIndexCommands(indexBufferAddress, (uint)(f.buffer.Length / (modelObject.obj.Count > byte.MaxValue ? 2 : 1)), 0);
-                            writeRelocatableOffset(indexBufferCommandsOffset + 0x10, (byte)(modelObject.obj.Count > byte.MaxValue ? 0x4e : 0x50), relocationTable);
-
-                            //Face Header
-                            mainHeaderFace.Write((ushort)RenderBase.OSkinningMode.smoothSkinning); //Skinning Mode
-                            mainHeaderFace.Write((ushort)(f.nodes.Length / 2));
-                            mainHeaderFace.Write(f.nodes);
-                            for (int i = 0; i < 40 - f.nodes.Length; i++) mainHeaderFace.Write((byte)0); //Fill remaining space
-                            mainHeaderFace.Write(indexBufferCommandsOffset);
-                            mainHeaderFace.Write(0x18); //Commands Word Count
-                            faceCount++;
-                        }
-                        faceCounts.Add(faceCount);
-                        align(0xf, data);
-
-                        uint vshExtraAttributesBufferCommandsOffset = (uint)gpuCommands.BaseStream.Position;
-                        gpuCommands.setVSHExtraAttributesCommands();
-                    }
-
-                    if (modelObject.isVisible) meshNodeVisibility |= (uint)(1 << objIndex);
-                    objIndex++;
-                }
-
-                uint faceHeaderOffset = (uint)mainHeader.BaseStream.Position;
-                mainHeader.Write(((MemoryStream)mainHeaderFace.BaseStream).ToArray());
-                mainHeaderFace.Close();
-
-                for (int i = 0; i < objIndex; i++)
-                {
-                    mainHeader.Seek((int)(verticesTableOffset + (i * 0x38) + 0x10), SeekOrigin.Begin);
-                    writeRelocatableOffset((uint)mainHeader.BaseStream.Position, 0, relocationTable);
-                    mainHeader.Write(faceHeaderOffset);
-                    for (int j = 0; j < faceCounts[i]; j++)
-                    {
-                        writeRelocatableOffset((uint)(faceHeaderOffset + 0x2c), 4, relocationTable);
-                        faceHeaderOffset += 0x34;
-                    }
-                }
-
-                long currentPosition = mainHeader.BaseStream.Position;
-                mainHeader.BaseStream.Seek(modelHeaderPosition, SeekOrigin.Begin);
-                writeRelocatableOffset((uint)mainHeader.BaseStream.Position, 0, relocationTable);
-                mainHeader.Write(materialsTableOffset);
-                mainHeader.Write((uint)mdl.material.Count);
-                mainHeader.Write(0);
-                writeRelocatableOffset((uint)mainHeader.BaseStream.Position, 0, relocationTable);
-                mainHeader.Write(verticesTableOffset);
-                mainHeader.Write((uint)mdl.modelObject.Count);
-                for (int i = 0; i < 10; i++) mainHeader.Write(verticesTableOffset); //Layer related
-                mainHeader.Write(0);
-                mainHeader.Write(0);
-                mainHeader.Write(0);
-                writeRelocatableOffset((uint)mainHeader.BaseStream.Position, 0, relocationTable);
-                mainHeader.Write((uint)mainHeader.BaseStream.Position + 0x1c); //Nesh Node Visibility
-                mainHeader.Write((uint)mdl.modelObject.Count); //Mesh Node count
-                writeString(mdl.name, mainHeader, stringTable, relocationTable);
-                mainHeader.Write(0);
-                mainHeader.Write(0);
-                mainHeader.Write(0);
-                mainHeader.Write(0);
-                mainHeader.Write(meshNodeVisibility);
-
-                mainHeader.BaseStream.Seek(currentPosition, SeekOrigin.Begin);
-            }
-
-            using (BinaryWriter output = new BinaryWriter(new MemoryStream()))
-            {
-                uint mainHeaderOffset = 0x44;
-
-                output.Write(Encoding.ASCII.GetBytes("BCH"));
-                output.Write((byte)0);
-                output.Write((byte)0x21);
-                output.Write((byte)0x21);
-                output.Write((ushort)42921);
-
-                output.Write(mainHeaderOffset);
-                output.Write(0);
-                output.Write(0);
-                output.Write(0);
-                output.Write(0);
-                output.Write(0);
-
-                output.Write(0);
-                output.Write((uint)stringTable.BaseStream.Length);
-                output.Write((uint)gpuCommands.BaseStream.Length);
-                output.Write((uint)data.BaseStream.Length);
-                output.Write((uint)dataExtended.BaseStream.Length);
-                output.Write(0);
-                output.Write(8);
-                output.Write(0);
-
-                output.Write((ushort)1);
-                output.Write((ushort)2);
-
-                output.BaseStream.Seek(mainHeaderOffset, SeekOrigin.Begin);
-
-                BinaryReader reader = new BinaryReader(mainHeader.BaseStream);
-                mainHeader.BaseStream.Seek(0, SeekOrigin.Begin);
-                uint offset = reader.ReadUInt32();
-                mainHeader.BaseStream.Seek(offset, SeekOrigin.Begin);
-                foreach (uint o in modelsPointerTable)
-                {
-                    writeRelocatableOffset((uint)mainHeader.BaseStream.Position, 0, relocationTable);
-                    mainHeader.Write(o);
-                }
-
-                output.Write(((MemoryStream)mainHeader.BaseStream).ToArray());
-                uint stringTableOffset = (uint)output.BaseStream.Position;
-                output.Write(((MemoryStream)stringTable.BaseStream).ToArray());
-                align(0xf, output);
-                uint descriptionOffset = (uint)output.BaseStream.Position;
-                output.Write(((MemoryStream)gpuCommands.BaseStream).ToArray());
-                align(0x7f, output);
-                uint dataOffset = (uint)output.BaseStream.Position;
-                output.Write(((MemoryStream)data.BaseStream).ToArray());
-                align(0x7f, output);
-                uint dataExtendedOffset = (uint)output.BaseStream.Position;
-                output.Write(((MemoryStream)dataExtended.BaseStream).ToArray());
-                align(0x7f, output);
-                uint relocationTableOffset = (uint)output.BaseStream.Position;
-                output.Write(((MemoryStream)relocationTable.BaseStream).ToArray());
-
-                output.Seek(0xc, SeekOrigin.Begin);
-                output.Write(stringTableOffset);
-                output.Write(descriptionOffset);
-                output.Write(dataOffset);
-                output.Write(dataExtendedOffset);
-                output.Write(relocationTableOffset);
-                output.BaseStream.Seek(0x14, SeekOrigin.Current);
-                output.Write((uint)relocationTable.BaseStream.Length);
-
-                mainHeader.Close();
-                stringTable.Close();
-                gpuCommands.Dispose();
-                data.Close();
-                dataExtended.Close();
-                relocationTable.Close();
-
-                return ((MemoryStream)output.BaseStream).ToArray();
-            }
-        }
-
-        private static void setColor(Color color, BinaryWriter output)
-        {
-            output.Write(color.R);
-            output.Write(color.G);
-            output.Write(color.B);
-            output.Write(color.A);
-        }
-
-        private static void writeString(string text, BinaryWriter output)
-        {
-            output.Write(Encoding.ASCII.GetBytes(text));
-            output.Write((byte)0);
-        }
-
-        private static void writeString(string text, BinaryWriter output, BinaryWriter stringTable, BinaryWriter relocationTable)
-        {
-            if (text != null)
-            {
-                relocationTable.Write((uint)(output.BaseStream.Position & 0xffffff) | 0x02000000);
-                output.Write((uint)stringTable.BaseStream.Position);
-                writeString(text, stringTable);
-            }
-            else
-            {
-                output.Write(0);
-            }
-        }
-
-        private static void writeRelocatableOffset(uint offset, byte flags, BinaryWriter relocationTable, bool justIgnore = false)
-        {
-            uint value = ((offset / 4) & 0xffffff) | ((uint)flags << 24);
-            relocationTable.Write(value);
-        }
-
-        private static void align(uint mask, BinaryWriter output)
-        {
-            while ((output.BaseStream.Position & mask) != 0) output.Write((byte)0);
-        }
-
-        #endregion
-
     }
 }

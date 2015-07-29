@@ -30,6 +30,11 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
             disposed = true;
         }
 
+        public void Close()
+        {
+            Dispose(true);
+        }
+
         public Stream BaseStream
         {
             get

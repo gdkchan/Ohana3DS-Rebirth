@@ -14,10 +14,6 @@ namespace Ohana3DS_Rebirth
             InitializeComponent();
             WindowManager.initialize(DockContainer);
             MainMenu.Renderer = new GUI.OMenuStrip();
-
-            //RenderBase.OModelGroup testModel = Ohana.GenericFormats.SMD.import("D:\\miku.smd");
-            //RenderBase.OModelGroup testModel = BCH.load("D:\\h3d\\cube.bch");
-            //File.WriteAllBytes("D:\\test.bch", BCH.save(testModel));
         }
 
         private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
@@ -40,12 +36,14 @@ namespace Ohana3DS_Rebirth
         {
             using (OpenFileDialog openDlg = new OpenFileDialog())
             {
-                openDlg.Filter = "All supported files|*.bch;*.cx;*.mm;*.gr;*.pc";
+                openDlg.Filter = "All supported files|*.bch;*.cx;*.mm;*.gr;*.pc;*.bcres";
                 openDlg.Filter += "|Binary CTR H3D|*.bch";
                 openDlg.Filter += "|CTR Compressed file|*.cx";
                 openDlg.Filter += "|Pokémon Overworld model|*.mm";
                 openDlg.Filter += "|Pokémon Map model|*.gr";
                 openDlg.Filter += "|Pokémon Species model|*.pc";
+                openDlg.Filter += "|Binary CTR Resource|*.bcres";
+                openDlg.Filter += "|Binary CTR Model|*.bcmdl";
                 openDlg.Filter += "|All files|*.*";
                 if (openDlg.ShowDialog() != DialogResult.OK) return;
                 open(openDlg.FileName, openDlg.FilterIndex);
@@ -71,10 +69,11 @@ namespace Ohana3DS_Rebirth
                     break;
             }
 
+            byte[] buffer;
             switch (format)
             {
                 case FileIdentifier.fileFormat.H3D:
-                    byte[] buffer = new byte[data.Length];
+                    buffer = new byte[data.Length];
                     data.Read(buffer, 0, buffer.Length);
                     data.Close();
                     data.Dispose();
@@ -96,6 +95,13 @@ namespace Ohana3DS_Rebirth
                     }
                     //TODO: Add windows for extra data
 
+                    break;
+                case FileIdentifier.fileFormat.CGFX:
+                    buffer = new byte[data.Length];
+                    data.Read(buffer, 0, buffer.Length);
+                    data.Close();
+                    data.Dispose();
+                    launchModel(CGFX.load(new MemoryStream(buffer)), name);
                     break;
                 default:
                     MessageBox.Show("Unsupported file format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
