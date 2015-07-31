@@ -244,6 +244,12 @@
     <Compile Include="GUI\OWindowManager.Designer.cs">
       <DependentUpon>OWindowManager.cs</DependentUpon>
     </Compile>
+    <Compile Include="OContainerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="OContainerForm.Designer.cs">
+      <DependentUpon>OContainerForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="OForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -253,7 +259,10 @@
     <Compile Include="Ohana\AnimationHelper.cs" />
     <Compile Include="Ohana\BCH.cs" />
     <Compile Include="Ohana\CGFX.cs" />
+    <Compile Include="Ohana\CompressionManager.cs" />
     <Compile Include="Ohana\Compressions\LZSS.cs" />
+    <Compile Include="Ohana\Compressions\LZSS_Ninty.cs" />
+    <Compile Include="Ohana\Containers\DQVIIPack.cs" />
     <Compile Include="Ohana\Containers\GenericContainer.cs" />
     <Compile Include="Ohana\Containers\PkmnContainer.cs" />
     <Compile Include="Ohana\Compressions\BLZ.cs" />
@@ -325,6 +334,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Windows\OTextureWindow.resx">
       <DependentUpon>OTextureWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="OContainerForm.resx">
+      <DependentUpon>OContainerForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="OForm.resx">
       <DependentUpon>OForm.cs</DependentUpon>

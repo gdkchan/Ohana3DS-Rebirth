@@ -282,12 +282,12 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
             ushort baseCommand = 0;
             switch (stage)
             {
-                case 0: baseCommand = PICACommand.tevStage0Config0; break;
-                case 1: baseCommand = PICACommand.tevStage1Config0; break;
-                case 2: baseCommand = PICACommand.tevStage2Config0; break;
-                case 3: baseCommand = PICACommand.tevStage3Config0; break;
-                case 4: baseCommand = PICACommand.tevStage4Config0; break;
-                case 5: baseCommand = PICACommand.tevStage5Config0; break;
+                case 0: baseCommand = PICACommand.tevStage0Source; break;
+                case 1: baseCommand = PICACommand.tevStage1Source; break;
+                case 2: baseCommand = PICACommand.tevStage2Source; break;
+                case 3: baseCommand = PICACommand.tevStage3Source; break;
+                case 4: baseCommand = PICACommand.tevStage4Source; break;
+                case 5: baseCommand = PICACommand.tevStage5Source; break;
                 default: throw new Exception("PICACommandReader: Invalid TevStage number!");
             }
 
@@ -511,8 +511,8 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
             uint value = getParameter(PICACommand.texUnit0Param);
             output.magFilter = (RenderBase.OTextureMagFilter)((value >> 1) & 1);
             output.minFilter = (RenderBase.OTextureMinFilter)(((value >> 2) & 1) | ((value >> 23) & 2));
-            output.wrapU = (RenderBase.OTextureWrap)((value >> 8) & 3);
-            output.wrapV = (RenderBase.OTextureWrap)((value >> 12) & 3);
+            output.wrapU = (RenderBase.OTextureWrap)((value >> 12) & 0xf);
+            output.wrapV = (RenderBase.OTextureWrap)((value >> 8) & 0xf);
 
             return output;
         }
@@ -570,8 +570,8 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
             uint value = getParameter(PICACommand.texUnit1Param);
             output.magFilter = (RenderBase.OTextureMagFilter)((value >> 1) & 1);
             output.minFilter = (RenderBase.OTextureMinFilter)(((value >> 2) & 1) | ((value >> 23) & 2));
-            output.wrapU = (RenderBase.OTextureWrap)((value >> 8) & 3);
-            output.wrapV = (RenderBase.OTextureWrap)((value >> 12) & 3);
+            output.wrapU = (RenderBase.OTextureWrap)((value >> 12) & 0xf);
+            output.wrapV = (RenderBase.OTextureWrap)((value >> 8) & 0xf);
 
             return output;
         }
@@ -629,8 +629,8 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
             uint value = getParameter(PICACommand.texUnit2Param);
             output.magFilter = (RenderBase.OTextureMagFilter)((value >> 1) & 1);
             output.minFilter = (RenderBase.OTextureMinFilter)(((value >> 2) & 1) | ((value >> 23) & 2));
-            output.wrapU = (RenderBase.OTextureWrap)((value >> 8) & 3);
-            output.wrapV = (RenderBase.OTextureWrap)((value >> 12) & 3);
+            output.wrapU = (RenderBase.OTextureWrap)((value >> 12) & 0xf);
+            output.wrapV = (RenderBase.OTextureWrap)((value >> 8) & 0xf);
 
             return output;
         }

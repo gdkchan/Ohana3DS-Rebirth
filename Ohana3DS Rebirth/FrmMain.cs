@@ -36,38 +36,33 @@ namespace Ohana3DS_Rebirth
         {
             using (OpenFileDialog openDlg = new OpenFileDialog())
             {
-                openDlg.Filter = "All supported files|*.bch;*.cx;*.mm;*.gr;*.pc;*.bcres";
+                openDlg.Filter = "All supported files|*.bch;*.cx;*.lz;*.cmp;*.mm;*.gr;*.pc;*.pack;*.bcres;*.bcmdl";
                 openDlg.Filter += "|Binary CTR H3D|*.bch";
-                openDlg.Filter += "|CTR Compressed file|*.cx";
+                openDlg.Filter += "|Compressed file|*.cx;*.lz;*.cmp";
                 openDlg.Filter += "|Pokémon Overworld model|*.mm";
                 openDlg.Filter += "|Pokémon Map model|*.gr";
                 openDlg.Filter += "|Pokémon Species model|*.pc";
+                openDlg.Filter += "|Dragon Quest VII Pack|*.pack";
                 openDlg.Filter += "|Binary CTR Resource|*.bcres";
                 openDlg.Filter += "|Binary CTR Model|*.bcmdl";
                 openDlg.Filter += "|All files|*.*";
                 if (openDlg.ShowDialog() != DialogResult.OK) return;
-                open(openDlg.FileName, openDlg.FilterIndex);
+                open(openDlg.FileName);
             }
         }
 
-        private void open(string fileName, int type)
+        public void open(string fileName)
+        {
+            string name = Path.GetFileNameWithoutExtension(fileName);
+            open(new FileStream(fileName, FileMode.Open), name);
+        }
+
+        public void open(Stream data, string name)
         {
             WindowManager.flush();
 
-            FileIdentifier.fileFormat format = FileIdentifier.identify(fileName);
-            string name = Path.GetFileNameWithoutExtension(fileName);
-
-            Stream data = new FileStream(fileName, FileMode.Open);
-            switch (format)
-            {
-                case FileIdentifier.fileFormat.BLZCompressed:
-                    byte[] decompressedData = Ohana.Compressions.BLZ.decompress(data);
-                    byte[] content = new byte[decompressedData.Length - 1];
-                    Buffer.BlockCopy(decompressedData, 1, content, 0, content.Length);
-                    data = new MemoryStream(content);
-                    format = FileIdentifier.identify(data);
-                    break;
-            }
+            FileIdentifier.fileFormat format = FileIdentifier.identify(data);
+            if (FileIdentifier.isCompressed(format)) CompressionManager.decompress(ref data, ref format);
 
             byte[] buffer;
             switch (format)
@@ -103,8 +98,14 @@ namespace Ohana3DS_Rebirth
                     data.Dispose();
                     launchModel(CGFX.load(new MemoryStream(buffer)), name);
                     break;
+                case FileIdentifier.fileFormat.DQVIIPack:
+                    OContainerForm containerForm = new OContainerForm();
+                    containerForm.launch(Ohana.Containers.DQVIIPack.load(data));
+                    containerForm.Show(this);
+                    break;
                 default:
                     MessageBox.Show("Unsupported file format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    data.Close();
                     break;
             }
         }

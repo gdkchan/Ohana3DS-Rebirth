@@ -1264,15 +1264,15 @@ namespace Ohana3DS_Rebirth.Ohana
                     uint textureCommandsOffset = input.ReadUInt32();
                     uint textureCommandsWordCount = input.ReadUInt32();
 
-                    uint materialCoordinatorOffset = 0;
+                    uint materialMapperOffset = 0;
                     if (header.backwardCompatibility < 0x21)
                     {
-                        materialCoordinatorOffset = (uint)data.Position;
+                        materialMapperOffset = (uint)data.Position;
                         data.Seek(0x30, SeekOrigin.Current);
                     }
                     else
                     {
-                        materialCoordinatorOffset = input.ReadUInt32();
+                        materialMapperOffset = input.ReadUInt32();
                     }
 
                     material.name0 = readString(input);
@@ -1399,8 +1399,8 @@ namespace Ohana3DS_Rebirth.Ohana
 
                         uint metaDataPointerOffset = input.ReadUInt32();
 
-                        //Coordinator
-                        data.Seek(materialCoordinatorOffset, SeekOrigin.Begin);
+                        //Mapper
+                        data.Seek(materialMapperOffset, SeekOrigin.Begin);
                         for (int i = 0; i < 3; i++)
                         {
                             RenderBase.OTextureMapper mapper;
@@ -1665,6 +1665,11 @@ namespace Ohana3DS_Rebirth.Ohana
                                         if (format.attributeLength > 2) vertex.addWeight(vector.w * boneWeightScale);
                                         break;
                                 }
+                            }
+
+                            if (model.skeleton.Count > 0)
+                            {
+                                if (nodeList.Count > 0 && vertex.node.Count == 0) vertex.addNode((int)nodeList[0]);
                             }
 
                             if ((skinningMode == RenderBase.OSkinningMode.rigidSkinning || skinningMode == RenderBase.OSkinningMode.none) && vertex.node.Count > 0)

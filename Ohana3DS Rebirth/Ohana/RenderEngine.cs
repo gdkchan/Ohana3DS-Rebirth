@@ -703,8 +703,8 @@ namespace Ohana3DS_Rebirth.Ohana
                                     foreach (CustomTexture texture in textures)
                                     {
                                         if (texture.name == material.name0) { device.SetTexture(0, texture.texture); legacyUsedTexture = 0; }
-                                        else if (texture.name == material.name1) { device.SetTexture(0, texture.texture); legacyUsedTexture = 1; }
-                                        else if (texture.name == material.name2) { device.SetTexture(0, texture.texture); legacyUsedTexture = 2; }
+                                        //else if (texture.name == material.name1) { device.SetTexture(0, texture.texture); legacyUsedTexture = 1; }
+                                        //else if (texture.name == material.name2) { device.SetTexture(0, texture.texture); legacyUsedTexture = 2; }
                                     }
                                 }
 

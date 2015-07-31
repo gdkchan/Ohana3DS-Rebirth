@@ -757,7 +757,9 @@ namespace Ohana3DS_Rebirth.Ohana
             uvMap = 0,
             cameraCubeMap = 1,
             cameraSphereMap = 2,
-            projectionMap = 3
+            projectionMap = 3,
+            shadowMap = 4,
+            shadowCubeMap = 5
         }
 
         /// <summary>
@@ -1176,6 +1178,17 @@ namespace Ohana3DS_Rebirth.Ohana
             /// <summary>
             ///     Creates a new Reference.
             /// </summary>
+            /// <param name="_id">Reference Identification string</param>
+            /// <param name="_name">Reference name</param>
+            public OReference(string _id, string _name)
+            {
+                id = _id;
+                name = _name;
+            }
+
+            /// <summary>
+            ///     Creates a new Reference.
+            /// </summary>
             /// <param name="_name">String of reference on Id@Name format</param>
             public OReference(string _name)
             {
@@ -1192,8 +1205,16 @@ namespace Ohana3DS_Rebirth.Ohana
                 }
             }
 
+            /// <summary>
+            ///     Creates a new Reference.
+            /// </summary>
             public OReference()
             {
+            }
+
+            public override string ToString()
+            {
+                return id + "@" + name;
             }
         }
 
