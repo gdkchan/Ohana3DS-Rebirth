@@ -9,12 +9,14 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             Unsupported,
             H3D,
+            DMPTexture,
             PkmnContainer,
             BLZCompressed,
             LZSSCompressed,
             LZSSHeaderCompressed,
             IECPCompressed,
             DQVIIPack,
+            FPT0,
             CGFX
         }
 
@@ -47,11 +49,13 @@ namespace Ohana3DS_Rebirth.Ohana
             {
                 case "CGFX": return fileFormat.CGFX;
                 case "IECP": return fileFormat.IECPCompressed;
+                case "FPT0": return fileFormat.FPT0;
             }
 
             switch (magic3b)
             {
                 case "BCH": return fileFormat.H3D;
+                case "DMP": return fileFormat.DMPTexture;
             }
 
             switch (magic2b)

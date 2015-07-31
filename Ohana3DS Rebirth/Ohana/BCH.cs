@@ -1637,10 +1637,10 @@ namespace Ohana3DS_Rebirth.Ohana
                                         vertex.tangent = new RenderBase.OVector3(vector.x * tangentScale, vector.y * tangentScale, vector.z * tangentScale);
                                         break;
                                     case PICACommand.vshAttribute.color:
-                                        uint r = (uint)((vector.x * colorScale) * 0xff);
-                                        uint g = (uint)((vector.y * colorScale) * 0xff);
-                                        uint b = (uint)((vector.z * colorScale) * 0xff);
-                                        uint a = (uint)((vector.w * colorScale) * 0xff);
+                                        uint r = clamp((vector.x * colorScale) * 0xff);
+                                        uint g = clamp((vector.y * colorScale) * 0xff);
+                                        uint b = clamp((vector.z * colorScale) * 0xff);
+                                        uint a = clamp((vector.w * colorScale) * 0xff);
                                         vertex.diffuseColor = b | (g << 8) | (r << 16) | (a << 24);
                                         break;
                                     case PICACommand.vshAttribute.textureCoordinate0:
@@ -2159,6 +2159,18 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             return output;
+        }
+
+        /// <summary>
+        ///     Clamps a Float value between 0 and 255 and return as Byte.
+        /// </summary>
+        /// <param name="value">The float value</param>
+        /// <returns></returns>
+        private static byte clamp(float value)
+        {
+            if (value > 0xff) return 0xff;
+            if (value < 0) return 0;
+            return (byte)value;
         }
 
         #endregion

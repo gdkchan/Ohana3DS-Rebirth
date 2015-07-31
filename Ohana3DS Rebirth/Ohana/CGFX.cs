@@ -136,7 +136,58 @@ namespace Ohana3DS_Rebirth.Ohana
             public bool isVisible;
         }
 
-        public static RenderBase.OModelGroup load(MemoryStream data)
+        /// <summary>
+        ///     Gets the name of the first model on a CGFX file.
+        ///     Returns null if the file doesn't contain any model.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public static string getName(MemoryStream data)
+        {
+            BinaryReader input = new BinaryReader(data);
+
+            cgfxHeader header = new cgfxHeader();
+            header.magic = IOUtils.readString(input, 0, 4);
+            header.endian = input.ReadUInt16();
+            header.length = input.ReadUInt16();
+            header.revision = input.ReadUInt32();
+            header.fileLength = input.ReadUInt32();
+            header.entries = input.ReadUInt32();
+
+            data.Seek(header.length + 8, SeekOrigin.Begin);
+            List<dictEntry> models = getDictionary(input);
+
+            if (models.Count > 0)
+            {
+                data.Seek(models[0].dataOffset + 0xc, SeekOrigin.Begin);
+                string name = IOUtils.readString(input, getRelativeOffset(input));
+                data.Close();
+                return name;
+            }
+            else
+            {
+                data.Close();
+                return null;
+            }
+        }
+
+        /// <summary>
+        ///     Loads a CGFX file.
+        /// </summary>
+        /// <param name="fileName">File Name of the CGFX file</param>
+        /// <returns></returns>
+        public static RenderBase.OModelGroup load(string fileName)
+        {
+            return load(new MemoryStream(File.ReadAllBytes(fileName)));
+        }
+
+        /// <summary>
+        ///     Loads a CGFX file.
+        ///     Note that CGFX must start at offset 0x0 (don't try using it for CGFXs inside containers).
+        /// </summary>
+        /// <param name="data">Stream of the CGFX file.</param>
+        /// <returns></returns>
+        public static RenderBase.OModelGroup load(Stream data)
         {
             BinaryReader input = new BinaryReader(data);
 
@@ -216,7 +267,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 cmdlHeader.hasSkeleton = (flags & 0x80) > 0;
                 string cmdlMagic = IOUtils.readString(input, (uint)input.BaseStream.Position, 4);
                 uint revision = input.ReadUInt32();
-                cmdlHeader.modelName = IOUtils.readString(input, (uint)data.Position + input.ReadUInt32());
+                cmdlHeader.modelName = IOUtils.readString(input, getRelativeOffset(input));
                 cmdlHeader.userDataEntries = input.ReadUInt32();
                 cmdlHeader.userDataDictionaryOffset = getRelativeOffset(input);
                 input.ReadUInt32();
@@ -631,7 +682,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
                         attributeFormat format = new attributeFormat();
 
-                        input.ReadUInt32();
+                        flags = input.ReadUInt32();
                         format.attribute = (PICACommand.vshAttribute)input.ReadUInt32();
                         format.isInterleaved = input.ReadUInt32() == 2;
                         bufferObject = input.ReadUInt32();
@@ -747,10 +798,10 @@ namespace Ohana3DS_Rebirth.Ohana
                                         vertex.tangent = new RenderBase.OVector3(vector.x * format.scale, vector.y * format.scale, vector.z * format.scale);
                                         break;
                                     case PICACommand.vshAttribute.color:
-                                        uint r = (uint)((vector.x * format.scale) * 0xff);
-                                        uint g = (uint)((vector.y * format.scale) * 0xff);
-                                        uint b = (uint)((vector.z * format.scale) * 0xff);
-                                        uint a = (uint)((vector.w * format.scale) * 0xff);
+                                        uint r = clamp((vector.x * format.scale) * 0xff);
+                                        uint g = clamp((vector.y * format.scale) * 0xff);
+                                        uint b = clamp((vector.z * format.scale) * 0xff);
+                                        uint a = clamp((vector.w * format.scale) * 0xff);
                                         vertex.diffuseColor = b | (g << 8) | (r << 16) | (a << 24);
                                         break;
                                     case PICACommand.vshAttribute.textureCoordinate0:
@@ -870,6 +921,8 @@ namespace Ohana3DS_Rebirth.Ohana
 
                 models.addModel(model);
             }
+
+            data.Close();
 
             return models;
         }
@@ -1098,6 +1151,18 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             return output;
+        }
+
+        /// <summary>
+        ///     Clamps a Float value between 0 and 255 and return as Byte.
+        /// </summary>
+        /// <param name="value">The float value</param>
+        /// <returns></returns>
+        private static byte clamp(float value)
+        {
+            if (value > 0xff) return 0xff;
+            if (value < 0) return 0;
+            return (byte)value;
         }
     }
 }

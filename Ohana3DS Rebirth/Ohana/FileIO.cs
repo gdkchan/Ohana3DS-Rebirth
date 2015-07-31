@@ -35,21 +35,30 @@ namespace Ohana3DS_Rebirth.Ohana
                 {
                     case fileType.model:
                         openDlg.Title = "Import Model";
-                        openDlg.Filter = "Binary CTR H3D|*.bch|Source Model|*.smd";
+                        openDlg.Filter = "Binary CTR H3D|*.bch|Binary CTR Model|*.bcres;*.bcmdl|Source Model|*.smd";
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
                             switch (openDlg.FilterIndex)
                             {
                                 case 1: return BCH.load(openDlg.FileName).model;
-                                case 2: return GenericFormats.SMD.import(openDlg.FileName).model;
+                                case 2: return CGFX.load(openDlg.FileName).model;
+                                case 3: return GenericFormats.SMD.import(openDlg.FileName).model;
                                 default: return null;
                             }
                         }
                         break;
                     case fileType.texture:
                         openDlg.Title = "Import Texture";
-                        openDlg.Filter = "Binary CTR H3D|*.bch";
-                        if (openDlg.ShowDialog() == DialogResult.OK) return BCH.load(openDlg.FileName).texture;
+                        openDlg.Filter = "Binary CTR H3D|*.bch|Binary CTR Texture|*.bcres;*.bctex";
+                        if (openDlg.ShowDialog() == DialogResult.OK)
+                        {
+                            switch (openDlg.FilterIndex)
+                            {
+                                case 1: return BCH.load(openDlg.FileName).texture;
+                                case 2: return CGFX.load(openDlg.FileName).texture;
+                                default: return null;
+                            }
+                        }
                         break;
                     case fileType.camera:
                         openDlg.Title = "Import Camera";

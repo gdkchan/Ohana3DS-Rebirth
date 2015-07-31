@@ -214,6 +214,12 @@
     <Compile Include="GUI\Windows\OModelWindow.Designer.cs">
       <DependentUpon>OModelWindow.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\Windows\OSingleTextureWindow.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Windows\OSingleTextureWindow.Designer.cs">
+      <DependentUpon>OSingleTextureWindow.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\Windows\OViewportWindow.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -263,9 +269,11 @@
     <Compile Include="Ohana\Compressions\LZSS.cs" />
     <Compile Include="Ohana\Compressions\LZSS_Ninty.cs" />
     <Compile Include="Ohana\Containers\DQVIIPack.cs" />
+    <Compile Include="Ohana\Containers\FPT0.cs" />
     <Compile Include="Ohana\Containers\GenericContainer.cs" />
     <Compile Include="Ohana\Containers\PkmnContainer.cs" />
     <Compile Include="Ohana\Compressions\BLZ.cs" />
+    <Compile Include="Ohana\DMP.cs" />
     <Compile Include="Ohana\FileIdentifier.cs" />
     <Compile Include="Ohana\FileIO.cs" />
     <Compile Include="Ohana\GenericFormats\CMDL.cs" />
@@ -325,6 +333,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Windows\OModelWindow.resx">
       <DependentUpon>OModelWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Windows\OSingleTextureWindow.resx">
+      <DependentUpon>OSingleTextureWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Windows\OViewportWindow.resx">
       <DependentUpon>OViewportWindow.cs</DependentUpon>
@@ -466,6 +477,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\ui_up.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_open.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

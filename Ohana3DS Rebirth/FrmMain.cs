@@ -36,13 +36,15 @@ namespace Ohana3DS_Rebirth
         {
             using (OpenFileDialog openDlg = new OpenFileDialog())
             {
-                openDlg.Filter = "All supported files|*.bch;*.cx;*.lz;*.cmp;*.mm;*.gr;*.pc;*.pack;*.bcres;*.bcmdl";
+                openDlg.Filter = "All supported files|*.bch;*.cx;*.lz;*.cmp;*.mm;*.gr;*.pc;*.pack;*.fpt;*.dmp;*.bcres;*.bcmdl";
                 openDlg.Filter += "|Binary CTR H3D|*.bch";
                 openDlg.Filter += "|Compressed file|*.cx;*.lz;*.cmp";
                 openDlg.Filter += "|Pokémon Overworld model|*.mm";
                 openDlg.Filter += "|Pokémon Map model|*.gr";
                 openDlg.Filter += "|Pokémon Species model|*.pc";
-                openDlg.Filter += "|Dragon Quest VII Pack|*.pack";
+                openDlg.Filter += "|Dragon Quest VII Package|*.pack";
+                openDlg.Filter += "|Dragon Quest VII Container|*.fpt";
+                openDlg.Filter += "|Dragon Quest VII Texture|*.dmp";
                 openDlg.Filter += "|Binary CTR Resource|*.bcres";
                 openDlg.Filter += "|Binary CTR Model|*.bcmdl";
                 openDlg.Filter += "|All files|*.*";
@@ -65,6 +67,7 @@ namespace Ohana3DS_Rebirth
             if (FileIdentifier.isCompressed(format)) CompressionManager.decompress(ref data, ref format);
 
             byte[] buffer;
+            OContainerForm containerForm;
             switch (format)
             {
                 case FileIdentifier.fileFormat.H3D:
@@ -99,9 +102,25 @@ namespace Ohana3DS_Rebirth
                     launchModel(CGFX.load(new MemoryStream(buffer)), name);
                     break;
                 case FileIdentifier.fileFormat.DQVIIPack:
-                    OContainerForm containerForm = new OContainerForm();
+                    containerForm = new OContainerForm();
                     containerForm.launch(Ohana.Containers.DQVIIPack.load(data));
                     containerForm.Show(this);
+                    break;
+                case FileIdentifier.fileFormat.FPT0:
+                    containerForm = new OContainerForm();
+                    containerForm.launch(Ohana.Containers.FPT0.load(data));
+                    containerForm.Show(this);
+                    break;
+                case FileIdentifier.fileFormat.DMPTexture:
+                    GUI.OSingleTextureWindow textureWindow = new GUI.OSingleTextureWindow();
+
+                    textureWindow.Title = name;
+
+                    launchWindow(textureWindow);
+                    DockContainer.dockMainWindow();
+                    WindowManager.Refresh();
+
+                    textureWindow.initialize(DMP.load(data).texture);
                     break;
                 default:
                     MessageBox.Show("Unsupported file format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);

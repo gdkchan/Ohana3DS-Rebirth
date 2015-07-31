@@ -32,5 +32,33 @@ namespace Ohana3DS_Rebirth
             if (FileList.SelectedIndex == -1) return;
             ((FrmMain)Owner).open(new MemoryStream(container.content[FileList.SelectedIndex].data), container.content[FileList.SelectedIndex].name);
         }
+
+        private void BtnExtract_Click(object sender, EventArgs e)
+        {
+            if (FileList.SelectedIndex == -1) return;
+            using (SaveFileDialog saveDlg = new SaveFileDialog())
+            {
+                saveDlg.Title = "Extract file";
+                saveDlg.FileName = container.content[FileList.SelectedIndex].name;
+                saveDlg.Filter = "All files|*.*";
+                if (saveDlg.ShowDialog() == DialogResult.OK) File.WriteAllBytes(saveDlg.FileName, container.content[FileList.SelectedIndex].data);
+            }
+        }
+
+        private void BtnExtractAll_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog browserDlg = new FolderBrowserDialog())
+            {
+                browserDlg.Description = "Extract files";
+                if (browserDlg.ShowDialog() == DialogResult.OK)
+                {
+                    foreach (GenericContainer.OContainerEntry entry in container.content)
+                    {
+                        string fileName = Path.Combine(browserDlg.SelectedPath, entry.name);
+                        File.WriteAllBytes(fileName, entry.data);
+                    }
+                }
+            }
+        }
     }
 }
