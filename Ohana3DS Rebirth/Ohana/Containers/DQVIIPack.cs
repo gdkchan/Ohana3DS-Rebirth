@@ -172,7 +172,7 @@ namespace Ohana3DS_Rebirth.Ohana.Containers
         /// <summary>
         ///     Transforms a Node from relative to absolute positions.
         /// </summary>
-        /// <param name="skeleton">A list with all nodes</param>
+        /// <param name="nodes">A list with all nodes</param>
         /// <param name="index">Index of the node to convert</param>
         /// <param name="target">Target matrix to save node transformation</param>
         private static void transformNode(List<node> nodes, int index, ref RenderBase.OMatrix target)

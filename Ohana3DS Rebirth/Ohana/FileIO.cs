@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
+using System.Diagnostics;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
@@ -36,38 +37,65 @@ namespace Ohana3DS_Rebirth.Ohana
                     case fileType.model:
                         openDlg.Title = "Import Model";
                         openDlg.Filter = "Binary CTR H3D|*.bch|Binary CTR Model|*.bcres;*.bcmdl|Source Model|*.smd";
+                        openDlg.Multiselect = true;
+
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
-                            switch (openDlg.FilterIndex)
+                            List<RenderBase.OModel> output = new List<RenderBase.OModel>();
+                            foreach (string fileName in openDlg.FileNames)
                             {
-                                case 1: return BCH.load(openDlg.FileName).model;
-                                case 2: return CGFX.load(openDlg.FileName).model;
-                                case 3: return GenericFormats.SMD.import(openDlg.FileName).model;
-                                default: return null;
+                                try
+                                {
+                                    switch (openDlg.FilterIndex)
+                                    {
+                                        case 1: output.AddRange(BCH.load(fileName).model); break;
+                                        case 2: output.AddRange(CGFX.load(fileName).model); break;
+                                        case 3: output.AddRange(GenericFormats.SMD.import(fileName).model); break;
+                                    }
+                                }
+                                catch
+                                {
+                                    Debug.WriteLine("FileIO: Unable to import model file " + fileName + "!");
+                                }
                             }
+                            return output;
                         }
                         break;
                     case fileType.texture:
                         openDlg.Title = "Import Texture";
                         openDlg.Filter = "Binary CTR H3D|*.bch|Binary CTR Texture|*.bcres;*.bctex";
+                        openDlg.Multiselect = true;
+
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
-                            switch (openDlg.FilterIndex)
+                            List<RenderBase.OTexture> output = new List<RenderBase.OTexture>();
+                            foreach (string fileName in openDlg.FileNames)
                             {
-                                case 1: return BCH.load(openDlg.FileName).texture;
-                                case 2: return CGFX.load(openDlg.FileName).texture;
-                                default: return null;
+                                switch (openDlg.FilterIndex)
+                                {
+                                    case 1: output.AddRange(BCH.load(fileName).texture); break;
+                                    case 2: output.AddRange(CGFX.load(fileName).texture); break;
+                                }
                             }
+                            return output;
                         }
                         break;
                     case fileType.camera:
                         openDlg.Title = "Import Camera";
                         openDlg.Filter = "Binary CTR H3D|*.bch";
-                        if (openDlg.ShowDialog() == DialogResult.OK) return BCH.load(openDlg.FileName).camera;
+                        openDlg.Multiselect = true;
+
+                        if (openDlg.ShowDialog() == DialogResult.OK)
+                        {
+                            List<RenderBase.OCamera> output = new List<RenderBase.OCamera>();
+                            foreach (string fileName in openDlg.FileNames) output.AddRange(BCH.load(fileName).camera);
+                            return output;
+                        }
                         break;
                     case fileType.skeletalAnimation:
                         openDlg.Title = "Import Skeletal Animation";
                         openDlg.Filter = "Binary CTR H3D|*.bch|Source Model|*.smd";
+
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
                             switch (openDlg.FilterIndex)
@@ -81,6 +109,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     case fileType.materialAnimation:
                         openDlg.Title = "Import Material Animation";
                         openDlg.Filter = "Binary CTR H3D|*.bch";
+
                         if (openDlg.ShowDialog() == DialogResult.OK) return BCH.load(openDlg.FileName).materialAnimation;
                         break;
                 }

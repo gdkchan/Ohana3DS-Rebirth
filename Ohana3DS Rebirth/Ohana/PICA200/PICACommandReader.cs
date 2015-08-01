@@ -9,23 +9,14 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
 {
     class PICACommandReader
     {
-        private class param
-        {
-            public uint value;
-            public uint register;
+        List<float>[] floatUniform = new List<float>[96];
+        List<float> uniform = new List<float>();
 
-            public param(uint _value, uint _register)
-            {
-                value = _value;
-                register = _register;
-            }
+        float[] lookUpTable = new float[256];
+        uint lutIndex;
 
-            public param()
-            {
-            }
-        }
-        private List<param>[] commands = new List<param>[0x10000];
-        uint currentRegister;
+        private uint[] commands = new uint[0x10000];
+        uint currentUniform;
 
         /// <summary>
         ///     Creates a new PICA200 Command Buffer reader and reads the content.
@@ -36,7 +27,6 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
         public PICACommandReader(Stream input, uint wordCount, bool ignoreAlign = false)
         {
             BinaryReader reader = new BinaryReader(input);
-            for (int i = 0; i < commands.Length; i++) commands[i] = new List<param>();
 
             uint readedWords = 0;
             while (readedWords < wordCount)
@@ -50,15 +40,29 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
                 uint extraParameters = (header >> 20) & 0x7ff;
                 bool consecutiveWriting = (header & 0x80000000) > 0;
 
+                commands[id] = (getParameter(id) & (~mask & 0xf)) | (parameter & (0xfffffff0 | mask));
                 if (id == PICACommand.blockEnd) break;
-                else if (id == PICACommand.vertexShaderFloatUniformConfig) currentRegister = parameter & 0xff;
-                commands[id].Add(new param((getParameter(id) & (~mask & 0xf)) | (parameter & (0xfffffff0 | mask)), currentRegister));
+                else if (id == PICACommand.vertexShaderFloatUniformConfig) currentUniform = parameter & 0x7fffffff;
+                else if (id == PICACommand.vertexShaderFloatUniformData) uniform.Add(toFloat(commands[id]));
+                else if (id == PICACommand.fragmentShaderLookUpTableData) lookUpTable[lutIndex++] = commands[id];
                 for (int i = 0; i < extraParameters; i++)
                 {
                     if (consecutiveWriting) id++;
-                    commands[id].Add(new param((getParameter(id) & (~mask & 0xf)) | (reader.ReadUInt32() & (0xfffffff0 | mask)), currentRegister));
+                    commands[id] = (getParameter(id) & (~mask & 0xf)) | (reader.ReadUInt32() & (0xfffffff0 | mask));
                     readedWords++;
+
+                    if (id > PICACommand.vertexShaderFloatUniformConfig && id < PICACommand.vertexShaderFloatUniformData + 8) uniform.Add(toFloat(commands[id]));
+                    else if (id == PICACommand.fragmentShaderLookUpTableData) lookUpTable[lutIndex++] = commands[id];
                 }
+
+                if (uniform.Count > 0)
+                {
+                    if (floatUniform[currentUniform] == null) floatUniform[currentUniform] = new List<float>();
+                    floatUniform[currentUniform].AddRange(uniform);
+                    uniform.Clear();
+                }
+                lutIndex = 0;
+
                 if (!ignoreAlign) while ((input.Position & 7) != 0) reader.ReadUInt32(); //Ignore 0x0 padding Words
             }
         }
@@ -70,22 +74,7 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
         /// <returns></returns>
         public uint getParameter(ushort commandId)
         {
-            if (commands[commandId].Count > 0)
-                return commands[commandId][commands[commandId].Count - 1].value;
-            else
-                return 0;
-        }
-
-        /// <summary>
-        ///     Gets the parameter written to a given register.
-        /// </summary>
-        /// <param name="commandId">ID code of the command</param>
-        /// <param name="register">Register index number</param>
-        /// <returns></returns>
-        public uint getParameter(ushort commandId, uint register)
-        {
-            foreach (param p in commands[commandId]) if (p.register == register) return p.value;
-            return 0;
+            return commands[commandId];
         }
 
         /// <summary>
@@ -233,13 +222,7 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
         public Stack<float> getVSHFloatUniformData(uint register)
         {
             Stack<float> data = new Stack<float>();
-            for (int id = 0; id < 8; id++)
-            {
-                foreach (param p in commands[(ushort)(PICACommand.vertexShaderFloatUniformData + id)])
-                {
-                    if (p.register == register) data.Push(toFloat(p.value));
-                }
-            }
+            foreach (float value in floatUniform[register]) data.Push(value);
             return data;
         }
 
@@ -443,13 +426,7 @@ namespace Ohana3DS_Rebirth.Ohana.PICA200
         /// <returns></returns>
         public float[] getFSHLookUpTable()
         {
-            float[] output = new float[256];
-
-            for (int i = 0; i < 256; i++)
-            {
-                output[i] = toFloat(commands[PICACommand.fragmentShaderLookUpTableData][i].value);
-            }
-            return output;
+            return lookUpTable;
         }
 
         /// <summary>
