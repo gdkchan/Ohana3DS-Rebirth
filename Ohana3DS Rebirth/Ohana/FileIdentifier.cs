@@ -19,7 +19,8 @@ namespace Ohana3DS_Rebirth.Ohana
             FPT0,
             NLK2,
             CGFX,
-            zmdl
+            zmdl,
+            ztex
         }
 
         public static fileFormat identify(string fileName)
@@ -51,6 +52,7 @@ namespace Ohana3DS_Rebirth.Ohana
             {
                 case "CGFX": return fileFormat.CGFX;
                 case "zmdl": return fileFormat.zmdl;
+                case "ztex": return fileFormat.ztex;
                 case "IECP": return fileFormat.IECPCompressed;
                 case "FPT0": return fileFormat.FPT0;
                 case "NLK2": //Forbidden Magna models

@@ -36,7 +36,7 @@ namespace Ohana3DS_Rebirth
         {
             using (OpenFileDialog openDlg = new OpenFileDialog())
             {
-                openDlg.Filter = "All supported files|*.bch;*.cx;*.lz;*.cmp;*.mm;*.gr;*.pc;*.pack;*.fpt;*.dmp;*.rel;*.bcres;*.bcmdl;*.bctex;*.mdl";
+                openDlg.Filter = "All supported files|*.bch;*.cx;*.lz;*.cmp;*.mm;*.gr;*.pc;*.pack;*.fpt;*.dmp;*.rel;*.bcres;*.bcmdl;*.bctex;*.mdl;*.tex";
                 openDlg.Filter += "|Binary CTR H3D|*.bch";
                 openDlg.Filter += "|Compressed file|*.cx;*.lz;*.cmp";
                 openDlg.Filter += "|Pokémon Overworld model|*.mm";
@@ -50,6 +50,7 @@ namespace Ohana3DS_Rebirth
                 openDlg.Filter += "|Binary CTR Model|*.bcmdl";
                 openDlg.Filter += "|Binary CTR Texture|*.bctex";
                 openDlg.Filter += "|Fantasy Life Model|*.mdl";
+                openDlg.Filter += "|Fantasy Life Texture|*.tex";
                 openDlg.Filter += "|All files|*.*";
                 if (openDlg.ShowDialog() != DialogResult.OK) return;
                 open(openDlg.FileName);
@@ -108,6 +109,17 @@ namespace Ohana3DS_Rebirth
                     data.Close();
                     launchModel(ZMDL.load(new MemoryStream(buffer)), name);
                     break;
+                case FileIdentifier.fileFormat.ztex:
+                    GUI.OTextureWindow textureWindow = new GUI.OTextureWindow();
+
+                    textureWindow.Title = name;
+
+                    launchWindow(textureWindow);
+                    DockContainer.dockMainWindow();
+                    WindowManager.Refresh();
+
+                    textureWindow.initialize(ZTEX.load(data));
+                    break;
                 case FileIdentifier.fileFormat.DQVIIPack:
                     containerForm = new OContainerForm();
                     containerForm.launch(Ohana.Containers.DQVIIPack.load(data));
@@ -126,15 +138,15 @@ namespace Ohana3DS_Rebirth
                     launchModel(CGFX.load(new MemoryStream(buffer)), name);
                     break;
                 case FileIdentifier.fileFormat.DMPTexture:
-                    GUI.OSingleTextureWindow textureWindow = new GUI.OSingleTextureWindow();
+                    GUI.OSingleTextureWindow singleTextureWindow = new GUI.OSingleTextureWindow();
 
-                    textureWindow.Title = name;
+                    singleTextureWindow.Title = name;
 
-                    launchWindow(textureWindow);
+                    launchWindow(singleTextureWindow);
                     DockContainer.dockMainWindow();
                     WindowManager.Refresh();
 
-                    textureWindow.initialize(DMP.load(data).texture);
+                    singleTextureWindow.initialize(DMP.load(data).texture);
                     break;
                 default:
                     MessageBox.Show("Unsupported file format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);

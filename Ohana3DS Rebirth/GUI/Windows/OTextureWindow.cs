@@ -21,6 +21,14 @@ namespace Ohana3DS_Rebirth.GUI
             updateList();
         }
 
+        public void initialize(List<RenderBase.OTexture> textures)
+        {
+            renderer = new RenderEngine();
+            renderer.model = new RenderBase.OModelGroup();
+            renderer.model.texture = textures;
+            updateList();
+        }
+
         private void updateList()
         {
             TextureList.flush();

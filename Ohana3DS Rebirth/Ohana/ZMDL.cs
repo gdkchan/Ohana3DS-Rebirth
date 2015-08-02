@@ -1,4 +1,6 @@
-﻿using System;
+﻿//Fantasy Life ZMDL Model Import/Export made for Ohana3DS by gdkchan
+//Please give credits if you use in your project
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +8,11 @@ using System.IO;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
+    /// <summary>
+    ///     Fantasy Life ZMDL class.
+    ///     Use it to load model files from Fantasy Life.
+    ///     The model need to have the "zmdl" Magic at the beggining.
+    /// </summary>
     class ZMDL
     {
         public enum vshAttribute
@@ -62,6 +69,7 @@ namespace Ohana3DS_Rebirth.Ohana
             ushort modelObjectsCount = input.ReadUInt16();
             ushort unknowCount = input.ReadUInt16();
 
+            //Materials
             List<byte> materialObjectBinding = new List<byte>();
             for (int materialIndex = 0; materialIndex < materialsCount; materialIndex++)
             {
@@ -96,6 +104,15 @@ namespace Ohana3DS_Rebirth.Ohana
                 material.textureMapper[0].minFilter = RenderBase.OTextureMinFilter.linearMipmapLinear;
                 material.textureMapper[0].magFilter = RenderBase.OTextureMagFilter.linear;
 
+                for (int i = 0; i < 6; i++)
+                {
+                    material.fragmentShader.textureCombiner[i].rgbSource[0] = RenderBase.OCombineSource.texture0;
+                    material.fragmentShader.textureCombiner[i].rgbSource[1] = RenderBase.OCombineSource.primaryColor;
+                    material.fragmentShader.textureCombiner[i].combineRgb = RenderBase.OCombineOperator.modulate;
+                    material.fragmentShader.textureCombiner[i].alphaSource[0] = RenderBase.OCombineSource.texture0;
+                    material.fragmentShader.textureCombiner[i].rgbScale = 1;
+                    material.fragmentShader.textureCombiner[i].alphaScale = 1;
+                }
                 material.fragmentOperation.depth.isTestEnabled = true;
                 material.fragmentOperation.depth.testFunction = RenderBase.OTestFunction.lessOrEqual;
                 material.fragmentOperation.depth.isMaskEnabled = true;
@@ -103,6 +120,27 @@ namespace Ohana3DS_Rebirth.Ohana
                 model.addMaterial(material);
             }
 
+            //Skeleton
+            for (int boneIndex = 0; boneIndex < bonesCount; boneIndex++)
+            {
+                RenderBase.OBone bone = new RenderBase.OBone();
+                bone.name = IOUtils.readString(input, (uint)(skeletonOffset + boneIndex * 0xcc));
+
+                data.Seek(skeletonOffset + (boneIndex * 0xcc) + 0x40, SeekOrigin.Begin);
+                data.Seek(0x64, SeekOrigin.Current); //Unknow matrices, probably transform and other stuff
+
+                bone.translation = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                bone.rotation = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                bone.scale = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());               
+                bone.absoluteScale = new RenderBase.OVector3(bone.scale);
+
+                bone.parentId = input.ReadInt16();
+                input.ReadUInt16();
+
+                model.addBone(bone);
+            }
+
+            //Meshes
             for (int objIndex = 0; objIndex < modelObjectsCount; objIndex++)
             {
                 data.Seek(modelOffset + objIndex * 0xc4, SeekOrigin.Begin);
@@ -180,6 +218,19 @@ namespace Ohana3DS_Rebirth.Ohana
                             vertex.texture0 = new RenderBase.OVector2(input.ReadSingle(), input.ReadSingle());
                         }
 
+                        for (int boneIndex = 0; boneIndex < attributes[(int)vshAttribute.boneIndex].attributeLength; boneIndex++)
+                        {
+                            data.Seek(vertexOffset + attributes[(int)vshAttribute.boneIndex].offset + (boneIndex * 4), SeekOrigin.Begin);
+                            int b = (int)input.ReadSingle();
+                            if (b < nodeList.Count) vertex.addNode(nodeList[b]); //Check, just to be sure
+                        }
+
+                        for (int boneWeight = 0; boneWeight < attributes[(int)vshAttribute.boneWeight].attributeLength; boneWeight++)
+                        {
+                            data.Seek(vertexOffset + attributes[(int)vshAttribute.boneWeight].offset + (boneWeight * 4), SeekOrigin.Begin);
+                            vertex.addWeight(input.ReadSingle());
+                        }
+
                         //Like a Bounding Box, used to calculate the proportions of the mesh on the Viewport
                         if (vertex.position.x < models.minVector.x) models.minVector.x = vertex.position.x;
                         else if (vertex.position.x > models.maxVector.x) models.maxVector.x = vertex.position.x;
@@ -199,6 +250,8 @@ namespace Ohana3DS_Rebirth.Ohana
                 if (materialId > -1) obj.materialId = (ushort)materialId;
                 obj.hasNormal = true;
                 obj.texUVCount = 1;
+                obj.hasNode = true;
+                obj.hasWeight = true;
                 obj.renderBuffer = vertexBuffer.ToArray();
                 model.addObject(obj);
             }

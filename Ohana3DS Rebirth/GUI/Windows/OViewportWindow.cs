@@ -91,7 +91,9 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void Screen_MouseWheel(object sender, MouseEventArgs e)
         {
-            if (renderer != null && e.Delta > 0) renderer.setZoom(renderer.Zoom + 1.0f); else renderer.setZoom(renderer.Zoom - 1.0f);
+            float step = 1f;
+            if (Control.ModifierKeys == Keys.Shift) step = 0.1f;
+            if (renderer != null && e.Delta > 0) renderer.setZoom(renderer.Zoom + step); else renderer.setZoom(renderer.Zoom - step);
         }
     }
 }
