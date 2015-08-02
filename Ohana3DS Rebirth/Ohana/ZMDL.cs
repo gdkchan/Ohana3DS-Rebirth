@@ -163,7 +163,6 @@ namespace Ohana3DS_Rebirth.Ohana
                 RenderBase.OModelObject obj = new RenderBase.OModelObject();
                 obj.name = String.Format("mesh_{0}", objIndex);
 
-                ushort maxIndex = 0;
                 List<RenderBase.CustomVertex> vertexBuffer = new List<RenderBase.CustomVertex>();
                 for (int faceIndex = 0; faceIndex < facesHeaderEntries; faceIndex++)
                 {
@@ -185,7 +184,6 @@ namespace Ohana3DS_Rebirth.Ohana
                         ushort index = input.ReadUInt16();
 
                         long position = data.Position;
-                        if (index > maxIndex) maxIndex = index;
 
                         long vertexOffset = vertexBufferOffset + index * vertexStride;
 
