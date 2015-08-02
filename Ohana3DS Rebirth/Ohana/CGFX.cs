@@ -609,7 +609,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         RenderBase.OMatrix worldMatrix = getMatrix(input);
                         RenderBase.OMatrix invBaseMatrix = getMatrix(input);
                         bone.billboardMode = (RenderBase.OBillboardMode)input.ReadInt32();
-                        
+
                         uint userDataEntries = input.ReadUInt32();
                         uint userDataOffset = getRelativeOffset(input);
 

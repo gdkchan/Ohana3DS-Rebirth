@@ -287,6 +287,8 @@
     <Compile Include="Ohana\RenderEngine.cs" />
     <Compile Include="Ohana\TextureCodec.cs" />
     <Compile Include="Ohana\TextureHelper.cs" />
+    <Compile Include="Ohana\ZMDL.cs" />
+    <Compile Include="Ohana\ZTEX.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="FrmMain.resx">

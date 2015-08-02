@@ -1312,6 +1312,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 skeleton = new List<OBone>();
                 material = new List<OMaterial>();
                 userData = new List<OMetaData>();
+                transform = new RenderBase.OMatrix();
             }
 
             /// <summary>

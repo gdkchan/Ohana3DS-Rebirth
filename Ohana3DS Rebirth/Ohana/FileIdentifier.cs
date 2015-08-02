@@ -17,7 +17,9 @@ namespace Ohana3DS_Rebirth.Ohana
             IECPCompressed,
             DQVIIPack,
             FPT0,
-            CGFX
+            NLK2,
+            CGFX,
+            zmdl
         }
 
         public static fileFormat identify(string fileName)
@@ -48,8 +50,15 @@ namespace Ohana3DS_Rebirth.Ohana
             switch (magic4b)
             {
                 case "CGFX": return fileFormat.CGFX;
+                case "zmdl": return fileFormat.zmdl;
                 case "IECP": return fileFormat.IECPCompressed;
                 case "FPT0": return fileFormat.FPT0;
+                case "NLK2": //Forbidden Magna models
+                    data.Seek(0x80, SeekOrigin.Begin);
+                    string magic = IOUtils.readString(input, 0, 4);
+                    data.Seek(0, SeekOrigin.Begin);
+                    return fileFormat.NLK2;
+
             }
 
             switch (magic3b)

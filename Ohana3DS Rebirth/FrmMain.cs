@@ -36,7 +36,7 @@ namespace Ohana3DS_Rebirth
         {
             using (OpenFileDialog openDlg = new OpenFileDialog())
             {
-                openDlg.Filter = "All supported files|*.bch;*.cx;*.lz;*.cmp;*.mm;*.gr;*.pc;*.pack;*.fpt;*.dmp;*.bcres;*.bcmdl;*.bctex";
+                openDlg.Filter = "All supported files|*.bch;*.cx;*.lz;*.cmp;*.mm;*.gr;*.pc;*.pack;*.fpt;*.dmp;*.rel;*.bcres;*.bcmdl;*.bctex;*.mdl";
                 openDlg.Filter += "|Binary CTR H3D|*.bch";
                 openDlg.Filter += "|Compressed file|*.cx;*.lz;*.cmp";
                 openDlg.Filter += "|Pokémon Overworld model|*.mm";
@@ -45,9 +45,11 @@ namespace Ohana3DS_Rebirth
                 openDlg.Filter += "|Dragon Quest VII Package|*.pack";
                 openDlg.Filter += "|Dragon Quest VII Container|*.fpt";
                 openDlg.Filter += "|Dragon Quest VII Texture|*.dmp";
+                openDlg.Filter += "|Forbidden Magna CGFX|*.rel";
                 openDlg.Filter += "|Binary CTR Resource|*.bcres";
                 openDlg.Filter += "|Binary CTR Model|*.bcmdl";
                 openDlg.Filter += "|Binary CTR Texture|*.bctex";
+                openDlg.Filter += "|Fantasy Life Model|*.mdl";
                 openDlg.Filter += "|All files|*.*";
                 if (openDlg.ShowDialog() != DialogResult.OK) return;
                 open(openDlg.FileName);
@@ -75,7 +77,6 @@ namespace Ohana3DS_Rebirth
                     buffer = new byte[data.Length];
                     data.Read(buffer, 0, buffer.Length);
                     data.Close();
-                    data.Dispose();
                     launchModel(BCH.load(new MemoryStream(buffer)), name);
                     break;
                 case FileIdentifier.fileFormat.PkmnContainer:
@@ -99,8 +100,13 @@ namespace Ohana3DS_Rebirth
                     buffer = new byte[data.Length];
                     data.Read(buffer, 0, buffer.Length);
                     data.Close();
-                    data.Dispose();
                     launchModel(CGFX.load(new MemoryStream(buffer)), name);
+                    break;
+                case FileIdentifier.fileFormat.zmdl:
+                    buffer = new byte[data.Length];
+                    data.Read(buffer, 0, buffer.Length);
+                    data.Close();
+                    launchModel(ZMDL.load(new MemoryStream(buffer)), name);
                     break;
                 case FileIdentifier.fileFormat.DQVIIPack:
                     containerForm = new OContainerForm();
@@ -111,6 +117,13 @@ namespace Ohana3DS_Rebirth
                     containerForm = new OContainerForm();
                     containerForm.launch(Ohana.Containers.FPT0.load(data));
                     containerForm.Show(this);
+                    break;
+                case FileIdentifier.fileFormat.NLK2:
+                    buffer = new byte[data.Length - 0x80];
+                    data.Seek(0x80, SeekOrigin.Begin);
+                    data.Read(buffer, 0, buffer.Length);
+                    data.Close();
+                    launchModel(CGFX.load(new MemoryStream(buffer)), name);
                     break;
                 case FileIdentifier.fileFormat.DMPTexture:
                     GUI.OSingleTextureWindow textureWindow = new GUI.OSingleTextureWindow();

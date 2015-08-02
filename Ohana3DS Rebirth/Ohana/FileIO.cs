@@ -63,7 +63,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         break;
                     case fileType.texture:
                         openDlg.Title = "Import Texture";
-                        openDlg.Filter = "Binary CTR H3D|*.bch|Binary CTR Texture|*.bcres;*.bctex";
+                        openDlg.Filter = "Binary CTR H3D|*.bch|Binary CTR Texture|*.bcres;*.bctex|Fantasy Life Texture|*.tex";
                         openDlg.Multiselect = true;
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
@@ -75,6 +75,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                 {
                                     case 1: output.AddRange(BCH.load(fileName).texture); break;
                                     case 2: output.AddRange(CGFX.load(fileName).texture); break;
+                                    case 3: output.AddRange(ZTEX.load(fileName)); break;
                                 }
                             }
                             return output;

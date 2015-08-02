@@ -30,13 +30,8 @@ namespace Ohana3DS_Rebirth.Ohana
                     format = FileIdentifier.identify(data);
                     break;
                 case FileIdentifier.fileFormat.LZSSCompressed:
-                    length = input.ReadUInt32() >> 8;
-                    decompressedData = Ohana.Compressions.LZSS_Ninty.decompress(data, length);
-                    data = new MemoryStream(decompressedData);
-                    format = FileIdentifier.identify(data);
-                    break;
                 case FileIdentifier.fileFormat.LZSSHeaderCompressed:
-                    input.ReadUInt32();
+                    if (format == FileIdentifier.fileFormat.LZSSHeaderCompressed) input.ReadUInt32();
                     length = input.ReadUInt32() >> 8;
                     decompressedData = Ohana.Compressions.LZSS_Ninty.decompress(data, length);
                     data = new MemoryStream(decompressedData);
