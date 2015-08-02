@@ -8,11 +8,11 @@ namespace Ohana3DS_Rebirth.Ohana
 {
     class ZMDL
     {
-        public enum att
+        public enum vshAttribute
         {
             position = 0,
             normal = 1,
-            tangent = 2,
+            color = 2,
             textureCoordinate0 = 3,
             textureCoordinate1 = 4,
             textureCoordinate2 = 5,
@@ -85,20 +85,17 @@ namespace Ohana3DS_Rebirth.Ohana
                 byte wrap = input.ReadByte();
                 input.ReadByte();
 
-                if (wrap == 5)
-                {
-                    material.textureMapper[0].wrapU = RenderBase.OTextureWrap.mirroredRepeat;
-                    material.textureMapper[0].wrapV = RenderBase.OTextureWrap.mirroredRepeat;
-                }
-
+                //Default material stuff
                 material.fragmentShader.alphaTest.isTestEnabled = true;
                 material.fragmentShader.alphaTest.testFunction = RenderBase.OTestFunction.greaterOrEqual;
                 material.fragmentShader.alphaTest.testReference = 0x7f;
 
+                material.textureMapper[0].wrapU = RenderBase.OTextureWrap.repeat;
+                material.textureMapper[0].wrapV = RenderBase.OTextureWrap.repeat;
+
                 material.textureMapper[0].minFilter = RenderBase.OTextureMinFilter.linearMipmapLinear;
                 material.textureMapper[0].magFilter = RenderBase.OTextureMagFilter.linear;
 
-                //Default material stuff
                 material.fragmentOperation.depth.isTestEnabled = true;
                 material.fragmentOperation.depth.testFunction = RenderBase.OTestFunction.lessOrEqual;
                 material.fragmentOperation.depth.isMaskEnabled = true;
@@ -138,7 +135,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     uint boneNodesEntries = input.ReadUInt32();
                     uint indexBufferOffset = input.ReadUInt32();
                     uint indexBufferPrimitiveCount = input.ReadUInt32();
-                    input.ReadUInt32().ToString();
+                    input.ReadUInt32();
 
                     data.Seek(boneNodesOffset, SeekOrigin.Begin);
                     List<byte> nodeList = new List<byte>();
@@ -158,18 +155,28 @@ namespace Ohana3DS_Rebirth.Ohana
 
                         vertex.diffuseColor = 0xffffffff;
 
-                        data.Seek(vertexOffset + attributes[(int)att.position].offset, SeekOrigin.Begin);
+                        data.Seek(vertexOffset + attributes[(int)vshAttribute.position].offset, SeekOrigin.Begin);
                         vertex.position = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
 
-                        if (attributes[(int)att.normal].attributeLength > 0)
+                        if (attributes[(int)vshAttribute.normal].attributeLength > 0)
                         {
-                            data.Seek(vertexOffset + attributes[(int)att.normal].offset, SeekOrigin.Begin);
+                            data.Seek(vertexOffset + attributes[(int)vshAttribute.normal].offset, SeekOrigin.Begin);
                             vertex.normal = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
                         }
 
-                        if (attributes[(int)att.textureCoordinate0].attributeLength > 0)
+                        if (attributes[(int)vshAttribute.color].attributeLength > 0)
                         {
-                            data.Seek(vertexOffset + attributes[(int)att.textureCoordinate0].offset, SeekOrigin.Begin);
+                            data.Seek(vertexOffset + attributes[(int)vshAttribute.color].offset, SeekOrigin.Begin);
+                            uint r = (byte)(input.ReadSingle() * 0xff);
+                            uint g = (byte)(input.ReadSingle() * 0xff);
+                            uint b = (byte)(input.ReadSingle() * 0xff);
+                            uint a = (byte)(input.ReadSingle() * 0xff);
+                            vertex.diffuseColor = b | (g << 8) | (r << 16) | (a << 24);
+                        }
+
+                        if (attributes[(int)vshAttribute.textureCoordinate0].attributeLength > 0)
+                        {
+                            data.Seek(vertexOffset + attributes[(int)vshAttribute.textureCoordinate0].offset, SeekOrigin.Begin);
                             vertex.texture0 = new RenderBase.OVector2(input.ReadSingle(), input.ReadSingle());
                         }
 
@@ -188,7 +195,8 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                 }
 
-                obj.materialId = (ushort)(materialObjectBinding.IndexOf((byte)objIndex));
+                int materialId = materialObjectBinding.IndexOf((byte)objIndex);
+                if (materialId > -1) obj.materialId = (ushort)materialId;
                 obj.hasNormal = true;
                 obj.texUVCount = 1;
                 obj.renderBuffer = vertexBuffer.ToArray();
