@@ -6,9 +6,9 @@ using System.IO;
 using System.Windows.Forms;
 using System.Drawing;
 
-using Ohana3DS_Rebirth.Ohana.PICA200;
+using Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200;
 
-namespace Ohana3DS_Rebirth.Ohana
+namespace Ohana3DS_Rebirth.Ohana.ModelFormats
 {
     class CGFX
     {

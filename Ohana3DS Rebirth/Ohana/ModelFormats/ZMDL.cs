@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace Ohana3DS_Rebirth.Ohana
+namespace Ohana3DS_Rebirth.Ohana.ModelFormats
 {
     /// <summary>
     ///     Fantasy Life ZMDL class.

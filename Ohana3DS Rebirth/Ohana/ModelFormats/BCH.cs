@@ -19,9 +19,9 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.Diagnostics;
 
-using Ohana3DS_Rebirth.Ohana.PICA200;
+using Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200;
 
-namespace Ohana3DS_Rebirth.Ohana
+namespace Ohana3DS_Rebirth.Ohana.ModelFormats
 {
     public class BCH
     {
@@ -1752,7 +1752,6 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             data.Close();
-            data.Dispose();
 
             return models;
         }

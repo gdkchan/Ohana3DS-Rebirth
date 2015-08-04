@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 using System.Drawing;
 
-namespace Ohana3DS_Rebirth.Ohana
+namespace Ohana3DS_Rebirth.Ohana.TextureFormats
 {
     class ZTEX
     {
@@ -73,6 +73,8 @@ namespace Ohana3DS_Rebirth.Ohana
                 
                 textures.Add(new RenderBase.OTexture(bmp, entry.name));
             }
+
+            data.Close();
 
             return textures;
         }

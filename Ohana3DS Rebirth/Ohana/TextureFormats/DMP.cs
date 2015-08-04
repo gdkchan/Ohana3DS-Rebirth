@@ -6,7 +6,7 @@ using System.Text;
 using System.IO;
 using System.Drawing;
 
-namespace Ohana3DS_Rebirth.Ohana
+namespace Ohana3DS_Rebirth.Ohana.TextureFormats
 {
     class DMP
     {

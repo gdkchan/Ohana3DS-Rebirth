@@ -4,6 +4,8 @@ using System.Windows.Forms;
 using System.IO;
 
 using Ohana3DS_Rebirth.Ohana;
+using Ohana3DS_Rebirth.Ohana.ModelFormats;
+using Ohana3DS_Rebirth.Ohana.TextureFormats;
 
 namespace Ohana3DS_Rebirth
 {

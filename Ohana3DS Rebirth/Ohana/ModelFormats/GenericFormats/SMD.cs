@@ -8,7 +8,7 @@ using System.IO;
 using System.Globalization;
 using System.Windows.Forms;
 
-namespace Ohana3DS_Rebirth.Ohana.GenericFormats
+namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
 {
     class SMD
     {
@@ -127,7 +127,7 @@ namespace Ohana3DS_Rebirth.Ohana.GenericFormats
                         line += " " + getString(vertex.normal.y);
                         line += " " + getString(vertex.normal.z);
                         line += " " + getString(vertex.texture0.x);
-                        line += " " + getString(-vertex.texture0.y);
+                        line += " " + getString(vertex.texture0.y);
 
                         line += " " + vertex.node.Count;
                         for (int i = 0; i < vertex.node.Count; i++)

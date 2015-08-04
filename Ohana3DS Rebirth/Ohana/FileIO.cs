@@ -6,6 +6,11 @@ using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
 
+using Ohana3DS_Rebirth.Ohana;
+using Ohana3DS_Rebirth.Ohana.ModelFormats;
+using Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats;
+using Ohana3DS_Rebirth.Ohana.TextureFormats;
+
 namespace Ohana3DS_Rebirth.Ohana
 {
     public class FileIO
@@ -50,7 +55,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                     {
                                         case 1: output.AddRange(BCH.load(fileName).model); break;
                                         case 2: output.AddRange(CGFX.load(fileName).model); break;
-                                        case 3: output.AddRange(GenericFormats.SMD.import(fileName).model); break;
+                                        case 3: output.AddRange(SMD.import(fileName).model); break;
                                     }
                                 }
                                 catch
@@ -102,7 +107,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             switch (openDlg.FilterIndex)
                             {
                                 case 1: return BCH.load(openDlg.FileName).skeletalAnimation;
-                                case 2: return GenericFormats.SMD.import(openDlg.FileName).skeletalAnimation;
+                                case 2: return SMD.import(openDlg.FileName).skeletalAnimation;
                                 default: return null;
                             }
                         }
@@ -142,13 +147,13 @@ namespace Ohana3DS_Rebirth.Ohana
                             switch (saveDlg.FilterIndex)
                             {
                                 case 1:
-                                    GenericFormats.SMD.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0]);
+                                    SMD.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0]);
                                     break;
                                 case 2:
-                                    GenericFormats.DAE.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0]);
+                                    DAE.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0]);
                                     break;
                                 case 3:
-                                    GenericFormats.CMDL.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0]);
+                                    CMDL.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0]);
                                     break;
                             }
                         }
@@ -198,7 +203,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             switch (saveDlg.FilterIndex)
                             {
                                 case 1:
-                                    GenericFormats.SMD.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0], arguments[1]);
+                                    SMD.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0], arguments[1]);
                                     break;
                             }
                         }

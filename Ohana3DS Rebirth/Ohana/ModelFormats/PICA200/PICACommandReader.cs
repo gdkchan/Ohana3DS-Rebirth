@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 using System.Drawing;
 
-namespace Ohana3DS_Rebirth.Ohana.PICA200
+namespace Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200
 {
     class PICACommandReader
     {

@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
+using Ohana3DS_Rebirth.Ohana.ModelFormats;
+
 namespace Ohana3DS_Rebirth.Ohana.Containers
 {
     public class DQVIIPack

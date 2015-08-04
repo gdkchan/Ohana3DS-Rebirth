@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 
-namespace Ohana3DS_Rebirth.Ohana.GenericFormats
+namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
 {
     class CMDL
     {

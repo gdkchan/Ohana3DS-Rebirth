@@ -441,6 +441,88 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
+            ///     Gets the Inverse of the Matrix.
+            /// </summary>
+            /// <returns></returns>
+            public OMatrix invert()
+            {
+                float[,] opMatrix = new float[4, 8];
+
+                for (int N = 0; N < 4; N++)
+                {
+                    for (int m = 0; m < 4; m++)
+                    {
+                        opMatrix[m, N] = matrix[m, N];
+                    }
+                }
+
+                //Creates Identity at right side
+                for (int N = 0; N < 4; N++)
+                {
+                    for (int m = 0; m < 4; m++)
+                    {
+                        if (N == m)
+                            opMatrix[m, N + 4] = 1;
+                        else
+                            opMatrix[m, N + 4] = 0;
+                    }
+                }
+                
+                for (int k = 0; k < 4; k++)
+                {
+                    if (opMatrix[k, k] == 0)
+                    {
+                        int row = 0;
+                        for (int N = k; N < 4; N++) if (opMatrix[N, k] != 0) { row = N; break; }
+                        for (int m = k; m < 8; m++)
+                        {
+                            float temp = opMatrix[k, m];
+                            opMatrix[k, m] = opMatrix[row, m];
+                            opMatrix[row, m] = temp;
+                        }
+                    }
+
+                    float element = opMatrix[k, k];
+                    for (int N = k; N < 8; N++) opMatrix[k, N] /= element;
+                    for (int N = 0; N < 4; N++)
+                    {
+                        if (N == k && N == 3) break;
+                        if (N == k && N < 3) N++;
+
+                        if (opMatrix[N, k] != 0)
+                        {
+                            float multiplier = opMatrix[N, k] / opMatrix[k, k];
+                            for (int m = k; m < 8; m++) opMatrix[N, m] -= opMatrix[k, m] * multiplier;
+                        }
+                    }
+                }
+
+                OMatrix output = new OMatrix();
+
+                output.M11 = opMatrix[0, 4];
+                output.M12 = opMatrix[0, 5];
+                output.M13 = opMatrix[0, 6];
+                output.M14 = opMatrix[0, 7];
+
+                output.M21 = opMatrix[1, 4];
+                output.M22 = opMatrix[1, 5];
+                output.M23 = opMatrix[1, 6];
+                output.M24 = opMatrix[1, 7];
+
+                output.M31 = opMatrix[2, 4];
+                output.M32 = opMatrix[2, 5];
+                output.M33 = opMatrix[2, 6];
+                output.M34 = opMatrix[2, 7];
+
+                output.M41 = opMatrix[3, 4];
+                output.M42 = opMatrix[3, 5];
+                output.M43 = opMatrix[3, 6];
+                output.M44 = opMatrix[3, 7];
+
+                return output;
+            }
+
+            /// <summary>
             ///     Creates a scaling Matrix with a given proportion size.
             /// </summary>
             /// <param name="scale">The Scale proportions</param>
