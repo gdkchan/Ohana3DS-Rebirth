@@ -502,40 +502,34 @@ namespace Ohana3DS_Rebirth.Ohana
             //Maybe theres a better way to do this?
             int[] tileScramble = new int[((width / 4) * (height / 4))];
             int baseAccumulator = 0;
-            int lineAccumulator = 0;
+            int rowAccumulator = 0;
             int baseNumber = 0;
-            int lineNumber = 0;
+            int rowNumber = 0;
 
             for (int tile = 0; tile < tileScramble.Length; tile++)
             {
                 if ((tile % (width / 4) == 0) & tile > 0)
                 {
-                    if (lineAccumulator < 1)
+                    if (rowAccumulator < 1)
                     {
-                        lineAccumulator += 1;
-                        lineNumber += 2;
-                        baseNumber = lineNumber;
+                        rowAccumulator += 1;
+                        rowNumber += 2;
+                        baseNumber = rowNumber;
                     }
                     else
                     {
-                        lineAccumulator = 0;
+                        rowAccumulator = 0;
                         baseNumber -= 2;
-                        lineNumber = baseNumber;
+                        rowNumber = baseNumber;
                     }
                 }
 
                 tileScramble[tile] = baseNumber;
 
                 if (baseAccumulator < 1)
-                {
-                    baseAccumulator += 1;
-                    baseNumber += 1;
-                }
+                    { baseAccumulator += 1; baseNumber += 1; }
                 else
-                {
-                    baseAccumulator = 0;
-                    baseNumber += 3;
-                }
+                    { baseAccumulator = 0; baseNumber += 3; }
             }
 
             return tileScramble;

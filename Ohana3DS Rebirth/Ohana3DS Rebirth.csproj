@@ -273,6 +273,7 @@
     <Compile Include="Ohana\Containers\GenericContainer.cs" />
     <Compile Include="Ohana\Containers\PkmnContainer.cs" />
     <Compile Include="Ohana\Compressions\BLZ.cs" />
+    <Compile Include="Ohana\ModelFormats\GenericFormats\OBJ.cs" />
     <Compile Include="Ohana\TextureFormats\DMP.cs" />
     <Compile Include="Ohana\FileIdentifier.cs" />
     <Compile Include="Ohana\FileIO.cs" />

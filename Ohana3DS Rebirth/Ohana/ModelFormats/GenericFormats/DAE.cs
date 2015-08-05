@@ -98,9 +98,6 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
 												xml.WriteStartElement("transparency");
 													xml.WriteStartElement("float"); xml.WriteString("1"); xml.WriteEndElement();
 												xml.WriteEndElement();
-												xml.WriteStartElement("index_of_refraction");
-													xml.WriteStartElement("float"); xml.WriteString("0"); xml.WriteEndElement();
-												xml.WriteEndElement();
 											xml.WriteEndElement();
 										xml.WriteEndElement();
 									xml.WriteEndElement();
@@ -336,8 +333,8 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
 						//Visual Scenes
 						xml.WriteStartElement("library_visual_scenes");
 							xml.WriteStartElement("visual_scene"); xml.WriteAttributeString("id", "VisualSceneNode"); xml.WriteAttributeString("name", "scene");
-								int nodeIndex = 0;
-								writeSkeleton(xml, mdl.skeleton, 0, ref nodeIndex);
+								writeSkeleton(xml, mdl.skeleton, 0);
+
 								for (int i = 0; i < mdl.modelObject.Count; i++)
 								{
 									xml.WriteStartElement("node"); xml.WriteAttributeString("id", String.Format("vsn_{0}", i)); xml.WriteAttributeString("name", mdl.modelObject[i].name);
@@ -385,7 +382,6 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
         /// <param name="target">Target matrix to save bone transformation</param>
         private static void transformSkeleton(List<RenderBase.OBone> skeleton, int index, ref RenderBase.OMatrix target)
         {
-            target *= RenderBase.OMatrix.scale(skeleton[index].scale);
             target *= RenderBase.OMatrix.rotateX(skeleton[index].rotation.x);
             target *= RenderBase.OMatrix.rotateY(skeleton[index].rotation.y);
             target *= RenderBase.OMatrix.rotateZ(skeleton[index].rotation.z);
@@ -400,11 +396,10 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
         /// <param name="skeleton">The skeleton</param>
         /// <param name="index">Index of the current bone (root bone when it's not a recursive call)</param>
         /// <param name="acc">Bone index accumulator</param>
-        private static void writeSkeleton(XmlWriter xml, List<RenderBase.OBone> skeleton, int index, ref int acc)
+        private static void writeSkeleton(XmlWriter xml, List<RenderBase.OBone> skeleton, int index)
         {
-            xml.WriteStartElement("node"); xml.WriteAttributeString("id", String.Format("skeleton_node_{0}", acc++)); xml.WriteAttributeString("name", skeleton[index].name); xml.WriteAttributeString("sid", skeleton[index].name); xml.WriteAttributeString("type", "JOINT");
+            xml.WriteStartElement("node"); xml.WriteAttributeString("id", skeleton[index].name); xml.WriteAttributeString("name", skeleton[index].name); xml.WriteAttributeString("sid", skeleton[index].name); xml.WriteAttributeString("type", "JOINT");
                 RenderBase.OMatrix mtx = new RenderBase.OMatrix();
-                mtx *= RenderBase.OMatrix.scale(skeleton[index].scale);
                 mtx *= RenderBase.OMatrix.rotateX(skeleton[index].rotation.x);
                 mtx *= RenderBase.OMatrix.rotateY(skeleton[index].rotation.y);
                 mtx *= RenderBase.OMatrix.rotateZ(skeleton[index].rotation.z);
@@ -417,7 +412,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
                     getString(mtx.M14) + " " + getString(mtx.M24) + " " + getString(mtx.M34) + " " + getString(mtx.M44));
                 xml.WriteEndElement();
 
-                for (int i = 0; i < skeleton.Count; i++) if (skeleton[i].parentId == index) writeSkeleton(xml, skeleton, i, ref acc);
+                for (int i = 0; i < skeleton.Count; i++) if (skeleton[i].parentId == index) writeSkeleton(xml, skeleton, i);
             xml.WriteEndElement();
         }
     }

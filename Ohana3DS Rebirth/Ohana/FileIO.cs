@@ -141,6 +141,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         saveDlg.Title = "Export Model";
                         saveDlg.Filter = "Source Model|*.smd";
                         saveDlg.Filter += "|Collada Model|*.dae";
+                        saveDlg.Filter += "|Wavefront OBJ|*.obj";
                         saveDlg.Filter += "|CTR Model|*.cmdl";
                         if (saveDlg.ShowDialog() == DialogResult.OK)
                         {
@@ -153,6 +154,9 @@ namespace Ohana3DS_Rebirth.Ohana
                                     DAE.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0]);
                                     break;
                                 case 3:
+                                    OBJ.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0]);
+                                    break;
+                                case 4:
                                     CMDL.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0]);
                                     break;
                             }

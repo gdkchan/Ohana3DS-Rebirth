@@ -1235,8 +1235,9 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                 string[] objectName = new string[modelHeader.objectsNodeNameEntries];
                 data.Seek(modelHeader.objectsNodeNameOffset, SeekOrigin.Begin);
                 int rootReference = input.ReadInt32(); //Radix tree
-                uint rootLeftNode = input.ReadUInt32();
-                uint rootRightNode = input.ReadUInt32();
+                uint rootLeftNode = input.ReadUInt16();
+                uint rootRightNode = input.ReadUInt16();
+                uint rootNameOffset = input.ReadUInt32();
                 for (int i = 0; i < modelHeader.objectsNodeNameEntries; i++)
                 {
                     int referenceBit = input.ReadInt32();
@@ -1665,11 +1666,6 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                         if (format.attributeLength > 2) vertex.addWeight(vector.w * boneWeightScale);
                                         break;
                                 }
-                            }
-
-                            if (model.skeleton.Count > 0)
-                            {
-                                if (nodeList.Count > 0 && vertex.node.Count == 0) vertex.addNode((int)nodeList[0]);
                             }
 
                             if ((skinningMode == RenderBase.OSkinningMode.rigidSkinning || skinningMode == RenderBase.OSkinningMode.none) && vertex.node.Count > 0)
