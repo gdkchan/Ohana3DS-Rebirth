@@ -200,12 +200,12 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
 											//Vertex
 											xml.WriteStartElement("vertices"); xml.WriteAttributeString("id", String.Format("geometry_vertices_{0}", j));
 												xml.WriteStartElement("input"); xml.WriteAttributeString("semantic", "POSITION"); xml.WriteAttributeString("source", "#" + positionSrcRef); xml.WriteEndElement();
-												xml.WriteStartElement("input"); xml.WriteAttributeString("semantic", "NORMAL"); xml.WriteAttributeString("source", "#" + normalSrcRef); xml.WriteEndElement();
-												xml.WriteStartElement("input"); xml.WriteAttributeString("semantic", "TEXCOORD"); xml.WriteAttributeString("source", "#" + uvSrcRef); xml.WriteEndElement();
-												xml.WriteStartElement("input"); xml.WriteAttributeString("semantic", "COLOR"); xml.WriteAttributeString("source", "#" + colorSrcRef); xml.WriteEndElement();
 											xml.WriteEndElement();
 
 											xml.WriteStartElement("triangles"); xml.WriteAttributeString("material", String.Format("_material_{0}", mdl.modelObject[j].materialId)); xml.WriteAttributeString("count", mdl.modelObject[j].obj.Count.ToString());
+                                                xml.WriteStartElement("input"); xml.WriteAttributeString("semantic", "NORMAL"); xml.WriteAttributeString("source", "#" + normalSrcRef); xml.WriteAttributeString("offset", "0"); xml.WriteEndElement();
+                                                xml.WriteStartElement("input"); xml.WriteAttributeString("semantic", "TEXCOORD"); xml.WriteAttributeString("source", "#" + uvSrcRef); xml.WriteAttributeString("offset", "0"); xml.WriteEndElement();
+                                                xml.WriteStartElement("input"); xml.WriteAttributeString("semantic", "COLOR"); xml.WriteAttributeString("source", "#" + colorSrcRef); xml.WriteAttributeString("offset", "0"); xml.WriteEndElement();
 												xml.WriteStartElement("input"); xml.WriteAttributeString("semantic", "VERTEX"); xml.WriteAttributeString("source", "#" + String.Format("geometry_vertices_{0}", j)); xml.WriteAttributeString("offset", "0"); xml.WriteEndElement();
 												xml.WriteStartElement("p");
 													for (int i = 0; i < mdl.modelObject[j].obj.Count; i++) xml.WriteString((i > 0 ? " " : null) + i.ToString());
@@ -337,7 +337,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
 
 								for (int i = 0; i < mdl.modelObject.Count; i++)
 								{
-									xml.WriteStartElement("node"); xml.WriteAttributeString("id", String.Format("vsn_{0}", i)); xml.WriteAttributeString("name", mdl.modelObject[i].name);
+                                    xml.WriteStartElement("node"); xml.WriteAttributeString("id", mdl.modelObject[i].name); xml.WriteAttributeString("name", mdl.modelObject[i].name);
 										xml.WriteStartElement("matrix"); xml.WriteString("1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"); xml.WriteEndElement();
 										xml.WriteStartElement("instance_controller"); xml.WriteAttributeString("url", "#" + String.Format("controller_{0}", i));
 											xml.WriteStartElement("skeleton"); xml.WriteString("#skeleton_node_0"); xml.WriteEndElement();
