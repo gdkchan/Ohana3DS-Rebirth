@@ -383,8 +383,8 @@ namespace Ohana3DS_Rebirth.Ohana
             uint blockTop = BitConverter.ToUInt32(data, 0);
             uint blockBottom = BitConverter.ToUInt32(data, 4);
 
-            bool flip = (blockTop & 0x1000000) != 0;
-            bool difference = (blockTop & 0x2000000) != 0;
+            bool flip = (blockTop & 0x1000000) > 0;
+            bool difference = (blockTop & 0x2000000) > 0;
 
             uint r1, g1, b1;
             uint r2, g2, b2;
@@ -483,14 +483,14 @@ namespace Ohana3DS_Rebirth.Ohana
                 ? etc1LUT[table, ((block >> (index + 24)) & 1) + ((MSB >> (index + 8)) & 2)] 
                 : etc1LUT[table, ((block >> (index + 8)) & 1) + ((MSB >> (index - 8)) & 2)];
 
-            r = clamp((int)(r + pixel));
-            g = clamp((int)(g + pixel));
-            b = clamp((int)(b + pixel));
+            r = saturate((int)(r + pixel));
+            g = saturate((int)(g + pixel));
+            b = saturate((int)(b + pixel));
 
             return Color.FromArgb((int)r, (int)g, (int)b);
         }
 
-        private static byte clamp(int value)
+        private static byte saturate(int value)
         {
             if (value > 0xff) return 0xff;
             if (value < 0) return 0;

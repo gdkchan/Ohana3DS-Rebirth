@@ -616,14 +616,14 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                     bool notExist = (flags & notExistMask) > 0;
                                     bool constant = (flags & constantMask) > 0;
 
-                                    RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
+                                    RenderBase.OAnimationKeyFrameGroup frame = new RenderBase.OAnimationKeyFrameGroup();
                                     frame.exists = !notExist;
                                     if (frame.exists)
                                     {
                                         if (constant)
                                         {
                                             frame.interpolation = RenderBase.OInterpolationMode.linear;
-                                            frame.keyFrames.Add(new RenderBase.OInterpolationFloat(input.ReadSingle(), 0));
+                                            frame.keyFrames.Add(new RenderBase.OAnimationKeyFrame(input.ReadSingle(), 0));
                                         }
                                         else
                                         {
@@ -826,7 +826,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
 
                     for (int j = 0; j < segmentCount; j++)
                     {
-                        RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
+                        RenderBase.OAnimationKeyFrameGroup frame = new RenderBase.OAnimationKeyFrameGroup();
 
                         data.Seek(offset + 0xc + (j * 4), SeekOrigin.Begin);
 
@@ -838,7 +838,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                             if (constant)
                             {
                                 frame.interpolation = RenderBase.OInterpolationMode.linear;
-                                frame.keyFrames.Add(new RenderBase.OInterpolationFloat(input.ReadSingle(), 0));
+                                frame.keyFrames.Add(new RenderBase.OAnimationKeyFrame(input.ReadSingle(), 0));
                             }
                             else
                             {
@@ -890,7 +890,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     RenderBase.OSegmentType segmentType = (RenderBase.OSegmentType)((animationTypeFlags >> 16) & 0xf);
                     if (segmentType == RenderBase.OSegmentType.boolean)
                     {
-                        RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
+                        RenderBase.OAnimationKeyFrameGroup frame = new RenderBase.OAnimationKeyFrameGroup();
                         if (segmentType == RenderBase.OSegmentType.boolean) frame = getAnimationKeyFrameBool(input);
                         animationData.visibilityList = frame;
                     }
@@ -949,7 +949,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     uint constantMask = 0x40;
                     for (int j = 0; j < segmentCount; j++)
                     {
-                        RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
+                        RenderBase.OAnimationKeyFrameGroup frame = new RenderBase.OAnimationKeyFrameGroup();
 
                         data.Seek(offset + 0xc + (j * 4), SeekOrigin.Begin);
 
@@ -978,7 +978,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                 if (constant)
                                 {
                                     frame.interpolation = RenderBase.OInterpolationMode.linear;
-                                    frame.keyFrames.Add(new RenderBase.OInterpolationFloat(input.ReadSingle(), 0.0f));
+                                    frame.keyFrames.Add(new RenderBase.OAnimationKeyFrame(input.ReadSingle(), 0.0f));
                                 }
                                 else
                                 {
@@ -1044,7 +1044,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     uint constantMask = 0x40;
                     for (int j = 0; j < segmentCount; j++)
                     {
-                        RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
+                        RenderBase.OAnimationKeyFrameGroup frame = new RenderBase.OAnimationKeyFrameGroup();
 
                         data.Seek(offset + 0xc + (j * 4), SeekOrigin.Begin);
 
@@ -1066,7 +1066,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                             if (constant)
                             {
                                 frame.interpolation = RenderBase.OInterpolationMode.linear;
-                                frame.keyFrames.Add(new RenderBase.OInterpolationFloat(input.ReadSingle(), 0.0f));
+                                frame.keyFrames.Add(new RenderBase.OAnimationKeyFrame(input.ReadSingle(), 0.0f));
                             }
                             else
                             {
@@ -1120,7 +1120,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
 
                     for (int j = 0; j < segmentCount; j++)
                     {
-                        RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
+                        RenderBase.OAnimationKeyFrameGroup frame = new RenderBase.OAnimationKeyFrameGroup();
 
                         data.Seek(offset + 0xc + (j * 4), SeekOrigin.Begin);
 
@@ -1133,7 +1133,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                             if (constant)
                             {
                                 frame.interpolation = RenderBase.OInterpolationMode.linear;
-                                frame.keyFrames.Add(new RenderBase.OInterpolationFloat(input.ReadSingle(), 0.0f));
+                                frame.keyFrames.Add(new RenderBase.OAnimationKeyFrame(input.ReadSingle(), 0.0f));
                             }
                             else
                             {
@@ -1897,10 +1897,10 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
         /// <returns></returns>
         private static Color getColor(BinaryReader input)
         {
-            byte r = (byte)input.ReadByte();
-            byte g = (byte)input.ReadByte();
-            byte b = (byte)input.ReadByte();
-            byte a = (byte)input.ReadByte();
+            byte r = input.ReadByte();
+            byte g = input.ReadByte();
+            byte b = input.ReadByte();
+            byte a = input.ReadByte();
 
             return Color.FromArgb(a, r, g, b);
         }
@@ -1940,7 +1940,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
         /// <param name="input">The BCH file Reader</param>
         /// <param name="header">The BCH file header</param>
         /// <returns></returns>
-        private static void getAnimationKeyFrame(BinaryReader input, RenderBase.OAnimationKeyFrame frame)
+        private static void getAnimationKeyFrame(BinaryReader input, RenderBase.OAnimationKeyFrameGroup frame)
         {
             frame.startFrame = input.ReadSingle();
             frame.endFrame = input.ReadSingle();
@@ -1962,7 +1962,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
             if (offset < input.BaseStream.Length) input.BaseStream.Seek(offset, SeekOrigin.Begin);
             for (int key = 0; key < entries; key++)
             {
-                RenderBase.OInterpolationFloat keyFrame = new RenderBase.OInterpolationFloat();
+                RenderBase.OAnimationKeyFrame keyFrame = new RenderBase.OAnimationKeyFrame();
 
                 switch (quantization)
                 {
@@ -2033,9 +2033,9 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
         /// <param name="input">The BCH file Reader</param>
         /// <param name="header">The BCH file header</param>
         /// <returns></returns>
-        private static RenderBase.OAnimationKeyFrame getAnimationKeyFrameBool(BinaryReader input)
+        private static RenderBase.OAnimationKeyFrameGroup getAnimationKeyFrameBool(BinaryReader input)
         {
-            RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
+            RenderBase.OAnimationKeyFrameGroup frame = new RenderBase.OAnimationKeyFrameGroup();
 
             frame.exists = true;
             frame.startFrame = 0;
@@ -2051,7 +2051,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
             byte value = input.ReadByte();
             for (int i = 0; i < entries; i++)
             {
-                frame.keyFrames.Add(new RenderBase.OInterpolationFloat((value & mask) > 0, i));
+                frame.keyFrames.Add(new RenderBase.OAnimationKeyFrame((value & mask) > 0, i));
                 if ((mask <<= 1) > 0x80)
                 {
                     value = input.ReadByte();

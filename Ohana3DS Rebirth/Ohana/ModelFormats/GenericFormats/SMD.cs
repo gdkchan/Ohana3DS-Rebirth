@@ -275,15 +275,15 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
 
                                                 //Translation
                                                 bone.translationX.interpolation = bone.translationY.interpolation = bone.translationZ.interpolation = RenderBase.OInterpolationMode.linear;
-                                                bone.translationX.keyFrames.Add(new RenderBase.OInterpolationFloat(b.translation.x, 0));
-                                                bone.translationY.keyFrames.Add(new RenderBase.OInterpolationFloat(b.translation.y, 0));
-                                                bone.translationZ.keyFrames.Add(new RenderBase.OInterpolationFloat(b.translation.z, 0));
+                                                bone.translationX.keyFrames.Add(new RenderBase.OAnimationKeyFrame(b.translation.x, 0));
+                                                bone.translationY.keyFrames.Add(new RenderBase.OAnimationKeyFrame(b.translation.y, 0));
+                                                bone.translationZ.keyFrames.Add(new RenderBase.OAnimationKeyFrame(b.translation.z, 0));
 
                                                 //Rotation
                                                 bone.rotationX.interpolation = bone.rotationY.interpolation = bone.rotationZ.interpolation = RenderBase.OInterpolationMode.linear;
-                                                bone.rotationX.keyFrames.Add(new RenderBase.OInterpolationFloat(b.rotation.x, 0));
-                                                bone.rotationY.keyFrames.Add(new RenderBase.OInterpolationFloat(b.rotation.y, 0));
-                                                bone.rotationZ.keyFrames.Add(new RenderBase.OInterpolationFloat(b.rotation.z, 0));
+                                                bone.rotationX.keyFrames.Add(new RenderBase.OAnimationKeyFrame(b.rotation.x, 0));
+                                                bone.rotationY.keyFrames.Add(new RenderBase.OAnimationKeyFrame(b.rotation.y, 0));
+                                                bone.rotationZ.keyFrames.Add(new RenderBase.OAnimationKeyFrame(b.rotation.z, 0));
 
                                                 boneArray[index++] = bone;
                                             }
@@ -291,13 +291,13 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
                                             isReference = true;
                                         }
 
-                                        boneArray[nodeIndex].translationX.keyFrames.Add(new RenderBase.OInterpolationFloat(translationX, timeIndex));
-                                        boneArray[nodeIndex].translationY.keyFrames.Add(new RenderBase.OInterpolationFloat(translationY, timeIndex));
-                                        boneArray[nodeIndex].translationZ.keyFrames.Add(new RenderBase.OInterpolationFloat(translationZ, timeIndex));
+                                        boneArray[nodeIndex].translationX.keyFrames.Add(new RenderBase.OAnimationKeyFrame(translationX, timeIndex));
+                                        boneArray[nodeIndex].translationY.keyFrames.Add(new RenderBase.OAnimationKeyFrame(translationY, timeIndex));
+                                        boneArray[nodeIndex].translationZ.keyFrames.Add(new RenderBase.OAnimationKeyFrame(translationZ, timeIndex));
 
-                                        boneArray[nodeIndex].rotationX.keyFrames.Add(new RenderBase.OInterpolationFloat(rotationX, timeIndex));
-                                        boneArray[nodeIndex].rotationY.keyFrames.Add(new RenderBase.OInterpolationFloat(rotationY, timeIndex));
-                                        boneArray[nodeIndex].rotationZ.keyFrames.Add(new RenderBase.OInterpolationFloat(rotationZ, timeIndex));
+                                        boneArray[nodeIndex].rotationX.keyFrames.Add(new RenderBase.OAnimationKeyFrame(rotationX, timeIndex));
+                                        boneArray[nodeIndex].rotationY.keyFrames.Add(new RenderBase.OAnimationKeyFrame(rotationY, timeIndex));
+                                        boneArray[nodeIndex].rotationZ.keyFrames.Add(new RenderBase.OAnimationKeyFrame(rotationZ, timeIndex));
                                     }
                                 }
                             }

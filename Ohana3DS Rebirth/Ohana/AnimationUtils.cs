@@ -10,11 +10,11 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="keyFrames">List with the Key Frames</param>
         /// <param name="frame">The frame number used as reference</param>
         /// <returns></returns>
-        public static RenderBase.OInterpolationFloat getSmallerPoint(List<RenderBase.OInterpolationFloat> keyFrames, float frame)
+        public static RenderBase.OAnimationKeyFrame getSmallerPoint(List<RenderBase.OAnimationKeyFrame> keyFrames, float frame)
         {
             if (keyFrames == null || keyFrames.Count == 0) return null;
-            RenderBase.OInterpolationFloat value = keyFrames[0];
-            foreach (RenderBase.OInterpolationFloat key in keyFrames)
+            RenderBase.OAnimationKeyFrame value = keyFrames[0];
+            foreach (RenderBase.OAnimationKeyFrame key in keyFrames)
             {
                 if (key.frame >= value.frame && key.frame <= frame) value = key;
             }
@@ -28,11 +28,11 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="keyFrames">List with the Key Frames</param>
         /// <param name="frame">The frame number used as reference</param>
         /// <returns></returns>
-        public static RenderBase.OInterpolationFloat getLargerPoint(List<RenderBase.OInterpolationFloat> keyFrames, float frame)
+        public static RenderBase.OAnimationKeyFrame getLargerPoint(List<RenderBase.OAnimationKeyFrame> keyFrames, float frame)
         {
             if (keyFrames == null || keyFrames.Count == 0) return null;
-            RenderBase.OInterpolationFloat value = keyFrames[keyFrames.Count - 1];
-            foreach (RenderBase.OInterpolationFloat key in keyFrames)
+            RenderBase.OAnimationKeyFrame value = keyFrames[keyFrames.Count - 1];
+            foreach (RenderBase.OAnimationKeyFrame key in keyFrames)
             {
                 if (key.frame <= value.frame && key.frame >= frame) value = key;
             }
@@ -47,7 +47,7 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="keyFrames">The list with all available Key Frames (Linear format)</param>
         /// <param name="frame">The frame number that should be returned</param>
         /// <returns>The closest smaller frame value</returns>
-        public static float interpolateStep(List<RenderBase.OInterpolationFloat> keyFrames, float frame)
+        public static float interpolateStep(List<RenderBase.OAnimationKeyFrame> keyFrames, float frame)
         {
             return getSmallerPoint(keyFrames, frame).value;
         }
@@ -58,10 +58,10 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="keyFrames">The list with all available Key Frames (Linear format)</param>
         /// <param name="frame">The frame number that should be interpolated</param>
         /// <returns>The interpolated frame value</returns>
-        public static float interpolateLinear(List<RenderBase.OInterpolationFloat> keyFrames, float frame)
+        public static float interpolateLinear(List<RenderBase.OAnimationKeyFrame> keyFrames, float frame)
         {
-            RenderBase.OInterpolationFloat a = getSmallerPoint(keyFrames, frame);
-            RenderBase.OInterpolationFloat b = getLargerPoint(keyFrames, frame);
+            RenderBase.OAnimationKeyFrame a = getSmallerPoint(keyFrames, frame);
+            RenderBase.OAnimationKeyFrame b = getLargerPoint(keyFrames, frame);
             if (a.frame == b.frame) return a.value;
 
             float mu = (frame - a.frame) / (b.frame - a.frame);
@@ -123,10 +123,10 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="keyFrames">The list with all available Key Frames (Hermite format)</param>
         /// <param name="frame">The frame number that should be interpolated</param>
         /// <returns>The interpolated frame value</returns>
-        public static float interpolateHermite(List<RenderBase.OInterpolationFloat> keyFrames, float frame)
+        public static float interpolateHermite(List<RenderBase.OAnimationKeyFrame> keyFrames, float frame)
         {
-            RenderBase.OInterpolationFloat a = getSmallerPoint(keyFrames, frame);
-            RenderBase.OInterpolationFloat b = getLargerPoint(keyFrames, frame);
+            RenderBase.OAnimationKeyFrame a = getSmallerPoint(keyFrames, frame);
+            RenderBase.OAnimationKeyFrame b = getLargerPoint(keyFrames, frame);
             if (a.frame == b.frame) return a.value;
 
             float outSlope = a.outSlope;
@@ -144,7 +144,7 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="sourceFrame">The list of key frames</param>
         /// <param name="frame">The frame that should be returned or interpolated from the list</param>
         /// <returns></returns>
-        public static float getKey(RenderBase.OAnimationKeyFrame sourceFrame, float frame)
+        public static float getKey(RenderBase.OAnimationKeyFrameGroup sourceFrame, float frame)
         {
             switch (sourceFrame.interpolation)
             {

@@ -40,7 +40,7 @@ namespace Ohana3DS_Rebirth
         {
             using (OpenFileDialog openDlg = new OpenFileDialog())
             {
-                openDlg.Filter = "All supported files|*.bch;*.cx;*.lz;*.cmp;*.mm;*.gr;*.pc;*.pack;*.fpt;*.dmp;*.rel;*.bcres;*.bcmdl;*.bctex;*.mdl;*.tex";
+                openDlg.Filter = "All supported files|*.bch;*.cx;*.lz;*.cmp;*.mm;*.gr;*.pc;*.pack;*.fpt;*.dmp;*.rel;*.bcres;*.bcmdl;*.bctex;*.bcskla;*.mdl;*.tex";
                 openDlg.Filter += "|Binary CTR H3D|*.bch";
                 openDlg.Filter += "|Compressed file|*.cx;*.lz;*.cmp";
                 openDlg.Filter += "|Pokémon Overworld model|*.mm";
@@ -53,6 +53,7 @@ namespace Ohana3DS_Rebirth
                 openDlg.Filter += "|Binary CTR Resource|*.bcres";
                 openDlg.Filter += "|Binary CTR Model|*.bcmdl";
                 openDlg.Filter += "|Binary CTR Texture|*.bctex";
+                openDlg.Filter += "|Binary CTR Skeletal Animation|*.bcskla";
                 openDlg.Filter += "|Fantasy Life Model|*.mdl";
                 openDlg.Filter += "|Fantasy Life Texture|*.tex";
                 openDlg.Filter += "|All files|*.*";

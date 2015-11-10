@@ -1626,7 +1626,7 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <summary>
         ///     Value used on each Frame element of the animation
         /// </summary>
-        public class OInterpolationFloat
+        public class OAnimationKeyFrame
         {
             public float frame;
             public float value;
@@ -1635,14 +1635,14 @@ namespace Ohana3DS_Rebirth.Ohana
             public bool bValue;
 
             /// <summary>
-            ///     Creates a new Interpolation Float.
-            ///     This Interpolation Float can be used on Hermite Interpolation.
+            ///     Creates a new Key Frame.
+            ///     This Key Frame can be used on Hermite Interpolation.
             /// </summary>
             /// <param name="_value">The point value</param>
             /// <param name="_inSlope">The input slope</param>
             /// <param name="_outSlope">The output slope</param>
             /// <param name="_frame">The frame number</param>
-            public OInterpolationFloat(float _value, float _inSlope, float _outSlope, float _frame)
+            public OAnimationKeyFrame(float _value, float _inSlope, float _outSlope, float _frame)
             {
                 value = _value;
                 inSlope = _inSlope;
@@ -1651,33 +1651,33 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Creates a new Interpolation Float.
-            ///     This Interpolation Float can be used on Linear or Step interpolation.
+            ///     Creates a new Key Frame.
+            ///     This Key Frame can be used on Linear or Step interpolation.
             /// </summary>
             /// <param name="_value">The point value</param>
             /// <param name="_frame">The frame number</param>
-            public OInterpolationFloat(float _value, float _frame)
+            public OAnimationKeyFrame(float _value, float _frame)
             {
                 value = _value;
                 frame = _frame;
             }
 
             /// <summary>
-            ///     Creates a new Interpolation Float.
-            ///     This Interpolation Float can be used on Boolean values animation.
+            ///     Creates a new Key Frame.
+            ///     This Key Frame can be used on Boolean values animation.
             /// </summary>
             /// <param name="_value">The point value</param>
             /// <param name="_frame">The frame number</param>
-            public OInterpolationFloat(bool _value, float _frame)
+            public OAnimationKeyFrame(bool _value, float _frame)
             {
                 bValue = _value;
                 frame = _frame;
             }
 
             /// <summary>
-            ///     Creates a new Interpolation Float.
+            ///     Creates a new Key Frame.
             /// </summary>
-            public OInterpolationFloat()
+            public OAnimationKeyFrame()
             {
             }
 
@@ -1703,9 +1703,9 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <summary>
         ///     Key frame of an animation.
         /// </summary>
-        public class OAnimationKeyFrame
+        public class OAnimationKeyFrameGroup
         {
-            public List<OInterpolationFloat> keyFrames;
+            public List<OAnimationKeyFrame> keyFrames;
             public OInterpolationMode interpolation;
             public float startFrame, endFrame;
             public bool exists;
@@ -1714,9 +1714,9 @@ namespace Ohana3DS_Rebirth.Ohana
             public ORepeatMethod preRepeat;
             public ORepeatMethod postRepeat;
 
-            public OAnimationKeyFrame()
+            public OAnimationKeyFrameGroup()
             {
-                keyFrames = new List<OInterpolationFloat>();
+                keyFrames = new List<OAnimationKeyFrame>();
             }
         }
 
@@ -1775,8 +1775,8 @@ namespace Ohana3DS_Rebirth.Ohana
         public class OSkeletalAnimationBone
         {
             public string name;
-            public OAnimationKeyFrame rotationX, rotationY, rotationZ;
-            public OAnimationKeyFrame translationX, translationY, translationZ;
+            public OAnimationKeyFrameGroup rotationX, rotationY, rotationZ;
+            public OAnimationKeyFrameGroup translationX, translationY, translationZ;
             public bool rotationExists, translationExists;
 
             public OAnimationFrame rotationQuaternion;
@@ -1788,12 +1788,12 @@ namespace Ohana3DS_Rebirth.Ohana
 
             public OSkeletalAnimationBone()
             {
-                rotationX = new OAnimationKeyFrame();
-                rotationY = new OAnimationKeyFrame();
-                rotationZ = new OAnimationKeyFrame();
-                translationX = new OAnimationKeyFrame();
-                translationY = new OAnimationKeyFrame();
-                translationZ = new OAnimationKeyFrame();
+                rotationX = new OAnimationKeyFrameGroup();
+                rotationY = new OAnimationKeyFrameGroup();
+                rotationZ = new OAnimationKeyFrameGroup();
+                translationX = new OAnimationKeyFrameGroup();
+                translationY = new OAnimationKeyFrameGroup();
+                translationZ = new OAnimationKeyFrameGroup();
 
                 rotationQuaternion = new OAnimationFrame();
                 translation = new OAnimationFrame();
@@ -1896,11 +1896,11 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public string name;
             public OMaterialAnimationType type;
-            public List<OAnimationKeyFrame> frameList;
+            public List<OAnimationKeyFrameGroup> frameList;
 
             public OMaterialAnimationData()
             {
-                frameList = new List<OAnimationKeyFrame>();
+                frameList = new List<OAnimationKeyFrameGroup>();
             }
         }
 
@@ -1928,11 +1928,11 @@ namespace Ohana3DS_Rebirth.Ohana
         public class OVisibilityAnimationData
         {
             public string name;
-            public OAnimationKeyFrame visibilityList;
+            public OAnimationKeyFrameGroup visibilityList;
 
             public OVisibilityAnimationData()
             {
-                visibilityList = new OAnimationKeyFrame();
+                visibilityList = new OAnimationKeyFrameGroup();
             }
         }
 
@@ -1975,11 +1975,11 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public string name;
             public OLightAnimationType type;
-            public List<OAnimationKeyFrame> frameList;
+            public List<OAnimationKeyFrameGroup> frameList;
 
             public OLightAnimationData()
             {
-                frameList = new List<OAnimationKeyFrame>();
+                frameList = new List<OAnimationKeyFrameGroup>();
             }
         }
 
@@ -2025,11 +2025,11 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public string name;
             public OCameraAnimationType type;
-            public List<OAnimationKeyFrame> frameList;
+            public List<OAnimationKeyFrameGroup> frameList;
 
             public OCameraAnimationData()
             {
-                frameList = new List<OAnimationKeyFrame>();
+                frameList = new List<OAnimationKeyFrameGroup>();
             }
         }
 
@@ -2057,11 +2057,11 @@ namespace Ohana3DS_Rebirth.Ohana
         public class OFogAnimationData
         {
             public string name;
-            public List<OAnimationKeyFrame> colorList;
+            public List<OAnimationKeyFrameGroup> colorList;
 
             public OFogAnimationData()
             {
-                colorList = new List<OAnimationKeyFrame>();
+                colorList = new List<OAnimationKeyFrameGroup>();
             }
         }
 

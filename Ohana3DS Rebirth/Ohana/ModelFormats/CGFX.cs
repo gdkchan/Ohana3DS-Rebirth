@@ -306,14 +306,14 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                             bool notExist = (boneFlags & notExistMask) > 0;
                             bool constant = (boneFlags & constantMask) > 0;
 
-                            RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
+                            RenderBase.OAnimationKeyFrameGroup frame = new RenderBase.OAnimationKeyFrameGroup();
                             frame.exists = !notExist;
                             if (frame.exists)
                             {
                                 if (constant)
                                 {
                                     frame.interpolation = RenderBase.OInterpolationMode.linear;
-                                    frame.keyFrames.Add(new RenderBase.OInterpolationFloat(input.ReadSingle(), 0));
+                                    frame.keyFrames.Add(new RenderBase.OAnimationKeyFrame(input.ReadSingle(), 0));
                                 }
                                 else
                                 {
@@ -1214,10 +1214,10 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
         /// <returns></returns>
         private static Color getColor(BinaryReader input)
         {
-            byte r = (byte)input.ReadByte();
-            byte g = (byte)input.ReadByte();
-            byte b = (byte)input.ReadByte();
-            byte a = (byte)input.ReadByte();
+            byte r = input.ReadByte();
+            byte g = input.ReadByte();
+            byte b = input.ReadByte();
+            byte a = input.ReadByte();
 
             return Color.FromArgb(a, r, g, b);
         }
@@ -1274,7 +1274,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
         /// <param name="input">The CGFX file Reader</param>
         /// <param name="header">The CGFX file header</param>
         /// <returns></returns>
-        private static void getAnimationKeyFrame(BinaryReader input, RenderBase.OAnimationKeyFrame frame)
+        private static void getAnimationKeyFrame(BinaryReader input, RenderBase.OAnimationKeyFrameGroup frame)
         {
             float startFrame = input.ReadSingle();
             float endFrame = input.ReadSingle();
@@ -1308,7 +1308,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
 
             for (int key = 0; key < entries; key++)
             {
-                RenderBase.OInterpolationFloat keyFrame = new RenderBase.OInterpolationFloat();
+                RenderBase.OAnimationKeyFrame keyFrame = new RenderBase.OAnimationKeyFrame();
 
                 switch (quantization)
                 {

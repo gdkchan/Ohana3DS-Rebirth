@@ -528,7 +528,8 @@ namespace Ohana3DS_Rebirth.Ohana
                         {
                             foreach (RenderBase.OVisibilityAnimationData data in ((RenderBase.OVisibilityAnimation)model.visibilityAnimation.list[ctrlVA.CurrentAnimation]).data)
                             {
-                                if (data.name == obj.name) isVisible = data.visibilityList.keyFrames[(int)ctrlVA.Frame].bValue;
+                                RenderBase.OAnimationKeyFrame frame = AnimationUtils.getSmallerPoint(data.visibilityList.keyFrames, ctrlVA.Frame);
+                                if (data.name == obj.name) isVisible = frame.bValue;
                             }
                         }
 
