@@ -2,8 +2,6 @@
 //Please give credits if you use in your project
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 
 namespace Ohana3DS_Rebirth.Ohana.ModelFormats
@@ -183,14 +181,11 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     {
                         ushort index = input.ReadUInt16();
 
-                        long position = data.Position;
-
-                        long vertexOffset = vertexBufferOffset + index * vertexStride;
-
                         RenderBase.OVertex vertex = new RenderBase.OVertex();
-
                         vertex.diffuseColor = 0xffffffff;
 
+                        long position = data.Position;
+                        long vertexOffset = vertexBufferOffset + index * vertexStride;
                         data.Seek(vertexOffset + attributes[(int)vshAttribute.position].offset, SeekOrigin.Begin);
                         vertex.position = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
 

@@ -310,7 +310,7 @@ namespace Ohana3DS_Rebirth.GUI
 
                     Font font = new Font(Font.FontFamily, Font.Size, FontStyle.Bold);
                     int textHeight = (int)e.Graphics.MeasureString(header.text, font).Height;
-                    e.Graphics.DrawString(DrawingHelper.clampText(e.Graphics, header.text, font, columnWidth), font, new SolidBrush(ForeColor), new Point(columnX, startY + ((headerSize / 2) - (textHeight / 2))));
+                    e.Graphics.DrawString(DrawingUtils.clampText(e.Graphics, header.text, font, columnWidth), font, new SolidBrush(ForeColor), new Point(columnX, startY + ((headerSize / 2) - (textHeight / 2))));
                     font.Dispose();
 
                     columnX += columnWidth;
@@ -371,7 +371,7 @@ namespace Ohana3DS_Rebirth.GUI
                         }
 
                         int textHeight = (int)e.Graphics.MeasureString(subItem.text, Font).Height;
-                        e.Graphics.DrawString(DrawingHelper.clampText(e.Graphics, subItem.text, Font, columnWidth), Font, new SolidBrush(ForeColor), new Point(textX, startY + ((tileSize / 2) - (textHeight / 2))));
+                        e.Graphics.DrawString(DrawingUtils.clampText(e.Graphics, subItem.text, Font, columnWidth), Font, new SolidBrush(ForeColor), new Point(textX, startY + ((tileSize / 2) - (textHeight / 2))));
 
                         x += columnWidth;
                         i++;

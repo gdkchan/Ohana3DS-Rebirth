@@ -49,5 +49,32 @@ namespace Ohana3DS_Rebirth.Ohana
             }
             return Encoding.ASCII.GetString(bytes.ToArray());
         }
+
+        /// <summary>
+        ///     Sign extends the value, so it will keep the sign flag.
+        /// </summary>
+        /// <param name="value">The value that should be sign-extended</param>
+        /// <param name="bits">Number of bits that the value have</param>
+        /// <returns></returns>
+        public static int signExtend(uint value, int bits)
+        {
+            int output = (int)value;
+            bool sign = (value & (1 << (bits - 1))) > 0;
+            if (sign) output -= (1 << bits);
+            return output;
+        }
+
+        /// <summary>
+        ///     Sign extends the value, so it will keep the sign flag.
+        /// </summary>
+        /// <param name="value">The value that should be sign-extended</param>
+        /// <param name="bits">Number of bits that the value have</param>
+        /// <returns></returns>
+        public static int signExtend(int value, int bits)
+        {
+            bool sign = (value & (1 << (bits - 1))) > 0;
+            if (sign) value -= (1 << bits);
+            return value;
+        }
     }
 }

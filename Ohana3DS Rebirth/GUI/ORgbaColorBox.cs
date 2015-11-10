@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace Ohana3DS_Rebirth.GUI
@@ -15,7 +10,7 @@ namespace Ohana3DS_Rebirth.GUI
 
         public ORgbaColorBox()
         {
-            SetStyle(ControlStyles.SupportsTransparentBackColor, false);
+            SetStyle(ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
         }
 

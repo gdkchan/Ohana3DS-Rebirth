@@ -34,7 +34,9 @@
             this.WindowManager = new Ohana3DS_Rebirth.GUI.OWindowManager(this.components);
             this.MainMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.mnuOpen = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuLineSeparator0 = new System.Windows.Forms.ToolStripSeparator();
             this.mnuAbout = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuSettings = new System.Windows.Forms.ToolStripMenuItem();
             this.ContentContainer.SuspendLayout();
             this.MainMenu.SuspendLayout();
             this.SuspendLayout();
@@ -81,23 +83,37 @@
             // 
             this.MainMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mnuOpen,
+            this.mnuSettings,
+            this.mnuLineSeparator0,
             this.mnuAbout});
             this.MainMenu.Name = "MainMenu";
-            this.MainMenu.Size = new System.Drawing.Size(108, 48);
+            this.MainMenu.Size = new System.Drawing.Size(153, 98);
             // 
             // mnuOpen
             // 
             this.mnuOpen.Name = "mnuOpen";
-            this.mnuOpen.Size = new System.Drawing.Size(107, 22);
+            this.mnuOpen.Size = new System.Drawing.Size(152, 22);
             this.mnuOpen.Text = "&Open";
             this.mnuOpen.Click += new System.EventHandler(this.mnuOpen_Click);
+            // 
+            // mnuLineSeparator0
+            // 
+            this.mnuLineSeparator0.Name = "mnuLineSeparator0";
+            this.mnuLineSeparator0.Size = new System.Drawing.Size(149, 6);
             // 
             // mnuAbout
             // 
             this.mnuAbout.Name = "mnuAbout";
-            this.mnuAbout.Size = new System.Drawing.Size(107, 22);
+            this.mnuAbout.Size = new System.Drawing.Size(152, 22);
             this.mnuAbout.Text = "&About";
             this.mnuAbout.Click += new System.EventHandler(this.mnuAbout_Click);
+            // 
+            // mnuSettings
+            // 
+            this.mnuSettings.Name = "mnuSettings";
+            this.mnuSettings.Size = new System.Drawing.Size(152, 22);
+            this.mnuSettings.Text = "&Settings";
+            this.mnuSettings.Click += new System.EventHandler(this.mnuSettings_Click);
             // 
             // FrmMain
             // 
@@ -124,5 +140,7 @@
         private System.Windows.Forms.ContextMenuStrip MainMenu;
         private System.Windows.Forms.ToolStripMenuItem mnuOpen;
         private System.Windows.Forms.ToolStripMenuItem mnuAbout;
+        private System.Windows.Forms.ToolStripSeparator mnuLineSeparator0;
+        private System.Windows.Forms.ToolStripMenuItem mnuSettings;
     }
 }

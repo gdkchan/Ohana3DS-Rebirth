@@ -12,10 +12,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.IO;
-using System.Windows.Forms;
 using System.Drawing;
 using System.Diagnostics;
 
@@ -215,89 +213,56 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                         data.Seek((offset * 4) + header.mainHeaderOffset, SeekOrigin.Begin);
                         writer.Write(peek(input) + header.gpuCommandsOffset);
                         break;
+                    case 0xe:
+                        data.Seek((offset * 4) + header.mainHeaderOffset, SeekOrigin.Begin);
+                        writer.Write(peek(input) + header.dataOffset);
+                        break;
                 }
 
                 //The moron that designed the format used different flags on different versions, instead of keeping compatibility.
-                switch (header.backwardCompatibility)
+                data.Seek((offset * 4) + header.gpuCommandsOffset, SeekOrigin.Begin);
+                if (header.backwardCompatibility < 6)
                 {
-                    case 7: //Pokémon X/Y
-                        switch (flags)
-                        {
-                            case 0x48: //Texture
-                                data.Seek((offset * 4) + header.gpuCommandsOffset, SeekOrigin.Begin);
-                                writer.Write(peek(input) + header.dataOffset);
-                                break;
-                            case 0x4e: //Index 16 bits mode
-                                data.Seek((offset * 4) + header.gpuCommandsOffset, SeekOrigin.Begin);
-                                writer.Write(((peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000);
-                                break;
-                            case 0x50: //Index 8 bits mode
-                                data.Seek((offset * 4) + header.gpuCommandsOffset, SeekOrigin.Begin);
-                                writer.Write((peek(input) + header.dataOffset) & 0x7fffffff);
-                                break;
-                            case 0x4c: //Vertex
-                                data.Seek((offset * 4) + header.gpuCommandsOffset, SeekOrigin.Begin);
-                                writer.Write(peek(input) + header.dataOffset);
-                                break;
-                        }
-                        break;
-                    case 0x20: //Senran Kagura (a few models only)
-                        switch (flags)
-                        {
-                            case 0x4a: //Texture
-                                data.Seek((offset * 4) + header.gpuCommandsOffset, SeekOrigin.Begin);
-                                writer.Write(peek(input) + header.dataOffset);
-                                break;
-                            case 0x50: //Index 16 bits mode
-                                data.Seek((offset * 4) + header.gpuCommandsOffset, SeekOrigin.Begin);
-                                writer.Write(((peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000);
-                                break;
-                            case 0x52: //Index 8 bits mode
-                                data.Seek((offset * 4) + header.gpuCommandsOffset, SeekOrigin.Begin);
-                                writer.Write((peek(input) + header.dataOffset) & 0x7fffffff);
-                                break;
-                            case 0x4e: //Vertex
-                                data.Seek((offset * 4) + header.gpuCommandsOffset, SeekOrigin.Begin);
-                                writer.Write(peek(input) + header.dataOffset);
-                                break;
-                        }
-                        break;
-                    case 0x21:
-                    case 0x22:
-                    case 0x23: //Codename STEAM/ORAS/Atelier Rorona/all newer games...
-                        switch (flags)
-                        {
-                            case 0x4a: //Texture
-                                data.Seek((offset * 4) + header.gpuCommandsOffset, SeekOrigin.Begin);
-                                writer.Write(peek(input) + header.dataOffset);
-                                break;
-                            case 0x4e: //Index 16 bits mode relative to Data Offset
-                                data.Seek((offset * 4) + header.gpuCommandsOffset, SeekOrigin.Begin);
-                                writer.Write(((peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000);
-                                break;
-                            case 0x58: //Index 16 bits mode relative to Data Extended Offset
-                                data.Seek((offset * 4) + header.gpuCommandsOffset, SeekOrigin.Begin);
-                                writer.Write(((peek(input) + header.dataExtendedOffset) & 0x7fffffff) | 0x80000000);
-                                break;
-                            case 0x50: //Index 8 bits mode relative to Data Offset
-                                data.Seek((offset * 4) + header.gpuCommandsOffset, SeekOrigin.Begin);
-                                writer.Write((peek(input) + header.dataOffset) & 0x7fffffff);
-                                break;
-                            case 0x5a: //Index 8 bits mode relative to Data Extended Offset
-                                data.Seek((offset * 4) + header.gpuCommandsOffset, SeekOrigin.Begin);
-                                writer.Write((peek(input) + header.dataExtendedOffset) & 0x7fffffff);
-                                break;
-                            case 0x4c: //Vertex relative to Data Offset
-                                data.Seek((offset * 4) + header.gpuCommandsOffset, SeekOrigin.Begin);
-                                writer.Write(peek(input) + header.dataOffset);
-                                break;
-                            case 0x56: //Vertex relative to Data Extended Offset
-                                data.Seek((offset * 4) + header.gpuCommandsOffset, SeekOrigin.Begin);
-                                writer.Write(peek(input) + header.dataExtendedOffset);
-                                break;
-                        }
-                        break;
-                    default: throw new Exception(String.Format("BCH: Unknow BCH version r{0} / Compatibility: {1}, can't relocate offsets! STOP!", header.version, header.backwardCompatibility));
+                    switch (flags)
+                    {
+                        case 0x46: writer.Write(peek(input) + header.dataOffset); break; //Texture
+                        case 0x4c: writer.Write(((peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode
+                        case 0x4e: writer.Write((peek(input) + header.dataOffset) & 0x7fffffff); break; //Index 8 bits mode
+                        case 0x4a: writer.Write(peek(input) + header.dataOffset); break; //Vertex
+                    }
+                }
+                else if (header.backwardCompatibility < 8)
+                {
+                    switch (flags)
+                    {
+                        case 0x48: writer.Write(peek(input) + header.dataOffset); break; //Texture
+                        case 0x4e: writer.Write(((peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode
+                        case 0x50: writer.Write((peek(input) + header.dataOffset) & 0x7fffffff); break; //Index 8 bits mode
+                        case 0x4c: writer.Write(peek(input) + header.dataOffset); break; //Vertex
+                    }
+                }
+                else if (header.backwardCompatibility < 0x21)
+                {
+                    switch (flags)
+                    {
+                        case 0x4a: writer.Write(peek(input) + header.dataOffset); break; //Texture
+                        case 0x50: writer.Write(((peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode
+                        case 0x52: writer.Write((peek(input) + header.dataOffset) & 0x7fffffff); break; //Index 8 bits mode
+                        case 0x4e: writer.Write(peek(input) + header.dataOffset); break; //Vertex
+                    }
+                }
+                else
+                {
+                    switch (flags)
+                    {
+                        case 0x4a: writer.Write(peek(input) + header.dataOffset); break; //Texture
+                        case 0x4e: writer.Write(((peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode relative to Data Offset
+                        case 0x58: writer.Write(((peek(input) + header.dataExtendedOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode relative to Data Extended Offset
+                        case 0x50: writer.Write((peek(input) + header.dataOffset) & 0x7fffffff); break; //Index 8 bits mode relative to Data Offset
+                        case 0x5a: writer.Write((peek(input) + header.dataExtendedOffset) & 0x7fffffff); break; //Index 8 bits mode relative to Data Extended Offset                           
+                        case 0x4c: writer.Write(peek(input) + header.dataOffset); break; //Vertex relative to Data Offset
+                        case 0x56: writer.Write(peek(input) + header.dataExtendedOffset); break; //Vertex relative to Data Extended Offset
+                    }
                 }
             }
 
@@ -460,7 +425,6 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                             case 5: light.lightType = RenderBase.OLightType.directional; break;
                             case 6: light.lightType = RenderBase.OLightType.point; break;
                             case 7: light.lightType = RenderBase.OLightType.spot; break;
-
                         }
                         break;
                     case 9:
@@ -600,10 +564,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                 models.addFog(fog);
             }
 
-            byte[] shiftTable;
-
             //Skeletal Animations
-            shiftTable = new byte[] { 1, 2, 3, 5, 6, 7 };
             for (int index = 0; index < contentHeader.skeletalAnimationsPointerTableEntries; index++)
             {
                 data.Seek(contentHeader.skeletalAnimationsPointerTableOffset + (index * 4), SeekOrigin.Begin);
@@ -640,44 +601,68 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     input.ReadUInt32();
 
                     RenderBase.OSegmentType segmentType = (RenderBase.OSegmentType)((animationTypeFlags >> 16) & 0xf);
-
                     switch (segmentType)
                     {
                         case RenderBase.OSegmentType.transform:
-                            bone.rotationExists = (flags & 0x300000) == 0;
-                            bone.translationExists = (flags & 0xc00000) == 0;
+                            data.Seek(offset + 0x18, SeekOrigin.Begin);
 
-                            for (int j = 0; j < 6; j++)
+                            uint notExistMask = 0x80000;
+                            uint constantMask = 0x200;
+
+                            for (int j = 0; j < 2; j++)
                             {
-                                RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
-
-                                data.Seek(offset + 0x18 + (j * 4), SeekOrigin.Begin);
-                                bool inline = ((flags >> 8) & (1 << shiftTable[j])) > 0;
-                                if ((j < 3 && bone.rotationExists) || (j > 2 && bone.translationExists))
+                                for (int axis = 0; axis < 3; axis++)
                                 {
-                                    if (inline)
+                                    bool notExist = (flags & notExistMask) > 0;
+                                    bool constant = (flags & constantMask) > 0;
+
+                                    RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
+                                    frame.exists = !notExist;
+                                    if (frame.exists)
                                     {
-                                        frame.interpolation = RenderBase.OInterpolationMode.linear;
-                                        frame.keyFrames.Add(new RenderBase.OInterpolationFloat(input.ReadSingle(), 0.0f));
+                                        if (constant)
+                                        {
+                                            frame.interpolation = RenderBase.OInterpolationMode.linear;
+                                            frame.keyFrames.Add(new RenderBase.OInterpolationFloat(input.ReadSingle(), 0));
+                                        }
+                                        else
+                                        {
+                                            uint frameOffset = input.ReadUInt32();
+                                            long position = data.Position;
+                                            data.Seek(frameOffset, SeekOrigin.Begin);
+                                            getAnimationKeyFrame(input, frame);
+                                            data.Seek(position, SeekOrigin.Begin);
+                                        }
+                                    }
+                                    else
+                                        data.Seek(4, SeekOrigin.Current);
+
+                                    if (j == 0)
+                                    {
+                                        switch (axis)
+                                        {
+                                            case 0: bone.rotationX = frame; break;
+                                            case 1: bone.rotationY = frame; break;
+                                            case 2: bone.rotationZ = frame; break;
+                                        }
                                     }
                                     else
                                     {
-                                        uint frameOffset = input.ReadUInt32();
-                                        data.Seek(frameOffset, SeekOrigin.Begin);
-                                        frame = getAnimationKeyFrame(input);
+                                        switch (axis)
+                                        {
+                                            case 0: bone.translationX = frame; break;
+                                            case 1: bone.translationY = frame; break;
+                                            case 2: bone.translationZ = frame; break;
+                                        }
                                     }
+
+                                    notExistMask <<= 1;
+                                    constantMask <<= 1;
                                 }
 
-                                switch (j)
-                                {
-                                    case 0: bone.rotationX = frame; break;
-                                    case 1: bone.rotationY = frame; break;
-                                    case 2: bone.rotationZ = frame; break;
-                                    case 3: bone.translationX = frame; break;
-                                    case 4: bone.translationY = frame; break;
-                                    case 5: bone.translationZ = frame; break;
-                                }
+                                constantMask <<= 1;
                             }
+
                             break;
                         case RenderBase.OSegmentType.transformQuaternion:
                             bone.isFrameFormat = true;
@@ -693,7 +678,10 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
 
                                 if ((flags & 2) > 0)
                                 {
-                                    bone.rotationQuaternion.vector.Add(new RenderBase.OVector4(input.ReadSingle(), input.ReadSingle(), input.ReadSingle(), input.ReadSingle()));
+                                    bone.rotationQuaternion.vector.Add(new RenderBase.OVector4(input.ReadSingle(),
+                                        input.ReadSingle(),
+                                        input.ReadSingle(),
+                                        input.ReadSingle()));
                                 }
                                 else
                                 {
@@ -707,7 +695,10 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                     data.Seek(rotationDataOffset, SeekOrigin.Begin);
                                     for (int j = 0; j < rotationEntries; j++)
                                     {
-                                        bone.rotationQuaternion.vector.Add(new RenderBase.OVector4(input.ReadSingle(), input.ReadSingle(), input.ReadSingle(), input.ReadSingle()));
+                                        bone.rotationQuaternion.vector.Add(new RenderBase.OVector4(input.ReadSingle(),
+                                            input.ReadSingle(),
+                                            input.ReadSingle(),
+                                            input.ReadSingle()));
                                     }
                                 }
                             }
@@ -719,7 +710,10 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
 
                                 if ((flags & 1) > 0)
                                 {
-                                    bone.translation.vector.Add(new RenderBase.OVector4(input.ReadSingle(), input.ReadSingle(), input.ReadSingle(), 0));
+                                    bone.translation.vector.Add(new RenderBase.OVector4(input.ReadSingle(),
+                                        input.ReadSingle(),
+                                        input.ReadSingle(),
+                                        0));
                                 }
                                 else
                                 {
@@ -732,7 +726,10 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                     data.Seek(translationDataOffset, SeekOrigin.Begin);
                                     for (int j = 0; j < translationEntries; j++)
                                     {
-                                        bone.translation.vector.Add(new RenderBase.OVector4(input.ReadSingle(), input.ReadSingle(), input.ReadSingle(), 0));
+                                        bone.translation.vector.Add(new RenderBase.OVector4(input.ReadSingle(),
+                                            input.ReadSingle(),
+                                            input.ReadSingle(),
+                                            0));
                                     }
                                 }
                             }
@@ -833,26 +830,25 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
 
                         data.Seek(offset + 0xc + (j * 4), SeekOrigin.Begin);
 
-                        frame.exists = ((flags >> 8) & (1 << j)) == 0;
-                        bool inline = (flags & (1 << j)) > 0;
+                        frame.exists = (flags & (0x100 << j)) == 0;
+                        bool constant = (flags & (1 << j)) > 0;
 
                         if (frame.exists)
                         {
-                            if (inline)
+                            if (constant)
                             {
                                 frame.interpolation = RenderBase.OInterpolationMode.linear;
-                                frame.keyFrames.Add(new RenderBase.OInterpolationFloat(input.ReadSingle(), 0.0f));
+                                frame.keyFrames.Add(new RenderBase.OInterpolationFloat(input.ReadSingle(), 0));
                             }
                             else
                             {
                                 uint frameOffset = input.ReadUInt32();
                                 data.Seek(frameOffset, SeekOrigin.Begin);
-                                frame = getAnimationKeyFrame(input);
+                                getAnimationKeyFrame(input, frame);
                             }
                         }
 
                         animationData.frameList.Add(frame);
-
                     }
 
                     materialAnimation.data.Add(animationData);
@@ -905,8 +901,6 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                 models.addVisibilityAnimation(visibilityAnimation);
             }
 
-            shiftTable = new byte[] { 6, 7, 8, 9, 10, 11, 13, 14, 15 };
-
             //Light Animations
             for (int index = 0; index < contentHeader.lightAnimationsPointerTableEntries; index++)
             {
@@ -952,6 +946,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                         case RenderBase.OSegmentType.boolean: segmentCount = 1; break;
                     }
 
+                    uint constantMask = 0x40;
                     for (int j = 0; j < segmentCount; j++)
                     {
                         RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
@@ -968,9 +963,19 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                             }
                             else
                             {
-                                bool inline = (flags & (1 << (segmentType == RenderBase.OSegmentType.transform ? shiftTable[j] : j))) > 0;
+                                bool constant;
+                                if (segmentType == RenderBase.OSegmentType.transform)
+                                {
+                                    constant = (flags & constantMask) > 0;
+                                    if (j == 5)
+                                        constantMask <<= 2;
+                                    else
+                                        constantMask <<= 1;
+                                }
+                                else
+                                    constant = (flags & (1 << j)) > 0;
 
-                                if (inline)
+                                if (constant)
                                 {
                                     frame.interpolation = RenderBase.OInterpolationMode.linear;
                                     frame.keyFrames.Add(new RenderBase.OInterpolationFloat(input.ReadSingle(), 0.0f));
@@ -979,7 +984,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                 {
                                     uint frameOffset = input.ReadUInt32();
                                     data.Seek(frameOffset, SeekOrigin.Begin);
-                                    frame = getAnimationKeyFrame(input);
+                                    getAnimationKeyFrame(input, frame);
                                 }
                             }
                         }
@@ -1036,6 +1041,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                         case RenderBase.OSegmentType.single: segmentCount = 1; break;
                     }
 
+                    uint constantMask = 0x40;
                     for (int j = 0; j < segmentCount; j++)
                     {
                         RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
@@ -1043,11 +1049,21 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                         data.Seek(offset + 0xc + (j * 4), SeekOrigin.Begin);
 
                         frame.exists = ((flags >> (segmentType == RenderBase.OSegmentType.transform ? 16 : 8)) & (1 << j)) == 0;
-                        bool inline = (flags & (1 << (segmentType == RenderBase.OSegmentType.transform ? shiftTable[j] : j))) > 0;
+                        bool constant;
+                        if (segmentType == RenderBase.OSegmentType.transform)
+                        {
+                            constant = (flags & constantMask) > 0;
+                            if (j == 5)
+                                constantMask <<= 2;
+                            else
+                                constantMask <<= 1;
+                        }
+                        else
+                            constant = (flags & (1 << j)) > 0;
 
                         if (frame.exists)
                         {
-                            if (inline)
+                            if (constant)
                             {
                                 frame.interpolation = RenderBase.OInterpolationMode.linear;
                                 frame.keyFrames.Add(new RenderBase.OInterpolationFloat(input.ReadSingle(), 0.0f));
@@ -1056,7 +1072,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                             {
                                 uint frameOffset = input.ReadUInt32();
                                 data.Seek(frameOffset, SeekOrigin.Begin);
-                                frame = getAnimationKeyFrame(input);
+                                getAnimationKeyFrame(input, frame);
                             }
                         }
 
@@ -1112,9 +1128,9 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
 
                         if (frame.exists)
                         {
-                            bool inline = (flags & (1 << j)) > 0;
+                            bool constant = (flags & (1 << j)) > 0;
 
-                            if (inline)
+                            if (constant)
                             {
                                 frame.interpolation = RenderBase.OInterpolationMode.linear;
                                 frame.keyFrames.Add(new RenderBase.OInterpolationFloat(input.ReadSingle(), 0.0f));
@@ -1123,7 +1139,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                             {
                                 uint frameOffset = input.ReadUInt32();
                                 data.Seek(frameOffset, SeekOrigin.Begin);
-                                frame = getAnimationKeyFrame(input);
+                                getAnimationKeyFrame(input, frame);
                             }
                         }
 
@@ -1181,7 +1197,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                 }
             }
 
-            //Model
+            //Models
             for (int modelIndex = 0; modelIndex < contentHeader.modelsPointerTableEntries; modelIndex++)
             {
                 RenderBase.OModel model = new RenderBase.OModel();
@@ -1217,13 +1233,14 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                 modelHeader.materialsNameOffset = input.ReadUInt32();
                 modelHeader.verticesTableOffset = input.ReadUInt32();
                 modelHeader.verticesTableEntries = input.ReadUInt32();
-                data.Seek(0x28, SeekOrigin.Current);
+                data.Seek(header.backwardCompatibility > 6 ? 0x28 : 0x20, SeekOrigin.Current);
                 modelHeader.skeletonOffset = input.ReadUInt32();
                 modelHeader.skeletonEntries = input.ReadUInt32();
                 modelHeader.skeletonNameOffset = input.ReadUInt32();
                 modelHeader.objectsNodeVisibilityOffset = input.ReadUInt32();
                 modelHeader.objectsNodeCount = input.ReadUInt32();
                 modelHeader.modelName = readString(input);
+                
                 modelHeader.objectsNodeNameEntries = input.ReadUInt32();
                 modelHeader.objectsNodeNameOffset = input.ReadUInt32();
                 input.ReadUInt32(); //0x0
@@ -1398,7 +1415,16 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                         material.shaderReference = new RenderBase.OReference(readString(input));
                         material.modelReference = new RenderBase.OReference(readString(input));
 
-                        uint metaDataPointerOffset = input.ReadUInt32();
+                        //User Data
+                        if (header.backwardCompatibility > 6)
+                        {
+                            uint metaDataPointerOffset = input.ReadUInt32();
+                            if (metaDataPointerOffset != 0)
+                            {
+                                data.Seek(metaDataPointerOffset, SeekOrigin.Begin);
+                                material.userData = getMetaData(input);
+                            }
+                        }
 
                         //Mapper
                         data.Seek(materialMapperOffset, SeekOrigin.Begin);
@@ -1416,13 +1442,6 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                             mapper.borderColor = getColor(input);
 
                             material.textureMapper[i] = mapper;
-                        }
-
-                        //User Data
-                        if (metaDataPointerOffset != 0)
-                        {
-                            data.Seek(metaDataPointerOffset, SeekOrigin.Begin);
-                            material.userData = getMetaData(input);
                         }
 
                         //Fragment Shader commands
@@ -1475,8 +1494,8 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     boneMatrix.M43 = input.ReadSingle();
 
                     bone.name = readString(input);
-                    uint metaDataPointerOffset = input.ReadUInt32();
 
+                    uint metaDataPointerOffset = input.ReadUInt32();
                     if (metaDataPointerOffset != 0)
                     {
                         long position = data.Position;
@@ -1508,7 +1527,8 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     bchObjectEntry objectEntry = new bchObjectEntry();
                     objectEntry.materialId = input.ReadUInt16();
                     ushort flags = input.ReadUInt16();
-                    objectEntry.isSilhouette = (flags & 1) > 0;
+
+                    if (header.backwardCompatibility != 8) objectEntry.isSilhouette = (flags & 1) > 0;
                     objectEntry.nodeId = input.ReadUInt16();
                     objectEntry.renderPriority = input.ReadUInt16();
                     objectEntry.vshAttributesBufferCommandsOffset = input.ReadUInt32(); //Buffer 0
@@ -1557,24 +1577,50 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     List<RenderBase.CustomVertex> vshAttributesBuffer = new List<RenderBase.CustomVertex>();
 
                     //Faces
-                    for (uint f = 0; f < objects[objIndex].facesHeaderEntries; f++)
+                    uint facesCount = objects[objIndex].facesHeaderEntries;
+                    bool hasFaces = facesCount > 0;
+                    uint facesTableOffset = 0;
+                    if (!hasFaces)
                     {
-                        uint baseOffset = objects[objIndex].facesHeaderOffset + (f * 0x34);
-                        data.Seek(baseOffset, SeekOrigin.Begin);
-                        RenderBase.OSkinningMode skinningMode = (RenderBase.OSkinningMode)input.ReadUInt16();
-                        ushort nodeIdEntries = input.ReadUInt16();
+                        data.Seek(modelHeader.verticesTableOffset + modelHeader.verticesTableEntries * 0x38, SeekOrigin.Begin);
+                        data.Seek(objIndex * 0x1c + 0x10, SeekOrigin.Current);
+
+                        facesTableOffset = input.ReadUInt32();
+                        facesCount = input.ReadUInt32();
+                    }
+
+                    for (uint f = 0; f < facesCount; f++)
+                    {
+                        RenderBase.OSkinningMode skinningMode = RenderBase.OSkinningMode.none;
                         List<ushort> nodeList = new List<ushort>();
-                        for (int n = 0; n < nodeIdEntries; n++) nodeList.Add(input.ReadUInt16());
+                        uint idxBufferOffset;
+                        PICACommand.indexBufferFormat idxBufferFormat;
+                        uint idxBufferTotalVertices;
 
-                        data.Seek(baseOffset + 0x2c, SeekOrigin.Begin);
-                        uint faceHeaderOffset = input.ReadUInt32();
-                        uint faceHeaderWordCount = input.ReadUInt32();
+                        if (hasFaces)
+                        {
+                            uint baseOffset = objects[objIndex].facesHeaderOffset + f * 0x34;
+                            data.Seek(baseOffset, SeekOrigin.Begin);
+                            skinningMode = (RenderBase.OSkinningMode)input.ReadUInt16();
+                            ushort nodeIdEntries = input.ReadUInt16();
+                            for (int n = 0; n < nodeIdEntries; n++) nodeList.Add(input.ReadUInt16());
 
-                        data.Seek(faceHeaderOffset, SeekOrigin.Begin);
-                        PICACommandReader idxCommands = new PICACommandReader(data, faceHeaderWordCount);
-                        uint idxBufferOffset = idxCommands.getIndexBufferAddress();
-                        PICACommand.indexBufferFormat idxBufferFormat = idxCommands.getIndexBufferFormat();
-                        uint idxBufferTotalVertices = idxCommands.getIndexBufferTotalVertices();
+                            data.Seek(baseOffset + 0x2c, SeekOrigin.Begin);
+                            uint faceHeaderOffset = input.ReadUInt32();
+                            uint faceHeaderWordCount = input.ReadUInt32();
+                            data.Seek(faceHeaderOffset, SeekOrigin.Begin);
+                            PICACommandReader idxCommands = new PICACommandReader(data, faceHeaderWordCount);
+                            idxBufferOffset = idxCommands.getIndexBufferAddress();
+                            idxBufferFormat = idxCommands.getIndexBufferFormat();
+                            idxBufferTotalVertices = idxCommands.getIndexBufferTotalVertices();
+                        }
+                        else
+                        {
+                            data.Seek(facesTableOffset + f * 8, SeekOrigin.Begin);
+                            idxBufferOffset = input.ReadUInt32();
+                            idxBufferFormat = PICACommand.indexBufferFormat.unsignedShort;
+                            idxBufferTotalVertices = input.ReadUInt32();
+                        }
 
                         //Carregamento de dados relacionados ao Vertex Shader
                         uint vshAttributesBufferOffset = vshCommands.getVSHAttributesBufferAddress(0);
@@ -1586,8 +1632,6 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
 
                         for (int attribute = 0; attribute < vshTotalAttributes; attribute++)
                         {
-                            PICACommand.attributeFormat format = vshAttributesBufferFormat[vshAttributesBufferPermutation[attribute]];
-
                             switch (vshMainAttributesBufferPermutation[vshAttributesBufferPermutation[attribute]])
                             {
                                 case PICACommand.vshAttribute.normal: obj.hasNormal = true; break;
@@ -1638,10 +1682,10 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                         vertex.tangent = new RenderBase.OVector3(vector.x * tangentScale, vector.y * tangentScale, vector.z * tangentScale);
                                         break;
                                     case PICACommand.vshAttribute.color:
-                                        uint r = clamp((vector.x * colorScale) * 0xff);
-                                        uint g = clamp((vector.y * colorScale) * 0xff);
-                                        uint b = clamp((vector.z * colorScale) * 0xff);
-                                        uint a = clamp((vector.w * colorScale) * 0xff);
+                                        uint r = saturate((vector.x * colorScale) * 0xff);
+                                        uint g = saturate((vector.y * colorScale) * 0xff);
+                                        uint b = saturate((vector.z * colorScale) * 0xff);
+                                        uint a = saturate((vector.w * colorScale) * 0xff);
                                         vertex.diffuseColor = b | (g << 8) | (r << 16) | (a << 24);
                                         break;
                                     case PICACommand.vshAttribute.textureCoordinate0:
@@ -1668,10 +1712,11 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                 }
                             }
 
-                            if ((skinningMode == RenderBase.OSkinningMode.rigidSkinning || skinningMode == RenderBase.OSkinningMode.none) && vertex.node.Count > 0)
+                            if (skinningMode != RenderBase.OSkinningMode.smoothSkinning && nodeList.Count > 0)
                             {
                                 //Note: Rigid skinning can have only one bone per vertex
                                 //Note2: Vertex with Rigid skinning seems to be always have meshes centered, so is necessary to make them follow the skeleton
+                                if (vertex.node.Count == 0) vertex.addNode(nodeList[0]);
                                 vertex.position = RenderBase.OVector3.transform(vertex.position, skeletonTransform[vertex.node[0]]);
                             }
 
@@ -1895,11 +1940,8 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
         /// <param name="input">The BCH file Reader</param>
         /// <param name="header">The BCH file header</param>
         /// <returns></returns>
-        private static RenderBase.OAnimationKeyFrame getAnimationKeyFrame(BinaryReader input)
+        private static void getAnimationKeyFrame(BinaryReader input, RenderBase.OAnimationKeyFrame frame)
         {
-            RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
-
-            frame.exists = true;
             frame.startFrame = input.ReadSingle();
             frame.endFrame = input.ReadSingle();
 
@@ -1907,117 +1949,80 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
             frame.preRepeat = (RenderBase.ORepeatMethod)(frameFlags & 0xf);
             frame.postRepeat = (RenderBase.ORepeatMethod)((frameFlags >> 8) & 0xf);
 
-            frameFlags = input.ReadUInt32();
-            frame.interpolation = (RenderBase.OInterpolationMode)(frameFlags & 0xf);
-            uint entryFormat = (frameFlags >> 8) & 0xff;
-            uint entries = frameFlags >> 16;
+            uint segmentFlags = input.ReadUInt32();
+            frame.interpolation = (RenderBase.OInterpolationMode)(segmentFlags & 0xf);
+            RenderBase.OSegmentQuantization quantization = (RenderBase.OSegmentQuantization)((segmentFlags >> 8) & 0xff);
+            uint entries = segmentFlags >> 16;
+            float valueScale = input.ReadSingle();
+            float valueOffset = input.ReadSingle();
+            float frameScale  = input.ReadSingle();
+            float frameOffset = input.ReadSingle();
 
-            float maxValue = 0;
-            switch (entryFormat)
-            {
-                case 1: case 7: maxValue = getCustomFloat(input.ReadUInt32(), 107); break;
-                case 2: case 4: maxValue = getCustomFloat(input.ReadUInt32(), 111); break;
-                case 5: maxValue = getCustomFloat(input.ReadUInt32(), 115); break;
-                default: input.ReadUInt32(); break;
-            }
-            float minValue = input.ReadSingle();
-            maxValue = minValue + maxValue;
-            float frameScale = input.ReadSingle();
-            float valueScale = input.ReadSingle(); //Probably wrong
-
-            float interpolation;
-            uint value;
-            input.BaseStream.Seek(input.ReadUInt32(), SeekOrigin.Begin);
-            for (int k = 0; k < entries; k++)
+            uint offset = input.ReadUInt32();
+            if (offset < input.BaseStream.Length) input.BaseStream.Seek(offset, SeekOrigin.Begin);
+            for (int key = 0; key < entries; key++)
             {
                 RenderBase.OInterpolationFloat keyFrame = new RenderBase.OInterpolationFloat();
 
-                switch (frame.interpolation)
+                switch (quantization)
                 {
-                    case RenderBase.OInterpolationMode.step:
-                    case RenderBase.OInterpolationMode.linear:
-                        switch (entryFormat)
-                        {
-                            case 6:
-                                keyFrame.frame = input.ReadSingle();
-                                keyFrame.value = input.ReadSingle();
-                                break;
-                            case 7:
-                                value = input.ReadUInt32();
-                                interpolation = (float)(value >> 12) / 0x100000;
-                                keyFrame.frame = frame.startFrame + (float)(value & 0xfff);
-                                keyFrame.value = (minValue * (1 - interpolation) + maxValue * interpolation);
-                                break;
-                            default:
-                                Debug.WriteLine(String.Format("[BCH] Animation: Unsupported quantization format {0} on Linear...", entryFormat));
-                                frame.exists = false;
-                                break;
-                        }
-
+                    case RenderBase.OSegmentQuantization.hermite128:
+                        keyFrame.frame = input.ReadSingle();
+                        keyFrame.value = input.ReadSingle();
+                        keyFrame.inSlope = input.ReadSingle();
+                        keyFrame.outSlope = input.ReadSingle();
                         break;
-                    case RenderBase.OInterpolationMode.hermite:
-                        switch (entryFormat)
-                        {
-                            case 0:
-                                keyFrame.frame = input.ReadSingle();
-                                keyFrame.value = input.ReadSingle();
-                                keyFrame.inSlope = input.ReadSingle();
-                                keyFrame.outSlope = input.ReadSingle();
-                                break;
-                            case 1:
-                                value = input.ReadUInt32();
-                                keyFrame.frame = frame.startFrame + (float)(value & 0xfff);
-                                interpolation = (float)(value >> 12) / 0x100000;
-                                keyFrame.value = (minValue * (1 - interpolation) + maxValue * interpolation);
-                                keyFrame.inSlope = (float)input.ReadInt16() / 256;
-                                keyFrame.outSlope = (float)input.ReadInt16() / 256;
-                                break;
-                            case 2:
-                                value = input.ReadUInt32();
-                                uint inSlopeLow = value >> 24;
-                                keyFrame.frame = frame.startFrame + (float)(value & 0xff);
-                                interpolation = (float)((value >> 8) & 0xffff) / 0x10000;
-                                keyFrame.value = (minValue * (1 - interpolation) + maxValue * interpolation);
-                                value = input.ReadUInt16();
-                                keyFrame.inSlope = get12bValue((int)(((value & 0xf) << 8) | inSlopeLow));
-                                keyFrame.outSlope = get12bValue((int)((value >> 4) & 0xfff));
-                                break;
-                            case 3:
-                                keyFrame.frame = input.ReadSingle();
-                                keyFrame.value = input.ReadSingle();
-                                keyFrame.inSlope = input.ReadSingle();
-                                keyFrame.outSlope = keyFrame.inSlope;
-                                break;
-                            case 4:
-                                //TODO: Implement support for different inSlope and outSlope
-                                //Note: they are added with another frame with same number, but the inSlope is actually the outSlope
-                                keyFrame.frame = (float)input.ReadInt16() / 32;
-                                interpolation = (float)input.ReadUInt16() / 0x10000;
-                                keyFrame.value = (minValue * (1 - interpolation) + maxValue * interpolation);
-                                keyFrame.inSlope = (float)input.ReadInt16() / 256;
-                                keyFrame.outSlope = keyFrame.inSlope;
-                                break;
-                            case 5:
-                                value = input.ReadUInt32();
-                                keyFrame.frame = frame.startFrame + ((float)(value & 0xff) * frameScale);
-                                interpolation = (float)((value >> 8) & 0xfff) / 0x1000;
-                                keyFrame.value = (minValue * (1 - interpolation) + maxValue * interpolation);
-                                keyFrame.inSlope = get12bValue((int)(value >> 20));
-                                keyFrame.outSlope = keyFrame.inSlope;
-                                break;
-                            default:
-                                Debug.WriteLine(String.Format("[BCH] Animation: Unsupported quantization format {0} on Hermite...", entryFormat));
-                                frame.exists = false;
-                                break;
-                        }
-
+                    case RenderBase.OSegmentQuantization.hermite64:
+                        uint h64Value = input.ReadUInt32();
+                        keyFrame.frame = h64Value & 0xfff;
+                        keyFrame.value = h64Value >> 12;
+                        keyFrame.inSlope = input.ReadInt16() / 256f;
+                        keyFrame.outSlope = input.ReadInt16() / 256f;
+                        break;
+                    case RenderBase.OSegmentQuantization.hermite48:
+                        keyFrame.frame = input.ReadByte();
+                        keyFrame.value = input.ReadUInt16();
+                        byte slope0 = input.ReadByte();
+                        byte slope1 = input.ReadByte();
+                        byte slope2 = input.ReadByte();
+                        keyFrame.inSlope = IOUtils.signExtend(slope0 | ((slope1 & 0xf) << 8), 12) / 32f;
+                        keyFrame.outSlope = IOUtils.signExtend((slope1 >> 4) | (slope2 << 4), 12) / 32f;
+                        break;
+                    case RenderBase.OSegmentQuantization.unifiedHermite96:
+                        keyFrame.frame = input.ReadSingle();
+                        keyFrame.value = input.ReadSingle();
+                        keyFrame.inSlope = input.ReadSingle();
+                        keyFrame.outSlope = keyFrame.inSlope;
+                        break;
+                    case RenderBase.OSegmentQuantization.unifiedHermite48:
+                        keyFrame.frame = input.ReadUInt16() / 32f;
+                        keyFrame.value = input.ReadUInt16();
+                        keyFrame.inSlope = input.ReadInt16() / 256f;
+                        keyFrame.outSlope = keyFrame.inSlope;
+                        break;
+                    case RenderBase.OSegmentQuantization.unifiedHermite32:
+                        keyFrame.frame = input.ReadByte();
+                        ushort uH32Value = input.ReadUInt16();
+                        keyFrame.value = uH32Value & 0xfff;
+                        keyFrame.inSlope = IOUtils.signExtend((uH32Value >> 12) | (input.ReadByte() << 4), 12) / 32f;
+                        keyFrame.outSlope = keyFrame.inSlope;
+                        break;
+                    case RenderBase.OSegmentQuantization.stepLinear64:
+                        keyFrame.frame = input.ReadSingle();
+                        keyFrame.value = input.ReadSingle();
+                        break;
+                    case RenderBase.OSegmentQuantization.stepLinear32:
+                        uint sL32Value = input.ReadUInt32();
+                        keyFrame.frame = sL32Value & 0xfff;
+                        keyFrame.value = sL32Value >> 12;
                         break;
                 }
 
+                keyFrame.frame = (keyFrame.frame * frameScale) + frameOffset;
+                keyFrame.value = (keyFrame.value * valueScale) + valueOffset;
+
                 frame.keyFrames.Add(keyFrame);
             }
-
-            return frame;
         }
 
         /// <summary>
@@ -2055,40 +2060,6 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
             }
 
             return frame;
-        }
-
-        /// <summary>
-        ///     Gets a custom Float value found on BCH animations.
-        /// </summary>
-        /// <param name="value">Raw value of the floating point value</param>
-        /// <param name="exponentBias">The bias used on the exponent</param>
-        /// <returns></returns>
-        private static float getCustomFloat(uint value, int exponentBias)
-        {
-            float mantissa = 1.0f;
-            float m = 0.5f;
-
-            uint rawMantissa = value & 0x7fffff;
-            int rawExponent = (int)(value >> 23) - exponentBias;
-
-            for (int bit = 22; bit >= 0; bit--)
-            {
-                if ((rawMantissa & (1 << bit)) > 0) mantissa += m;
-                m *= 0.5f;
-            }
-
-            return (float)(Math.Pow(2, rawExponent) * mantissa);
-        }
-
-        /// <summary>
-        ///     Gets the custom quantized Floating point value found on BCH animations.
-        /// </summary>
-        /// <param name="value">Raw value</param>
-        /// <returns></returns>
-        private static float get12bValue(int value)
-        {
-            if ((value & 0x800) > 0) value -= 0x1000;
-            return (float)value / 32;
         }
 
         /// <summary>
@@ -2161,7 +2132,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
         /// </summary>
         /// <param name="value">The float value</param>
         /// <returns></returns>
-        private static byte clamp(float value)
+        private static byte saturate(float value)
         {
             if (value > 0xff) return 0xff;
             if (value < 0) return 0;

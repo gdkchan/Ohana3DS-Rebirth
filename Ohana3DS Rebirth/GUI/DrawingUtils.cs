@@ -1,12 +1,10 @@
 ﻿//A bunch of functions to help drawing of the other controls
 using System;
-using System.Windows.Forms;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 
 namespace Ohana3DS_Rebirth.GUI
 {
-    class DrawingHelper
+    class DrawingUtils
     {
         /// <summary>
         ///     Clamp the text to fit on a limited space.

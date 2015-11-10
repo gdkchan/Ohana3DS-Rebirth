@@ -20,6 +20,19 @@ namespace Ohana3DS_Rebirth.GUI
         private Bitmap hoverRed = new Bitmap(16, 16);
         private Bitmap hoverBlue = new Bitmap(16, 16);
 
+        private Bitmap icon;
+        public Bitmap Icon
+        {
+            get
+            {
+                return icon;
+            }
+            set
+            {
+                icon = value;
+            }
+        }
+
         public event EventHandler MoveEnded;
         public event EventHandler ToggleDockable;
 
@@ -53,7 +66,7 @@ namespace Ohana3DS_Rebirth.GUI
         {
             using (Graphics g = Graphics.FromHwnd(Handle))
             {
-                LblTitle.Text = DrawingHelper.clampText(g, title, LblTitle.Font, Width - 32);
+                LblTitle.Text = DrawingUtils.clampText(g, title, LblTitle.Font, Width - 32);
             }
         }
 
@@ -83,6 +96,7 @@ namespace Ohana3DS_Rebirth.GUI
             //Dispose all unmanaged stuff here!
             hoverRed.Dispose();
             hoverBlue.Dispose();
+            if (icon != null) icon.Dispose();
         }
 
         private void WindowTop_MouseDown(object sender, MouseEventArgs e)

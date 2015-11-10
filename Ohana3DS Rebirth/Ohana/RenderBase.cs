@@ -1755,6 +1755,21 @@ namespace Ohana3DS_Rebirth.Ohana
         }
 
         /// <summary>
+        ///     Type of the segment quantization.
+        /// </summary>
+        public enum OSegmentQuantization
+        {
+            hermite128 = 0,
+            hermite64 = 1,
+            hermite48 = 2,
+            unifiedHermite96 = 3,
+            unifiedHermite48 = 4,
+            unifiedHermite32 = 5,
+            stepLinear64 = 6,
+            stepLinear32 = 7
+        }
+
+        /// <summary>
         ///     Bone of an Skeletal Animation.
         /// </summary>
         public class OSkeletalAnimationBone

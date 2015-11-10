@@ -125,15 +125,14 @@ namespace Ohana3DS_Rebirth.GUI
                     e.Graphics.FillRectangle(new LinearGradientBrush(rectShadow, baseColor, Color.Transparent, LinearGradientMode.Vertical), rectShadow);
                 }
                 else
-                {
                     e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(0x3f, Color.Black)), new Rectangle(rect.X, rect.Y, rect.Width, rect.Height + 4));
-                }
 
                 Font font = new Font("Segoe UI", 10);
-                e.Graphics.DrawString(DrawingHelper.clampText(e.Graphics, window.Title, font, rect.Width - 16), font, new SolidBrush(Color.White), new Point(rect.Left + 16, rect.Top));
+                e.Graphics.DrawString(DrawingUtils.clampText(e.Graphics, window.Title, font, rect.Width - 16), font, new SolidBrush(Color.White), new Point(rect.Left + 16, rect.Top));
                 font.Dispose();
 
-                Rectangle iconRect = new Rectangle(rect.X, rect.Y + (rect.Height / 2) - 8, 16, 16);
+                Rectangle iconRect = new Rectangle(rect.X, rect.Y + (rect.Height / 2) - 6, 16, 16);
+                if (window.Icon != null) e.Graphics.DrawImage(window.Icon, iconRect, new Rectangle(Point.Empty, window.Icon.Size), GraphicsUnit.Pixel);
                 
                 left += windowWidth + 4;
             }
@@ -142,8 +141,21 @@ namespace Ohana3DS_Rebirth.GUI
             Rectangle leftScrollRect = new Rectangle(0, ((Height / 2) - 8) + 2, 16, 16);
             Rectangle rightScrollRect = new Rectangle(Width - 16, ((Height / 2) - 8) + 2, 16, 16);
 
-            if (scrollX > 0) { e.Graphics.DrawImage(Resources.icn_wm_scroll_left, leftScrollRect); hasLeftScroll = true; } else { hasLeftScroll = false; }
-            if ((left - 4) > Width) { e.Graphics.DrawImage(Resources.icn_wm_scroll_right, rightScrollRect); hasRightScroll = true; } else { hasRightScroll = false; }
+            if (scrollX > 0)
+            {
+                e.Graphics.DrawImage(Resources.icn_wm_scroll_left, leftScrollRect);
+                hasLeftScroll = true;
+            }
+            else
+                hasLeftScroll = false;
+
+            if ((left - 4) > Width)
+            {
+                e.Graphics.DrawImage(Resources.icn_wm_scroll_right, rightScrollRect);
+                hasRightScroll = true;
+            }
+            else
+                hasRightScroll = false;
 
  	        base.OnPaint(e);
         }

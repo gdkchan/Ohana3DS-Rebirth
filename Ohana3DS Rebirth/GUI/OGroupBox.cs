@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
 using System.ComponentModel;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
@@ -204,7 +200,7 @@ namespace Ohana3DS_Rebirth.GUI
         {
             using (Graphics g = Graphics.FromHwnd(Handle))
             {
-                LblTitle.Text = DrawingHelper.clampText(g, title, LblTitle.Font, Width - 16);
+                LblTitle.Text = DrawingUtils.clampText(g, title, LblTitle.Font, Width - 16);
             }
         }
 

@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
-using System.Windows.Forms;
 using System.Drawing;
 
 using Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200;
@@ -136,6 +133,20 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
             public bool isVisible;
         }
 
+        private enum cgfxSegmentType
+        {
+            single = 0,
+            integer = 1,
+            boolean = 2,
+            vector2 = 3,
+            vector3 = 4,
+            transform = 5,
+            rgbaColor = 6,
+            texture = 7,
+            transformQuaternion = 8,
+            transformMatrix = 9
+        }
+
         /// <summary>
         ///     Gets the name of the first model on a CGFX file.
         ///     Returns null if the file doesn't contain any model.
@@ -254,6 +265,100 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                 data.Seek(dataOffset, SeekOrigin.Begin);
                 input.Read(buffer, 0, buffer.Length);
                 models.addTexture(new RenderBase.OTexture(TextureCodec.decode(buffer, width, height, format), name));
+            }
+
+            //Skeletal animations
+            foreach (dictEntry skeletalAnimationEntry in dataHeader.skeletalAnimations)
+            {
+                data.Seek(skeletalAnimationEntry.dataOffset, SeekOrigin.Begin);
+
+                RenderBase.OSkeletalAnimation skeletalAnimation = new RenderBase.OSkeletalAnimation();
+
+                string canmMagic = IOUtils.readString(input, (uint)input.BaseStream.Position, 4);
+                uint revision = input.ReadUInt32();
+                skeletalAnimation.name = IOUtils.readString(input, getRelativeOffset(input));
+                string targetAnimationGroupName = IOUtils.readString(input, getRelativeOffset(input));
+                skeletalAnimation.loopMode = (RenderBase.OLoopMode)input.ReadUInt32();
+                skeletalAnimation.frameSize = input.ReadSingle();
+                List<dictEntry> memberAnimationDataDictionary = getDictionary(input);
+                uint userDataEntries = input.ReadUInt32();
+                uint userDataOffset = getRelativeOffset(input);
+
+                foreach (dictEntry entry in memberAnimationDataDictionary)
+                {
+                    RenderBase.OSkeletalAnimationBone bone = new RenderBase.OSkeletalAnimationBone();
+                    bone.name = IOUtils.readString(input, entry.nameOffset);
+                    data.Seek(entry.dataOffset, SeekOrigin.Begin);
+
+                    uint boneFlags = input.ReadUInt32();
+                    string bonePath = IOUtils.readString(input, getRelativeOffset(input));
+                    if ((revision >> 24) < 7) data.Seek(8, SeekOrigin.Current);
+                    cgfxSegmentType segmentType = (cgfxSegmentType)input.ReadUInt32();
+                    data.Seek(0xc, SeekOrigin.Current);
+
+                    uint notExistMask = 0x80000;
+                    uint constantMask = 0x200;
+
+                    for (int j = 0; j < 2; j++)
+                    {
+                        for (int axis = 0; axis < 3; axis++)
+                        {
+                            bool notExist = (boneFlags & notExistMask) > 0;
+                            bool constant = (boneFlags & constantMask) > 0;
+
+                            RenderBase.OAnimationKeyFrame frame = new RenderBase.OAnimationKeyFrame();
+                            frame.exists = !notExist;
+                            if (frame.exists)
+                            {
+                                if (constant)
+                                {
+                                    frame.interpolation = RenderBase.OInterpolationMode.linear;
+                                    frame.keyFrames.Add(new RenderBase.OInterpolationFloat(input.ReadSingle(), 0));
+                                }
+                                else
+                                {
+                                    uint frameOffset = getRelativeOffset(input);
+                                    long position = data.Position;
+                                    data.Seek(frameOffset, SeekOrigin.Begin);
+                                    getAnimationKeyFrame(input, frame);
+                                    data.Seek(position, SeekOrigin.Begin);
+                                }
+                            }
+                            else
+                                data.Seek(4, SeekOrigin.Current);
+
+                            if (j == 0)
+                            {
+                                switch (axis)
+                                {
+                                    case 0: bone.rotationX = frame; break;
+                                    case 1: bone.rotationY = frame; break;
+                                    case 2: bone.rotationZ = frame; break;
+                                }
+                            }
+                            else
+                            {
+                                switch (axis)
+                                {
+                                    case 0: bone.translationX = frame; break;
+                                    case 1: bone.translationY = frame; break;
+                                    case 2: bone.translationZ = frame; break;
+                                }
+                            }
+
+                            notExistMask <<= 1;
+                            constantMask <<= 1;
+                        }
+
+                        notExistMask <<= 1;
+                        constantMask <<= 1;
+                        data.Seek(4, SeekOrigin.Current);
+                    }
+
+                    skeletalAnimation.bone.Add(bone);
+                }
+
+                models.addSkeletalAnimaton(skeletalAnimation);
             }
 
             //Models
@@ -798,10 +903,10 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                         vertex.tangent = new RenderBase.OVector3(vector.x * format.scale, vector.y * format.scale, vector.z * format.scale);
                                         break;
                                     case PICACommand.vshAttribute.color:
-                                        uint r = clamp((vector.x * format.scale) * 0xff);
-                                        uint g = clamp((vector.y * format.scale) * 0xff);
-                                        uint b = clamp((vector.z * format.scale) * 0xff);
-                                        uint a = clamp((vector.w * format.scale) * 0xff);
+                                        uint r = saturate((vector.x * format.scale) * 0xff);
+                                        uint g = saturate((vector.y * format.scale) * 0xff);
+                                        uint b = saturate((vector.z * format.scale) * 0xff);
+                                        uint a = saturate((vector.w * format.scale) * 0xff);
                                         vertex.diffuseColor = b | (g << 8) | (r << 16) | (a << 24);
                                         break;
                                     case PICACommand.vshAttribute.textureCoordinate0:
@@ -834,15 +939,11 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                 }
                             }
 
-                            if (cmdlHeader.hasSkeleton)
-                            {
-                                if (nodeList.Count > 0 && vertex.node.Count == 0) vertex.addNode((int)nodeList[0]);
-                            }
-
-                            if ((skinningMode == RenderBase.OSkinningMode.rigidSkinning || skinningMode == RenderBase.OSkinningMode.none) && vertex.node.Count > 0)
+                            if (skinningMode != RenderBase.OSkinningMode.smoothSkinning && nodeList.Count > 0)
                             {
                                 //Note: Rigid skinning can have only one bone per vertex
                                 //Note2: Vertex with Rigid skinning seems to be always have meshes centered, so is necessary to make them follow the skeleton
+                                if (vertex.node.Count == 0) vertex.addNode((int)nodeList[0]);
                                 vertex.position = RenderBase.OVector3.transform(vertex.position, skeletonTransform[vertex.node[0]]);
                             }
 
@@ -929,6 +1030,41 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
 
         /// <summary>
         ///     Reads a Dictionary section from the CGFX file.
+        /// </summary>
+        /// <param name="input">BinaryReader of the CGFX file</param>
+        /// <param name="dictionaryOffset">Offset of the DICT on the CGFX file</param>
+        /// <returns></returns>
+        private static List<dictEntry> getDictionary(BinaryReader input, uint dictionaryOffset)
+        {
+            List<dictEntry> output = new List<dictEntry>();
+
+            input.BaseStream.Seek(dictionaryOffset, SeekOrigin.Begin);
+            string dictMagic = IOUtils.readString(input, dictionaryOffset, 4);
+            uint dictLength = input.ReadUInt32();
+            uint dictEntries = input.ReadUInt32();
+            int rootNodeReference = input.ReadInt32();
+            ushort rootNodeLeft = input.ReadUInt16();
+            ushort rootNodeRight = input.ReadUInt16();
+            uint rootNodeNameOffset = input.ReadUInt32(); //Is this even used?
+            uint rootNodeDataOffset = input.ReadUInt32();
+            for (int i = 0; i < dictEntries; i++)
+            {
+                dictEntry entry = new dictEntry();
+
+                int referenceBit = input.ReadInt32(); //Radix tree
+                ushort leftNode = input.ReadUInt16();
+                ushort rightNode = input.ReadUInt16();
+                entry.nameOffset = getRelativeOffset(input);
+                entry.dataOffset = getRelativeOffset(input);
+
+                output.Add(entry);
+            }
+
+            return output;
+        }
+
+        /// <summary>
+        ///     Reads a Dictionary section from the CGFX file.
         ///     The Stream is advanced exactly 8 bytes.
         /// </summary>
         /// <param name="input">BinaryReader of the CGFX file</param>
@@ -943,29 +1079,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
             if (entries > 0)
             {
                 long position = input.BaseStream.Position;
-
-                input.BaseStream.Seek(dictionaryOffset, SeekOrigin.Begin);
-                string dictMagic = IOUtils.readString(input, dictionaryOffset, 4);
-                uint dictLength = input.ReadUInt32();
-                uint dictEntries = input.ReadUInt32();
-                int rootNodeReference = input.ReadInt32();
-                ushort rootNodeLeft = input.ReadUInt16();
-                ushort rootNodeRight = input.ReadUInt16();
-                uint rootNodeNameOffset = input.ReadUInt32(); //Is this even used?
-                uint rootNodeDataOffset = input.ReadUInt32();
-                for (int i = 0; i < dictEntries; i++)
-                {
-                    dictEntry entry = new dictEntry();
-
-                    int referenceBit = input.ReadInt32(); //Radix tree
-                    ushort leftNode = input.ReadUInt16();
-                    ushort rightNode = input.ReadUInt16();
-                    entry.nameOffset = getRelativeOffset(input);
-                    entry.dataOffset = getRelativeOffset(input);
-
-                    output.Add(entry);
-                }
-
+                output = getDictionary(input, dictionaryOffset);
                 input.BaseStream.Seek(position, SeekOrigin.Begin);
             }
 
@@ -1154,11 +1268,115 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
         }
 
         /// <summary>
+        ///     Gets an Animation Key frame from the CGFX file.
+        ///     The Reader position must be set to the beggining of the Key Frame Data.
+        /// </summary>
+        /// <param name="input">The CGFX file Reader</param>
+        /// <param name="header">The CGFX file header</param>
+        /// <returns></returns>
+        private static void getAnimationKeyFrame(BinaryReader input, RenderBase.OAnimationKeyFrame frame)
+        {
+            float startFrame = input.ReadSingle();
+            float endFrame = input.ReadSingle();
+            input.BaseStream.Seek(0x10, SeekOrigin.Current);
+
+            frame.startFrame = input.ReadSingle();
+            frame.endFrame = input.ReadSingle();
+            uint segmentFlags = input.ReadUInt32();
+            switch (segmentFlags & 0xf)
+            {
+                case 0: frame.interpolation = RenderBase.OInterpolationMode.step; break;
+                case 4: frame.interpolation = RenderBase.OInterpolationMode.linear; break;
+                case 8: frame.interpolation = RenderBase.OInterpolationMode.hermite; break;
+            }
+            RenderBase.OSegmentQuantization quantization = (RenderBase.OSegmentQuantization)(segmentFlags >> 5);
+
+            uint entries = input.ReadUInt32();
+            float invDuration = input.ReadSingle();
+            float valueScale = 1;
+            float valueOffset = 0;
+            float frameScale = 1;
+
+            if (quantization != RenderBase.OSegmentQuantization.hermite128 &&
+                quantization != RenderBase.OSegmentQuantization.unifiedHermite96 &&
+                quantization != RenderBase.OSegmentQuantization.stepLinear64)
+            {
+                valueScale = input.ReadSingle();
+                valueOffset = input.ReadSingle();
+                frameScale = input.ReadSingle();
+            }
+
+            for (int key = 0; key < entries; key++)
+            {
+                RenderBase.OInterpolationFloat keyFrame = new RenderBase.OInterpolationFloat();
+
+                switch (quantization)
+                {
+                    case RenderBase.OSegmentQuantization.hermite128:
+                        keyFrame.frame = input.ReadSingle();
+                        keyFrame.value = input.ReadSingle();
+                        keyFrame.inSlope = input.ReadSingle();
+                        keyFrame.outSlope = input.ReadSingle();
+                        break;
+                    case RenderBase.OSegmentQuantization.hermite64:
+                        uint h64Value = input.ReadUInt32();
+                        keyFrame.frame = h64Value & 0xfff;
+                        keyFrame.value = h64Value >> 12;
+                        keyFrame.inSlope = input.ReadInt16() / 256f;
+                        keyFrame.outSlope = input.ReadInt16() / 256f;
+                        break;
+                    case RenderBase.OSegmentQuantization.hermite48:
+                        keyFrame.frame = input.ReadByte();
+                        keyFrame.value = input.ReadUInt16();
+                        byte slope0 = input.ReadByte();
+                        byte slope1 = input.ReadByte();
+                        byte slope2 = input.ReadByte();
+                        keyFrame.inSlope = IOUtils.signExtend(slope0 | ((slope1 & 0xf) << 8), 12) / 32f;
+                        keyFrame.outSlope = IOUtils.signExtend((slope1 >> 4) | (slope2 << 4), 12) / 32f;
+                        break;
+                    case RenderBase.OSegmentQuantization.unifiedHermite96:
+                        keyFrame.frame = input.ReadSingle();
+                        keyFrame.value = input.ReadSingle();
+                        keyFrame.inSlope = input.ReadSingle();
+                        keyFrame.outSlope = keyFrame.inSlope;
+                        break;
+                    case RenderBase.OSegmentQuantization.unifiedHermite48:
+                        keyFrame.frame = input.ReadUInt16() / 32f;
+                        keyFrame.value = input.ReadUInt16();
+                        keyFrame.inSlope = input.ReadInt16() / 256f;
+                        keyFrame.outSlope = keyFrame.inSlope;
+                        break;
+                    case RenderBase.OSegmentQuantization.unifiedHermite32:
+                        keyFrame.frame = input.ReadByte();
+                        ushort uH32Value = input.ReadUInt16();
+                        keyFrame.value = uH32Value & 0xfff;
+                        keyFrame.inSlope = IOUtils.signExtend((uH32Value >> 12) | (input.ReadByte() << 4), 12) / 32f;
+                        keyFrame.outSlope = keyFrame.inSlope;
+                        break;
+                    case RenderBase.OSegmentQuantization.stepLinear64:
+                        keyFrame.frame = input.ReadSingle();
+                        keyFrame.value = input.ReadSingle();
+                        break;
+                    case RenderBase.OSegmentQuantization.stepLinear32:
+                        uint sL32Value = input.ReadUInt32();
+                        keyFrame.frame = sL32Value & 0xfff;
+                        keyFrame.value = sL32Value >> 12;
+                        break;
+                }
+
+                keyFrame.frame = (keyFrame.frame * frameScale) + startFrame;
+                keyFrame.value = (keyFrame.value * valueScale) + valueOffset;
+
+                frame.keyFrames.Add(keyFrame);
+            }
+        }
+
+        /// <summary>
         ///     Clamps a Float value between 0 and 255 and return as Byte.
         /// </summary>
         /// <param name="value">The float value</param>
         /// <returns></returns>
-        private static byte clamp(float value)
+        private static byte saturate(float value)
         {
             if (value > 0xff) return 0xff;
             if (value < 0) return 0;

@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
-    class AnimationHelper
+    class AnimationUtils
     {
         /// <summary>
         ///     Gets the smaller and closest frame to the given Key Frame.
@@ -15,8 +12,13 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <returns></returns>
         public static RenderBase.OInterpolationFloat getSmallerPoint(List<RenderBase.OInterpolationFloat> keyFrames, float frame)
         {
-            RenderBase.OInterpolationFloat value = new RenderBase.OInterpolationFloat();
-            foreach (RenderBase.OInterpolationFloat key in keyFrames) if (key.frame >= value.frame && key.frame <= frame) value = key;
+            if (keyFrames == null || keyFrames.Count == 0) return null;
+            RenderBase.OInterpolationFloat value = keyFrames[0];
+            foreach (RenderBase.OInterpolationFloat key in keyFrames)
+            {
+                if (key.frame >= value.frame && key.frame <= frame) value = key;
+            }
+
             return value;
         }
 
@@ -28,8 +30,13 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <returns></returns>
         public static RenderBase.OInterpolationFloat getLargerPoint(List<RenderBase.OInterpolationFloat> keyFrames, float frame)
         {
-            RenderBase.OInterpolationFloat value = new RenderBase.OInterpolationFloat(0, 0, 0, float.MaxValue);
-            foreach (RenderBase.OInterpolationFloat key in keyFrames) if (key.frame <= value.frame && key.frame >= frame) value = key;
+            if (keyFrames == null || keyFrames.Count == 0) return null;
+            RenderBase.OInterpolationFloat value = keyFrames[keyFrames.Count - 1];
+            foreach (RenderBase.OInterpolationFloat key in keyFrames)
+            {
+                if (key.frame <= value.frame && key.frame >= frame) value = key;
+            }
+
             return value;
         }
 
@@ -122,19 +129,13 @@ namespace Ohana3DS_Rebirth.Ohana
             RenderBase.OInterpolationFloat b = getLargerPoint(keyFrames, frame);
             if (a.frame == b.frame) return a.value;
 
-            float mu = (frame - a.frame) / (b.frame - a.frame);
-            float mu2 = mu * mu;
-            float mu3 = mu2 * mu;
-            float m0 = a.outSlope / 2;
-            m0 += (b.value - a.value) / 2;
-            float m1 = (b.value - a.value) / 2;
-            m1 += b.inSlope / 2;
-            float a0 = 2 * mu3 - 3 * mu2 + 1;
-            float a1 = mu3 - 2 * mu2 + mu;
-            float a2 = mu3 - mu2;
-            float a3 = -2 * mu3 + 3 * mu2;
-
-            return (a0 * a.value + a1 * m0 + a2 * m1 + a3 * b.value);
+            float outSlope = a.outSlope;
+            float inSlope = b.inSlope;
+            float distance = frame - a.frame;
+            float invDuration = 1f / (b.frame - a.frame);
+            float t = distance * invDuration;
+            float t1 = t - 1f;
+            return (a.value + ((((a.value - b.value) * ((2f * t) - 3f)) * t) * t)) + ((distance * t1) * ((t1 * outSlope) + (t * inSlope)));
         }
 
         /// <summary>
@@ -152,34 +153,6 @@ namespace Ohana3DS_Rebirth.Ohana
                 case RenderBase.OInterpolationMode.hermite: return interpolateHermite(sourceFrame.keyFrames, frame);
                 default: return 0; //Shouldn't happen
             }
-        }
-
-        /// <summary>
-        ///     Converts global Frame number to segment Frame number.
-        /// </summary>
-        /// <param name="sourceFrame">The list of key frames</param>
-        /// <param name="frame">The frame that should be verified</param>
-        /// <returns></returns>
-        public static float getFrame(RenderBase.OAnimationKeyFrame sourceFrame, float frame)
-        {
-            //TODO
-            if (frame < sourceFrame.startFrame)
-            {
-                switch (sourceFrame.preRepeat)
-                {
-                    case RenderBase.ORepeatMethod.none: return sourceFrame.startFrame;
-                }
-            }
-
-            if (frame > sourceFrame.endFrame)
-            {
-                switch (sourceFrame.postRepeat)
-                {
-                    case RenderBase.ORepeatMethod.none: return sourceFrame.endFrame;
-                }
-            }
-
-            return frame;
         }
     }
 }

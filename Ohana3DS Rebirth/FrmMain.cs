@@ -1,16 +1,18 @@
 ﻿using System;
-using System.Drawing;
 using System.Windows.Forms;
 using System.IO;
 
 using Ohana3DS_Rebirth.Ohana;
 using Ohana3DS_Rebirth.Ohana.ModelFormats;
 using Ohana3DS_Rebirth.Ohana.TextureFormats;
+using Ohana3DS_Rebirth.Properties;
 
 namespace Ohana3DS_Rebirth
 {
     public partial class FrmMain : OForm
     {
+        bool isSettingsOpen;
+
         public FrmMain()
         {
             InitializeComponent();
@@ -59,6 +61,22 @@ namespace Ohana3DS_Rebirth
             }
         }
 
+        private void mnuSettings_Click(object sender, EventArgs e)
+        {
+            if (!isSettingsOpen)
+            {
+                FrmSettings form = new FrmSettings();
+                form.FormClosing += FrmSettings_FormClosing;
+                form.Show();
+                isSettingsOpen = true;
+            }
+        }
+
+        private void FrmSettings_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            isSettingsOpen = false;
+        }
+
         public void open(string fileName)
         {
             string name = Path.GetFileNameWithoutExtension(fileName);
@@ -69,20 +87,20 @@ namespace Ohana3DS_Rebirth
         {
             WindowManager.flush();
 
-            FileIdentifier.fileFormat format = FileIdentifier.identify(data);
-            if (FileIdentifier.isCompressed(format)) CompressionManager.decompress(ref data, ref format);
+            FileIO.fileFormat format = FileIO.identify(data);
+            if (FileIO.isCompressed(format)) FileIO.decompress(ref data, ref format);
 
             byte[] buffer;
             OContainerForm containerForm;
             switch (format)
             {
-                case FileIdentifier.fileFormat.H3D:
+                case FileIO.fileFormat.H3D:
                     buffer = new byte[data.Length];
                     data.Read(buffer, 0, buffer.Length);
                     data.Close();
                     launchModel(BCH.load(new MemoryStream(buffer)), name);
                     break;
-                case FileIdentifier.fileFormat.PkmnContainer:
+                case FileIO.fileFormat.PkmnContainer:
                     Ohana.Containers.GenericContainer.OContainer container = Ohana.Containers.PkmnContainer.load(data);
                     switch (container.fileIdentifier)
                     {
@@ -99,19 +117,19 @@ namespace Ohana3DS_Rebirth
                     //TODO: Add windows for extra data
 
                     break;
-                case FileIdentifier.fileFormat.CGFX:
+                case FileIO.fileFormat.CGFX:
                     buffer = new byte[data.Length];
                     data.Read(buffer, 0, buffer.Length);
                     data.Close();
                     launchModel(CGFX.load(new MemoryStream(buffer)), name);
                     break;
-                case FileIdentifier.fileFormat.zmdl:
+                case FileIO.fileFormat.zmdl:
                     buffer = new byte[data.Length];
                     data.Read(buffer, 0, buffer.Length);
                     data.Close();
                     launchModel(ZMDL.load(new MemoryStream(buffer)), name);
                     break;
-                case FileIdentifier.fileFormat.ztex:
+                case FileIO.fileFormat.ztex:
                     GUI.OTextureWindow textureWindow = new GUI.OTextureWindow();
 
                     textureWindow.Title = name;
@@ -122,24 +140,24 @@ namespace Ohana3DS_Rebirth
 
                     textureWindow.initialize(ZTEX.load(data));
                     break;
-                case FileIdentifier.fileFormat.DQVIIPack:
+                case FileIO.fileFormat.DQVIIPack:
                     containerForm = new OContainerForm();
                     containerForm.launch(Ohana.Containers.DQVIIPack.load(data));
                     containerForm.Show(this);
                     break;
-                case FileIdentifier.fileFormat.FPT0:
+                case FileIO.fileFormat.FPT0:
                     containerForm = new OContainerForm();
                     containerForm.launch(Ohana.Containers.FPT0.load(data));
                     containerForm.Show(this);
                     break;
-                case FileIdentifier.fileFormat.NLK2:
+                case FileIO.fileFormat.NLK2:
                     buffer = new byte[data.Length - 0x80];
                     data.Seek(0x80, SeekOrigin.Begin);
                     data.Read(buffer, 0, buffer.Length);
                     data.Close();
                     launchModel(CGFX.load(new MemoryStream(buffer)), name);
                     break;
-                case FileIdentifier.fileFormat.DMPTexture:
+                case FileIO.fileFormat.DMPTexture:
                     GUI.OSingleTextureWindow singleTextureWindow = new GUI.OSingleTextureWindow();
 
                     singleTextureWindow.Title = name;
@@ -168,34 +186,27 @@ namespace Ohana3DS_Rebirth
             GUI.OViewportWindow viewportWindow = new GUI.OViewportWindow();
             GUI.OModelWindow modelWindow = new GUI.OModelWindow();
             GUI.OTextureWindow textureWindow = new GUI.OTextureWindow();
-            GUI.OLightWindow lightWindow = new GUI.OLightWindow();
-            GUI.OCameraWindow cameraWindow = new GUI.OCameraWindow();
             GUI.OAnimationsWindow animationWindow = new GUI.OAnimationsWindow();
 
             viewportWindow.Title = name;
-            modelWindow.Title = "Models";
-            textureWindow.Title = "Textures";
-            lightWindow.Title = "Lights";
-            cameraWindow.Title = "Cameras";
-            animationWindow.Title = "Animations";
 
             RenderEngine renderer = new RenderEngine();
+            renderer.MSAALevel = Settings.Default.reAALevel;
+            renderer.bgColor = Settings.Default.reBgColor;
+            renderer.useLegacyTexturing = Settings.Default.reUseLegacyTexturing;
+            renderer.showGrid = Settings.Default.reShowGrids;
             renderer.model = model;
 
             launchWindow(viewportWindow);
             DockContainer.dockMainWindow();
             launchWindow(modelWindow, false);
             launchWindow(textureWindow, false);
-            launchWindow(lightWindow, false);
-            launchWindow(cameraWindow, false);
             launchWindow(animationWindow, false);
 
             WindowManager.Refresh();
 
             modelWindow.initialize(renderer);
             textureWindow.initialize(renderer);
-            lightWindow.initialize(renderer);
-            cameraWindow.initialize(renderer);
             animationWindow.initialize(renderer);
             viewportWindow.initialize(renderer);
         }

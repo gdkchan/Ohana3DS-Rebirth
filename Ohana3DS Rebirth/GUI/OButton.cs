@@ -88,8 +88,8 @@ namespace Ohana3DS_Rebirth.GUI
         {
             pevent.Graphics.FillRectangle(new SolidBrush(bgColor), new Rectangle(0, 0, Width, Height));
 
-            string text = DrawingHelper.clampText(pevent.Graphics, Text, Font, Width - (img != null ? img.Width : 0));
-            SizeF textSize = DrawingHelper.measureText(pevent.Graphics, text, Font);
+            string text = DrawingUtils.clampText(pevent.Graphics, Text, Font, Width - (img != null ? img.Width : 0));
+            SizeF textSize = DrawingUtils.measureText(pevent.Graphics, text, Font);
             int width = (int)textSize.Width;
             int yImage = 0;
             if (img != null)

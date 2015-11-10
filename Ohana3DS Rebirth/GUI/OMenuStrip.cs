@@ -3,6 +3,7 @@
 
 using System.Windows.Forms;
 using System.Drawing;
+
 using Ohana3DS_Rebirth.Properties;
 
 namespace Ohana3DS_Rebirth.GUI

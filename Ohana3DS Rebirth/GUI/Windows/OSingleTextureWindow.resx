@@ -120,18 +120,16 @@
   <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="BtnExport.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADr4AAA6+AepCscAAAAAHdElNRQffBhsVBhUGjgOSAAAAQElEQVQ4T2MY3OA/FEC5
-        pAGoXjiAChMHoHowAFQaP4CqxQmgyogDUD3khQEIQPWPGgAEUC7pAKp/AA2gA2BgAADkP49xuwNJbQAA
-        AABJRU5ErkJggg==
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
+        vgAADr4B6kKxwAAAAAd0SU1FB98GGxUGFQaOA5IAAABASURBVDhPYxjc4D8UQLmkAaheOIAKEwegejAA
+        VBo/gKrFCaDKiANQPeSFAQhA9Y8aAARQLukAqn8ADaADYGAAAOQ/j3G7A0ltAAAAAElFTkSuQmCC
 </value>
   </data>
   <data name="BtnImport.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADr4AAA6+AepCscAAAAAHdElNRQffBhsVBThofAwkAAAAPklEQVQ4T2MY3OA/FEC5
-        pAOo/lEDgADKJR1A9dPZAKgenACqDD+AqsUAUGniAFQPHECFSQNQveQHIh0AAwMA/OyPcXNbRpkAAAAA
-        SUVORK5CYII=
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
+        vgAADr4B6kKxwAAAAAd0SU1FB98GGxUFOGh8DCQAAAA+SURBVDhPYxjc4D8UQLmkA6j+UQOAAMolHUD1
+        09kAqB6cAKoMP4CqxQBQaeIAVA8cQIVJA1C95AciHQADAwD87I9xc1tGmQAAAABJRU5ErkJggg==
 </value>
   </data>
 </root>

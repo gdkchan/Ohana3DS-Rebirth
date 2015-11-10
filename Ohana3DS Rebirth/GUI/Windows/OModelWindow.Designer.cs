@@ -60,8 +60,10 @@
             // BtnDelete
             // 
             this.BtnDelete.BackColor = System.Drawing.Color.Transparent;
+            this.BtnDelete.Centered = true;
             this.BtnDelete.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnDelete.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnDelete.Hover = true;
             this.BtnDelete.Image = ((System.Drawing.Bitmap)(resources.GetObject("BtnDelete.Image")));
             this.BtnDelete.Location = new System.Drawing.Point(128, 0);
             this.BtnDelete.Margin = new System.Windows.Forms.Padding(0);
@@ -74,8 +76,10 @@
             // BtnClear
             // 
             this.BtnClear.BackColor = System.Drawing.Color.Transparent;
+            this.BtnClear.Centered = true;
             this.BtnClear.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnClear.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnClear.Hover = true;
             this.BtnClear.Image = ((System.Drawing.Bitmap)(resources.GetObject("BtnClear.Image")));
             this.BtnClear.Location = new System.Drawing.Point(192, 0);
             this.BtnClear.Margin = new System.Windows.Forms.Padding(0);
@@ -88,8 +92,10 @@
             // BtnExport
             // 
             this.BtnExport.BackColor = System.Drawing.Color.Transparent;
+            this.BtnExport.Centered = true;
             this.BtnExport.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnExport.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnExport.Hover = true;
             this.BtnExport.Image = ((System.Drawing.Bitmap)(resources.GetObject("BtnExport.Image")));
             this.BtnExport.Location = new System.Drawing.Point(0, 0);
             this.BtnExport.Margin = new System.Windows.Forms.Padding(0);
@@ -102,8 +108,10 @@
             // BtnImport
             // 
             this.BtnImport.BackColor = System.Drawing.Color.Transparent;
+            this.BtnImport.Centered = true;
             this.BtnImport.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnImport.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnImport.Hover = true;
             this.BtnImport.Image = ((System.Drawing.Bitmap)(resources.GetObject("BtnImport.Image")));
             this.BtnImport.Location = new System.Drawing.Point(64, 0);
             this.BtnImport.Margin = new System.Windows.Forms.Padding(0);
@@ -132,8 +140,10 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.Controls.Add(this.ModelList);
             this.Controls.Add(this.TopControls);
+            this.Icon = global::Ohana3DS_Rebirth.Properties.Resources.icn_w_models;
             this.Name = "OModelWindow";
             this.Size = new System.Drawing.Size(256, 400);
+            this.Title = "Models";
             this.Controls.SetChildIndex(this.TopControls, 0);
             this.Controls.SetChildIndex(this.ModelList, 0);
             this.TopControls.ResumeLayout(false);

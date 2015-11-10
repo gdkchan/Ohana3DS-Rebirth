@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 using Ohana3DS_Rebirth.Properties;
@@ -75,12 +70,22 @@ namespace Ohana3DS_Rebirth.GUI
 
         protected override void OnPaint(PaintEventArgs e)
         {
+            int w = Resources.icn_ticked.Width;
             int h = Resources.icn_ticked.Height;
-            Rectangle checkRect = new Rectangle(0, (Height / 2) - (h / 2), Resources.icn_ticked.Width, h);
-            e.Graphics.FillRectangle(new SolidBrush(boxColor), checkRect);
+
+            //Draw box around
+            Color lineColor = ForeColor;
+            if (!Enabled) lineColor = SystemColors.InactiveCaptionText;
+            e.Graphics.DrawLine(new Pen(lineColor), new Point(0, Height - 1), new Point(w - 1, Height - 1));
+            e.Graphics.DrawLine(new Pen(lineColor), new Point(0, Height - 1), new Point(0, Height - 2));
+            e.Graphics.DrawLine(new Pen(lineColor), new Point(w - 1, Height - 1), new Point(w - 1, Height - 2));
+
+            //Ticked icon (if checked)
+            Rectangle checkRect = new Rectangle(0, (Height / 2) - (h / 2), w, h);
             if (_checked) e.Graphics.DrawImage(Resources.icn_ticked, checkRect);
 
-            string text = DrawingHelper.clampText(e.Graphics, Text, Font, Width - Resources.icn_ticked.Width);
+            //Draw text at the right of the box
+            string text = DrawingUtils.clampText(e.Graphics, Text, Font, Width - Resources.icn_ticked.Width);
             SizeF textSize = e.Graphics.MeasureString(text, Font);
             e.Graphics.DrawString(text, Font, new SolidBrush(Enabled ? ForeColor : Color.Silver), new Point(checkRect.Width, (Height / 2) - ((int)textSize.Height / 2)));
 

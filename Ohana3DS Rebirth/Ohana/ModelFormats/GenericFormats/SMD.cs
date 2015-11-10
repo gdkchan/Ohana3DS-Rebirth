@@ -70,16 +70,16 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
                             {
                                 if (b.rotationExists)
                                 {
-                                    newBone.rotation.x = AnimationHelper.getKey(b.rotationX, AnimationHelper.getFrame(b.rotationX, frame));
-                                    newBone.rotation.y = AnimationHelper.getKey(b.rotationY, AnimationHelper.getFrame(b.rotationY, frame));
-                                    newBone.rotation.z = AnimationHelper.getKey(b.rotationZ, AnimationHelper.getFrame(b.rotationZ, frame));
+                                    newBone.rotation.x = AnimationUtils.getKey(b.rotationX, frame);
+                                    newBone.rotation.y = AnimationUtils.getKey(b.rotationY, frame);
+                                    newBone.rotation.z = AnimationUtils.getKey(b.rotationZ, frame);
                                 }
 
                                 if (b.translationExists)
                                 {
-                                    newBone.translation.x = AnimationHelper.getKey(b.translationX, AnimationHelper.getFrame(b.translationX, frame));
-                                    newBone.translation.y = AnimationHelper.getKey(b.translationY, AnimationHelper.getFrame(b.translationY, frame));
-                                    newBone.translation.z = AnimationHelper.getKey(b.translationZ, AnimationHelper.getFrame(b.translationZ, frame));
+                                    newBone.translation.x = AnimationUtils.getKey(b.translationX, frame);
+                                    newBone.translation.y = AnimationUtils.getKey(b.translationY, frame);
+                                    newBone.translation.z = AnimationUtils.getKey(b.translationZ, frame);
                                     
                                     newBone.translation.x *= mdl.skeleton[index].absoluteScale.x;
                                     newBone.translation.y *= mdl.skeleton[index].absoluteScale.y;

@@ -1,7 +1,6 @@
 ﻿//Ohana3DS 3D Rendering Engine by gdkchan
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Forms;
 using System.Drawing;
 
@@ -38,8 +37,10 @@ namespace Ohana3DS_Rebirth.Ohana
 
         private bool keepRendering;
 
-        private bool useLegacyTexturing = false; //Set to True to disable Fragment Shader
-        private const bool showGrid = true;
+        public int MSAALevel = 1;
+        public int bgColor = 0x5f5f5f;
+        public bool useLegacyTexturing = true;
+        public bool showGrid = true;
 
         public class animationControl
         {
@@ -132,7 +133,6 @@ namespace Ohana3DS_Rebirth.Ohana
         public animationControl ctrlVA = new animationControl();
 
         public int currentModel = -1;
-        public int currentCamera = -1;
 
         private class OAnimationBone
         {
@@ -163,6 +163,12 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="height">Render height</param>
         public void initialize(IntPtr handle, int width, int height)
         {
+            MultiSampleType Samples = MultiSampleType.None;
+            if (Manager.CheckDeviceMultiSampleType(0, DeviceType.Hardware, Format.D16, true, (MultiSampleType)MSAALevel))
+                Samples = (MultiSampleType)MSAALevel;
+            else
+                MessageBox.Show("MSAA level not supported by GPU!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            
             pParams = new PresentParameters
             {
                 BackBufferCount = 1,
@@ -172,7 +178,8 @@ namespace Ohana3DS_Rebirth.Ohana
                 Windowed = true,
                 SwapEffect = SwapEffect.Discard,
                 EnableAutoDepthStencil = true,
-                AutoDepthStencilFormat = DepthFormat.D24S8
+                AutoDepthStencilFormat = DepthFormat.D24S8,
+                MultiSample = Samples
             };
 
             try
@@ -277,84 +284,60 @@ namespace Ohana3DS_Rebirth.Ohana
 
             float minSize = Math.Min(Math.Min(model.minVector.x, model.minVector.y), model.minVector.z);
             float maxSize = Math.Max(Math.Max(model.maxVector.x, model.maxVector.y), model.maxVector.z);
-            float scale = (10.0f / (maxSize - minSize)); //Try to adjust to screen
+            float scale = (10f / (maxSize - minSize)); //Try to adjust to screen
             if (maxSize - minSize == 0) scale = 1;
 
             #region "Grid buffer creation"
             //Creates buffer with grid that appears below the model
-            CustomVertex.PositionColored[] gridBuffer = new CustomVertex.PositionColored[204];
+            CustomVertex.PositionColored[] gridBuffer = new CustomVertex.PositionColored[218];
             int bufferIndex = 0;
-            for (float i = -50.0f; i <= 50.0f; i += 2.0f)
+            for (int i = -50; i <= 50; i += 2)
             {
-                if (i == 0) continue;
-                gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(-50.0f / scale, 0, i / scale, Color.White.ToArgb());
-                gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(50.0f / scale, 0, i / scale, Color.White.ToArgb());
-                gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, -50.0f / scale, Color.White.ToArgb());
-                gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, 50.0f / scale, Color.White.ToArgb());
+                if (i == 0)
+                {
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(-50f / scale, 0, i / scale, Color.White.ToArgb());
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(0, 0, i / scale, Color.White.ToArgb());
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(5f / scale, 0, i / scale, Color.White.ToArgb());
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(50f / scale, 0, i / scale, Color.White.ToArgb());
+
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, -50f / scale, Color.White.ToArgb());
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, -5f / scale, Color.White.ToArgb());
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, 0, Color.White.ToArgb());
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, 50f / scale, Color.White.ToArgb());
+                }
+                else
+                {
+                    int lColor;
+                    if ((i % 10) == 0)
+                        lColor = Color.White.ToArgb();
+                    else
+                        lColor = Color.DarkGray.ToArgb();
+
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(-50f / scale, 0, i / scale, lColor);
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(50f / scale, 0, i / scale, lColor);
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, -50f / scale, lColor);
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, 50f / scale, lColor);
+                }
             }
-            gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(0, 0, -50.0f / scale, Color.FromArgb(0xff, 0x7f, 0x7f).ToArgb());
-            gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(0, 0, 50.0f / scale, Color.FromArgb(0xff, 0x7f, 0x7f).ToArgb());
-            gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(-50.0f / scale, 0, 0, Color.FromArgb(0x7f, 0xff, 0x7f).ToArgb());
-            gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(50.0f / scale, 0, 0, Color.FromArgb(0x7f, 0xff, 0x7f).ToArgb());
+            gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(0, 0, 0, Color.Red.ToArgb());
+            gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(5f / scale, 0, 0, Color.Red.ToArgb());
+
+            gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(0, 0, 0, Color.Green.ToArgb());
+            gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(0, 5f / scale, 0, Color.Green.ToArgb());
+
+            gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(0, 0, 0, Color.Blue.ToArgb());
+            gridBuffer[bufferIndex] = new CustomVertex.PositionColored(0, 0, -5f / scale, Color.Blue.ToArgb());
             #endregion
 
             keepRendering = true;
             while (keepRendering)
             {
-                device.Clear(ClearFlags.Stencil | ClearFlags.Target | ClearFlags.ZBuffer, 0x5f5f5f, 1.0f, 15);
+                device.Clear(ClearFlags.Stencil | ClearFlags.Target | ClearFlags.ZBuffer, bgColor, 1.0f, 15);
                 device.SetTexture(0, null);
                 device.BeginScene();
 
-                if (currentCamera == -1)
-                {
-                    device.Transform.Projection = Matrix.PerspectiveFovLH((float)Math.PI / 4, (float)pParams.BackBufferWidth / pParams.BackBufferHeight, 0.01f, 1000.0f);
-                    device.Transform.View = Matrix.LookAtLH(new Vector3(0.0f, 0.0f, 20.0f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 0.0f));
-                }
-                else
-                {
-                    RenderBase.OCamera camera = model.camera[currentCamera];
-
-                    switch (camera.projection)
-                    {
-                        case RenderBase.OCameraProjection.perspective:
-                            device.Transform.Projection = Matrix.PerspectiveFovLH(camera.fieldOfViewY, (float)pParams.BackBufferWidth / pParams.BackBufferHeight, camera.zNear, camera.zFar);
-                            break;
-                        case RenderBase.OCameraProjection.orthogonal:
-                            device.Transform.Projection = Matrix.OrthoLH(pParams.BackBufferWidth, pParams.BackBufferHeight, camera.zNear, camera.zFar);
-                            break;
-                    }
-
-                    Vector3 position = new Vector3(camera.transformTranslate.x, camera.transformTranslate.y, camera.transformTranslate.z);
-                    switch (camera.view)
-                    {
-                        case RenderBase.OCameraView.aimTarget:
-                            device.Transform.View = Matrix.LookAtLH(
-                                position,
-                                new Vector3(camera.target.x, camera.target.y, camera.target.z),
-                                new Vector3(0, 1, 0));
-                            device.Transform.View *= Matrix.RotationZ(camera.twist);
-                            break;
-                        case RenderBase.OCameraView.lookAtTarget:
-                            device.Transform.View = Matrix.LookAtLH(
-                                position,
-                                new Vector3(camera.target.x, camera.target.y, camera.target.z),
-                                new Vector3(camera.upVector.x, camera.upVector.y, camera.upVector.z));
-                            break;
-                        case RenderBase.OCameraView.rotate:
-                            Vector3 cameraReference = new Vector3(0, 0, -1);
-                            Vector3 upVector = new Vector3(0, 1, 0);
-                            Matrix rotationMatrix = Matrix.RotationX(camera.rotation.x) * Matrix.RotationY(camera.rotation.y) * Matrix.RotationZ(camera.rotation.z);
-                            Vector4 transformedReference = Vector3.Transform(cameraReference, rotationMatrix);
-                            Vector4 transformedUpVector = Vector3.Transform(upVector, rotationMatrix);
-                            Vector4 transformedPosition = Vector3.Transform(position, rotationMatrix);
-                            Vector4 cameraLookAt = transformedPosition + transformedReference;
-                            device.Transform.View = Matrix.LookAtLH(
-                                new Vector3(transformedPosition.X, transformedPosition.Y, transformedPosition.Z),
-                                new Vector3(cameraLookAt.X, cameraLookAt.Y, cameraLookAt.Z),
-                                new Vector3(transformedUpVector.X, transformedUpVector.Y, transformedUpVector.Z));
-                            break;
-                    }
-                }
+                device.Transform.Projection = Matrix.PerspectiveFovLH((float)Math.PI / 4, (float)pParams.BackBufferWidth / pParams.BackBufferHeight, 0.01f, 1000.0f);
+                device.Transform.View = Matrix.LookAtLH(new Vector3(0.0f, 0.0f, 20.0f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 0.0f));
 
                 //View
                 Matrix centerMatrix = Matrix.Translation(
@@ -441,28 +424,28 @@ namespace Ohana3DS_Rebirth.Ohana
                                     }
                                     else if (b.isFrameFormat)
                                     {
-                                        float aF = (float)Math.Floor(ctrlSA.Frame);
-                                        float bF = (float)Math.Ceiling(ctrlSA.Frame);
+                                        float fa = (float)Math.Floor(ctrlSA.Frame);
+                                        float fb = (float)Math.Ceiling(ctrlSA.Frame);
 
                                         if (b.rotationQuaternion.exists)
                                         {
-                                            int aIndex = Math.Min((int)aF, b.rotationQuaternion.vector.Count - 1);
-                                            int bIndex = Math.Min((int)bF, b.rotationQuaternion.vector.Count - 1);
+                                            int aIndex = Math.Min((int)fa, b.rotationQuaternion.vector.Count - 1);
+                                            int bIndex = Math.Min((int)fb, b.rotationQuaternion.vector.Count - 1);
 
                                             Quaternion q1 = getQuaternion(b.rotationQuaternion.vector[aIndex]);
                                             Quaternion q2 = getQuaternion(b.rotationQuaternion.vector[bIndex]);
 
-                                            newBone.rotationQuaternion = Quaternion.Slerp(q1, q2, ctrlSA.Frame - aF);
+                                            newBone.rotationQuaternion = Quaternion.Slerp(q1, q2, ctrlSA.Frame - fa);
                                         }
 
                                         if (b.translation.exists)
                                         {
-                                            int aIndex = Math.Min((int)aF, b.translation.vector.Count - 1);
-                                            int bIndex = Math.Min((int)bF, b.translation.vector.Count - 1);
+                                            int aIndex = Math.Min((int)fa, b.translation.vector.Count - 1);
+                                            int bIndex = Math.Min((int)fb, b.translation.vector.Count - 1);
 
                                             RenderBase.OVector4 t1 = b.translation.vector[aIndex];
                                             RenderBase.OVector4 t2 = b.translation.vector[bIndex];
-                                            RenderBase.OVector4 t = AnimationHelper.interpolateLinear(t1, t2, ctrlSA.Frame - aF);
+                                            RenderBase.OVector4 t = AnimationUtils.interpolateLinear(t1, t2, ctrlSA.Frame - fa);
                                             newBone.translation = new RenderBase.OVector3(t.x, t.y, t.z);
 
                                             newBone.translation.x *= mdl.skeleton[index].absoluteScale.x;
@@ -472,35 +455,47 @@ namespace Ohana3DS_Rebirth.Ohana
                                     }
                                     else
                                     {
-                                        if (b.rotationExists)
-                                        {
-                                            float aF = (float)Math.Floor(ctrlSA.Frame);
-                                            float bF = (float)Math.Ceiling(ctrlSA.Frame);
+                                        /*
+                                         * Rotation
+                                         */
+                                        float fa = (float)Math.Floor(ctrlSA.Frame);
+                                        float fb = (float)Math.Ceiling(ctrlSA.Frame);
 
-                                            float aX = AnimationHelper.getKey(b.rotationX, AnimationHelper.getFrame(b.rotationX, aF));
-                                            float aY = AnimationHelper.getKey(b.rotationY, AnimationHelper.getFrame(b.rotationY, aF));
-                                            float aZ = AnimationHelper.getKey(b.rotationZ, AnimationHelper.getFrame(b.rotationZ, aF));
+                                        //Left Key
+                                        float x1 = mdl.skeleton[index].rotation.x;
+                                        float y1 = mdl.skeleton[index].rotation.y;
+                                        float z1 = mdl.skeleton[index].rotation.z;
 
-                                            float bX = AnimationHelper.getKey(b.rotationX, AnimationHelper.getFrame(b.rotationX, bF));
-                                            float bY = AnimationHelper.getKey(b.rotationY, AnimationHelper.getFrame(b.rotationY, bF));
-                                            float bZ = AnimationHelper.getKey(b.rotationZ, AnimationHelper.getFrame(b.rotationZ, bF));
+                                        //Right Key
+                                        float x2 = x1;
+                                        float y2 = y1;
+                                        float z2 = z1;
 
-                                            Quaternion q1 = getQuaternion(new RenderBase.OVector3(aX, aY, aZ));
-                                            Quaternion q2 = getQuaternion(new RenderBase.OVector3(bX, bY, bZ));
+                                        //Left Key
+                                        if (b.rotationX.exists) x1 = AnimationUtils.getKey(b.rotationX, fa);
+                                        if (b.rotationY.exists) y1 = AnimationUtils.getKey(b.rotationY, fa);
+                                        if (b.rotationZ.exists) z1 = AnimationUtils.getKey(b.rotationZ, fa);
 
-                                            newBone.rotationQuaternion = Quaternion.Slerp(q1, q2, ctrlSA.Frame - aF);
-                                        }
+                                        //Right Key
+                                        if (b.rotationX.exists) x2 = AnimationUtils.getKey(b.rotationX, fb);
+                                        if (b.rotationY.exists) y2 = AnimationUtils.getKey(b.rotationY, fb);
+                                        if (b.rotationZ.exists) z2 = AnimationUtils.getKey(b.rotationZ, fb);
 
-                                        if (b.translationExists)
-                                        {
-                                            newBone.translation.x = AnimationHelper.getKey(b.translationX, AnimationHelper.getFrame(b.translationX, ctrlSA.Frame));
-                                            newBone.translation.y = AnimationHelper.getKey(b.translationY, AnimationHelper.getFrame(b.translationY, ctrlSA.Frame));
-                                            newBone.translation.z = AnimationHelper.getKey(b.translationZ, AnimationHelper.getFrame(b.translationZ, ctrlSA.Frame));
+                                        Quaternion q1 = getQuaternion(new RenderBase.OVector3(x1, y1, z1));
+                                        Quaternion q2 = getQuaternion(new RenderBase.OVector3(x2, y2, z2));
 
-                                            newBone.translation.x *= mdl.skeleton[index].absoluteScale.x;
-                                            newBone.translation.y *= mdl.skeleton[index].absoluteScale.y;
-                                            newBone.translation.z *= mdl.skeleton[index].absoluteScale.z;
-                                        }
+                                        newBone.rotationQuaternion = Quaternion.Slerp(q1, q2, ctrlSA.Frame - fa);
+
+                                        /*
+                                         * Translation
+                                         */
+                                        if (b.translationX.exists) newBone.translation.x = AnimationUtils.getKey(b.translationX, ctrlSA.Frame);
+                                        if (b.translationY.exists) newBone.translation.y = AnimationUtils.getKey(b.translationY, ctrlSA.Frame);
+                                        if (b.translationZ.exists) newBone.translation.z = AnimationUtils.getKey(b.translationZ, ctrlSA.Frame);
+
+                                        if (b.translationX.exists) newBone.translation.x *= mdl.skeleton[index].absoluteScale.x;
+                                        if (b.translationY.exists) newBone.translation.y *= mdl.skeleton[index].absoluteScale.y;
+                                        if (b.translationZ.exists) newBone.translation.z *= mdl.skeleton[index].absoluteScale.z;
                                     }
 
                                     break;
@@ -533,9 +528,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         {
                             foreach (RenderBase.OVisibilityAnimationData data in ((RenderBase.OVisibilityAnimation)model.visibilityAnimation.list[ctrlVA.CurrentAnimation]).data)
                             {
-
-                                int frame = (int)AnimationHelper.getFrame(data.visibilityList, ctrlVA.Frame);
-                                if (data.name == obj.name) isVisible = data.visibilityList.keyFrames[frame].bValue;
+                                if (data.name == obj.name) isVisible = data.visibilityList.keyFrames[(int)ctrlVA.Frame].bValue;
                             }
                         }
 
@@ -702,7 +695,13 @@ namespace Ohana3DS_Rebirth.Ohana
                                 {
                                     foreach (CustomTexture texture in textures)
                                     {
-                                        if (texture.name == material.name0) { device.SetTexture(0, texture.texture); legacyUsedTexture = 0; }
+                                        //Note: "projection_dummy" check is a hack to make textures appear on Pokémon Overworld models.
+                                        if (texture.name == material.name0 && texture.name != "projection_dummy")
+                                        {
+                                            device.SetTexture(0, texture.texture);
+                                            legacyUsedTexture = 0;
+                                            break;
+                                        }
                                         else if (texture.name == material.name1) { device.SetTexture(0, texture.texture); legacyUsedTexture = 1; }
                                         else if (texture.name == material.name2) { device.SetTexture(0, texture.texture); legacyUsedTexture = 2; }
                                     }
@@ -1128,10 +1127,10 @@ namespace Ohana3DS_Rebirth.Ohana
         #region "Material Animation"
         private void getMaterialAnimationColor(RenderBase.OMaterialAnimationData data, ref Color baseColor)
         {
-            float r = AnimationHelper.getKey(data.frameList[0], AnimationHelper.getFrame(data.frameList[0], ctrlMA.Frame));
-            float g = AnimationHelper.getKey(data.frameList[1], AnimationHelper.getFrame(data.frameList[1], ctrlMA.Frame));
-            float b = AnimationHelper.getKey(data.frameList[2], AnimationHelper.getFrame(data.frameList[2], ctrlMA.Frame));
-            float a = AnimationHelper.getKey(data.frameList[3], AnimationHelper.getFrame(data.frameList[3], ctrlMA.Frame));
+            float r = AnimationUtils.getKey(data.frameList[0], ctrlMA.Frame);
+            float g = AnimationUtils.getKey(data.frameList[1], ctrlMA.Frame);
+            float b = AnimationUtils.getKey(data.frameList[2], ctrlMA.Frame);
+            float a = AnimationUtils.getKey(data.frameList[3], ctrlMA.Frame);
 
             byte R = data.frameList[0].exists ? (byte)(r * 0xff) : baseColor.R;
             byte G = data.frameList[1].exists ? (byte)(g * 0xff) : baseColor.G;
@@ -1143,18 +1142,18 @@ namespace Ohana3DS_Rebirth.Ohana
 
         private void getMaterialAnimationVector2(RenderBase.OMaterialAnimationData data, ref Vector2 baseVector)
         {
-            if (data.frameList[0].exists) baseVector.X = AnimationHelper.getKey(data.frameList[0], AnimationHelper.getFrame(data.frameList[0], ctrlMA.Frame));
-            if (data.frameList[1].exists) baseVector.Y = AnimationHelper.getKey(data.frameList[1], AnimationHelper.getFrame(data.frameList[1], ctrlMA.Frame));
+            if (data.frameList[0].exists) baseVector.X = AnimationUtils.getKey(data.frameList[0], ctrlMA.Frame);
+            if (data.frameList[1].exists) baseVector.Y = AnimationUtils.getKey(data.frameList[1], ctrlMA.Frame);
         }
 
         private void getMaterialAnimationFloat(RenderBase.OMaterialAnimationData data, ref float baseFloat)
         {
-            if (data.frameList[0].exists) baseFloat = AnimationHelper.getKey(data.frameList[0], AnimationHelper.getFrame(data.frameList[0], ctrlMA.Frame));
+            if (data.frameList[0].exists) baseFloat = AnimationUtils.getKey(data.frameList[0], ctrlMA.Frame);
         }
 
         private void getMaterialAnimationInt(RenderBase.OMaterialAnimationData data, ref int baseInt)
         {
-            if (data.frameList[0].exists) baseInt = (int)AnimationHelper.getKey(data.frameList[0], AnimationHelper.getFrame(data.frameList[0], ctrlMA.Frame));
+            if (data.frameList[0].exists) baseInt = (int)AnimationUtils.getKey(data.frameList[0], ctrlMA.Frame);
         }
         #endregion
 

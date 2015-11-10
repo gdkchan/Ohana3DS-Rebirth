@@ -51,6 +51,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.Screen);
+            this.Icon = global::Ohana3DS_Rebirth.Properties.Resources.icn_w_viewport;
             this.Name = "OViewportWindow";
             this.Size = new System.Drawing.Size(640, 496);
             this.Controls.SetChildIndex(this.Screen, 0);

@@ -98,6 +98,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.Controls.Add(this.TexturePreview);
             this.Controls.Add(this.TopControls);
+            this.Icon = global::Ohana3DS_Rebirth.Properties.Resources.icn_w_textures;
             this.Name = "OSingleTextureWindow";
             this.Size = new System.Drawing.Size(512, 512);
             this.Controls.SetChildIndex(this.TopControls, 0);

@@ -1,8 +1,5 @@
 ﻿//Dragon Quest VII FPT0 Container parser made by gdkchan for Ohana3DS
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 
 namespace Ohana3DS_Rebirth.Ohana.Containers

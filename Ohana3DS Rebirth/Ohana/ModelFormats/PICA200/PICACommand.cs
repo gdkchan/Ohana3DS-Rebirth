@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200
+﻿namespace Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200
 {
     class PICACommand
     {

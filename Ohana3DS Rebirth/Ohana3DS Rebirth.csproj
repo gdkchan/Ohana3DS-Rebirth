@@ -70,6 +70,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\Windows\Microsoft.NET\DirectX for Managed Code\1.0.2911.0\Microsoft.DirectX.Direct3DX.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.VisualC" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Design" />
@@ -88,19 +89,19 @@
     <Compile Include="FrmMain.Designer.cs">
       <DependentUpon>FrmMain.cs</DependentUpon>
     </Compile>
+    <Compile Include="FrmSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmSettings.Designer.cs">
+      <DependentUpon>FrmSettings.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\ColorManager.cs" />
-    <Compile Include="GUI\DrawingHelper.cs" />
+    <Compile Include="GUI\DrawingUtils.cs" />
     <Compile Include="GUI\OCheckBox.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="GUI\OCheckBox.Designer.cs">
       <DependentUpon>OCheckBox.cs</DependentUpon>
-    </Compile>
-    <Compile Include="GUI\OComboBox.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="GUI\OComboBox.Designer.cs">
-      <DependentUpon>OComboBox.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\OFloatTextBox.cs">
       <SubType>UserControl</SubType>
@@ -138,12 +139,6 @@
     <Compile Include="GUI\OTextBox.Designer.cs">
       <DependentUpon>OTextBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\Windows\OAddLightDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="GUI\Windows\OAddLightDialog.Designer.cs">
-      <DependentUpon>OAddLightDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="GUI\Windows\OAnimationsWindow.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -161,12 +156,6 @@
     </Compile>
     <Compile Include="GUI\ODock.Designer.cs">
       <DependentUpon>ODock.cs</DependentUpon>
-    </Compile>
-    <Compile Include="GUI\Windows\OCameraWindow.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="GUI\Windows\OCameraWindow.Designer.cs">
-      <DependentUpon>OCameraWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\Windows\ODockWindow.cs">
       <SubType>UserControl</SubType>
@@ -201,12 +190,6 @@
     <Compile Include="GUI\OMenuStrip.cs" />
     <Compile Include="GUI\OMenuStrip.Designer.cs">
       <DependentUpon>OMenuStrip.cs</DependentUpon>
-    </Compile>
-    <Compile Include="GUI\Windows\OLightWindow.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="GUI\Windows\OLightWindow.Designer.cs">
-      <DependentUpon>OLightWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\Windows\OModelWindow.cs">
       <SubType>UserControl</SubType>
@@ -262,10 +245,9 @@
     <Compile Include="OForm.Designer.cs">
       <DependentUpon>OForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Ohana\AnimationHelper.cs" />
+    <Compile Include="Ohana\AnimationUtils.cs" />
     <Compile Include="Ohana\ModelFormats\BCH.cs" />
     <Compile Include="Ohana\ModelFormats\CGFX.cs" />
-    <Compile Include="Ohana\CompressionManager.cs" />
     <Compile Include="Ohana\Compressions\LZSS.cs" />
     <Compile Include="Ohana\Compressions\LZSS_Ninty.cs" />
     <Compile Include="Ohana\Containers\DQVIIPack.cs" />
@@ -275,7 +257,6 @@
     <Compile Include="Ohana\Compressions\BLZ.cs" />
     <Compile Include="Ohana\ModelFormats\GenericFormats\OBJ.cs" />
     <Compile Include="Ohana\TextureFormats\DMP.cs" />
-    <Compile Include="Ohana\FileIdentifier.cs" />
     <Compile Include="Ohana\FileIO.cs" />
     <Compile Include="Ohana\ModelFormats\GenericFormats\CMDL.cs" />
     <Compile Include="Ohana\ModelFormats\GenericFormats\DAE.cs" />
@@ -295,8 +276,8 @@
     <EmbeddedResource Include="FrmMain.resx">
       <DependentUpon>FrmMain.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\OComboBox.resx">
-      <DependentUpon>OComboBox.cs</DependentUpon>
+    <EmbeddedResource Include="FrmSettings.resx">
+      <DependentUpon>FrmSettings.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\OFloatTextBox.resx">
       <DependentUpon>OFloatTextBox.cs</DependentUpon>
@@ -310,17 +291,11 @@
     <EmbeddedResource Include="GUI\OTextBox.resx">
       <DependentUpon>OTextBox.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\Windows\OAddLightDialog.resx">
-      <DependentUpon>OAddLightDialog.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="GUI\Windows\OAnimationsWindow.resx">
       <DependentUpon>OAnimationsWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\ODock.resx">
       <DependentUpon>ODock.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GUI\Windows\OCameraWindow.resx">
-      <DependentUpon>OCameraWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Windows\ODockWindow.resx">
       <DependentUpon>ODockWindow.cs</DependentUpon>
@@ -330,9 +305,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\OList.resx">
       <DependentUpon>OList.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GUI\Windows\OLightWindow.resx">
-      <DependentUpon>OLightWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Windows\OModelWindow.resx">
       <DependentUpon>OModelWindow.cs</DependentUpon>
@@ -483,6 +455,18 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\icn_open.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_w_animations.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_w_models.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_w_textures.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_w_viewport.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using System.Globalization;
 
@@ -34,7 +29,11 @@ namespace Ohana3DS_Rebirth.GUI
             set
             {
                 base.BackColor = value;
-                TextBox.BackColor = value;
+
+                if (value != Color.Transparent)
+                    TextBox.BackColor = value;
+                else
+                    TextBox.BackColor = Color.Black;
             }
         }
 
