@@ -32,6 +32,11 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
             {
                 output.AppendLine(i + " \"" + mdl.skeleton[i].name + "\" " + mdl.skeleton[i].parentId);
             }
+            for (int objC = 0; objC < mdl.modelObject.Count; objC++) //I don't actually know if BCHs can be boneless, but it never hurts to be careful
+            {
+                int NobjC = mdl.skeleton.Count + objC;
+                output.AppendLine(NobjC + " \"" + "ROOTNODEobj" + objC + "_" + mdl.modelObject[objC].name + "\" " + "-1");
+            }
             output.AppendLine("end");
             output.AppendLine("skeleton");
             if (skeletalAnimationIndex == -1)
@@ -49,6 +54,13 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
                     line += " " + getString(bone.rotation.z);
                     output.AppendLine(line);
                     index++;
+                }
+				for (int mdlC = 0; mdlC < mdl.modelObject.Count; mdlC++) //boneless bch fix, pt2
+                {
+                    int mdlCindex = index + mdlC;
+                    string line = mdlCindex.ToString();
+                    line += " 0 0 0 0 0 0";
+                    output.AppendLine(line);
                 }
             }
             else
@@ -119,10 +131,11 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
                         if (triangleCount == 0) output.AppendLine(textureName);
 
                         string line = mdl.skeleton.Count.ToString();
+						line = (mdl.skeleton.Count + objectIndex).ToString(); //part of the root-node fix
 
                         line += " " + getString(vertex.position.x);
                         line += " " + getString(vertex.position.y);
-                        line += " " + getString(vertex.position.z);
+                        line += " " + getString(vertex.position.z /*+ (objectIndex * 5)*/); //Commented section helps split models apart, useful for things like Senran Kagura models
                         line += " " + getString(vertex.normal.x);
                         line += " " + getString(vertex.normal.y);
                         line += " " + getString(vertex.normal.z);
