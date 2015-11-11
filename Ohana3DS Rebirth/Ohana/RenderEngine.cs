@@ -6,6 +6,7 @@ using System.Drawing;
 
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
+using System.Text;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
@@ -16,6 +17,7 @@ namespace Ohana3DS_Rebirth.Ohana
         private Effect fragmentShader;
         private PresentParameters pParams;
         private Device device;
+        private Microsoft.DirectX.Direct3D.Font infoHUD;
 
         public RenderBase.OModelGroup model;
         private struct CustomTexture
@@ -38,9 +40,10 @@ namespace Ohana3DS_Rebirth.Ohana
         private bool keepRendering;
 
         public int MSAALevel = 1;
-        public int bgColor = 0x5f5f5f;
+        public int bgColor;
         public bool useLegacyTexturing = true;
         public bool showGrid = true;
+        public bool showHUD = false;
 
         public class animationControl
         {
@@ -191,6 +194,11 @@ namespace Ohana3DS_Rebirth.Ohana
                 //Some crap GPUs only works with Software vertex processing
                 device = new Device(0, DeviceType.Hardware, handle, CreateFlags.SoftwareVertexProcessing, pParams);
             }
+
+            using (System.Drawing.Font HUDFont = new System.Drawing.Font("Segoe UI", 12))
+            {
+                infoHUD = new Microsoft.DirectX.Direct3D.Font(device, HUDFont);
+            }
         }
 
         /// <summary>
@@ -223,6 +231,7 @@ namespace Ohana3DS_Rebirth.Ohana
             textures.Clear();
             if (!useLegacyTexturing) fragmentShader.Dispose();
             device.Dispose();
+            infoHUD.Dispose();
             model.model.Clear();
             model.texture.Clear();
             model.lookUpTable.Clear();
@@ -388,6 +397,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     #endregion
                 }
 
+                int totalVertices = 0;
                 if (currentModel > -1)
                 {
                     RenderBase.OModel mdl = model.model[currentModel];
@@ -882,6 +892,8 @@ namespace Ohana3DS_Rebirth.Ohana
 
                                 vertexBuffer.Dispose();
                             }
+
+                            totalVertices += obj.renderBuffer.Length;
                             if (!useLegacyTexturing) fragmentShader.EndPass();
                             #endregion
 
@@ -891,6 +903,41 @@ namespace Ohana3DS_Rebirth.Ohana
                 }
 
                 if (!useLegacyTexturing) fragmentShader.End();
+
+                if (showHUD && currentModel > -1)
+                {
+                    RenderBase.OModel mdl = model.model[currentModel];
+
+                    //Model Info.
+                    infoHUD.DrawText(null, "Model", Point.Empty, Color.White);
+                    StringBuilder infoMdl = new StringBuilder();
+                    infoMdl.AppendLine("Triangles: " + (totalVertices / 3));
+                    infoMdl.AppendLine("Bones: " + mdl.skeleton.Count);
+                    infoMdl.AppendLine("Materials: " + mdl.material.Count);
+                    infoMdl.AppendLine("Textures: " + model.texture.Count);
+
+                    infoHUD.DrawText(null, infoMdl.ToString(), new Point(0, 24), Color.LightGray);
+
+                    //Animation Info.
+                    infoHUD.DrawText(null, "Animation", new Point(0, 128), Color.White);
+                    StringBuilder infoAnm = new StringBuilder();
+                    if (ctrlSA.CurrentAnimation > -1)
+                        infoAnm.AppendLine("Skl.: " + ctrlSA.Frame + " / " + model.skeletalAnimation.list[ctrlSA.CurrentAnimation].frameSize.ToString());
+                    else
+                        infoAnm.AppendLine("Skl.: None");
+
+                    if (ctrlMA.CurrentAnimation > -1)
+                        infoAnm.AppendLine("Mat.: " + ctrlMA.Frame + " / " + model.materialAnimation.list[ctrlMA.CurrentAnimation].frameSize.ToString());
+                    else
+                        infoAnm.AppendLine("Mat.: None");
+
+                    if (ctrlVA.CurrentAnimation > -1)
+                        infoAnm.AppendLine("Vis.: " + ctrlVA.Frame + " / " + model.visibilityAnimation.list[ctrlVA.CurrentAnimation].frameSize.ToString());
+                    else
+                        infoAnm.AppendLine("Vis.: None");
+
+                    infoHUD.DrawText(null, infoAnm.ToString(), new Point(0, 152), Color.LightGray);
+                }
 
                 device.EndScene();
                 device.Present();

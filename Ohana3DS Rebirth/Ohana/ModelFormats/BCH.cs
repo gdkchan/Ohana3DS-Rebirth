@@ -1712,11 +1712,27 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                 }
                             }
 
-                            if (skinningMode != RenderBase.OSkinningMode.smoothSkinning && nodeList.Count > 0)
+                            if (vertex.node.Count == 0 && nodeList.Count <= 4)
+                            {
+                                for (int n = 0; n < nodeList.Count; n++) vertex.addNode((int)nodeList[n]);
+                                if (vertex.node.Count == 1 && vertex.weight.Count == 0) vertex.addWeight(1);
+                            }
+
+                            float weightSum = 0;
+                            for (int n = 0; n < vertex.weight.Count; n++)
+                            {
+                                weightSum += vertex.weight[n];
+                                if (weightSum > 1)
+                                {
+                                    if (n < vertex.node.Count) vertex.node.RemoveAt(n);
+                                    break;
+                                }
+                            }
+
+                            if (skinningMode != RenderBase.OSkinningMode.smoothSkinning && vertex.node.Count > 0)
                             {
                                 //Note: Rigid skinning can have only one bone per vertex
                                 //Note2: Vertex with Rigid skinning seems to be always have meshes centered, so is necessary to make them follow the skeleton
-                                if (vertex.node.Count == 0) vertex.addNode(nodeList[0]);
                                 vertex.position = RenderBase.OVector3.transform(vertex.position, skeletonTransform[vertex.node[0]]);
                             }
 

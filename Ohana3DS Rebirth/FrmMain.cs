@@ -196,6 +196,7 @@ namespace Ohana3DS_Rebirth
             renderer.bgColor = Settings.Default.reBgColor;
             renderer.useLegacyTexturing = Settings.Default.reUseLegacyTexturing;
             renderer.showGrid = Settings.Default.reShowGrids;
+            renderer.showHUD = Settings.Default.reShowHUD;
             renderer.model = model;
 
             launchWindow(viewportWindow);

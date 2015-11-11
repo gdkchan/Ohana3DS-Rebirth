@@ -224,7 +224,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         break;
                     case fileType.skeletalAnimation:
                         openDlg.Title = "Import Skeletal Animation";
-                        openDlg.Filter = "Binary CTR H3D|*.bch|Binary CTR Skeletal Animation|*.bcskla|Source Model|*.smd";
+                        openDlg.Filter = "Binary CTR H3D|*.bch|Binary CTR Skeletal Animation|*.bcres;*.bcskla|Source Model|*.smd";
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {

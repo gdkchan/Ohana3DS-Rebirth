@@ -25,6 +25,7 @@ namespace Ohana3DS_Rebirth
             ViewBgColorPicker.Color = Color.FromArgb(Settings.Default.reBgColor);
             ChkEnableFShader.Checked = !Settings.Default.reUseLegacyTexturing;
             ChkShowGrids.Checked = Settings.Default.reShowGrids;
+            ChkShowHUD.Checked = Settings.Default.reShowHUD;
         }
 
         private void BtnOk_Click(object sender, EventArgs e)
@@ -41,6 +42,7 @@ namespace Ohana3DS_Rebirth
             Settings.Default.reBgColor = ViewBgColorPicker.Color.ToArgb();
             Settings.Default.reUseLegacyTexturing = !ChkEnableFShader.Checked;
             Settings.Default.reShowGrids = ChkShowGrids.Checked;
+            Settings.Default.reShowHUD = ChkShowHUD.Checked;
 
             Settings.Default.Save();
             Close();

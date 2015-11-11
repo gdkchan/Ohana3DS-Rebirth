@@ -25,6 +25,30 @@ namespace Ohana3DS_Rebirth.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int reAALevel {
+            get {
+                return ((int)(this["reAALevel"]));
+            }
+            set {
+                this["reAALevel"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("-10526881")]
+        public int reBgColor {
+            get {
+                return ((int)(this["reBgColor"]));
+            }
+            set {
+                this["reBgColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool reUseLegacyTexturing {
             get {
@@ -49,25 +73,13 @@ namespace Ohana3DS_Rebirth.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("-10526881")]
-        public int reBgColor {
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool reShowHUD {
             get {
-                return ((int)(this["reBgColor"]));
+                return ((bool)(this["reShowHUD"]));
             }
             set {
-                this["reBgColor"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int reAALevel {
-            get {
-                return ((int)(this["reAALevel"]));
-            }
-            set {
-                this["reAALevel"] = value;
+                this["reShowHUD"] = value;
             }
         }
     }

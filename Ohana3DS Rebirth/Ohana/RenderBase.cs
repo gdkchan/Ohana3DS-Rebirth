@@ -420,6 +420,18 @@ namespace Ohana3DS_Rebirth.Ohana
             public float M43 { get { return matrix[3, 2]; } set { matrix[3, 2] = value; } }
             public float M44 { get { return matrix[3, 3]; } set { matrix[3, 3] = value; } }
 
+            public float this[int a, int b]
+            {
+                get
+                {
+                    return matrix[a, b];
+                }
+                set
+                {
+                    matrix[a, b] = value;
+                }
+            }
+
             public static OMatrix operator *(OMatrix a, OMatrix b)
             {
                 OMatrix c = new OMatrix();
@@ -431,9 +443,9 @@ namespace Ohana3DS_Rebirth.Ohana
                         float sum = 0;
                         for (int k = 0; k < 4; k++)
                         {
-                            sum += a.matrix[i, k] * b.matrix[k, j];
+                            sum += a[i, k] * b[k, j];
                         }
-                        c.matrix[i, j] = sum;
+                        c[i, j] = sum;
                     }
                 }
 

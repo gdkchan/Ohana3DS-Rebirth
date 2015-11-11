@@ -34,9 +34,9 @@
             this.WindowManager = new Ohana3DS_Rebirth.GUI.OWindowManager(this.components);
             this.MainMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.mnuOpen = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuSettings = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuLineSeparator0 = new System.Windows.Forms.ToolStripSeparator();
             this.mnuAbout = new System.Windows.Forms.ToolStripMenuItem();
-            this.mnuSettings = new System.Windows.Forms.ToolStripMenuItem();
             this.ContentContainer.SuspendLayout();
             this.MainMenu.SuspendLayout();
             this.SuspendLayout();
@@ -91,10 +91,19 @@
             // 
             // mnuOpen
             // 
+            this.mnuOpen.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_open;
             this.mnuOpen.Name = "mnuOpen";
             this.mnuOpen.Size = new System.Drawing.Size(152, 22);
             this.mnuOpen.Text = "&Open";
             this.mnuOpen.Click += new System.EventHandler(this.mnuOpen_Click);
+            // 
+            // mnuSettings
+            // 
+            this.mnuSettings.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_gear;
+            this.mnuSettings.Name = "mnuSettings";
+            this.mnuSettings.Size = new System.Drawing.Size(152, 22);
+            this.mnuSettings.Text = "&Settings";
+            this.mnuSettings.Click += new System.EventHandler(this.mnuSettings_Click);
             // 
             // mnuLineSeparator0
             // 
@@ -103,17 +112,11 @@
             // 
             // mnuAbout
             // 
+            this.mnuAbout.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_info;
             this.mnuAbout.Name = "mnuAbout";
             this.mnuAbout.Size = new System.Drawing.Size(152, 22);
             this.mnuAbout.Text = "&About";
             this.mnuAbout.Click += new System.EventHandler(this.mnuAbout_Click);
-            // 
-            // mnuSettings
-            // 
-            this.mnuSettings.Name = "mnuSettings";
-            this.mnuSettings.Size = new System.Drawing.Size(152, 22);
-            this.mnuSettings.Text = "&Settings";
-            this.mnuSettings.Click += new System.EventHandler(this.mnuSettings_Click);
             // 
             // FrmMain
             // 

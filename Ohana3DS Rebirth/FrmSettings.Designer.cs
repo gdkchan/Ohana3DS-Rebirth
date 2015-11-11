@@ -41,11 +41,13 @@
             this.BtnCancel = new Ohana3DS_Rebirth.GUI.OButton();
             this.BtnOk = new Ohana3DS_Rebirth.GUI.OButton();
             this.BtnReset = new Ohana3DS_Rebirth.GUI.OButton();
+            this.ChkShowHUD = new Ohana3DS_Rebirth.GUI.OCheckBox();
             this.ContentContainer.SuspendLayout();
             this.SuspendLayout();
             // 
             // ContentContainer
             // 
+            this.ContentContainer.Controls.Add(this.ChkShowHUD);
             this.ContentContainer.Controls.Add(this.BtnReset);
             this.ContentContainer.Controls.Add(this.BtnOk);
             this.ContentContainer.Controls.Add(this.BtnCancel);
@@ -74,6 +76,7 @@
             this.ContentContainer.Controls.SetChildIndex(this.BtnCancel, 0);
             this.ContentContainer.Controls.SetChildIndex(this.BtnOk, 0);
             this.ContentContainer.Controls.SetChildIndex(this.BtnReset, 0);
+            this.ContentContainer.Controls.SetChildIndex(this.ChkShowHUD, 0);
             // 
             // LblTitle
             // 
@@ -196,7 +199,7 @@
             // 
             this.BtnCancel.Centered = true;
             this.BtnCancel.Hover = true;
-            this.BtnCancel.Image = null;
+            this.BtnCancel.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_close;
             this.BtnCancel.Location = new System.Drawing.Point(244, 348);
             this.BtnCancel.Name = "BtnCancel";
             this.BtnCancel.Size = new System.Drawing.Size(64, 24);
@@ -208,7 +211,7 @@
             // 
             this.BtnOk.Centered = true;
             this.BtnOk.Hover = true;
-            this.BtnOk.Image = null;
+            this.BtnOk.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_ticked;
             this.BtnOk.Location = new System.Drawing.Point(174, 348);
             this.BtnOk.Name = "BtnOk";
             this.BtnOk.Size = new System.Drawing.Size(64, 24);
@@ -220,13 +223,24 @@
             // 
             this.BtnReset.Centered = true;
             this.BtnReset.Hover = true;
-            this.BtnReset.Image = null;
+            this.BtnReset.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_trash;
             this.BtnReset.Location = new System.Drawing.Point(12, 348);
             this.BtnReset.Name = "BtnReset";
             this.BtnReset.Size = new System.Drawing.Size(64, 24);
             this.BtnReset.TabIndex = 22;
             this.BtnReset.Text = "Reset";
             this.BtnReset.Click += new System.EventHandler(this.BtnReset_Click);
+            // 
+            // ChkShowHUD
+            // 
+            this.ChkShowHUD.BackColor = System.Drawing.Color.Transparent;
+            this.ChkShowHUD.BoxColor = System.Drawing.Color.Black;
+            this.ChkShowHUD.Checked = false;
+            this.ChkShowHUD.Location = new System.Drawing.Point(11, 254);
+            this.ChkShowHUD.Name = "ChkShowHUD";
+            this.ChkShowHUD.Size = new System.Drawing.Size(256, 16);
+            this.ChkShowHUD.TabIndex = 23;
+            this.ChkShowHUD.Text = "Show information HUD";
             // 
             // FrmSettings
             // 
@@ -259,5 +273,6 @@
         private GUI.ORadioButton RadioAANone;
         private GUI.OLabel LblDummyMSAA;
         private GUI.OButton BtnReset;
+        private GUI.OCheckBox ChkShowHUD;
     }
 }

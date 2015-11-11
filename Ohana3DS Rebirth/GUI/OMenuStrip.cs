@@ -42,7 +42,7 @@ namespace Ohana3DS_Rebirth.GUI
             Rectangle rect = new Rectangle(32, 3, e.Item.Width - 32, 1);
             Rectangle rect2 = new Rectangle(32, 4, e.Item.Width - 32, 1);
             e.Graphics.FillRectangle(new SolidBrush(bgColor2), rect);
-            e.Graphics.FillRectangle(new SolidBrush(itemColor), rect2);
+            e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(0x5f, itemColor)), rect2);
 
             base.OnRenderSeparator(e);
         }

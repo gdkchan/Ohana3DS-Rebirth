@@ -263,6 +263,26 @@ namespace Ohana3DS_Rebirth.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap icn_gear {
+            get {
+                object obj = ResourceManager.GetObject("icn_gear", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap icn_info {
+            get {
+                object obj = ResourceManager.GetObject("icn_info", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap icn_lightbulb {
             get {
                 object obj = ResourceManager.GetObject("icn_lightbulb", resourceCulture);
