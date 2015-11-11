@@ -888,6 +888,8 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                 data.Seek(vertexOffset + format.offset, SeekOrigin.Begin);
                                 RenderBase.OVector4 vector =  getVector(input, format);
 
+                                if (format.isInterleaved) System.Windows.Forms.MessageBox.Show("error");
+
                                 switch (format.attribute)
                                 {
                                     case PICACommand.vshAttribute.position:
@@ -925,16 +927,22 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                         int b3 = (int)vector.w;
 
                                         if (b0 < nodeList.Count) vertex.addNode((int)nodeList[b0]);
-                                        if (b1 < nodeList.Count && format.attributeLength > 0) vertex.addNode((int)nodeList[b1]);
-                                        if (b2 < nodeList.Count && format.attributeLength > 1) vertex.addNode((int)nodeList[b2]);
-                                        if (b3 < nodeList.Count && format.attributeLength > 2) vertex.addNode((int)nodeList[b3]);
+                                        if (skinningMode == RenderBase.OSkinningMode.smoothSkinning)
+                                        {
+                                            if (b1 < nodeList.Count && format.attributeLength > 0) vertex.addNode((int)nodeList[b1]);
+                                            if (b2 < nodeList.Count && format.attributeLength > 1) vertex.addNode((int)nodeList[b2]);
+                                            if (b3 < nodeList.Count && format.attributeLength > 2) vertex.addNode((int)nodeList[b3]);
+                                        }
 
                                         break;
                                     case PICACommand.vshAttribute.boneWeight:
                                         vertex.addWeight(vector.x * format.scale);
-                                        if (format.attributeLength > 0) vertex.addWeight(vector.y * format.scale);
-                                        if (format.attributeLength > 1) vertex.addWeight(vector.z * format.scale);
-                                        if (format.attributeLength > 2) vertex.addWeight(vector.w * format.scale);
+                                        if (skinningMode == RenderBase.OSkinningMode.smoothSkinning)
+                                        {
+                                            if (format.attributeLength > 0) vertex.addWeight(vector.y * format.scale);
+                                            if (format.attributeLength > 1) vertex.addWeight(vector.z * format.scale);
+                                            if (format.attributeLength > 2) vertex.addWeight(vector.w * format.scale);
+                                        }
                                         break;
                                 }
                             }
@@ -942,7 +950,6 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                             if (vertex.node.Count == 0 && nodeList.Count <= 4)
                             {
                                 for (int n = 0; n < nodeList.Count; n++) vertex.addNode((int)nodeList[n]);
-                                if (vertex.node.Count == 1 && vertex.weight.Count == 0) vertex.addWeight(1);
                             }
 
                             float weightSum = 0;
@@ -960,6 +967,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                             {
                                 //Note: Rigid skinning can have only one bone per vertex
                                 //Note2: Vertex with Rigid skinning seems to be always have meshes centered, so is necessary to make them follow the skeleton
+                                if (vertex.weight.Count == 0) vertex.addWeight(1);
                                 vertex.position = RenderBase.OVector3.transform(vertex.position, skeletonTransform[vertex.node[0]]);
                             }
 

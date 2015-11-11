@@ -1699,15 +1699,21 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                         break;
                                     case PICACommand.vshAttribute.boneIndex:
                                         vertex.addNode(nodeList[(int)vector.x]);
-                                        if (format.attributeLength > 0) vertex.addNode(nodeList[(int)vector.y]);
-                                        if (format.attributeLength > 1) vertex.addNode(nodeList[(int)vector.z]);
-                                        if (format.attributeLength > 2) vertex.addNode(nodeList[(int)vector.w]);
+                                        if (skinningMode == RenderBase.OSkinningMode.smoothSkinning)
+                                        {
+                                            if (format.attributeLength > 0) vertex.addNode(nodeList[(int)vector.y]);
+                                            if (format.attributeLength > 1) vertex.addNode(nodeList[(int)vector.z]);
+                                            if (format.attributeLength > 2) vertex.addNode(nodeList[(int)vector.w]);
+                                        }
                                         break;
                                     case PICACommand.vshAttribute.boneWeight:
                                         vertex.addWeight(vector.x * boneWeightScale);
-                                        if (format.attributeLength > 0) vertex.addWeight(vector.y * boneWeightScale);
-                                        if (format.attributeLength > 1) vertex.addWeight(vector.z * boneWeightScale);
-                                        if (format.attributeLength > 2) vertex.addWeight(vector.w * boneWeightScale);
+                                        if (skinningMode == RenderBase.OSkinningMode.smoothSkinning)
+                                        {
+                                            if (format.attributeLength > 0) vertex.addWeight(vector.y * boneWeightScale);
+                                            if (format.attributeLength > 1) vertex.addWeight(vector.z * boneWeightScale);
+                                            if (format.attributeLength > 2) vertex.addWeight(vector.w * boneWeightScale);
+                                        }
                                         break;
                                 }
                             }
@@ -1715,7 +1721,6 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                             if (vertex.node.Count == 0 && nodeList.Count <= 4)
                             {
                                 for (int n = 0; n < nodeList.Count; n++) vertex.addNode((int)nodeList[n]);
-                                if (vertex.node.Count == 1 && vertex.weight.Count == 0) vertex.addWeight(1);
                             }
 
                             float weightSum = 0;
@@ -1733,6 +1738,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                             {
                                 //Note: Rigid skinning can have only one bone per vertex
                                 //Note2: Vertex with Rigid skinning seems to be always have meshes centered, so is necessary to make them follow the skeleton
+                                if (vertex.weight.Count == 0) vertex.addWeight(1);
                                 vertex.position = RenderBase.OVector3.transform(vertex.position, skeletonTransform[vertex.node[0]]);
                             }
 

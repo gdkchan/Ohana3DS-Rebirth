@@ -143,13 +143,10 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
                         line += " " + getString(vertex.texture0.y);
 
                         line += " " + vertex.node.Count;
-                        for (int i = 0; i < vertex.node.Count; i++)
+                        for (int i = 0; i < Math.Min(vertex.node.Count, vertex.weight.Count); i++)
                         {
                             line += " " + vertex.node[i];
-                            if (i < vertex.weight.Count)
-                                line += " " + getString(vertex.weight[i]);
-                            else
-                                line += " 1";
+                            line += " " + getString(vertex.weight[i]);
                         }
 
                         output.AppendLine(line);
