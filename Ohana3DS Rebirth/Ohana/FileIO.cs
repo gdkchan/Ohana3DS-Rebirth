@@ -204,7 +204,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         break;
                     case fileType.texture:
                         openDlg.Title = "Import Texture";
-                        openDlg.Filter = "Binary CTR H3D|*.bch|Binary CTR Texture|*.bcres;*.bctex|Fantasy Life Texture|*.tex";
+                        openDlg.Filter = "Binary CTR H3D|*.bch|Binary CTR Texture|*.bcres;*.bctex;*.bcmdl|Fantasy Life Texture|*.tex";
                         openDlg.Multiselect = true;
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
