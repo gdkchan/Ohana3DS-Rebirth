@@ -20,7 +20,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
         private class vtxAttribute
         {
             public vtxAttributeType type;
-            public uint length;
+            public uint format;
             public uint offset;
             public float scale;
         }
@@ -150,7 +150,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                         case vtxAttributeType.boneIndex: obj.hasNode = true; break;
                     }
                 }
-                
+
                 for (;;)
                 {
                     int indexBufferPos = 0;
@@ -171,21 +171,38 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                             switch (currVertex.attributes[k].type)
                             {
                                 case vtxAttributeType.position:
-                                    vertex.position = new RenderBase.OVector3(
-                                        BitConverter.ToInt16(vtxBuffer, pos) * scale,
-                                        BitConverter.ToInt16(vtxBuffer, pos + 2) * scale,
-                                        BitConverter.ToInt16(vtxBuffer, pos + 4) * scale);
+                                    if (currVertex.attributes[k].format == 0)
+                                        vertex.position = new RenderBase.OVector3(
+                                            BitConverter.ToSingle(vtxBuffer, pos) * scale,
+                                            BitConverter.ToSingle(vtxBuffer, pos + 4) * scale,
+                                            BitConverter.ToSingle(vtxBuffer, pos + 8) * scale);
+                                    else
+                                        vertex.position = new RenderBase.OVector3(
+                                            BitConverter.ToInt16(vtxBuffer, pos) * scale,
+                                            BitConverter.ToInt16(vtxBuffer, pos + 2) * scale,
+                                            BitConverter.ToInt16(vtxBuffer, pos + 4) * scale);
                                     break;
                                 case vtxAttributeType.textureCoordinate0:
-                                    vertex.texture0 = new RenderBase.OVector2(
-                                        BitConverter.ToInt16(vtxBuffer, pos) * scale,
-                                        BitConverter.ToInt16(vtxBuffer, pos + 2) * scale);
+                                    if (currVertex.attributes[k].format == 0)
+                                        vertex.texture0 = new RenderBase.OVector2(
+                                            BitConverter.ToSingle(vtxBuffer, pos) * scale,
+                                            BitConverter.ToSingle(vtxBuffer, pos + 4) * scale);
+                                    else
+                                        vertex.texture0 = new RenderBase.OVector2(
+                                            BitConverter.ToInt16(vtxBuffer, pos) * scale,
+                                            BitConverter.ToInt16(vtxBuffer, pos + 2) * scale);
                                     break;
                                 case vtxAttributeType.normal:
-                                    vertex.normal = new RenderBase.OVector3(
-                                        BitConverter.ToInt16(vtxBuffer, pos) * scale,
-                                        BitConverter.ToInt16(vtxBuffer, pos + 2) * scale,
-                                        BitConverter.ToInt16(vtxBuffer, pos + 4) * scale);
+                                    if (currVertex.attributes[k].format == 0)
+                                        vertex.normal = new RenderBase.OVector3(
+                                            BitConverter.ToSingle(vtxBuffer, pos) * scale,
+                                            BitConverter.ToSingle(vtxBuffer, pos + 4) * scale,
+                                            BitConverter.ToSingle(vtxBuffer, pos + 8) * scale);
+                                    else
+                                        vertex.normal = new RenderBase.OVector3(
+                                            BitConverter.ToInt16(vtxBuffer, pos) * scale,
+                                            BitConverter.ToInt16(vtxBuffer, pos + 2) * scale,
+                                            BitConverter.ToInt16(vtxBuffer, pos + 4) * scale);
                                     break;
                                 case vtxAttributeType.boneIndex:
                                     vertex.addNode((int)idxDescriptors[faceIndex].nodeList[vtxBuffer[pos]]);
@@ -230,20 +247,22 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                 vtxAttribute att = new vtxAttribute();
 
                 att.type = (vtxAttributeType)input.ReadUInt32();
-                att.length = input.ReadUInt32();
+                att.format = input.ReadUInt32();
                 att.scale = input.ReadSingle();
                 att.offset = vtx.stride;
 
                 vtx.attributes.Add(att);
+
+                uint len = (uint)(att.format == 0 ? 4 : 2);
                 switch (att.type)
                 {
-                    case vtxAttributeType.position: vtx.stride += 6; break;
-                    case vtxAttributeType.unk1: vtx.stride += 4; break;
-                    case vtxAttributeType.unk2: vtx.stride += 4; break;
-                    case vtxAttributeType.textureCoordinate0: vtx.stride += 4; break;
-                    case vtxAttributeType.normal: vtx.stride += 6; break;
-                    case vtxAttributeType.boneIndex: vtx.stride += 2; break;
-                    case vtxAttributeType.unk3: vtx.stride += 2; break;
+                    case vtxAttributeType.position: vtx.stride += 3 * len; break;
+                    case vtxAttributeType.unk1: vtx.stride += 2 * len; break;
+                    case vtxAttributeType.unk2: vtx.stride += 2 * len; break;
+                    case vtxAttributeType.textureCoordinate0: vtx.stride += 2 * len; break;
+                    case vtxAttributeType.normal: vtx.stride += 3 * len; break;
+                    case vtxAttributeType.boneIndex: vtx.stride += len; break;
+                    case vtxAttributeType.unk3: vtx.stride += len; break;
                 }
             }
             vtx.length = input.ReadUInt32();
