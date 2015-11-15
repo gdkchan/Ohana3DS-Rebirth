@@ -135,7 +135,19 @@ namespace Ohana3DS_Rebirth.Ohana
         public animationControl ctrlMA = new animationControl();
         public animationControl ctrlVA = new animationControl();
 
-        public int currentModel = -1;
+        private int currentModel = -1;
+        public int CurrentModel
+        {
+            get
+            {
+                return currentModel;
+            }
+            set
+            {
+                if (value != currentModel) resetCamera();
+                currentModel = value;
+            }
+        }
 
         private class OAnimationBone
         {
@@ -288,13 +300,11 @@ namespace Ohana3DS_Rebirth.Ohana
                 fragmentShader.Technique = "Combiner";
             }
 
+            
+            RenderBase.OVector3 minVector = new RenderBase.OVector3();
+            RenderBase.OVector3 maxVector = new RenderBase.OVector3();
             if (model.model.Count > 0) currentModel = 0;
             updateTextures();
-
-            float minSize = Math.Min(Math.Min(model.minVector.x, model.minVector.y), model.minVector.z);
-            float maxSize = Math.Max(Math.Max(model.maxVector.x, model.maxVector.y), model.maxVector.z);
-            float scale = (10f / (maxSize - minSize)); //Try to adjust to screen
-            if (maxSize - minSize == 0) scale = 1;
 
             #region "Grid buffer creation"
             //Creates buffer with grid that appears below the model
@@ -304,15 +314,15 @@ namespace Ohana3DS_Rebirth.Ohana
             {
                 if (i == 0)
                 {
-                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(-50f / scale, 0, i / scale, Color.White.ToArgb());
-                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(0, 0, i / scale, Color.White.ToArgb());
-                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(5f / scale, 0, i / scale, Color.White.ToArgb());
-                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(50f / scale, 0, i / scale, Color.White.ToArgb());
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(-50f, 0, i, Color.White.ToArgb());
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(0, 0, i, Color.White.ToArgb());
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(5f, 0, i, Color.White.ToArgb());
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(50f, 0, i, Color.White.ToArgb());
 
-                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, -50f / scale, Color.White.ToArgb());
-                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, -5f / scale, Color.White.ToArgb());
-                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, 0, Color.White.ToArgb());
-                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, 50f / scale, Color.White.ToArgb());
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i, 0, -50f, Color.White.ToArgb());
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i, 0, -5f, Color.White.ToArgb());
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i, 0, 0, Color.White.ToArgb());
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i, 0, 50f, Color.White.ToArgb());
                 }
                 else
                 {
@@ -322,20 +332,20 @@ namespace Ohana3DS_Rebirth.Ohana
                     else
                         lColor = Color.DarkGray.ToArgb();
 
-                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(-50f / scale, 0, i / scale, lColor);
-                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(50f / scale, 0, i / scale, lColor);
-                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, -50f / scale, lColor);
-                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i / scale, 0, 50f / scale, lColor);
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(-50f, 0, i, lColor);
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(50f, 0, i, lColor);
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i, 0, -50f, lColor);
+                    gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(i, 0, 50f, lColor);
                 }
             }
             gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(0, 0, 0, Color.Red.ToArgb());
-            gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(5f / scale, 0, 0, Color.Red.ToArgb());
+            gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(5f, 0, 0, Color.Red.ToArgb());
 
             gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(0, 0, 0, Color.Green.ToArgb());
-            gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(0, 5f / scale, 0, Color.Green.ToArgb());
+            gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(0, 5f, 0, Color.Green.ToArgb());
 
             gridBuffer[bufferIndex++] = new CustomVertex.PositionColored(0, 0, 0, Color.Blue.ToArgb());
-            gridBuffer[bufferIndex] = new CustomVertex.PositionColored(0, 0, -5f / scale, Color.Blue.ToArgb());
+            gridBuffer[bufferIndex] = new CustomVertex.PositionColored(0, 0, -5f, Color.Blue.ToArgb());
             #endregion
 
             keepRendering = true;
@@ -349,10 +359,20 @@ namespace Ohana3DS_Rebirth.Ohana
                 device.Transform.View = Matrix.LookAtLH(new Vector3(0.0f, 0.0f, 20.0f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 0.0f));
 
                 //View
+                if (currentModel > -1)
+                {
+                    minVector = model.model[currentModel].minVector;
+                    maxVector = model.model[currentModel].maxVector;
+                }
+                float minSize = Math.Min(Math.Min(minVector.x, minVector.y), minVector.z);
+                float maxSize = Math.Max(Math.Max(maxVector.x, maxVector.y), maxVector.z);
+                float scale = (10f / (maxSize - minSize)); //Try to adjust to screen
+                if (maxSize - minSize == 0) scale = 1;
+
                 Matrix centerMatrix = Matrix.Translation(
-                    -(model.minVector.x + model.maxVector.x) / 2,
-                    -(model.minVector.y + model.maxVector.y) / 2,
-                    -(model.minVector.z + model.maxVector.z) / 2);
+                    -(minVector.x + maxVector.x) / 2,
+                    -(minVector.y + maxVector.y) / 2,
+                    -(minVector.z + maxVector.z) / 2);
                 Matrix translationMatrix = Matrix.Translation(new Vector3((-translation.X / 50.0f) / scale, (translation.Y / 50.0f) / scale, zoom / scale));
                 Matrix baseTransform = Matrix.Identity;
                 baseTransform *= Matrix.RotationY(rotation.Y) * Matrix.RotationX(rotation.X);

@@ -1,14 +1,233 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Xml;
+using System.Xml.Serialization;
 using System.Globalization;
+using System.Drawing;
+using System.IO;
 
 namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
 {
-    class DAE
+    public class DAE
     {
+        [XmlRootAttribute("COLLADA", Namespace = "http://www.collada.org/2005/11/COLLADASchema")]
+        public class COLLADA
+        {
+            [XmlAttribute]
+            public string version = "1.4.1";
+
+            public daeAsset asset;
+
+            [XmlArrayItem("image")]
+            public List<daeImage> library_images = new List<daeImage>();
+
+            [XmlArrayItem("material")]
+            public List<daeMaterial> library_materials = new List<daeMaterial>();
+
+            [XmlArrayItem("effect")]
+            public List<daeEffect> library_effects = new List<daeEffect>();
+
+            [XmlArrayItem("geometry")]
+            public List<daeEffect> library_geometries = new List<daeEffect>();
+        }
+
+        public class daeAsset
+        {
+            public string created;
+            public string modified;
+            public daeContributor contributor = new daeContributor();
+        }
+
+        public class daeContributor
+        {
+            public string author;
+            public string authoring_tool;
+        }
+
+        public class daeImage
+        {
+            [XmlAttribute]
+            public string id;
+
+            [XmlAttribute]
+            public string name;
+
+            public string init_from;
+        }
+
+        public class daeInstanceEffect
+        {
+            [XmlAttribute]
+            public string url;
+        }
+
+        public class daeMaterial
+        {
+            [XmlAttribute]
+            public string id;
+
+            [XmlAttribute]
+            public string name;
+
+            public daeInstanceEffect instance_effect = new daeInstanceEffect();
+        }
+
+        public class daeParamSurfaceElement
+        {
+            [XmlAttribute]
+            public string type;
+
+            public string init_from;
+            public string format;
+        }
+
+        public class daeParamSampler2DElement
+        {
+            public string source;
+            public string wrap_s;
+            public string wrap_t;
+            public string minfilter;
+            public string magfilter;
+            public string mipfilter;
+        }
+
+        public class daeParam
+        {
+            [XmlAttribute]
+            public string sid;
+
+            [XmlElement(IsNullable = false)]
+            public daeParamSurfaceElement surface;
+
+            [XmlElement(IsNullable = false)]
+            public daeParamSampler2DElement sampler2D;
+        }
+
+        public class daePhongDiffuseTexture
+        {
+            [XmlAttribute]
+            public string texture;
+
+            [XmlAttribute]
+            public string texcoord;
+        }
+
+        public class daePhongDiffuse
+        {
+            public daePhongDiffuseTexture texture = new daePhongDiffuseTexture();
+        }
+
+        public class daeColor
+        {
+            public string color;
+
+            public void set(Color col)
+            {
+                color = String.Format("{0} {1} {2} {3}", 
+                    getString(col.R / 255f), 
+                    getString(col.G / 255f), 
+                    getString(col.B / 255f), 
+                    getString(col.A / 255f));
+            }
+
+            private string getString(float value)
+            {
+                return value.ToString(CultureInfo.InvariantCulture);
+            }
+        }
+
+        public class daePhong
+        {
+            public daeColor emission = new daeColor();
+            public daeColor ambient = new daeColor();
+            public daePhongDiffuse diffuse = new daePhongDiffuse();
+            public daeColor specular = new daeColor();
+        }
+
+        public class daeTechnique
+        {
+            public daePhong phong = new daePhong();
+        }
+
+        public class daeProfile
+        {
+            [XmlAttribute]
+            public string sid;
+
+            [XmlElement("newparam")]
+            public List<daeParam> newparam = new List<daeParam>();
+            public daeTechnique technique = new daeTechnique();
+        }
+
+        public class daeEffect
+        {
+            [XmlAttribute]
+            public string id;
+
+            [XmlAttribute]
+            public string name;
+
+            public daeProfile profile_COMMON = new daeProfile();
+        }
+
+        public class daeFloatArray
+        {
+            [XmlAttribute]
+            public string id;
+
+            [XmlAttribute]
+            public uint count;
+
+            [XmlText]
+            public string data;
+
+            public void set(List<float> content, int _count)
+            {
+                StringBuilder strArray = new StringBuilder();
+                for (int i = 0; i < content.Count; i++)
+                {
+                    if (i < content.Count - 1)
+                        strArray.Append(content[i].ToString(CultureInfo.InvariantCulture) + " ");
+                    else
+                        strArray.Append(content[i].ToString(CultureInfo.InvariantCulture));
+                }
+                count = (uint)_count;
+                data = strArray.ToString();
+            }
+
+            public List<float> get()
+            {
+                List<float> output = new List<float>();
+                string[] values = data.Split(Convert.ToChar(" "));
+                for (int i = 0; i < values.Length; i++) output.Add(float.Parse(values[i]));
+                return output;
+            }
+        }
+
+        public class daeSource
+        {
+            [XmlAttribute]
+            public string id;
+
+            [XmlAttribute]
+            public string name;
+
+            public daeFloatArray float_array;
+
+        }
+
+        public class daeMesh
+        {
+            [XmlElement("source")]
+            public List<daeSource> source = new List<daeSource>();
+        }
+
+        public class daeGeometry
+        {
+            public daeMesh mesh = new daeMesh();
+        }
+
         /// <summary>
         ///     Exports a Model to the Collada format.
         ///     See: https://www.khronos.org/files/collada_spec_1_4.pdf for more information.
@@ -20,346 +239,96 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
         public static void export(RenderBase.OModelGroup model, string fileName, int modelIndex, int skeletalAnimationIndex = -1)
         {
             RenderBase.OModel mdl = model.model[modelIndex];
+            COLLADA dae = new COLLADA();
 
-            XmlWriterSettings settings = new XmlWriterSettings();
-            settings.Indent = true;
-            settings.IndentChars = "\t";
-            using (XmlWriter xml = XmlWriter.Create(fileName, settings))
+            foreach (RenderBase.OTexture tex in model.texture)
             {
-				xml.WriteStartDocument();
-					xml.WriteStartElement("COLLADA", "http://www.collada.org/2005/11/COLLADASchema"); xml.WriteAttributeString("version", "1.4.1");
+                daeImage img = new daeImage();
+                img.id = tex.name + "_id";
+                img.name = tex.name;
+                img.init_from = tex.name + ".png";
 
-						//Metadata
-						xml.WriteStartElement("asset");
-							xml.WriteStartElement("contributor");
-								xml.WriteElementString("authoring_tool", "Ohana3DS");
-							xml.WriteEndElement();
-						xml.WriteEndElement();
+                dae.library_images.Add(img);
+            }
 
-						if (modelIndex != -1)
-						{
-							//Images
-							xml.WriteStartElement("library_images");
-								for (int i = 0; i < model.texture.Count; i++)
-								{
-									xml.WriteStartElement("image"); xml.WriteAttributeString("id", model.texture[i].name);
-										xml.WriteStartElement("init_from"); xml.WriteString(@"../" + model.texture[i].name + ".png"); xml.WriteEndElement();
-									xml.WriteEndElement();
-								}
-							xml.WriteEndElement();
+            foreach (RenderBase.OMaterial mat in mdl.material)
+            {
+                daeMaterial mtl = new daeMaterial();
+                mtl.id = mat.name + "_id";
+                mtl.name = mat.name;
+                mtl.instance_effect.url = "#eff_" + mat.name;
 
-							//Materials
-							xml.WriteStartElement("library_materials");
-							for (int i = 0; i < mdl.material.Count; i++)
-							{
-								xml.WriteStartElement("material"); xml.WriteAttributeString("id", String.Format("material_{0}", i)); xml.WriteAttributeString("name", mdl.material[i].name);
-									xml.WriteStartElement("instance_effect"); xml.WriteAttributeString("url", "#" + String.Format("effect_{0}", i)); xml.WriteEndElement();
-								xml.WriteEndElement();
-							}
-							xml.WriteEndElement();
+                dae.library_materials.Add(mtl);
 
-							//Effects
-							xml.WriteStartElement("library_effects");
-							for (int i = 0; i < mdl.material.Count; i++)
-							{
-								xml.WriteStartElement("effect"); xml.WriteAttributeString("id", String.Format("effect_{0}", i)); xml.WriteAttributeString("name", mdl.material[i].name);
-									xml.WriteStartElement("profile_COMMON");
-										xml.WriteStartElement("newparam"); xml.WriteAttributeString("sid", "img_surface");
-											xml.WriteStartElement("surface"); xml.WriteAttributeString("type", "2D");
-												xml.WriteStartElement("init_from"); xml.WriteString(mdl.material[i].name0); xml.WriteEndElement();
-												xml.WriteStartElement("format"); xml.WriteString("A8R8G8B8"); xml.WriteEndElement();
-											xml.WriteEndElement();
-										xml.WriteEndElement();
-										xml.WriteStartElement("newparam"); xml.WriteAttributeString("sid", "img_sampler");
-											xml.WriteStartElement("sampler2D");
-												xml.WriteStartElement("source"); xml.WriteString("img_surface"); xml.WriteEndElement();
-											xml.WriteEndElement();
-										xml.WriteEndElement();
-										xml.WriteStartElement("technique"); xml.WriteAttributeString("sid", "common");
-											xml.WriteStartElement("phong");
-												xml.WriteStartElement("emission");
-													xml.WriteStartElement("color"); xml.WriteString("0 0 0 1"); xml.WriteEndElement();
-												xml.WriteEndElement();
-												xml.WriteStartElement("ambient");
-													xml.WriteStartElement("color"); xml.WriteString("0 0 0 1"); xml.WriteEndElement();
-												xml.WriteEndElement();
-												xml.WriteStartElement("diffuse");
-													xml.WriteStartElement("texture"); xml.WriteAttributeString("texture", "img_sampler"); xml.WriteAttributeString("texcoord", null); xml.WriteEndElement();
-												xml.WriteEndElement();
-												xml.WriteStartElement("specular");
-													xml.WriteStartElement("color"); xml.WriteString("1 1 1 1"); xml.WriteEndElement();
-												xml.WriteEndElement();
-												xml.WriteStartElement("shininess");
-													xml.WriteStartElement("float"); xml.WriteString("0"); xml.WriteEndElement();
-												xml.WriteEndElement();
-												xml.WriteStartElement("transparent"); xml.WriteAttributeString("opaque", "A_ONE");
-													xml.WriteStartElement("color"); xml.WriteString("0 0 0 1"); xml.WriteEndElement();
-												xml.WriteEndElement();
-												xml.WriteStartElement("transparency");
-													xml.WriteStartElement("float"); xml.WriteString("1"); xml.WriteEndElement();
-												xml.WriteEndElement();
-											xml.WriteEndElement();
-										xml.WriteEndElement();
-									xml.WriteEndElement();
-								xml.WriteEndElement();
-							}
-							xml.WriteEndElement();
+                daeEffect eff = new daeEffect();
+                eff.id = "eff_" + mat.name + "_id";
+                eff.name = "eff_" + mat.name;
 
-							//Geometry
-							xml.WriteStartElement("library_geometries");
-								int gSource = 0;
-								for (int j = 0; j < mdl.modelObject.Count; j++)
-								{
-									xml.WriteStartElement("geometry");  xml.WriteAttributeString("id", String.Format("geometry_{0}", j)); xml.WriteAttributeString("name", String.Format("mesh_{0}", j));
-										xml.WriteStartElement("mesh");
-											string positionSrcRef = String.Format("geometry_source_{0}", gSource++);
-											string normalSrcRef = String.Format("geometry_source_{0}", gSource++);
-											string uvSrcRef = String.Format("geometry_source_{0}", gSource++);
-											string colorSrcRef = String.Format("geometry_source_{0}", gSource++);
+                daeParam surface = new daeParam();
+                surface.surface = new daeParamSurfaceElement();
+                surface.sid = "img_surface";
+                surface.surface.type = "2D";
+                surface.surface.init_from = mat.name0;
+                surface.surface.format = "PNG";
+                eff.profile_COMMON.newparam.Add(surface);
 
-											//Position
-											xml.WriteStartElement("source"); xml.WriteAttributeString("id", positionSrcRef); xml.WriteAttributeString("name", String.Format("mesh_{0}_position", j));
-												xml.WriteStartElement("float_array"); xml.WriteAttributeString("id", positionSrcRef + "-array"); xml.WriteAttributeString("count", (mdl.modelObject[j].obj.Count * 3).ToString());
-													for (int k = 0; k < mdl.modelObject[j].obj.Count; k++)
-													{
-														RenderBase.OVertex vtx = mdl.modelObject[j].obj[k];
-														xml.WriteString((k > 0 ? " " : null) + getString(vtx.position.x) + " " + getString(vtx.position.y) + " " + getString(vtx.position.z));
-													}
-												xml.WriteEndElement();
+                daeParam sampler = new daeParam();
+                sampler.sampler2D = new daeParamSampler2DElement();
+                sampler.sid = "img_sampler";
+                sampler.sampler2D.source = "img_surface";
 
-												xml.WriteStartElement("technique_common");
-													xml.WriteStartElement("accessor"); xml.WriteAttributeString("source", "#" + positionSrcRef + "-array"); xml.WriteAttributeString("count", mdl.modelObject[j].obj.Count.ToString()); xml.WriteAttributeString("stride", "3");
-														xml.WriteStartElement("param"); xml.WriteAttributeString("name", "X"); xml.WriteAttributeString("type", "float"); xml.WriteEndElement();
-														xml.WriteStartElement("param"); xml.WriteAttributeString("name", "Y"); xml.WriteAttributeString("type", "float"); xml.WriteEndElement();
-														xml.WriteStartElement("param"); xml.WriteAttributeString("name", "Z"); xml.WriteAttributeString("type", "float"); xml.WriteEndElement();
-													xml.WriteEndElement();
-												xml.WriteEndElement();
-											xml.WriteEndElement();
+                switch (mat.textureMapper[0].wrapU)
+                {
+                    case RenderBase.OTextureWrap.repeat: sampler.sampler2D.wrap_s = "WRAP"; break;
+                    case RenderBase.OTextureWrap.mirroredRepeat: sampler.sampler2D.wrap_s = "MIRROR"; break;
+                    case RenderBase.OTextureWrap.clampToEdge: sampler.sampler2D.wrap_s = "CLAMP"; break;
+                    case RenderBase.OTextureWrap.clampToBorder: sampler.sampler2D.wrap_s = "BORDER"; break;
+                    default: sampler.sampler2D.wrap_s = "NONE"; break;
+                }
 
-											//Normal
-											xml.WriteStartElement("source"); xml.WriteAttributeString("id", normalSrcRef); xml.WriteAttributeString("name", String.Format("mesh_{0}_normal", j));
-												xml.WriteStartElement("float_array"); xml.WriteAttributeString("id", normalSrcRef + "-array"); xml.WriteAttributeString("count", (mdl.modelObject[j].obj.Count * 3).ToString());
-													for (int k = 0; k < mdl.modelObject[j].obj.Count; k++)
-													{
-														RenderBase.OVertex vtx = mdl.modelObject[j].obj[k];
-														xml.WriteString((k > 0 ? " " : null) + getString(vtx.normal.x) + " " + getString(vtx.normal.y) + " " + getString(vtx.normal.z));
-													}
-												xml.WriteEndElement();
+                switch (mat.textureMapper[0].wrapV)
+                {
+                    case RenderBase.OTextureWrap.repeat: sampler.sampler2D.wrap_t = "WRAP"; break;
+                    case RenderBase.OTextureWrap.mirroredRepeat: sampler.sampler2D.wrap_t = "MIRROR"; break;
+                    case RenderBase.OTextureWrap.clampToEdge: sampler.sampler2D.wrap_t = "CLAMP"; break;
+                    case RenderBase.OTextureWrap.clampToBorder: sampler.sampler2D.wrap_t = "BORDER"; break;
+                    default: sampler.sampler2D.wrap_t = "NONE"; break;
+                }
 
-												xml.WriteStartElement("technique_common");
-													xml.WriteStartElement("accessor"); xml.WriteAttributeString("source", "#" + normalSrcRef + "-array"); xml.WriteAttributeString("count", mdl.modelObject[j].obj.Count.ToString()); xml.WriteAttributeString("stride", "3");
-														xml.WriteStartElement("param"); xml.WriteAttributeString("name", "X"); xml.WriteAttributeString("type", "float"); xml.WriteEndElement();
-														xml.WriteStartElement("param"); xml.WriteAttributeString("name", "Y"); xml.WriteAttributeString("type", "float"); xml.WriteEndElement();
-														xml.WriteStartElement("param"); xml.WriteAttributeString("name", "Z"); xml.WriteAttributeString("type", "float"); xml.WriteEndElement();
-													xml.WriteEndElement();
-												xml.WriteEndElement();
-											xml.WriteEndElement();
+                switch (mat.textureMapper[0].minFilter)
+                {
+                    case RenderBase.OTextureMinFilter.linearMipmapLinear: sampler.sampler2D.minfilter = "LINEAR_MIPMAP_LINEAR"; break;
+                    case RenderBase.OTextureMinFilter.linearMipmapNearest: sampler.sampler2D.minfilter = "LINEAR_MIPMAP_NEAREST"; break;
+                    case RenderBase.OTextureMinFilter.nearestMipmapLinear: sampler.sampler2D.minfilter = "NEAREST_MIPMAP_LINEAR"; break;
+                    case RenderBase.OTextureMinFilter.nearestMipmapNearest: sampler.sampler2D.minfilter = "NEAREST_MIPMAP_NEAREST"; break;
+                    default: sampler.sampler2D.minfilter = "NONE"; break;
+                }
 
-											//UVs
-											xml.WriteStartElement("source"); xml.WriteAttributeString("id", uvSrcRef); xml.WriteAttributeString("name", String.Format("mesh_{0}_texuv", j));
-												xml.WriteStartElement("float_array"); xml.WriteAttributeString("id", uvSrcRef + "-array"); xml.WriteAttributeString("count", (mdl.modelObject[j].obj.Count * 2).ToString());
-													for (int k = 0; k < mdl.modelObject[j].obj.Count; k++)
-													{
-														RenderBase.OVertex vtx = mdl.modelObject[j].obj[k];
-														xml.WriteString((k > 0 ? " " : null) + getString(vtx.texture0.x) + " " + getString(vtx.texture0.y));
-													}
-												xml.WriteEndElement();
+                switch (mat.textureMapper[0].magFilter)
+                {
+                    case RenderBase.OTextureMagFilter.linear: sampler.sampler2D.magfilter = "LINEAR"; break;
+                    case RenderBase.OTextureMagFilter.nearest: sampler.sampler2D.magfilter = "NEAREST"; break;
+                    default: sampler.sampler2D.magfilter = "NONE"; break;
+                }
 
-												xml.WriteStartElement("technique_common");
-													xml.WriteStartElement("accessor"); xml.WriteAttributeString("source", "#" + uvSrcRef + "-array"); xml.WriteAttributeString("count", mdl.modelObject[j].obj.Count.ToString()); xml.WriteAttributeString("stride", "2");
-														xml.WriteStartElement("param"); xml.WriteAttributeString("name", "S"); xml.WriteAttributeString("type", "float"); xml.WriteEndElement();
-														xml.WriteStartElement("param"); xml.WriteAttributeString("name", "T"); xml.WriteAttributeString("type", "float"); xml.WriteEndElement();
-													xml.WriteEndElement();
-												xml.WriteEndElement();
-											xml.WriteEndElement();
+                sampler.sampler2D.mipfilter = sampler.sampler2D.magfilter;
 
-											//Color
-											xml.WriteStartElement("source"); xml.WriteAttributeString("id", colorSrcRef); xml.WriteAttributeString("name", String.Format("mesh_{0}_color", j));
-												xml.WriteStartElement("float_array"); xml.WriteAttributeString("id", colorSrcRef + "-array"); xml.WriteAttributeString("count", (mdl.modelObject[j].obj.Count * 4).ToString());
-													for (int k = 0; k < mdl.modelObject[j].obj.Count; k++)
-													{
-														RenderBase.OVertex vtx = mdl.modelObject[j].obj[k];
-														float a = 1f;
-														float r = ((vtx.diffuseColor >> 16) & 0xff) / 255f;
-														float g = ((vtx.diffuseColor >> 8) & 0xff) / 255f;
-														float b = (vtx.diffuseColor & 0xff) / 255f;
-														xml.WriteString((k > 0 ? " " : null) + getString(r) + " " + getString(g) + " " + getString(b) + " " + getString(a));
-													}
-												xml.WriteEndElement();
+                eff.profile_COMMON.newparam.Add(sampler);
 
-												xml.WriteStartElement("technique_common");
-													xml.WriteStartElement("accessor"); xml.WriteAttributeString("source", "#" + colorSrcRef + "-array"); xml.WriteAttributeString("count", mdl.modelObject[j].obj.Count.ToString()); xml.WriteAttributeString("stride", "4");
-														xml.WriteStartElement("param"); xml.WriteAttributeString("name", "R"); xml.WriteAttributeString("type", "float"); xml.WriteEndElement();
-														xml.WriteStartElement("param"); xml.WriteAttributeString("name", "G"); xml.WriteAttributeString("type", "float"); xml.WriteEndElement();
-														xml.WriteStartElement("param"); xml.WriteAttributeString("name", "B"); xml.WriteAttributeString("type", "float"); xml.WriteEndElement();
-														xml.WriteStartElement("param"); xml.WriteAttributeString("name", "A"); xml.WriteAttributeString("type", "float"); xml.WriteEndElement();
-													xml.WriteEndElement();
-												xml.WriteEndElement();
-											xml.WriteEndElement();
+                eff.profile_COMMON.technique.phong.emission.set(Color.Black);
+                eff.profile_COMMON.technique.phong.ambient.set(Color.Black);
+                eff.profile_COMMON.technique.phong.specular.set(Color.White);
+                eff.profile_COMMON.technique.phong.diffuse.texture.texture = "img_sampler";
 
-											//Vertex
-											xml.WriteStartElement("vertices"); xml.WriteAttributeString("id", String.Format("geometry_vertices_{0}", j));
-												xml.WriteStartElement("input"); xml.WriteAttributeString("semantic", "POSITION"); xml.WriteAttributeString("source", "#" + positionSrcRef); xml.WriteEndElement();
-											xml.WriteEndElement();
+                dae.library_effects.Add(eff);
+            }
 
-											xml.WriteStartElement("triangles"); xml.WriteAttributeString("material", String.Format("_material_{0}", mdl.modelObject[j].materialId)); xml.WriteAttributeString("count", mdl.modelObject[j].obj.Count.ToString());
-                                                xml.WriteStartElement("input"); xml.WriteAttributeString("semantic", "NORMAL"); xml.WriteAttributeString("source", "#" + normalSrcRef); xml.WriteAttributeString("offset", "0"); xml.WriteEndElement();
-                                                xml.WriteStartElement("input"); xml.WriteAttributeString("semantic", "TEXCOORD"); xml.WriteAttributeString("source", "#" + uvSrcRef); xml.WriteAttributeString("offset", "0"); xml.WriteEndElement();
-                                                xml.WriteStartElement("input"); xml.WriteAttributeString("semantic", "COLOR"); xml.WriteAttributeString("source", "#" + colorSrcRef); xml.WriteAttributeString("offset", "0"); xml.WriteEndElement();
-												xml.WriteStartElement("input"); xml.WriteAttributeString("semantic", "VERTEX"); xml.WriteAttributeString("source", "#" + String.Format("geometry_vertices_{0}", j)); xml.WriteAttributeString("offset", "0"); xml.WriteEndElement();
-												xml.WriteStartElement("p");
-													for (int i = 0; i < mdl.modelObject[j].obj.Count; i++) xml.WriteString((i > 0 ? " " : null) + i.ToString());
-												xml.WriteEndElement();
-											xml.WriteEndElement();
-										xml.WriteEndElement();
-									xml.WriteEndElement();
-								}
-							xml.WriteEndElement();
-
-							xml.WriteStartElement("library_controllers");
-								string jointNameTable = null;
-								StringBuilder invBindMtx = new StringBuilder();
-
-								List<RenderBase.OMatrix> skeletonTransform = new List<RenderBase.OMatrix>();
-								for (int index = 0; index < mdl.skeleton.Count; index++)
-								{
-									RenderBase.OMatrix transform = new RenderBase.OMatrix();
-									transformSkeleton(mdl.skeleton, index, ref transform);
-									skeletonTransform.Add(transform);
-								}
-
-								for (int i = 0; i < mdl.skeleton.Count; i++)
-								{
-									jointNameTable += mdl.skeleton[i].name + " ";
-
-									RenderBase.OMatrix mtx = skeletonTransform[i].invert();
-
-									invBindMtx.Append(
-										getString(mtx.M11) + " " + getString(mtx.M21) + " " + getString(mtx.M31) + " " + getString(mtx.M41) + " " +
-										getString(mtx.M12) + " " + getString(mtx.M22) + " " + getString(mtx.M32) + " " + getString(mtx.M42) + " " +
-										getString(mtx.M13) + " " + getString(mtx.M23) + " " + getString(mtx.M33) + " " + getString(mtx.M43) + " " +
-										getString(mtx.M14) + " " + getString(mtx.M24) + " " + getString(mtx.M34) + " " + getString(mtx.M44) + " ");
-								}
-								jointNameTable = jointNameTable.TrimEnd();
-								string jointInvBindMatrix = invBindMtx.ToString().TrimEnd();
-
-								for (int j = 0; j < mdl.modelObject.Count; j++)
-								{
-									xml.WriteStartElement("controller"); xml.WriteAttributeString("id", String.Format("controller_{0}", j));
-										xml.WriteStartElement("skin"); xml.WriteAttributeString("source", "#" + String.Format("geometry_{0}", j));
-											xml.WriteStartElement("bind_shape_matrix"); xml.WriteString("1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"); xml.WriteEndElement();
-											
-											//Joint
-											xml.WriteStartElement("source"); xml.WriteAttributeString("id", String.Format("controller_{0}_joints", j));
-												xml.WriteStartElement("Name_array"); xml.WriteAttributeString("id", String.Format("controller_{0}_joints-array", j)); xml.WriteAttributeString("count", mdl.skeleton.Count.ToString()); xml.WriteString(jointNameTable); xml.WriteEndElement();
-												xml.WriteStartElement("technique_common");
-													xml.WriteStartElement("accessor"); xml.WriteAttributeString("source", String.Format("#controller_{0}_joints-array", j)); xml.WriteAttributeString("count", mdl.skeleton.Count.ToString()); xml.WriteAttributeString("stride", "1");
-														xml.WriteStartElement("param"); xml.WriteAttributeString("name", "JOINT"); xml.WriteAttributeString("type", "name"); xml.WriteEndElement();
-													xml.WriteEndElement();
-												xml.WriteEndElement();
-											xml.WriteEndElement();
-
-											//Inverse Bind Matrix
-											xml.WriteStartElement("source"); xml.WriteAttributeString("id", String.Format("controller_{0}_bind_poses", j));
-												xml.WriteStartElement("float_array"); xml.WriteAttributeString("id", String.Format("controller_{0}_bind_poses-array", j)); xml.WriteAttributeString("count", (mdl.skeleton.Count * 16).ToString()); xml.WriteString(jointInvBindMatrix); xml.WriteEndElement();
-												xml.WriteStartElement("technique_common");
-													xml.WriteStartElement("accessor"); xml.WriteAttributeString("source", String.Format("#controller_{0}_bind_poses-array", j)); xml.WriteAttributeString("count", mdl.skeleton.Count.ToString()); xml.WriteAttributeString("stride", "16");
-														xml.WriteStartElement("param"); xml.WriteAttributeString("name", "TRANSFORM"); xml.WriteAttributeString("type", "float4x4"); xml.WriteEndElement();
-													xml.WriteEndElement();
-												xml.WriteEndElement();
-											xml.WriteEndElement();
-
-											//Weight
-											xml.WriteStartElement("source"); xml.WriteAttributeString("id", String.Format("controller_{0}_weights", j));
-												StringBuilder jointWeightTable = new StringBuilder();
-												for (int k = 0; k < mdl.modelObject[j].obj.Count; k++) 
-												{
-													RenderBase.OVertex vtx = mdl.modelObject[j].obj[k];
-													float[] weights = new float[4];
-
-													int i;
-													float weightSum = 0;
-													for (i = 0; i < vtx.weight.Count; i++) 
-													{
-														weights[i] = vtx.weight[i];
-														weightSum += weights[i];
-													}
-													if (i < 4) weights[i] = 1f - weightSum;
-
-													for (i = 0; i < 4; i++) jointWeightTable.Append(getString(weights[i]) + " ");
-												}
-
-												xml.WriteStartElement("float_array"); xml.WriteAttributeString("id", String.Format("controller_{0}_weights-array", j)); xml.WriteAttributeString("count", (mdl.modelObject[j].obj.Count * 4).ToString()); xml.WriteString(jointWeightTable.ToString().TrimEnd()); xml.WriteEndElement();
-												xml.WriteStartElement("technique_common");
-													xml.WriteStartElement("accessor"); xml.WriteAttributeString("source", String.Format("#controller_{0}_weights-array", j)); xml.WriteAttributeString("count", (mdl.modelObject[j].obj.Count * 4).ToString()); xml.WriteAttributeString("stride", "1");
-														xml.WriteStartElement("param"); xml.WriteAttributeString("name", "WEIGHT"); xml.WriteAttributeString("type", "float"); xml.WriteEndElement();
-													xml.WriteEndElement();
-												xml.WriteEndElement();
-											xml.WriteEndElement();
-
-											//Joints
-											xml.WriteStartElement("joints");
-												xml.WriteStartElement("input"); xml.WriteAttributeString("semantic", "JOINT"); xml.WriteAttributeString("source", String.Format("#controller_{0}_joints", j)); xml.WriteEndElement();
-												xml.WriteStartElement("input"); xml.WriteAttributeString("semantic", "INV_BIND_MATRIX"); xml.WriteAttributeString("source", String.Format("#controller_{0}_bind_poses", j)); xml.WriteEndElement();
-											xml.WriteEndElement();
-
-											xml.WriteStartElement("vertex_weights"); xml.WriteAttributeString("count", mdl.modelObject[j].obj.Count.ToString());
-												xml.WriteStartElement("input"); xml.WriteAttributeString("semantic", "JOINT"); xml.WriteAttributeString("source", String.Format("#controller_{0}_joints", j)); xml.WriteAttributeString("offset", "0"); xml.WriteEndElement();
-												xml.WriteStartElement("input"); xml.WriteAttributeString("semantic", "WEIGHT"); xml.WriteAttributeString("source", String.Format("#controller_{0}_weights", j)); xml.WriteAttributeString("offset", "1"); xml.WriteEndElement();
-												xml.WriteStartElement("vcount"); for (int i = 0; i < mdl.modelObject[j].obj.Count; i++) xml.WriteString(i > 0 ? " 4" : "4"); xml.WriteEndElement();
-												xml.WriteStartElement("v");
-													for (int k = 0; k < mdl.modelObject[j].obj.Count; k++)
-													{
-														RenderBase.OVertex vtx = mdl.modelObject[j].obj[k];
-
-														for (int i = 0; i < 4; i++)
-														{
-															int l = k * 4 + i;
-
-															if (i < vtx.node.Count)
-																xml.WriteString((l > 0 ? " " : null) + vtx.node[i].ToString() + " " + l.ToString());
-															else
-																xml.WriteString((l > 0 ? " " : null) + "0 " + l.ToString());
-														}
-													}
-												xml.WriteEndElement();
-											xml.WriteEndElement();
-										xml.WriteEndElement();
-									xml.WriteEndElement();
-								}
-							xml.WriteEndElement();
-						}
-
-						//Visual Scenes
-						xml.WriteStartElement("library_visual_scenes");
-							xml.WriteStartElement("visual_scene"); xml.WriteAttributeString("id", "VisualSceneNode"); xml.WriteAttributeString("name", "scene");
-								writeSkeleton(xml, mdl.skeleton, 0);
-
-								for (int i = 0; i < mdl.modelObject.Count; i++)
-								{
-                                    xml.WriteStartElement("node"); xml.WriteAttributeString("id", mdl.modelObject[i].name); xml.WriteAttributeString("name", mdl.modelObject[i].name);
-										xml.WriteStartElement("matrix"); xml.WriteString("1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"); xml.WriteEndElement();
-										xml.WriteStartElement("instance_controller"); xml.WriteAttributeString("url", "#" + String.Format("controller_{0}", i));
-											xml.WriteStartElement("skeleton"); xml.WriteString("#skeleton_node_0"); xml.WriteEndElement();
-											xml.WriteStartElement("bind_material");
-												xml.WriteStartElement("technique_common");
-													xml.WriteStartElement("instance_material"); xml.WriteAttributeString("symbol", String.Format("_material_{0}", mdl.modelObject[i].materialId)); xml.WriteAttributeString("target", String.Format("#material_{0}", mdl.modelObject[i].materialId)); xml.WriteEndElement();
-												xml.WriteEndElement();
-											xml.WriteEndElement();
-										xml.WriteEndElement();
-									xml.WriteEndElement();
-								}
-							xml.WriteEndElement();
-						xml.WriteEndElement();
-
-						//Scene
-						xml.WriteStartElement("scene");
-							xml.WriteStartElement("instance_visual_scene"); xml.WriteAttributeString("url", "#VisualSceneNode");
-							xml.WriteEndElement();
-						xml.WriteEndElement();
-
-					xml.WriteEndElement();
-				xml.WriteEndDocument();
+            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+            ns.Add("", "http://www.collada.org/2005/11/COLLADASchema");
+            XmlSerializer serializer = new XmlSerializer(typeof(COLLADA));
+            using (FileStream output = new FileStream(fileName, FileMode.Create))
+            {
+                serializer.Serialize(output, dae, ns);
             }
         }
 
@@ -399,20 +368,20 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
         private static void writeSkeleton(XmlWriter xml, List<RenderBase.OBone> skeleton, int index)
         {
             xml.WriteStartElement("node"); xml.WriteAttributeString("id", skeleton[index].name); xml.WriteAttributeString("name", skeleton[index].name); xml.WriteAttributeString("sid", skeleton[index].name); xml.WriteAttributeString("type", "JOINT");
-                RenderBase.OMatrix mtx = new RenderBase.OMatrix();
-                mtx *= RenderBase.OMatrix.rotateX(skeleton[index].rotation.x);
-                mtx *= RenderBase.OMatrix.rotateY(skeleton[index].rotation.y);
-                mtx *= RenderBase.OMatrix.rotateZ(skeleton[index].rotation.z);
-                mtx *= RenderBase.OMatrix.translate(skeleton[index].translation);
+            RenderBase.OMatrix mtx = new RenderBase.OMatrix();
+            mtx *= RenderBase.OMatrix.rotateX(skeleton[index].rotation.x);
+            mtx *= RenderBase.OMatrix.rotateY(skeleton[index].rotation.y);
+            mtx *= RenderBase.OMatrix.rotateZ(skeleton[index].rotation.z);
+            mtx *= RenderBase.OMatrix.translate(skeleton[index].translation);
 
-                xml.WriteStartElement("matrix"); xml.WriteString(
-                    getString(mtx.M11) + " " + getString(mtx.M21) + " " + getString(mtx.M31) + " " + getString(mtx.M41) + " " +
-                    getString(mtx.M12) + " " + getString(mtx.M22) + " " + getString(mtx.M32) + " " + getString(mtx.M42) + " " +
-                    getString(mtx.M13) + " " + getString(mtx.M23) + " " + getString(mtx.M33) + " " + getString(mtx.M43) + " " +
-                    getString(mtx.M14) + " " + getString(mtx.M24) + " " + getString(mtx.M34) + " " + getString(mtx.M44));
-                xml.WriteEndElement();
+            xml.WriteStartElement("matrix"); xml.WriteString(
+                getString(mtx.M11) + " " + getString(mtx.M21) + " " + getString(mtx.M31) + " " + getString(mtx.M41) + " " +
+                getString(mtx.M12) + " " + getString(mtx.M22) + " " + getString(mtx.M32) + " " + getString(mtx.M42) + " " +
+                getString(mtx.M13) + " " + getString(mtx.M23) + " " + getString(mtx.M33) + " " + getString(mtx.M43) + " " +
+                getString(mtx.M14) + " " + getString(mtx.M24) + " " + getString(mtx.M34) + " " + getString(mtx.M44));
+            xml.WriteEndElement();
 
-                for (int i = 0; i < skeleton.Count; i++) if (skeleton[i].parentId == index) writeSkeleton(xml, skeleton, i);
+            for (int i = 0; i < skeleton.Count; i++) if (skeleton[i].parentId == index) writeSkeleton(xml, skeleton, i);
             xml.WriteEndElement();
         }
     }

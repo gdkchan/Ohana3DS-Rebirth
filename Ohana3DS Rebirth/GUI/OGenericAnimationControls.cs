@@ -158,13 +158,13 @@ namespace Ohana3DS_Rebirth.GUI
             switch (type)
             {
                 case FileIO.fileType.skeletalAnimation:
-                    if (renderer.currentModel == -1)
+                    if (renderer.CurrentModel == -1)
                     {
                         MessageBox.Show("A skeleton is necessary to export an Skeletal Animation." + Environment.NewLine + "You must select a model before exporting!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                         return;
                     }
                     if (control.CurrentAnimation == -1) return;
-                    FileIO.export(type, renderer.model, new List<int> {renderer.currentModel, control.CurrentAnimation});
+                    FileIO.export(type, renderer.model, new List<int> {renderer.CurrentModel, control.CurrentAnimation});
                     break;
             }
         }

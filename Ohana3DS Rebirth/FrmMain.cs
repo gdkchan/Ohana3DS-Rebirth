@@ -40,8 +40,9 @@ namespace Ohana3DS_Rebirth
         {
             using (OpenFileDialog openDlg = new OpenFileDialog())
             {
-                openDlg.Filter = "All supported files|*.bch;*.cx;*.lz;*.cmp;*.mm;*.gr;*.pc;*.pack;*.fpt;*.dmp;*.rel;*.bcres;*.bcmdl;*.bctex;*.bcskla;*.mdl;*.tex";
+                openDlg.Filter = "All supported files|*.bch;*.mbn;*.cx;*.lz;*.cmp;*.mm;*.gr;*.pc;*.pack;*.fpt;*.dmp;*.rel;*.bcres;*.bcmdl;*.bctex;*.bcskla;*.mdl;*.tex";
                 openDlg.Filter += "|Binary CTR H3D|*.bch";
+                openDlg.Filter += "|Sm4sh Model|*.mbn";
                 openDlg.Filter += "|Compressed file|*.cx;*.lz;*.cmp";
                 openDlg.Filter += "|Pokémon Overworld model|*.mm";
                 openDlg.Filter += "|Pokémon Map model|*.gr";
@@ -81,6 +82,14 @@ namespace Ohana3DS_Rebirth
         public void open(string fileName)
         {
             string name = Path.GetFileNameWithoutExtension(fileName);
+            string extension = Path.GetExtension(fileName).ToLower();
+            switch (extension) //Handle case-specific files than can't be identified by signature here
+            {
+                case ".mbn":
+                    WindowManager.flush();
+                    launchModel(MBN.load(fileName), name);
+                    return;
+            }
             open(new FileStream(fileName, FileMode.Open), name);
         }
 

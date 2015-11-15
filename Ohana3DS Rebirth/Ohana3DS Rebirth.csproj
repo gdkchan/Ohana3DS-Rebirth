@@ -246,6 +246,7 @@
       <DependentUpon>OForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Ohana\AnimationUtils.cs" />
+    <Compile Include="Ohana\ModelFormats\MeshUtils.cs" />
     <Compile Include="Ohana\ModelFormats\BCH.cs" />
     <Compile Include="Ohana\ModelFormats\CGFX.cs" />
     <Compile Include="Ohana\Compressions\LZSS.cs" />
@@ -256,6 +257,7 @@
     <Compile Include="Ohana\Containers\PkmnContainer.cs" />
     <Compile Include="Ohana\Compressions\BLZ.cs" />
     <Compile Include="Ohana\ModelFormats\GenericFormats\OBJ.cs" />
+    <Compile Include="Ohana\ModelFormats\MBN.cs" />
     <Compile Include="Ohana\TextureFormats\DMP.cs" />
     <Compile Include="Ohana\FileIO.cs" />
     <Compile Include="Ohana\ModelFormats\GenericFormats\CMDL.cs" />

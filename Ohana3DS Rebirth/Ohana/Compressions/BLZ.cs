@@ -15,7 +15,6 @@ namespace Ohana3DS_Rebirth.Ohana.Compressions
             byte[] input = new byte[data.Length];
             data.Read(input, 0, input.Length);
             data.Close();
-            data.Dispose();
 
             uint inputOffset = (uint)input.Length;
             int incrementalLength = readInt(input, ref inputOffset);

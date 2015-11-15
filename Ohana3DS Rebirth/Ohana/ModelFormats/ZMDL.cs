@@ -13,7 +13,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
     /// </summary>
     class ZMDL
     {
-        public enum vshAttribute
+        private enum vshAttribute
         {
             position = 0,
             normal = 1,
@@ -71,7 +71,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
             List<byte> materialObjectBinding = new List<byte>();
             for (int materialIndex = 0; materialIndex < materialsCount; materialIndex++)
             {
-                RenderBase.OMaterial material = new RenderBase.OMaterial();
+                RenderBase.OMaterial material = MeshUtils.getGenericMaterial();
 
                 material.name = IOUtils.readString(input, (uint)(materialsOffset + materialIndex * 0xb4));
                 data.Seek(materialsOffset + (materialIndex * 0xb4) + 0x94, SeekOrigin.Begin);
@@ -90,30 +90,6 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                 input.ReadByte();
                 byte wrap = input.ReadByte();
                 input.ReadByte();
-
-                //Default material stuff
-                material.fragmentShader.alphaTest.isTestEnabled = true;
-                material.fragmentShader.alphaTest.testFunction = RenderBase.OTestFunction.greaterOrEqual;
-                material.fragmentShader.alphaTest.testReference = 0x7f;
-
-                material.textureMapper[0].wrapU = RenderBase.OTextureWrap.repeat;
-                material.textureMapper[0].wrapV = RenderBase.OTextureWrap.repeat;
-
-                material.textureMapper[0].minFilter = RenderBase.OTextureMinFilter.linearMipmapLinear;
-                material.textureMapper[0].magFilter = RenderBase.OTextureMagFilter.linear;
-
-                for (int i = 0; i < 6; i++)
-                {
-                    material.fragmentShader.textureCombiner[i].rgbSource[0] = RenderBase.OCombineSource.texture0;
-                    material.fragmentShader.textureCombiner[i].rgbSource[1] = RenderBase.OCombineSource.primaryColor;
-                    material.fragmentShader.textureCombiner[i].combineRgb = RenderBase.OCombineOperator.modulate;
-                    material.fragmentShader.textureCombiner[i].alphaSource[0] = RenderBase.OCombineSource.texture0;
-                    material.fragmentShader.textureCombiner[i].rgbScale = 1;
-                    material.fragmentShader.textureCombiner[i].alphaScale = 1;
-                }
-                material.fragmentOperation.depth.isTestEnabled = true;
-                material.fragmentOperation.depth.testFunction = RenderBase.OTestFunction.lessOrEqual;
-                material.fragmentOperation.depth.isMaskEnabled = true;
 
                 model.addMaterial(material);
             }
@@ -224,14 +200,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                             vertex.addWeight(input.ReadSingle());
                         }
 
-                        //Like a Bounding Box, used to calculate the proportions of the mesh on the Viewport
-                        if (vertex.position.x < models.minVector.x) models.minVector.x = vertex.position.x;
-                        else if (vertex.position.x > models.maxVector.x) models.maxVector.x = vertex.position.x;
-                        else if (vertex.position.y < models.minVector.y) models.minVector.y = vertex.position.y;
-                        else if (vertex.position.y > models.maxVector.y) models.maxVector.y = vertex.position.y;
-                        else if (vertex.position.z < models.minVector.z) models.minVector.z = vertex.position.z;
-                        else if (vertex.position.z > models.maxVector.z) models.maxVector.z = vertex.position.z;
-
+                        MeshUtils.calculateBounds(model, vertex);
                         obj.addVertex(vertex);
                         vertexBuffer.Add(RenderBase.convertVertex(vertex));
 

@@ -68,7 +68,6 @@ namespace Ohana3DS_Rebirth.Ohana.Containers
             }
 
             data.Close();
-            data.Dispose();
 
             return output;
         }

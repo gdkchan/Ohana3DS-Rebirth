@@ -34,7 +34,7 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void ModelList_SelectedIndexChanged(object sender, EventArgs e)
         {
-            renderer.currentModel = ModelList.SelectedIndex;
+            renderer.CurrentModel = ModelList.SelectedIndex;
         }
 
         private void BtnExport_Click(object sender, EventArgs e)
@@ -59,12 +59,12 @@ namespace Ohana3DS_Rebirth.GUI
             if (ModelList.SelectedIndex == -1) return;
             renderer.model.model.RemoveAt(ModelList.SelectedIndex);
             ModelList.removeItem(ModelList.SelectedIndex);
-            renderer.currentModel = ModelList.SelectedIndex;
+            renderer.CurrentModel = ModelList.SelectedIndex;
         }
 
         private void BtnClear_Click(object sender, EventArgs e)
         {
-            renderer.currentModel = -1;
+            renderer.CurrentModel = -1;
             renderer.model.model.Clear();
             updateList();
         }

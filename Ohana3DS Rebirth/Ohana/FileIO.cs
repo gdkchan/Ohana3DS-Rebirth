@@ -35,7 +35,6 @@ namespace Ohana3DS_Rebirth.Ohana
             Stream data = new FileStream(fileName, FileMode.Open);
             fileFormat format = identify(data);
             data.Close();
-            data.Dispose();
             return format;
         }
 

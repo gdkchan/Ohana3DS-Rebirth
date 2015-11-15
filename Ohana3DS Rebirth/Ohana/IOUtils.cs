@@ -13,7 +13,7 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="input">The Reader of the File Stream</param>
         /// <param name="address">Address where the text begins</param>
         /// <returns></returns>
-        public static string readString(BinaryReader input, uint address)
+        public static string readString(BinaryReader input, uint address, bool advancePosition = false)
         {
             long originalPosition = input.BaseStream.Position;
             input.BaseStream.Seek(address, SeekOrigin.Begin);
@@ -24,7 +24,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 if (b == 0) break;
                 bytes.WriteByte(b);
             }
-            input.BaseStream.Seek(originalPosition, SeekOrigin.Begin);
+            if (!advancePosition) input.BaseStream.Seek(originalPosition, SeekOrigin.Begin);
             return Encoding.ASCII.GetString(bytes.ToArray());
         }
 

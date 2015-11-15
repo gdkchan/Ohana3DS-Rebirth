@@ -1399,6 +1399,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public List<OMetaData> userData;
             public OMatrix transform;
             public float height;
+            public OVector3 minVector, maxVector;
 
             public OModel()
             {
@@ -1406,7 +1407,9 @@ namespace Ohana3DS_Rebirth.Ohana
                 skeleton = new List<OBone>();
                 material = new List<OMaterial>();
                 userData = new List<OMetaData>();
-                transform = new RenderBase.OMatrix();
+                transform = new OMatrix();
+                minVector = new OVector3();
+                maxVector = new OVector3();
             }
 
             /// <summary>
@@ -1789,7 +1792,6 @@ namespace Ohana3DS_Rebirth.Ohana
             public string name;
             public OAnimationKeyFrameGroup rotationX, rotationY, rotationZ;
             public OAnimationKeyFrameGroup translationX, translationY, translationZ;
-            public bool rotationExists, translationExists;
 
             public OAnimationFrame rotationQuaternion;
             public OAnimationFrame translation;
@@ -2139,8 +2141,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public OAnimationListBase cameraAnimation;
             public OAnimationListBase fogAnimation;
             public List<OScene> scene;
-            public OVector3 minVector, maxVector;
-
+            
             public OModelGroup()
             {
                 model = new List<OModel>();
@@ -2156,8 +2157,6 @@ namespace Ohana3DS_Rebirth.Ohana
                 cameraAnimation = new OAnimationListBase();
                 fogAnimation = new OAnimationListBase();
                 scene = new List<OScene>();
-                minVector = new OVector3();
-                maxVector = new OVector3();
             }
 
             /// <summary>

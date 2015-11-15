@@ -971,14 +971,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                 vertex.position = RenderBase.OVector3.transform(vertex.position, skeletonTransform[vertex.node[0]]);
                             }
 
-                            //Like a Bounding Box, used to calculate the proportions of the mesh on the Viewport
-                            if (vertex.position.x < models.minVector.x) models.minVector.x = vertex.position.x;
-                            else if (vertex.position.x > models.maxVector.x) models.maxVector.x = vertex.position.x;
-                            else if (vertex.position.y < models.minVector.y) models.minVector.y = vertex.position.y;
-                            else if (vertex.position.y > models.maxVector.y) models.maxVector.y = vertex.position.y;
-                            else if (vertex.position.z < models.minVector.z) models.minVector.z = vertex.position.z;
-                            else if (vertex.position.z > models.maxVector.z) models.maxVector.z = vertex.position.z;
-
+                            MeshUtils.calculateBounds(model, vertex);
                             shape.addVertex(vertex);
                             vshAttributesBuffer.Add(RenderBase.convertVertex(vertex));
 

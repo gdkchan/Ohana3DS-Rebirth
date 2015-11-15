@@ -32,11 +32,6 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
             {
                 output.AppendLine(i + " \"" + mdl.skeleton[i].name + "\" " + mdl.skeleton[i].parentId);
             }
-            for (int objC = 0; objC < mdl.modelObject.Count; objC++) //I don't actually know if BCHs can be boneless, but it never hurts to be careful
-            {
-                int NobjC = mdl.skeleton.Count + objC;
-                output.AppendLine(NobjC + " \"" + "ROOTNODEobj" + objC + "_" + mdl.modelObject[objC].name + "\" " + "-1");
-            }
             output.AppendLine("end");
             output.AppendLine("skeleton");
             if (skeletalAnimationIndex == -1)
@@ -54,13 +49,6 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
                     line += " " + getString(bone.rotation.z);
                     output.AppendLine(line);
                     index++;
-                }
-				for (int mdlC = 0; mdlC < mdl.modelObject.Count; mdlC++) //boneless bch fix, pt2
-                {
-                    int mdlCindex = index + mdlC;
-                    string line = mdlCindex.ToString();
-                    line += " 0 0 0 0 0 0";
-                    output.AppendLine(line);
                 }
             }
             else
@@ -80,23 +68,17 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
                             if (b.isFrameFormat || b.isFullBakedFormat) error = true;
                             if (b.name == mdl.skeleton[index].name && !b.isFrameFormat && !b.isFullBakedFormat)
                             {
-                                if (b.rotationExists)
-                                {
-                                    newBone.rotation.x = AnimationUtils.getKey(b.rotationX, frame);
-                                    newBone.rotation.y = AnimationUtils.getKey(b.rotationY, frame);
-                                    newBone.rotation.z = AnimationUtils.getKey(b.rotationZ, frame);
-                                }
+                                if (b.rotationX.exists) newBone.rotation.x = AnimationUtils.getKey(b.rotationX, frame);
+                                if (b.rotationY.exists) newBone.rotation.y = AnimationUtils.getKey(b.rotationY, frame);
+                                if (b.rotationZ.exists) newBone.rotation.z = AnimationUtils.getKey(b.rotationZ, frame);
 
-                                if (b.translationExists)
-                                {
-                                    newBone.translation.x = AnimationUtils.getKey(b.translationX, frame);
-                                    newBone.translation.y = AnimationUtils.getKey(b.translationY, frame);
-                                    newBone.translation.z = AnimationUtils.getKey(b.translationZ, frame);
-                                    
-                                    newBone.translation.x *= mdl.skeleton[index].absoluteScale.x;
-                                    newBone.translation.y *= mdl.skeleton[index].absoluteScale.y;
-                                    newBone.translation.z *= mdl.skeleton[index].absoluteScale.z;
-                                }
+                                if (b.translationX.exists) newBone.translation.x = AnimationUtils.getKey(b.translationX, frame);
+                                if (b.translationY.exists) newBone.translation.y = AnimationUtils.getKey(b.translationY, frame);
+                                if (b.translationZ.exists) newBone.translation.z = AnimationUtils.getKey(b.translationZ, frame);
+
+                                if (b.translationX.exists) newBone.translation.x *= mdl.skeleton[index].absoluteScale.x;
+                                if (b.translationY.exists) newBone.translation.y *= mdl.skeleton[index].absoluteScale.y;
+                                if (b.translationZ.exists) newBone.translation.z *= mdl.skeleton[index].absoluteScale.z;
 
                                 break;
                             }
@@ -131,7 +113,6 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
                         if (triangleCount == 0) output.AppendLine(textureName);
 
                         string line = mdl.skeleton.Count.ToString();
-						line = (mdl.skeleton.Count + objectIndex).ToString(); //part of the root-node fix
 
                         line += " " + getString(vertex.position.x);
                         line += " " + getString(vertex.position.y);
@@ -142,8 +123,9 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
                         line += " " + getString(vertex.texture0.x);
                         line += " " + getString(vertex.texture0.y);
 
-                        line += " " + vertex.node.Count;
-                        for (int i = 0; i < Math.Min(vertex.node.Count, vertex.weight.Count); i++)
+                        int nodeCount = Math.Min(vertex.node.Count, vertex.weight.Count);
+                        line += " " + nodeCount;
+                        for (int i = 0; i < nodeCount; i++)
                         {
                             line += " " + vertex.node[i];
                             line += " " + getString(vertex.weight[i]);
@@ -280,8 +262,14 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
                                                 RenderBase.OSkeletalAnimationBone bone = new RenderBase.OSkeletalAnimationBone();
 
                                                 bone.name = b.name;
-                                                bone.rotationExists = true;
-                                                bone.translationExists = true;
+
+                                                bone.translationX.exists = true;
+                                                bone.translationY.exists = true;
+                                                bone.translationZ.exists = true;
+
+                                                bone.rotationX.exists = true;
+                                                bone.rotationY.exists = true;
+                                                bone.rotationZ.exists = true;
 
                                                 //Translation
                                                 bone.translationX.interpolation = bone.translationY.interpolation = bone.translationZ.interpolation = RenderBase.OInterpolationMode.linear;
@@ -433,11 +421,8 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
 
         private static RenderBase.OMaterial getMaterial(string name)
         {
-            RenderBase.OMaterial material = new RenderBase.OMaterial();
+            RenderBase.OMaterial material = MeshUtils.getGenericMaterial();
             material.name = material.name0 = name;
-            material.fragmentOperation.depth.isTestEnabled = true;
-            material.fragmentOperation.depth.testFunction = RenderBase.OTestFunction.lessOrEqual;
-            material.fragmentOperation.depth.isMaskEnabled = true;
             return material;
         }
 
