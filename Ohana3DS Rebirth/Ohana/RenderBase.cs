@@ -248,6 +248,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public OVector2 texture2;
             public List<int> node;
             public List<float> weight;
+            private float weightSum;
             public uint diffuseColor;
 
             /// <summary>
@@ -276,6 +277,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
                 node.AddRange(vertex.node);
                 weight.AddRange(vertex.weight);
+                for (int i = 0; i < vertex.weight.Count; i++) weightSum += vertex.weight[i];
 
                 position = new OVector3(vertex.position);
                 normal = new OVector3(vertex.normal);
@@ -320,6 +322,17 @@ namespace Ohana3DS_Rebirth.Ohana
             public void addWeight(float _weight)
             {
                 weight.Add(_weight);
+            }
+
+            /// <summary>
+            ///     Add Weighting information of the Vertex.
+            ///     It also checks if the value is valid, and if the total sum is = 1.
+            /// </summary>
+            /// <param name="_weight"></param>
+            public void addWeightChecked(float _weight)
+            {
+                weightSum += _weight;
+                if (_weight >= 0 && weightSum <= 1) weight.Add(_weight);
             }
 
             /// <summary>

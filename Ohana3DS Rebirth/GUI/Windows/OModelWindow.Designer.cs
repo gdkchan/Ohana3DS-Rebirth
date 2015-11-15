@@ -124,14 +124,14 @@
             // ModelList
             // 
             this.ModelList.BackColor = System.Drawing.Color.Transparent;
-            this.ModelList.Dock = System.Windows.Forms.DockStyle.Top;
+            this.ModelList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ModelList.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ModelList.HeaderHeight = 24;
             this.ModelList.ItemHeight = 16;
             this.ModelList.Location = new System.Drawing.Point(0, 40);
             this.ModelList.Name = "ModelList";
             this.ModelList.SelectedIndex = -1;
-            this.ModelList.Size = new System.Drawing.Size(256, 256);
+            this.ModelList.Size = new System.Drawing.Size(256, 360);
             this.ModelList.TabIndex = 9;
             this.ModelList.SelectedIndexChanged += new System.EventHandler(this.ModelList_SelectedIndexChanged);
             // 

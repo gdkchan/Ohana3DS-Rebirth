@@ -18,6 +18,18 @@
         }
 
         /// <summary>
+        ///     Clamps a Float value between 0 and 255 and return as Byte.
+        /// </summary>
+        /// <param name="value">The float value</param>
+        /// <returns></returns>
+        public static byte saturate(float value)
+        {
+            if (value > 0xff) return 0xff;
+            if (value < 0) return 0;
+            return (byte)value;
+        }
+
+        /// <summary>
         ///     Gets a generic Material, that can be used when the model don't have any, to make the shape visible on the viewport.
         /// </summary>
         /// <returns></returns>

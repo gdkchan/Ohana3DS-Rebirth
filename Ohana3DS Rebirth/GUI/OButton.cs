@@ -127,5 +127,12 @@ namespace Ohana3DS_Rebirth.GUI
 
             base.OnMouseLeave(e);
         }
+
+        protected override void OnResize(EventArgs e)
+        {
+            Refresh();
+
+            base.OnResize(e);
+        }
     }
 }

@@ -885,10 +885,9 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                             for (int attribute = 0; attribute < vshAttributeFormats.Count; attribute++)
                             {
                                 attributeFormat format = vshAttributeFormats[attribute];
+                                if (format.attribute == PICACommand.vshAttribute.boneWeight) format.type = attributeFormatType.unsignedByte;
                                 data.Seek(vertexOffset + format.offset, SeekOrigin.Begin);
                                 RenderBase.OVector4 vector =  getVector(input, format);
-
-                                if (format.isInterleaved) System.Windows.Forms.MessageBox.Show("error");
 
                                 switch (format.attribute)
                                 {
@@ -905,10 +904,10 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                         vertex.tangent = new RenderBase.OVector3(vector.x * format.scale, vector.y * format.scale, vector.z * format.scale);
                                         break;
                                     case PICACommand.vshAttribute.color:
-                                        uint r = saturate((vector.x * format.scale) * 0xff);
-                                        uint g = saturate((vector.y * format.scale) * 0xff);
-                                        uint b = saturate((vector.z * format.scale) * 0xff);
-                                        uint a = saturate((vector.w * format.scale) * 0xff);
+                                        uint r = MeshUtils.saturate((vector.x * format.scale) * 0xff);
+                                        uint g = MeshUtils.saturate((vector.y * format.scale) * 0xff);
+                                        uint b = MeshUtils.saturate((vector.z * format.scale) * 0xff);
+                                        uint a = MeshUtils.saturate((vector.w * format.scale) * 0xff);
                                         vertex.diffuseColor = b | (g << 8) | (r << 16) | (a << 24);
                                         break;
                                     case PICACommand.vshAttribute.textureCoordinate0:
@@ -936,31 +935,23 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
 
                                         break;
                                     case PICACommand.vshAttribute.boneWeight:
-                                        vertex.addWeight(vector.x * format.scale);
+                                        vertex.addWeightChecked(vector.x * format.scale);
                                         if (skinningMode == RenderBase.OSkinningMode.smoothSkinning)
                                         {
-                                            if (format.attributeLength > 0) vertex.addWeight(vector.y * format.scale);
-                                            if (format.attributeLength > 1) vertex.addWeight(vector.z * format.scale);
-                                            if (format.attributeLength > 2) vertex.addWeight(vector.w * format.scale);
+                                            if (format.attributeLength > 0) vertex.addWeightChecked(vector.y * format.scale);
+                                            if (format.attributeLength > 1) vertex.addWeightChecked(vector.z * format.scale);
+                                            if (format.attributeLength > 2) vertex.addWeightChecked(vector.w * format.scale);
                                         }
                                         break;
                                 }
                             }
 
+                            //If the node list have 4 or less bones, then there is no need to store the indices per vertex
+                            //Instead, the entire list is used, since it supports up to 4 bones.
                             if (vertex.node.Count == 0 && nodeList.Count <= 4)
                             {
                                 for (int n = 0; n < nodeList.Count; n++) vertex.addNode((int)nodeList[n]);
-                            }
-
-                            float weightSum = 0;
-                            for (int n = 0; n < vertex.weight.Count; n++)
-                            {
-                                weightSum += vertex.weight[n];
-                                if (weightSum > 1)
-                                {
-                                    if (n < vertex.node.Count) vertex.node.RemoveAt(n);
-                                    break;
-                                }
+                                if (vertex.weight.Count == 0) vertex.addWeight(1);
                             }
 
                             if (skinningMode != RenderBase.OSkinningMode.smoothSkinning && vertex.node.Count > 0)
@@ -1386,18 +1377,6 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
 
                 frame.keyFrames.Add(keyFrame);
             }
-        }
-
-        /// <summary>
-        ///     Clamps a Float value between 0 and 255 and return as Byte.
-        /// </summary>
-        /// <param name="value">The float value</param>
-        /// <returns></returns>
-        private static byte saturate(float value)
-        {
-            if (value > 0xff) return 0xff;
-            if (value < 0) return 0;
-            return (byte)value;
         }
     }
 }

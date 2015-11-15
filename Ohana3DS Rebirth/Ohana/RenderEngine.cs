@@ -882,7 +882,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                         float weightSum = 0;
                                         foreach (int boneIndex in input.node)
                                         {
-                                            float weight = 1;
+                                            float weight = 0;
                                             if (weightIndex < input.weight.Count) weight = input.weight[weightIndex++];
                                             weightSum += weight;
                                             p += Vector3.Transform(position, animationSkeletonTransform[boneIndex]) * weight;
