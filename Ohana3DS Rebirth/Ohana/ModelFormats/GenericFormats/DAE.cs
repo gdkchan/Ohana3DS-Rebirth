@@ -17,7 +17,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
             [XmlAttribute]
             public string version = "1.4.1";
 
-            public daeAsset asset;
+            public daeAsset asset = new daeAsset();
 
             [XmlArrayItem("image")]
             public List<daeImage> library_images = new List<daeImage>();
@@ -29,7 +29,13 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
             public List<daeEffect> library_effects = new List<daeEffect>();
 
             [XmlArrayItem("geometry")]
-            public List<daeEffect> library_geometries = new List<daeEffect>();
+            public List<daeGeometry> library_geometries = new List<daeGeometry>();
+
+            [XmlArrayItem("visual_scene")]
+            public List<daeVisualScene> library_visual_scenes = new List<daeVisualScene>();
+
+            [XmlArrayItem("instance_visual_scene")]
+            public List<daeInstaceVisualScene> scene = new List<daeInstaceVisualScene>();
         }
 
         public class daeAsset
@@ -182,7 +188,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
             [XmlText]
             public string data;
 
-            public void set(List<float> content, int _count)
+            public void set(List<float> content)
             {
                 StringBuilder strArray = new StringBuilder();
                 for (int i = 0; i < content.Count; i++)
@@ -192,7 +198,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
                     else
                         strArray.Append(content[i].ToString(CultureInfo.InvariantCulture));
                 }
-                count = (uint)_count;
+                count = (uint)content.Count;
                 data = strArray.ToString();
             }
 
@@ -205,6 +211,45 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
             }
         }
 
+        public class daeAccessorParam
+        {
+            [XmlAttribute]
+            public string name;
+
+            [XmlAttribute]
+            public string type;
+        }
+
+        public class daeAccessor
+        {
+            [XmlAttribute]
+            public string source;
+
+            [XmlAttribute]
+            public uint count;
+
+            [XmlAttribute]
+            public uint stride;
+
+            [XmlElement("param")]
+            public List<daeAccessorParam> param = new List<daeAccessorParam>();
+
+            public void addParam(string name, string type)
+            {
+                daeAccessorParam prm = new daeAccessorParam();
+
+                prm.name = name;
+                prm.type = type;
+
+                param.Add(prm);
+            }
+        }
+
+        public class daeMeshTechnique
+        {
+            public daeAccessor accessor = new daeAccessor();
+        }
+
         public class daeSource
         {
             [XmlAttribute]
@@ -213,19 +258,214 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
             [XmlAttribute]
             public string name;
 
-            public daeFloatArray float_array;
+            public daeFloatArray float_array = new daeFloatArray();
+            public daeMeshTechnique technique_common = new daeMeshTechnique();
+        }
 
+        public class daeVerticesInput
+        {
+            [XmlAttribute]
+            public string semantic;
+
+            [XmlAttribute]
+            public string source;
+        }
+
+        public class daeVertices
+        {
+            [XmlAttribute]
+            public string id;
+
+            [XmlElement("input")]
+            public List<daeVerticesInput> input = new List<daeVerticesInput>();
+
+            public void addInput(string semantic, string source)
+            {
+                daeVerticesInput i = new daeVerticesInput();
+
+                i.semantic = semantic;
+                i.source = source;
+
+                input.Add(i);
+            }
+        }
+
+        public class daeTrianglesInput
+        {
+            [XmlAttribute]
+            public string semantic;
+
+            [XmlAttribute]
+            public string source;
+
+            [XmlAttribute]
+            public uint offset;
+        }
+
+        public class daeTriangles
+        {
+            [XmlAttribute]
+            public string material;
+
+            [XmlAttribute]
+            public uint count;
+
+            [XmlElement("input")]
+            public List<daeTrianglesInput> input = new List<daeTrianglesInput>();
+
+            public string p;
+
+            public void addInput(string semantic, string source, uint offset = 0)
+            {
+                daeTrianglesInput i = new daeTrianglesInput();
+
+                i.semantic = semantic;
+                i.source = source;
+                i.offset = offset;
+
+                input.Add(i);
+            }
+
+            public void set(List<uint> indices)
+            {
+                StringBuilder strArray = new StringBuilder();
+                for (int i = 0; i < indices.Count; i++)
+                {
+                    if (i < indices.Count - 1)
+                        strArray.Append(indices[i].ToString(CultureInfo.InvariantCulture) + " ");
+                    else
+                        strArray.Append(indices[i].ToString(CultureInfo.InvariantCulture));
+                }
+                count = (uint)(indices.Count / 3);
+                p = strArray.ToString();
+            }
+
+            public List<uint> get()
+            {
+                List<uint> output = new List<uint>();
+                string[] values = p.Split(Convert.ToChar(" "));
+                for (int i = 0; i < values.Length; i++) output.Add(uint.Parse(values[i]));
+                return output;
+            }
         }
 
         public class daeMesh
         {
             [XmlElement("source")]
             public List<daeSource> source = new List<daeSource>();
+
+            public daeVertices vertices = new daeVertices();
+            public daeTriangles triangles = new daeTriangles();
         }
 
         public class daeGeometry
         {
+            [XmlAttribute]
+            public string id;
+
+            [XmlAttribute]
+            public string name;
+
             public daeMesh mesh = new daeMesh();
+        }
+
+        public class daeMatrix
+        {
+            [XmlText]
+            public string data;
+
+            public void set(RenderBase.OMatrix mtx)
+            {
+                StringBuilder strArray = new StringBuilder();
+                for (int i = 0; i < 4; i++)
+                {
+                    for (int j = 0; j < 4; j++)
+                    {
+                        if (i == 3 && j == 3)
+                            strArray.Append(mtx[i, j].ToString(CultureInfo.InvariantCulture));
+                        else
+                            strArray.Append(mtx[i, j].ToString(CultureInfo.InvariantCulture) + " ");
+                    }
+
+                }
+                data = strArray.ToString();
+            }
+
+            public RenderBase.OMatrix get()
+            {
+                RenderBase.OMatrix output = new RenderBase.OMatrix();
+                string[] values = data.Split(Convert.ToChar(" "));
+                int k = 0;
+                for (int i = 0; i < 4; i++)
+                {
+                    for (int j = 0; j < 4; j++)
+                    {
+                        output[i, j] = float.Parse(values[k++]);
+                    }
+
+                }
+                return output;
+            }
+        }
+
+        public class daeBindMaterialInstace
+        {
+            [XmlAttribute]
+            public string symbol;
+
+            [XmlAttribute]
+            public string target;
+        }
+
+        public class daeBindMaterial
+        {
+            public daeBindMaterialInstace instance_material = new daeBindMaterialInstace();
+        }
+
+        public class daeBindMaterialTechnique
+        {
+            public daeBindMaterial technique_common = new daeBindMaterial();
+        }
+
+        public class daeInstanceGeometry
+        {
+            [XmlAttribute]
+            public string url;
+
+            public daeBindMaterialTechnique bind_material = new daeBindMaterialTechnique();
+        }
+
+        public class daeNode
+        {
+            [XmlAttribute]
+            public string id;
+
+            [XmlAttribute]
+            public string name;
+
+            [XmlAttribute]
+            public string type = "NODE";
+
+            public daeMatrix matrix = new daeMatrix();
+            public daeInstanceGeometry instance_geometry = new daeInstanceGeometry();
+        }
+
+        public class daeVisualScene
+        {
+            [XmlAttribute]
+            public string id;
+
+            [XmlAttribute]
+            public string name;
+
+            [XmlElement("node")]
+            public List<daeNode> node = new List<daeNode>();
+        }
+
+        public class daeInstaceVisualScene
+        {
+            [XmlAttribute]
+            public string url;
         }
 
         /// <summary>
@@ -240,6 +480,11 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
         {
             RenderBase.OModel mdl = model.model[modelIndex];
             COLLADA dae = new COLLADA();
+
+            dae.asset.created = DateTime.Now.ToString("yyyy-MM-ddThh:mm:ssZ");
+            dae.asset.modified = dae.asset.created;
+            dae.asset.contributor.authoring_tool = "Ohana3DS";
+            dae.asset.contributor.author = Environment.UserName;
 
             foreach (RenderBase.OTexture tex in model.texture)
             {
@@ -322,6 +567,65 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
 
                 dae.library_effects.Add(eff);
             }
+
+            int meshIndex = 0;
+            daeVisualScene vs = new daeVisualScene();
+            vs.name = mdl.name;
+            vs.id = vs.name + "_id";
+            foreach (RenderBase.OModelObject obj in mdl.modelObject)
+            {
+                daeGeometry geometry = new daeGeometry();
+
+                string meshName = "mesh_" + meshIndex++ + "_" + obj.name;
+                geometry.id = meshName + "_id";
+                geometry.name = meshName;
+
+                MeshUtils.optimizedMesh mesh = MeshUtils.optimizeMesh(obj);
+                List<float> positions = new List<float>();
+                foreach (RenderBase.OVertex vtx in mesh.vertices)
+                {
+                    positions.Add(vtx.position.x);
+                    positions.Add(vtx.position.y);
+                    positions.Add(vtx.position.z);
+                }
+
+                daeSource position = new daeSource();
+                position.name = meshName + "_position";
+                position.id = position.name + "_id";
+                position.float_array.id = meshName + "_position_array_id";
+                position.float_array.set(positions);
+                position.technique_common.accessor.source = "#" + position.float_array.id;
+                position.technique_common.accessor.count = (uint)mesh.vertices.Count;
+                position.technique_common.accessor.stride = 3;
+                position.technique_common.accessor.addParam("X", "float");
+                position.technique_common.accessor.addParam("Y", "float");
+                position.technique_common.accessor.addParam("Z", "float");
+
+                geometry.mesh.source.Add(position);
+                geometry.mesh.vertices.id = meshName + "_vertices_id";
+                geometry.mesh.vertices.addInput("POSITION", "#" + position.id);
+
+                geometry.mesh.triangles.material = mdl.material[obj.materialId].name;
+                geometry.mesh.triangles.addInput("VERTEX", "#" + geometry.mesh.vertices.id);
+                geometry.mesh.triangles.set(mesh.indices);
+
+                dae.library_geometries.Add(geometry);
+
+                daeNode node = new daeNode();
+                node.name = "vsn_" + meshName;
+                node.id = node.name + "_id";
+                node.matrix.set(new RenderBase.OMatrix());
+                node.instance_geometry.url = "#" + geometry.id;
+                node.instance_geometry.bind_material.technique_common.instance_material.symbol = mdl.material[obj.materialId].name;
+                node.instance_geometry.bind_material.technique_common.instance_material.target = "#" + mdl.material[obj.materialId].name;
+
+                vs.node.Add(node);
+            }
+            dae.library_visual_scenes.Add(vs);
+
+            daeInstaceVisualScene scene = new daeInstaceVisualScene();
+            scene.url = "#" + vs.id;
+            dae.scene.Add(scene);
 
             XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
             ns.Add("", "http://www.collada.org/2005/11/COLLADASchema");

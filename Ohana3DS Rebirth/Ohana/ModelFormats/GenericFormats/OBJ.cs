@@ -15,7 +15,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
 
             RenderBase.OModel mdl = model.model[modelIndex];
 
-            int faceIndex = 1;
+            int faceIndexBase = 1;
             for (int objIndex = 0; objIndex < mdl.modelObject.Count; objIndex++)
             {
                 output.AppendLine("g " + mdl.modelObject[objIndex].name);
@@ -24,7 +24,8 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
                 output.AppendLine("usemtl " + mdl.material[mdl.modelObject[objIndex].materialId].name0 + ".png");
                 output.AppendLine(null);
 
-                foreach (RenderBase.OVertex vertex in mdl.modelObject[objIndex].obj)
+                MeshUtils.optimizedMesh obj = MeshUtils.optimizeMesh(mdl.modelObject[objIndex]);
+                foreach (RenderBase.OVertex vertex in obj.vertices)
                 {
                     output.AppendLine("v " + getString(vertex.position.x) + " " + getString(vertex.position.y) + " " + getString(vertex.position.z));
                     output.AppendLine("vn " + getString(vertex.normal.x) + " " + getString(vertex.normal.y) + " " + getString(vertex.normal.z));
@@ -32,11 +33,14 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
                 }
                 output.AppendLine(null);
 
-                for (int i = 0; i < mdl.modelObject[objIndex].obj.Count; i += 3)
+                for (int i = 0; i < obj.indices.Count; i += 3)
                 {
-                    output.AppendLine(String.Format("f {0}/{0}/{0} {1}/{1}/{1} {2}/{2}/{2}", faceIndex, faceIndex + 1, faceIndex + 2));
-                    faceIndex += 3;
+                    output.AppendLine(String.Format("f {0}/{0}/{0} {1}/{1}/{1} {2}/{2}/{2}",
+                        faceIndexBase + obj.indices[i],
+                        faceIndexBase + obj.indices[i + 1],
+                        faceIndexBase + obj.indices[i + 2]));
                 }
+                faceIndexBase += obj.vertices.Count;
                 output.AppendLine(null);
             }
 

@@ -1713,7 +1713,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                         vertex.addWeightChecked(vector.x * boneWeightScale);
                                         if (skinningMode == RenderBase.OSkinningMode.smoothSkinning)
                                         {
-                                            if (format.type > 0) vertex.addWeightChecked(vector.y * boneWeightScale);
+                                            if (format.attributeLength > 0) vertex.addWeightChecked(vector.y * boneWeightScale);
                                             if (format.attributeLength > 1) vertex.addWeightChecked(vector.z * boneWeightScale);
                                             if (format.attributeLength > 2) vertex.addWeightChecked(vector.w * boneWeightScale);
                                         }

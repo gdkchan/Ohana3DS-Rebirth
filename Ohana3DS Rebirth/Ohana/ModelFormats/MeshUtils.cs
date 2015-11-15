@@ -1,4 +1,6 @@
-﻿namespace Ohana3DS_Rebirth.Ohana.ModelFormats
+﻿using System.Collections.Generic;
+
+namespace Ohana3DS_Rebirth.Ohana.ModelFormats
 {
     class MeshUtils
     {
@@ -61,6 +63,62 @@
             material.fragmentOperation.depth.isMaskEnabled = true;
 
             return material;
+        }
+
+        const uint optimizerLookBack = 32;
+
+        public class optimizedMesh
+        {
+            public List<RenderBase.OVertex> vertices = new List<RenderBase.OVertex>();
+            public List<uint> indices = new List<uint>();
+
+            public bool hasNormal;
+            public bool hasTangent;
+            public bool hasColor;
+            public bool hasNode;
+            public bool hasWeight;
+            public int texUVCount;
+        }
+
+        /// <summary>
+        ///     Creates a Index Buffer for a Mesh, trying to repeat as less Vertices as possible.
+        /// </summary>
+        /// <param name="mesh">The Mesh that should be optimized</param>
+        /// <returns></returns>
+        public static optimizedMesh optimizeMesh(RenderBase.OModelObject mesh)
+        {
+            optimizedMesh output = new optimizedMesh();
+
+            output.hasNormal = mesh.hasNormal;
+            output.hasTangent = mesh.hasTangent;
+            output.hasColor = mesh.hasColor;
+            output.hasNode = mesh.hasNode;
+            output.hasWeight = mesh.hasWeight;
+            output.texUVCount = mesh.texUVCount;
+
+            for (int i = 0; i < mesh.obj.Count; i++)
+            {
+                bool found = false;
+                for (int j = 1; j <= optimizerLookBack; j++)
+                {
+                    int p = output.vertices.Count - j;
+                    if (p < 0 || p >= output.vertices.Count) break;
+                    if (output.vertices[p].Equals(mesh.obj[i]))
+                    {
+                        output.indices.Add((uint)p);
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    output.vertices.Add(mesh.obj[i]);
+                    output.indices.Add((uint)(output.vertices.Count - 1));
+                }
+            }
+
+            return output;
         }
     }
 }
