@@ -31,10 +31,10 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OForm));
             this.ContentContainer = new System.Windows.Forms.Panel();
             this.TitleBar = new System.Windows.Forms.Panel();
+            this.LblTitle = new Ohana3DS_Rebirth.GUI.OButton();
             this.BtnMinimize = new System.Windows.Forms.PictureBox();
             this.BtnMinMax = new System.Windows.Forms.PictureBox();
             this.BtnClose = new System.Windows.Forms.PictureBox();
-            this.LblTitle = new Ohana3DS_Rebirth.GUI.OButton();
             this.ContentContainer.SuspendLayout();
             this.TitleBar.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.BtnMinimize)).BeginInit();
@@ -65,6 +65,21 @@
             this.TitleBar.Size = new System.Drawing.Size(640, 20);
             this.TitleBar.TabIndex = 9;
             this.TitleBar.MouseDown += new System.Windows.Forms.MouseEventHandler(this.OForm_MouseDown);
+            // 
+            // LblTitle
+            // 
+            this.LblTitle.BackColor = System.Drawing.Color.Transparent;
+            this.LblTitle.Centered = false;
+            this.LblTitle.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTitle.ForeColor = System.Drawing.Color.White;
+            this.LblTitle.Hover = false;
+            this.LblTitle.Image = null;
+            this.LblTitle.Location = new System.Drawing.Point(0, 0);
+            this.LblTitle.Name = "LblTitle";
+            this.LblTitle.Size = new System.Drawing.Size(31, 19);
+            this.LblTitle.TabIndex = 12;
+            this.LblTitle.Text = "Title";
+            this.LblTitle.MouseDown += new System.Windows.Forms.MouseEventHandler(this.OForm_MouseDown);
             // 
             // BtnMinimize
             // 
@@ -108,21 +123,6 @@
             this.BtnClose.MouseEnter += new System.EventHandler(this.BtnClose_MouseEnter);
             this.BtnClose.MouseLeave += new System.EventHandler(this.Btn_MouseLeave);
             // 
-            // LblTitle
-            // 
-            this.LblTitle.BackColor = System.Drawing.Color.Transparent;
-            this.LblTitle.Centered = false;
-            this.LblTitle.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LblTitle.ForeColor = System.Drawing.Color.White;
-            this.LblTitle.Hover = false;
-            this.LblTitle.Image = null;
-            this.LblTitle.Location = new System.Drawing.Point(0, 0);
-            this.LblTitle.Name = "LblTitle";
-            this.LblTitle.Size = new System.Drawing.Size(31, 19);
-            this.LblTitle.TabIndex = 12;
-            this.LblTitle.Text = "Title";
-            this.LblTitle.MouseDown += new System.Windows.Forms.MouseEventHandler(this.OForm_MouseDown);
-            // 
             // OForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -131,6 +131,7 @@
             this.ClientSize = new System.Drawing.Size(648, 480);
             this.Controls.Add(this.ContentContainer);
             this.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ForeColor = System.Drawing.Color.White;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.MinimumSize = new System.Drawing.Size(128, 64);
             this.Name = "OForm";

@@ -82,5 +82,77 @@ namespace Ohana3DS_Rebirth.Properties {
                 this["reShowHUD"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\")]
+        public string meOutFolder {
+            get {
+                return ((string)(this["meOutFolder"]));
+            }
+            set {
+                this["meOutFolder"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int meFormat {
+            get {
+                return ((int)(this["meFormat"]));
+            }
+            set {
+                this["meFormat"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool meExportAllMdls {
+            get {
+                return ((bool)(this["meExportAllMdls"]));
+            }
+            set {
+                this["meExportAllMdls"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool meExportAllAnms {
+            get {
+                return ((bool)(this["meExportAllAnms"]));
+            }
+            set {
+                this["meExportAllAnms"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\")]
+        public string teOutFolder {
+            get {
+                return ((string)(this["teOutFolder"]));
+            }
+            set {
+                this["teOutFolder"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool teExportAllTxs {
+            get {
+                return ((bool)(this["teExportAllTxs"]));
+            }
+            set {
+                this["teExportAllTxs"] = value;
+            }
+        }
     }
 }

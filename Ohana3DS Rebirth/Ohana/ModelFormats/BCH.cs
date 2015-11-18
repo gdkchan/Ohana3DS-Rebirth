@@ -1640,9 +1640,13 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                 case PICACommand.vshAttribute.textureCoordinate0: obj.texUVCount = Math.Max(obj.texUVCount, 1); break;
                                 case PICACommand.vshAttribute.textureCoordinate1: obj.texUVCount = Math.Max(obj.texUVCount, 2); break;
                                 case PICACommand.vshAttribute.textureCoordinate2: obj.texUVCount = Math.Max(obj.texUVCount, 3); break;
-                                case PICACommand.vshAttribute.boneIndex: obj.hasNode = true; break;
-                                case PICACommand.vshAttribute.boneWeight: obj.hasWeight = true; break;
                             }
+                        }
+
+                        if (nodeList.Count > 0)
+                        {
+                            obj.hasNode = true;
+                            obj.hasWeight = true;
                         }
 
                         data.Seek(idxBufferOffset, SeekOrigin.Begin);

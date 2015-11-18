@@ -5,6 +5,7 @@ using System.IO;
 using Ohana3DS_Rebirth.Ohana;
 using Ohana3DS_Rebirth.Ohana.ModelFormats;
 using Ohana3DS_Rebirth.Ohana.TextureFormats;
+using Ohana3DS_Rebirth.GUI.Forms;
 using Ohana3DS_Rebirth.Properties;
 
 namespace Ohana3DS_Rebirth

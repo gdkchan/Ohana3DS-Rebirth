@@ -97,6 +97,18 @@
     </Compile>
     <Compile Include="GUI\ColorManager.cs" />
     <Compile Include="GUI\DrawingUtils.cs" />
+    <Compile Include="GUI\Forms\OModelExportForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Forms\OModelExportForm.Designer.cs">
+      <DependentUpon>OModelExportForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Forms\OTextureExportForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Forms\OTextureExportForm.Designer.cs">
+      <DependentUpon>OTextureExportForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\OCheckBox.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -233,10 +245,10 @@
     <Compile Include="GUI\OWindowManager.Designer.cs">
       <DependentUpon>OWindowManager.cs</DependentUpon>
     </Compile>
-    <Compile Include="OContainerForm.cs">
+    <Compile Include="GUI\Forms\OContainerForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="OContainerForm.Designer.cs">
+    <Compile Include="GUI\Forms\OContainerForm.Designer.cs">
       <DependentUpon>OContainerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="OForm.cs">
@@ -281,6 +293,12 @@
     <EmbeddedResource Include="FrmSettings.resx">
       <DependentUpon>FrmSettings.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Forms\OModelExportForm.resx">
+      <DependentUpon>OModelExportForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Forms\OTextureExportForm.resx">
+      <DependentUpon>OTextureExportForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\OFloatTextBox.resx">
       <DependentUpon>OFloatTextBox.cs</DependentUpon>
     </EmbeddedResource>
@@ -323,7 +341,7 @@
     <EmbeddedResource Include="GUI\Windows\OTextureWindow.resx">
       <DependentUpon>OTextureWindow.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="OContainerForm.resx">
+    <EmbeddedResource Include="GUI\Forms\OContainerForm.resx">
       <DependentUpon>OContainerForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="OForm.resx">
@@ -476,6 +494,7 @@
   <ItemGroup>
     <None Include="Resources\icn_info.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

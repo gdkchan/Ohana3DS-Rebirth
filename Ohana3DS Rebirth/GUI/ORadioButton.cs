@@ -32,5 +32,12 @@ namespace Ohana3DS_Rebirth.GUI
             int yText = (Height / 2) - (int)(textSize.Height / 2);
             pevent.Graphics.DrawString(text, Font, new SolidBrush(Enabled ? ForeColor : Color.Silver), new Point(x, yText));
         }
+
+        protected override void OnCheckedChanged(EventArgs e)
+        {
+            Refresh();
+
+            base.OnCheckedChanged(e);
+        }
     }
 }

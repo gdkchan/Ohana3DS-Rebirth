@@ -10,8 +10,22 @@ namespace Ohana3DS_Rebirth.GUI
     {
         private Color boxColor = Color.Black;
         private bool _checked;
+        private bool autoSize;
 
         public event EventHandler CheckedChanged;
+
+        public bool AutomaticSize
+        {
+            get
+            {
+                return autoSize;
+            }
+            set
+            {
+                autoSize = value;
+                Refresh();
+            }
+        }
 
         public override string Text
         {
@@ -85,8 +99,9 @@ namespace Ohana3DS_Rebirth.GUI
             if (_checked) e.Graphics.DrawImage(Resources.icn_ticked, checkRect);
 
             //Draw text at the right of the box
-            string text = DrawingUtils.clampText(e.Graphics, Text, Font, Width - Resources.icn_ticked.Width);
-            SizeF textSize = e.Graphics.MeasureString(text, Font);
+            string text = autoSize ? Text : DrawingUtils.clampText(e.Graphics, Text, Font, Width);
+            SizeF textSize = DrawingUtils.measureText(e.Graphics, text, Font);
+            if (autoSize) Size = new Size((int)textSize.Width + checkRect.Width, (int)textSize.Height);
             e.Graphics.DrawString(text, Font, new SolidBrush(Enabled ? ForeColor : Color.Silver), new Point(checkRect.Width, (Height / 2) - ((int)textSize.Height / 2)));
 
             base.OnPaint(e);
@@ -97,9 +112,8 @@ namespace Ohana3DS_Rebirth.GUI
             if (e.Button == MouseButtons.Left)
             {
                 int h = Resources.icn_ticked.Height;
-                Rectangle checkRect = new Rectangle(0, (Height / 2) - (h / 2), Resources.icn_ticked.Width, h);
 
-                if (checkRect.Contains(e.Location))
+                if (ClientRectangle.Contains(e.Location))
                 {
                     _checked = !_checked;
                     if (CheckedChanged != null) CheckedChanged(this, EventArgs.Empty);

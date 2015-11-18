@@ -1,4 +1,4 @@
-﻿namespace Ohana3DS_Rebirth
+﻿namespace Ohana3DS_Rebirth.GUI.Forms
 {
     partial class OContainerForm
     {
@@ -41,7 +41,7 @@
             // 
             this.ContentContainer.Controls.Add(this.FileList);
             this.ContentContainer.Controls.Add(this.TopControls);
-            this.ContentContainer.Size = new System.Drawing.Size(312, 248);
+            this.ContentContainer.Size = new System.Drawing.Size(504, 376);
             this.ContentContainer.Controls.SetChildIndex(this.TopControls, 0);
             this.ContentContainer.Controls.SetChildIndex(this.FileList, 0);
             // 
@@ -59,7 +59,7 @@
             this.FileList.Location = new System.Drawing.Point(0, 44);
             this.FileList.Name = "FileList";
             this.FileList.SelectedIndex = -1;
-            this.FileList.Size = new System.Drawing.Size(312, 204);
+            this.FileList.Size = new System.Drawing.Size(504, 332);
             this.FileList.TabIndex = 10;
             // 
             // TopControls
@@ -77,7 +77,7 @@
             this.TopControls.RowCount = 1;
             this.TopControls.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.TopControls.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.TopControls.Size = new System.Drawing.Size(312, 24);
+            this.TopControls.Size = new System.Drawing.Size(504, 24);
             this.TopControls.TabIndex = 11;
             // 
             // BtnExtractAll
@@ -86,10 +86,10 @@
             this.BtnExtractAll.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnExtractAll.Hover = true;
             this.BtnExtractAll.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_arrow_up;
-            this.BtnExtractAll.Location = new System.Drawing.Point(208, 0);
+            this.BtnExtractAll.Location = new System.Drawing.Point(336, 0);
             this.BtnExtractAll.Margin = new System.Windows.Forms.Padding(0);
             this.BtnExtractAll.Name = "BtnExtractAll";
-            this.BtnExtractAll.Size = new System.Drawing.Size(104, 24);
+            this.BtnExtractAll.Size = new System.Drawing.Size(168, 24);
             this.BtnExtractAll.TabIndex = 2;
             this.BtnExtractAll.Text = "Extract all";
             this.BtnExtractAll.Click += new System.EventHandler(this.BtnExtractAll_Click);
@@ -100,10 +100,10 @@
             this.BtnExtract.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnExtract.Hover = true;
             this.BtnExtract.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_arrow_up;
-            this.BtnExtract.Location = new System.Drawing.Point(104, 0);
+            this.BtnExtract.Location = new System.Drawing.Point(168, 0);
             this.BtnExtract.Margin = new System.Windows.Forms.Padding(0);
             this.BtnExtract.Name = "BtnExtract";
-            this.BtnExtract.Size = new System.Drawing.Size(104, 24);
+            this.BtnExtract.Size = new System.Drawing.Size(168, 24);
             this.BtnExtract.TabIndex = 1;
             this.BtnExtract.Text = "Extract";
             this.BtnExtract.Click += new System.EventHandler(this.BtnExtract_Click);
@@ -117,7 +117,7 @@
             this.BtnLoad.Location = new System.Drawing.Point(0, 0);
             this.BtnLoad.Margin = new System.Windows.Forms.Padding(0);
             this.BtnLoad.Name = "BtnLoad";
-            this.BtnLoad.Size = new System.Drawing.Size(104, 24);
+            this.BtnLoad.Size = new System.Drawing.Size(168, 24);
             this.BtnLoad.TabIndex = 0;
             this.BtnLoad.Text = "Load";
             this.BtnLoad.Click += new System.EventHandler(this.BtnLoad_Click);
@@ -126,7 +126,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(320, 256);
+            this.ClientSize = new System.Drawing.Size(512, 384);
             this.ForeColor = System.Drawing.Color.White;
             this.Name = "OContainerForm";
             this.Text = "OContainerForm";

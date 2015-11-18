@@ -859,9 +859,13 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                 case PICACommand.vshAttribute.textureCoordinate0: shape.texUVCount = Math.Max(shape.texUVCount, 1); break;
                                 case PICACommand.vshAttribute.textureCoordinate1: shape.texUVCount = Math.Max(shape.texUVCount, 2); break;
                                 case PICACommand.vshAttribute.textureCoordinate2: shape.texUVCount = Math.Max(shape.texUVCount, 3); break;
-                                case PICACommand.vshAttribute.boneIndex: shape.hasNode = true; break;
-                                case PICACommand.vshAttribute.boneWeight: shape.hasWeight = true; break;
                             }
+                        }
+
+                        if (nodeList.Count > 0)
+                        {
+                            shape.hasNode = true;
+                            shape.hasWeight = true;
                         }
 
                         data.Seek(idxBufferOffset, SeekOrigin.Begin);
@@ -881,10 +885,10 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                             RenderBase.OVertex vertex = new RenderBase.OVertex();
                             vertex.diffuseColor = 0xffffffff;
 
-                            data.Seek(vertexOffset, SeekOrigin.Begin);
                             for (int attribute = 0; attribute < vshAttributeFormats.Count; attribute++)
                             {
                                 attributeFormat format = vshAttributeFormats[attribute];
+                                if (format.attribute == PICACommand.vshAttribute.tangent) continue; //Workaround, this one gives problems, and is never used anyway, so lets just disable it
                                 if (format.attribute == PICACommand.vshAttribute.boneWeight) format.type = attributeFormatType.unsignedByte;
                                 data.Seek(vertexOffset + format.offset, SeekOrigin.Begin);
                                 RenderBase.OVector4 vector =  getVector(input, format);

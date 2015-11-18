@@ -58,7 +58,7 @@ namespace Ohana3DS_Rebirth.GUI
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            string text = DrawingUtils.clampText(e.Graphics, Text, Font, Width);
+            string text = autoSize ? Text : DrawingUtils.clampText(e.Graphics, Text, Font, Width);
             SizeF textSize = DrawingUtils.measureText(e.Graphics, text, Font);
             if (autoSize) Size = new Size((int)textSize.Width, (int)textSize.Height);
             int x = centered ? (Width / 2) - ((int)textSize.Width / 2) : 0;

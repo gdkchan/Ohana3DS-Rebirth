@@ -87,7 +87,7 @@
             // 
             this.LblDummyModelViewer.AutoSize = true;
             this.LblDummyModelViewer.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LblDummyModelViewer.Location = new System.Drawing.Point(8, 23);
+            this.LblDummyModelViewer.Location = new System.Drawing.Point(12, 23);
             this.LblDummyModelViewer.Name = "LblDummyModelViewer";
             this.LblDummyModelViewer.Size = new System.Drawing.Size(90, 17);
             this.LblDummyModelViewer.TabIndex = 10;
@@ -95,23 +95,24 @@
             // 
             // ChkEnableFShader
             // 
+            this.ChkEnableFShader.AutomaticSize = true;
             this.ChkEnableFShader.BackColor = System.Drawing.Color.Transparent;
             this.ChkEnableFShader.BoxColor = System.Drawing.Color.Black;
             this.ChkEnableFShader.Checked = false;
-            this.ChkEnableFShader.Location = new System.Drawing.Point(11, 210);
+            this.ChkEnableFShader.Location = new System.Drawing.Point(12, 210);
             this.ChkEnableFShader.Name = "ChkEnableFShader";
-            this.ChkEnableFShader.Size = new System.Drawing.Size(256, 16);
+            this.ChkEnableFShader.Size = new System.Drawing.Size(144, 16);
             this.ChkEnableFShader.TabIndex = 11;
             this.ChkEnableFShader.Text = "Enable Fragment Shader";
             // 
             // LblDummyMSAA
             // 
-            this.LblDummyMSAA.AutomaticSize = false;
+            this.LblDummyMSAA.AutomaticSize = true;
             this.LblDummyMSAA.BackColor = System.Drawing.Color.Transparent;
             this.LblDummyMSAA.Centered = false;
-            this.LblDummyMSAA.Location = new System.Drawing.Point(11, 43);
+            this.LblDummyMSAA.Location = new System.Drawing.Point(12, 43);
             this.LblDummyMSAA.Name = "LblDummyMSAA";
-            this.LblDummyMSAA.Size = new System.Drawing.Size(256, 16);
+            this.LblDummyMSAA.Size = new System.Drawing.Size(165, 16);
             this.LblDummyMSAA.TabIndex = 12;
             this.LblDummyMSAA.Text = "MultiSampled AntiAliasing level:";
             // 
@@ -165,23 +166,24 @@
             // 
             // ChkShowGrids
             // 
+            this.ChkShowGrids.AutomaticSize = true;
             this.ChkShowGrids.BackColor = System.Drawing.Color.Transparent;
             this.ChkShowGrids.BoxColor = System.Drawing.Color.Black;
             this.ChkShowGrids.Checked = false;
             this.ChkShowGrids.Location = new System.Drawing.Point(11, 232);
             this.ChkShowGrids.Name = "ChkShowGrids";
-            this.ChkShowGrids.Size = new System.Drawing.Size(256, 16);
+            this.ChkShowGrids.Size = new System.Drawing.Size(136, 16);
             this.ChkShowGrids.TabIndex = 17;
             this.ChkShowGrids.Text = "Show orientation grids";
             // 
             // LblDummyBgColor
             // 
-            this.LblDummyBgColor.AutomaticSize = false;
+            this.LblDummyBgColor.AutomaticSize = true;
             this.LblDummyBgColor.BackColor = System.Drawing.Color.Transparent;
             this.LblDummyBgColor.Centered = false;
-            this.LblDummyBgColor.Location = new System.Drawing.Point(11, 88);
+            this.LblDummyBgColor.Location = new System.Drawing.Point(12, 88);
             this.LblDummyBgColor.Name = "LblDummyBgColor";
-            this.LblDummyBgColor.Size = new System.Drawing.Size(256, 16);
+            this.LblDummyBgColor.Size = new System.Drawing.Size(144, 16);
             this.LblDummyBgColor.TabIndex = 18;
             this.LblDummyBgColor.Text = "Viewport background color:";
             // 
@@ -233,12 +235,13 @@
             // 
             // ChkShowHUD
             // 
+            this.ChkShowHUD.AutomaticSize = true;
             this.ChkShowHUD.BackColor = System.Drawing.Color.Transparent;
             this.ChkShowHUD.BoxColor = System.Drawing.Color.Black;
             this.ChkShowHUD.Checked = false;
-            this.ChkShowHUD.Location = new System.Drawing.Point(11, 254);
+            this.ChkShowHUD.Location = new System.Drawing.Point(12, 254);
             this.ChkShowHUD.Name = "ChkShowHUD";
-            this.ChkShowHUD.Size = new System.Drawing.Size(256, 16);
+            this.ChkShowHUD.Size = new System.Drawing.Size(137, 16);
             this.ChkShowHUD.TabIndex = 23;
             this.ChkShowHUD.Text = "Show information HUD";
             // 
@@ -247,7 +250,6 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(320, 384);
-            this.ForeColor = System.Drawing.Color.White;
             this.Name = "FrmSettings";
             this.Resizable = false;
             this.Text = "FrmSettings";

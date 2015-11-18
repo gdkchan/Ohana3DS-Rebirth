@@ -10,7 +10,7 @@ using System.IO;
 
 using Ohana3DS_Rebirth.Ohana.Containers;
 
-namespace Ohana3DS_Rebirth
+namespace Ohana3DS_Rebirth.GUI.Forms
 {
     public partial class OContainerForm : OForm
     {

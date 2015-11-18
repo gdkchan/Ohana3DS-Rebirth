@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
 
+using Ohana3DS_Rebirth.GUI.Forms;
 using Ohana3DS_Rebirth.Ohana.ModelFormats;
 using Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats;
 using Ohana3DS_Rebirth.Ohana.TextureFormats;
@@ -203,7 +204,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         break;
                     case fileType.texture:
                         openDlg.Title = "Import Texture";
-                        openDlg.Filter = "Binary CTR H3D|*.bch|Binary CTR Texture|*.bcres;*.bctex;*.bcmdl|Fantasy Life Texture|*.tex";
+                        openDlg.Filter = "Binary CTR H3D|*.bch|Binary CTR Texture|*.bcres;*.bcmdl;*.bctex|Fantasy Life Texture|*.tex";
                         openDlg.Multiselect = true;
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
@@ -224,16 +225,21 @@ namespace Ohana3DS_Rebirth.Ohana
                     case fileType.skeletalAnimation:
                         openDlg.Title = "Import Skeletal Animation";
                         openDlg.Filter = "Binary CTR H3D|*.bch|Binary CTR Skeletal Animation|*.bcres;*.bcskla|Source Model|*.smd";
+                        openDlg.Multiselect = true;
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
-                            switch (openDlg.FilterIndex)
+                            RenderBase.OAnimationListBase output = new RenderBase.OAnimationListBase();
+                            foreach (string fileName in openDlg.FileNames)
                             {
-                                case 1: return BCH.load(openDlg.FileName).skeletalAnimation;
-                                case 2: return CGFX.load(openDlg.FileName).skeletalAnimation;
-                                case 3: return SMD.import(openDlg.FileName).skeletalAnimation;
-                                default: return null;
+                                switch (openDlg.FilterIndex)
+                                {
+                                    case 1: output.list.AddRange(BCH.load(fileName).skeletalAnimation.list); break;
+                                    case 2: output.list.AddRange(CGFX.load(fileName).skeletalAnimation.list); break;
+                                    case 3: output.list.AddRange(SMD.import(fileName).skeletalAnimation.list); break;
+                                }
                             }
+                            return output;
                         }
                         break;
                     case fileType.materialAnimation:
@@ -268,66 +274,12 @@ namespace Ohana3DS_Rebirth.Ohana
                 switch (type)
                 {
                     case fileType.model:
-                        saveDlg.Title = "Export Model";
-                        saveDlg.Filter = "Source Model|*.smd";
-                        saveDlg.Filter += "|Collada Model|*.dae";
-                        saveDlg.Filter += "|Wavefront OBJ|*.obj";
-                        saveDlg.Filter += "|CTR Model|*.cmdl";
-                        if (saveDlg.ShowDialog() == DialogResult.OK)
-                        {
-                            switch (saveDlg.FilterIndex)
-                            {
-                                case 1:
-                                    SMD.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0]);
-                                    break;
-                                case 2:
-                                    DAE.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0]);
-                                    break;
-                                case 3:
-                                    OBJ.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0]);
-                                    break;
-                                case 4:
-                                    CMDL.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0]);
-                                    break;
-                            }
-                        }
+                        OModelExportForm exportMdl = new OModelExportForm((RenderBase.OModelGroup)data, arguments[0]);
+                        exportMdl.Show();
                         break;
                     case fileType.texture:
-                        RenderBase.OModelGroup model = (RenderBase.OModelGroup)data;
-                        saveDlg.Title = "Export Texture";
-                        saveDlg.FileName = "dummy";
-
-                        if (arguments[0] > -1)
-                        {
-                            saveDlg.Filter = "Selected texture|*.png|All textures|*.png";
-
-                            if (saveDlg.ShowDialog() == DialogResult.OK)
-                            {
-                                switch (saveDlg.FilterIndex)
-                                {
-                                    case 1: model.texture[arguments[0]].texture.Save(saveDlg.FileName); break;
-                                    case 2:
-                                        foreach (RenderBase.OTexture texture in model.texture)
-                                        {
-                                            texture.texture.Save(Path.Combine(Path.GetDirectoryName(saveDlg.FileName), texture.name + ".png"));
-                                        }
-                                        break;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            saveDlg.Filter = "All textures|*.png";
-
-                            if (saveDlg.ShowDialog() == DialogResult.OK)
-                            {
-                                foreach (RenderBase.OTexture texture in model.texture)
-                                {
-                                    texture.texture.Save(Path.Combine(Path.GetDirectoryName(saveDlg.FileName), texture.name + ".png"));
-                                }
-                            }
-                        }
-
+                        OTextureExportForm exportTex = new OTextureExportForm((RenderBase.OModelGroup)data, arguments[0]);
+                        exportTex.Show();
                         break;
                     case fileType.skeletalAnimation:
                         saveDlg.Title = "Export Skeletal Animation";
