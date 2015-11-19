@@ -928,22 +928,22 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                         int b2 = (int)vector.z;
                                         int b3 = (int)vector.w;
 
-                                        if (b0 < nodeList.Count) vertex.addNode((int)nodeList[b0]);
+                                        if (b0 < nodeList.Count && format.attributeLength > 0) vertex.addNode((int)nodeList[b0]);
                                         if (skinningMode == RenderBase.OSkinningMode.smoothSkinning)
                                         {
-                                            if (b1 < nodeList.Count && format.attributeLength > 0) vertex.addNode((int)nodeList[b1]);
-                                            if (b2 < nodeList.Count && format.attributeLength > 1) vertex.addNode((int)nodeList[b2]);
-                                            if (b3 < nodeList.Count && format.attributeLength > 2) vertex.addNode((int)nodeList[b3]);
+                                            if (b1 < nodeList.Count && format.attributeLength > 1) vertex.addNode((int)nodeList[b1]);
+                                            if (b2 < nodeList.Count && format.attributeLength > 2) vertex.addNode((int)nodeList[b2]);
+                                            if (b3 < nodeList.Count && format.attributeLength > 3) vertex.addNode((int)nodeList[b3]);
                                         }
 
                                         break;
                                     case PICACommand.vshAttribute.boneWeight:
-                                        vertex.addWeightChecked(vector.x * format.scale);
+                                        if (format.attributeLength > 0) vertex.addWeight(vector.x * format.scale);
                                         if (skinningMode == RenderBase.OSkinningMode.smoothSkinning)
                                         {
-                                            if (format.attributeLength > 0) vertex.addWeightChecked(vector.y * format.scale);
-                                            if (format.attributeLength > 1) vertex.addWeightChecked(vector.z * format.scale);
-                                            if (format.attributeLength > 2) vertex.addWeightChecked(vector.w * format.scale);
+                                            if (format.attributeLength > 1) vertex.addWeight(vector.y * format.scale);
+                                            if (format.attributeLength > 2) vertex.addWeight(vector.z * format.scale);
+                                            if (format.attributeLength > 3) vertex.addWeight(vector.w * format.scale);
                                         }
                                         break;
                                 }

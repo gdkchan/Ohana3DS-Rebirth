@@ -325,17 +325,6 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Add Weighting information of the Vertex.
-            ///     It also checks if the value is valid, and if the total sum is = 1.
-            /// </summary>
-            /// <param name="_weight"></param>
-            public void addWeightChecked(float _weight)
-            {
-                weightSum += _weight;
-                if (_weight >= 0 && weightSum <= 1) weight.Add(_weight);
-            }
-
-            /// <summary>
             ///     Checks if two vertex are equal by comparing each element.
             /// </summary>
             /// <param name="vertex">Vertex to compare</param>

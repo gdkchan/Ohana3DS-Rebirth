@@ -1714,12 +1714,12 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                         }
                                         break;
                                     case PICACommand.vshAttribute.boneWeight:
-                                        vertex.addWeightChecked(vector.x * boneWeightScale);
+                                        vertex.addWeight(vector.x * boneWeightScale);
                                         if (skinningMode == RenderBase.OSkinningMode.smoothSkinning)
                                         {
-                                            if (format.attributeLength > 0) vertex.addWeightChecked(vector.y * boneWeightScale);
-                                            if (format.attributeLength > 1) vertex.addWeightChecked(vector.z * boneWeightScale);
-                                            if (format.attributeLength > 2) vertex.addWeightChecked(vector.w * boneWeightScale);
+                                            if (format.attributeLength > 0) vertex.addWeight(vector.y * boneWeightScale);
+                                            if (format.attributeLength > 1) vertex.addWeight(vector.z * boneWeightScale);
+                                            if (format.attributeLength > 2) vertex.addWeight(vector.w * boneWeightScale);
                                         }
                                         break;
                                 }
