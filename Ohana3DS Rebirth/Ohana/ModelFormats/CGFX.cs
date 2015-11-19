@@ -294,65 +294,143 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     string bonePath = IOUtils.readString(input, getRelativeOffset(input));
                     if ((revision >> 24) < 7) data.Seek(8, SeekOrigin.Current);
                     cgfxSegmentType segmentType = (cgfxSegmentType)input.ReadUInt32();
-                    data.Seek(0xc, SeekOrigin.Current);
-
-                    uint notExistMask = 0x80000;
-                    uint constantMask = 0x200;
-
-                    for (int j = 0; j < 2; j++)
+                    
+                    switch (segmentType)
                     {
-                        for (int axis = 0; axis < 3; axis++)
-                        {
-                            bool notExist = (boneFlags & notExistMask) > 0;
-                            bool constant = (boneFlags & constantMask) > 0;
+                        case cgfxSegmentType.transform:
+                            data.Seek(0xc, SeekOrigin.Current);
+                            uint notExistMask = 0x80000;
+                            uint constantMask = 0x200;
 
-                            RenderBase.OAnimationKeyFrameGroup frame = new RenderBase.OAnimationKeyFrameGroup();
-                            frame.exists = !notExist;
-                            if (frame.exists)
+                            for (int j = 0; j < 2; j++)
                             {
-                                if (constant)
+                                for (int axis = 0; axis < 3; axis++)
                                 {
-                                    frame.interpolation = RenderBase.OInterpolationMode.linear;
-                                    frame.keyFrames.Add(new RenderBase.OAnimationKeyFrame(input.ReadSingle(), 0));
+                                    bool notExist = (boneFlags & notExistMask) > 0;
+                                    bool constant = (boneFlags & constantMask) > 0;
+
+                                    RenderBase.OAnimationKeyFrameGroup frame = new RenderBase.OAnimationKeyFrameGroup();
+                                    frame.exists = !notExist;
+                                    if (frame.exists)
+                                    {
+                                        if (constant)
+                                        {
+                                            frame.interpolation = RenderBase.OInterpolationMode.linear;
+                                            frame.keyFrames.Add(new RenderBase.OAnimationKeyFrame(input.ReadSingle(), 0));
+                                        }
+                                        else
+                                        {
+                                            uint frameOffset = getRelativeOffset(input);
+                                            long position = data.Position;
+                                            data.Seek(frameOffset, SeekOrigin.Begin);
+                                            getAnimationKeyFrame(input, frame);
+                                            data.Seek(position, SeekOrigin.Begin);
+                                        }
+                                    }
+                                    else
+                                        data.Seek(4, SeekOrigin.Current);
+
+                                    if (j == 0)
+                                    {
+                                        switch (axis)
+                                        {
+                                            case 0: bone.rotationX = frame; break;
+                                            case 1: bone.rotationY = frame; break;
+                                            case 2: bone.rotationZ = frame; break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        switch (axis)
+                                        {
+                                            case 0: bone.translationX = frame; break;
+                                            case 1: bone.translationY = frame; break;
+                                            case 2: bone.translationZ = frame; break;
+                                        }
+                                    }
+
+                                    notExistMask <<= 1;
+                                    constantMask <<= 1;
+                                }
+
+                                notExistMask <<= 1;
+                                constantMask <<= 1;
+                                data.Seek(4, SeekOrigin.Current);
+                            }
+                            break;
+                        case cgfxSegmentType.transformQuaternion:
+                            bone.isFrameFormat = true;
+                            uint rotationOffset = getRelativeOffset(input);
+                            uint translationOffset = getRelativeOffset(input);
+                            uint scaleOffset = getRelativeOffset(input);
+
+                            if ((boneFlags & 0x10) == 0)
+                            {
+                                bone.rotationQuaternion.exists = true;
+                                data.Seek(rotationOffset, SeekOrigin.Begin);
+                                bone.rotationQuaternion.startFrame = input.ReadSingle();
+                                bone.rotationQuaternion.endFrame = input.ReadSingle();
+                                input.ReadUInt32();
+                                uint constantFlags = input.ReadUInt32();
+
+                                if ((constantFlags & 1) > 0)
+                                {
+                                    bone.rotationQuaternion.vector.Add(new RenderBase.OVector4(input.ReadSingle(),
+                                        input.ReadSingle(),
+                                        input.ReadSingle(),
+                                        input.ReadSingle()));
                                 }
                                 else
                                 {
-                                    uint frameOffset = getRelativeOffset(input);
-                                    long position = data.Position;
-                                    data.Seek(frameOffset, SeekOrigin.Begin);
-                                    getAnimationKeyFrame(input, frame);
-                                    data.Seek(position, SeekOrigin.Begin);
+                                    uint rotationEntries = (uint)(bone.rotationQuaternion.endFrame - bone.rotationQuaternion.startFrame);
+
+                                    for (int j = 0; j < rotationEntries; j++)
+                                    {
+                                        bone.rotationQuaternion.vector.Add(new RenderBase.OVector4(input.ReadSingle(),
+                                            input.ReadSingle(),
+                                            input.ReadSingle(),
+                                            input.ReadSingle()));
+                                        uint flags = input.ReadUInt32();
+                                    }
                                 }
                             }
                             else
                                 data.Seek(4, SeekOrigin.Current);
 
-                            if (j == 0)
+                            if ((boneFlags & 8) == 0)
                             {
-                                switch (axis)
+                                bone.translation.exists = true;
+                                data.Seek(translationOffset, SeekOrigin.Begin);
+                                bone.translation.startFrame = input.ReadSingle();
+                                bone.translation.endFrame = input.ReadSingle();
+                                input.ReadUInt32();
+                                uint constantFlags = input.ReadUInt32();
+
+                                if ((constantFlags & 1) > 0)
                                 {
-                                    case 0: bone.rotationX = frame; break;
-                                    case 1: bone.rotationY = frame; break;
-                                    case 2: bone.rotationZ = frame; break;
+                                    bone.translation.vector.Add(new RenderBase.OVector4(input.ReadSingle(),
+                                        input.ReadSingle(),
+                                        input.ReadSingle(),
+                                        0));
+                                }
+                                else
+                                {
+                                    uint translationEntries = (uint)(bone.rotationQuaternion.endFrame - bone.rotationQuaternion.startFrame);
+
+                                    for (int j = 0; j < translationEntries; j++)
+                                    {
+                                        bone.translation.vector.Add(new RenderBase.OVector4(input.ReadSingle(),
+                                            input.ReadSingle(),
+                                            input.ReadSingle(),
+                                            0));
+                                        uint flags = input.ReadUInt32();
+                                    }
                                 }
                             }
                             else
-                            {
-                                switch (axis)
-                                {
-                                    case 0: bone.translationX = frame; break;
-                                    case 1: bone.translationY = frame; break;
-                                    case 2: bone.translationZ = frame; break;
-                                }
-                            }
+                                data.Seek(4, SeekOrigin.Current);
 
-                            notExistMask <<= 1;
-                            constantMask <<= 1;
-                        }
-
-                        notExistMask <<= 1;
-                        constantMask <<= 1;
-                        data.Seek(4, SeekOrigin.Current);
+                            break;
                     }
 
                     skeletalAnimation.bone.Add(bone);

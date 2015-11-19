@@ -719,6 +719,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                 {
                                     bone.translation.startFrame = input.ReadSingle();
                                     bone.translation.endFrame = input.ReadSingle();
+
                                     uint translationFlags = input.ReadUInt32();
                                     uint translationDataOffset = input.ReadUInt32();
                                     uint translationEntries = input.ReadUInt32();
