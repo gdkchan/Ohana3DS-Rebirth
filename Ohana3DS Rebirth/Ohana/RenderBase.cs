@@ -248,7 +248,6 @@ namespace Ohana3DS_Rebirth.Ohana
             public OVector2 texture2;
             public List<int> node;
             public List<float> weight;
-            private float weightSum;
             public uint diffuseColor;
 
             /// <summary>
@@ -277,7 +276,6 @@ namespace Ohana3DS_Rebirth.Ohana
 
                 node.AddRange(vertex.node);
                 weight.AddRange(vertex.weight);
-                for (int i = 0; i < vertex.weight.Count; i++) weightSum += vertex.weight[i];
 
                 position = new OVector3(vertex.position);
                 normal = new OVector3(vertex.normal);
