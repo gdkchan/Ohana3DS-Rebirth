@@ -39,7 +39,6 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void BtnExport_Click(object sender, EventArgs e)
         {
-            if (ModelList.SelectedIndex == -1) return;
             FileIO.export(FileIO.fileType.model, renderer.model, new List<int> { ModelList.SelectedIndex });
         }
 

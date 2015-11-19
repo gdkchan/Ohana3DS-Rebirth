@@ -888,7 +888,6 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                             for (int attribute = 0; attribute < vshAttributeFormats.Count; attribute++)
                             {
                                 attributeFormat format = vshAttributeFormats[attribute];
-                                if (format.attribute == PICACommand.vshAttribute.tangent) continue; //Workaround, this one gives problems, and is never used anyway, so lets just disable it
                                 if (format.attribute == PICACommand.vshAttribute.boneWeight) format.type = attributeFormatType.unsignedByte;
                                 data.Seek(vertexOffset + format.offset, SeekOrigin.Begin);
                                 RenderBase.OVector4 vector =  getVector(input, format);
@@ -1191,28 +1190,28 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
             switch (format.type)
             {
                 case attributeFormatType.signedByte:
-                    output.x = (sbyte)input.ReadByte();
-                    if (format.attributeLength > 0) output.y = (sbyte)input.ReadByte();
-                    if (format.attributeLength > 1) output.z = (sbyte)input.ReadByte();
-                    if (format.attributeLength > 2) output.w = (sbyte)input.ReadByte();
+                    if (format.attributeLength > 0) output.x = (sbyte)input.ReadByte();
+                    if (format.attributeLength > 1) output.y = (sbyte)input.ReadByte();
+                    if (format.attributeLength > 2) output.z = (sbyte)input.ReadByte();
+                    if (format.attributeLength > 3) output.w = (sbyte)input.ReadByte();
                     break;
                 case attributeFormatType.unsignedByte:
-                    output.x = input.ReadByte();
-                    if (format.attributeLength > 0) output.y = input.ReadByte();
-                    if (format.attributeLength > 1) output.z = input.ReadByte();
-                    if (format.attributeLength > 2) output.w = input.ReadByte();
+                    if (format.attributeLength > 0) output.x = input.ReadByte();
+                    if (format.attributeLength > 1) output.y = input.ReadByte();
+                    if (format.attributeLength > 2) output.z = input.ReadByte();
+                    if (format.attributeLength > 3) output.w = input.ReadByte();
                     break;
                 case attributeFormatType.signedShort:
-                    output.x = input.ReadInt16();
-                    if (format.attributeLength > 0) output.y = input.ReadInt16();
-                    if (format.attributeLength > 1) output.z = input.ReadInt16();
-                    if (format.attributeLength > 2) output.w = input.ReadInt16();
+                    if (format.attributeLength > 0) output.x = input.ReadInt16();
+                    if (format.attributeLength > 1) output.y = input.ReadInt16();
+                    if (format.attributeLength > 2) output.z = input.ReadInt16();
+                    if (format.attributeLength > 3) output.w = input.ReadInt16();
                     break;
                 case attributeFormatType.single:
-                    output.x = input.ReadSingle();
-                    if (format.attributeLength > 0) output.y = input.ReadSingle();
-                    if (format.attributeLength > 1) output.z = input.ReadSingle();
-                    if (format.attributeLength > 2) output.w = input.ReadSingle();
+                    if (format.attributeLength > 0) output.x = input.ReadSingle();
+                    if (format.attributeLength > 1) output.y = input.ReadSingle();
+                    if (format.attributeLength > 2) output.z = input.ReadSingle();
+                    if (format.attributeLength > 3) output.w = input.ReadSingle();
                     break;
             }
 

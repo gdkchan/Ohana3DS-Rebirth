@@ -206,9 +206,9 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                 case vtxAttributeType.normal: vertex.normal = getVector3(vtxBuffer, pos, att.format, scale); break;
                                 case vtxAttributeType.color:
                                     RenderBase.OVector4 c = getVector4(vtxBuffer, pos, att.format, scale);
-                                    uint r = MeshUtils.saturate(c.x * 0xff);
+                                    uint b = MeshUtils.saturate(c.x * 0xff);
                                     uint g = MeshUtils.saturate(c.y * 0xff);
-                                    uint b = MeshUtils.saturate(c.z * 0xff);
+                                    uint r = MeshUtils.saturate(c.z * 0xff);
                                     uint a = MeshUtils.saturate(c.w * 0xff);
                                     vertex.diffuseColor = b | (g << 8) | (r << 16) | (a << 24);
                                     break;

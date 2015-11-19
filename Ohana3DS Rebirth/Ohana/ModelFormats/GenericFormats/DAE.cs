@@ -311,6 +311,11 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
 
             [XmlAttribute]
             public string source;
+
+            [XmlAttribute]
+            public uint set;
+
+            public bool ShouldSerializeset() { return semantic == "TEXCOORD"; }
         }
 
         public class daeInputTable
@@ -321,12 +326,13 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
             [XmlElement("input")]
             public List<daeInput> input = new List<daeInput>();
 
-            public void addInput(string semantic, string source)
+            public void addInput(string semantic, string source, uint set = 0)
             {
                 daeInput i = new daeInput();
 
                 i.semantic = semantic;
                 i.source = source;
+                i.set = set;
 
                 input.Add(i);
             }
@@ -835,12 +841,12 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
                 if (mesh.texUVCount > 1)
                 {
                     texUV[1].float_array.set(uv1);
-                    geometry.mesh.vertices.addInput("TEXCOORD", "#" + texUV[1].id);
+                    geometry.mesh.vertices.addInput("TEXCOORD", "#" + texUV[1].id, 1);
                 }
                 if (mesh.texUVCount > 2)
                 {
                     texUV[2].float_array.set(uv2);
-                    geometry.mesh.vertices.addInput("TEXCOORD", "#" + texUV[2].id);
+                    geometry.mesh.vertices.addInput("TEXCOORD", "#" + texUV[2].id, 2);
                 }
                 if (mesh.hasColor) geometry.mesh.vertices.addInput("COLOR", "#" + color.id);
 
@@ -983,13 +989,18 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
             scene.url = "#" + vs.id;
             dae.scene.Add(scene);
 
+            XmlWriterSettings settings = new XmlWriterSettings
+            {
+                Encoding = Encoding.UTF8,
+                Indent = true
+            };
+
             XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
             ns.Add("", "http://www.collada.org/2005/11/COLLADASchema");
             XmlSerializer serializer = new XmlSerializer(typeof(COLLADA));
-            using (FileStream output = new FileStream(fileName, FileMode.Create))
-            {
-                serializer.Serialize(output, dae, ns);
-            }
+            XmlWriter output = XmlWriter.Create(new FileStream(fileName, FileMode.Create), settings);
+            serializer.Serialize(output, dae, ns);
+            output.Close();
         }
 
         /// <summary>
