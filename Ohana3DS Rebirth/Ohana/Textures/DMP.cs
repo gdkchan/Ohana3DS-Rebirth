@@ -1,12 +1,9 @@
 ﻿//Dragon Quest VII Texture
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 using System.Drawing;
 
-namespace Ohana3DS_Rebirth.Ohana.TextureFormats
+namespace Ohana3DS_Rebirth.Ohana.Textures
 {
     class DMP
     {
@@ -29,7 +26,7 @@ namespace Ohana3DS_Rebirth.Ohana.TextureFormats
             Bitmap bmp = null;
             switch (format)
             {
-                case "8888": bmp = TextureCodec.decode(buffer, width, height, TextureCodec.OTextureFormat.rgba8); break;
+                case "8888": bmp = TextureCodec.decode(buffer, width, height, RenderBase.OTextureFormat.rgba8); break;
             }
 
             Bitmap newBmp = new Bitmap(originalWidth, originalHeight);

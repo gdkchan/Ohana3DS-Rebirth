@@ -1,4 +1,4 @@
-﻿namespace Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200
+﻿namespace Ohana3DS_Rebirth.Ohana.Models.PICA200
 {
     class PICACommand
     {
@@ -10,16 +10,19 @@
         public const ushort texUnit0BorderColor = 0x81;
         public const ushort texUnit0Size = 0x82;
         public const ushort texUnit0Param = 0x83;
+        public const ushort texUnit0LevelOfDetail = 0x84;
         public const ushort texUnit0Address = 0x85;
         public const ushort texUnit0Type = 0x8e;
         public const ushort texUnit1BorderColor = 0x91;
         public const ushort texUnit1Size = 0x92;
         public const ushort texUnit1Param = 0x93;
+        public const ushort texUnit1LevelOfDetail = 0x94;
         public const ushort texUnit1Address = 0x95;
         public const ushort texUnit1Type = 0x96;
         public const ushort texUnit2BorderColor = 0x99;
         public const ushort texUnit2Size = 0x9a;
         public const ushort texUnit2Param = 0x9b;
+        public const ushort texUnit2LevelOfDetail = 0x9c;
         public const ushort texUnit2Address = 0x9d;
         public const ushort texUnit2Type = 0x9e;
         public const ushort tevStage0Source = 0xc0;
@@ -63,11 +66,18 @@
         public const ushort stencilOperationConfig = 0x106;
         public const ushort depthTestConfig = 0x107;
         public const ushort cullModeConfig = 0x108;
+        public const ushort frameBufferInvalidate = 0x110;
+        public const ushort frameBufferFlush = 0x111;
+        public const ushort colorBufferRead = 0x112;
+        public const ushort colorBufferWrite = 0x113;
+        public const ushort depthBufferRead = 0x114;
+        public const ushort depthBufferWrite = 0x115;
         public const ushort depthTestConfig2 = 0x126;
         public const ushort fragmentShaderLookUpTableConfig = 0x1c5;
         public const ushort fragmentShaderLookUpTableData = 0x1c8;
-        public const ushort reflectanceSamplerInput = 0x1d1;
-        public const ushort reflectanceSamplerScale = 0x1d2;
+        public const ushort lutSamplerAbsolute = 0x1d0;
+        public const ushort lutSamplerInput = 0x1d1;
+        public const ushort lutSamplerScale = 0x1d2;
         public const ushort vertexShaderAttributesBufferAddress = 0x200;
         public const ushort vertexShaderAttributesBufferFormatLow = 0x201;
         public const ushort vertexShaderAttributesBufferFormatHigh = 0x202;
@@ -170,6 +180,13 @@
         {
             unsignedByte = 0,
             unsignedShort = 1
+        }
+
+        public class fragmentSamplerAbsolute
+        {
+            public bool r, g, b;
+            public bool d0, d1;
+            public bool fresnel;
         }
 
         public class fragmentSamplerInput

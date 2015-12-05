@@ -45,6 +45,9 @@ namespace Ohana3DS_Rebirth.Ohana
         public bool showGrid = true;
         public bool showHUD = false;
 
+        //You can add dummy textures on this list, to prevent them from being used on Legacy texturing mode
+        List<string> legacyDummyTextureNames = new List<string> { "projection_dummy", "Textures__shadowdummy" };
+
         public class animationControl
         {
             public float animationStep = 1;
@@ -550,7 +553,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     #endregion
 
                     int objectIndex = 0;
-                    foreach (RenderBase.OModelObject obj in mdl.modelObject)
+                    foreach (RenderBase.OMesh obj in mdl.mesh)
                     {
                         bool isVisible = obj.isVisible;
 
@@ -715,19 +718,29 @@ namespace Ohana3DS_Rebirth.Ohana
                                 if (ctrlMA.animate)
                                 {
                                     RenderBase.OMaterialAnimation materialAnimation = (RenderBase.OMaterialAnimation)model.materialAnimation.list[ctrlMA.CurrentAnimation];
+                                    string name0 = textureId[0] > -1 ? materialAnimation.textureName[textureId[0]] : material.name0;
+                                    string name1 = textureId[1] > -1 ? materialAnimation.textureName[textureId[1]] : material.name1;
+                                    string name2 = textureId[2] > -1 ? materialAnimation.textureName[textureId[2]] : material.name2;
+
                                     foreach (CustomTexture texture in textures)
                                     {
-                                        if (texture.name == (textureId[0] > -1 ? materialAnimation.textureName[textureId[0]] : material.name0)) { device.SetTexture(0, texture.texture); legacyUsedTexture = 0; }
-                                        else if (texture.name == (textureId[1] > -1 ? materialAnimation.textureName[textureId[1]] : material.name1)) { device.SetTexture(0, texture.texture); legacyUsedTexture = 1; }
-                                        else if (texture.name == (textureId[2] > -1 ? materialAnimation.textureName[textureId[2]] : material.name2)) { device.SetTexture(0, texture.texture); legacyUsedTexture = 2; }
+
+                                        if (texture.name == name0 && !legacyDummyTextureNames.Contains(texture.name))
+                                        {
+                                            device.SetTexture(0, texture.texture);
+                                            legacyUsedTexture = 0;
+                                            break;
+                                        }
+                                        else if (texture.name == name1) { device.SetTexture(0, texture.texture); legacyUsedTexture = 1; }
+                                        else if (texture.name == name2) { device.SetTexture(0, texture.texture); legacyUsedTexture = 2; }
                                     }
                                 }
                                 else
                                 {
                                     foreach (CustomTexture texture in textures)
                                     {
-                                        //Note: "projection_dummy" check is a hack to make textures appear on Pokémon Overworld models.
-                                        if (texture.name == material.name0 && texture.name != "projection_dummy")
+                                        //Note: The dummy texture check is a hack to prevent dummy textures from being used
+                                        if (texture.name == material.name0 && !legacyDummyTextureNames.Contains(texture.name))
                                         {
                                             device.SetTexture(0, texture.texture);
                                             legacyUsedTexture = 0;
@@ -737,7 +750,6 @@ namespace Ohana3DS_Rebirth.Ohana
                                         else if (texture.name == material.name2) { device.SetTexture(0, texture.texture); legacyUsedTexture = 2; }
                                     }
                                 }
-
                             }
 
                             #region "Texture Filtering/Addressing Setup"
@@ -775,7 +787,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                 #endregion
                                 translate.X = -translate.X; //For some reason UVs need to be flipped to show up correct on animation
                                 translate.Y = -translate.Y;
-                                Matrix uvTransform = Matrix.RotationZ(rotate) * Matrix.Scaling(scaling.X, scaling.Y, 1) * translate2D(translate);
+                                Matrix uvTransform = rotateCenter2D(rotate) * Matrix.Scaling(scaling.X, scaling.Y, 1) * translate2D(translate);
                                 if (!useLegacyTexturing)
                                 {
                                     fragmentShader.SetValue(String.Format("uvTranslate[{0}]", s), new Vector4(translate.X, translate.Y, 0, 0));
@@ -874,7 +886,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                     for (int vertex = 0; vertex < obj.renderBuffer.Length; vertex++)
                                     {
                                         buffer[vertex] = obj.renderBuffer[vertex];
-                                        RenderBase.OVertex input = obj.obj[vertex];
+                                        RenderBase.OVertex input = obj.vertices[vertex];
                                         Vector3 position = new Vector3(input.position.x, input.position.y, input.position.z);
                                         Vector4 p = new Vector4();
 
@@ -1225,6 +1237,19 @@ namespace Ohana3DS_Rebirth.Ohana
         }
         #endregion
 
+        /// <summary>
+        ///     Rotates a 2-D UV Coordinate around the center.
+        /// </summary>
+        /// <param name="rotation">The Rotation angle in radians</param>
+        /// <returns></returns>
+        private Matrix rotateCenter2D(float rotation)
+        {
+            Matrix output = Matrix.Identity;
+            output *= translate2D(new Vector2(-0.5f, -0.5f));
+            output *= Matrix.RotationZ(rotation);
+            output *= translate2D(new Vector2(0.5f, 0.5f));
+            return output;
+        }
         /// <summary>
         ///     Builds a 2-D translation Matrix.
         /// </summary>

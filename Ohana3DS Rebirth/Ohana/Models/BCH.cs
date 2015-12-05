@@ -1,6 +1,8 @@
-﻿//BCH Importer/Exporter made by gdkchan for Ohana3DS.
-//Please add credits if you use in your project.
-//It is about 92% complete, information here is not guaranteed to be accurate.
+﻿/*
+ * BCH Importer made by gdkchan for Ohana3DS.
+ * Please add credits if you use in your project.
+ * It is about 92% complete, information here is not guaranteed to be accurate.
+ */
 
 /*
  * BCH Version Chart
@@ -17,9 +19,9 @@ using System.IO;
 using System.Drawing;
 using System.Diagnostics;
 
-using Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200;
+using Ohana3DS_Rebirth.Ohana.Models.PICA200;
 
-namespace Ohana3DS_Rebirth.Ohana.ModelFormats
+namespace Ohana3DS_Rebirth.Ohana.Models
 {
     public class BCH
     {
@@ -196,8 +198,8 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
             {
                 data.Seek(o, SeekOrigin.Begin);
                 uint value = input.ReadUInt32();
-                uint offset = value & 0xffffff;
-                byte flags = (byte)(value >> 24);
+                uint offset = value & 0x1ffffff;
+                byte flags = (byte)(value >> 25);
 
                 switch (flags)
                 {
@@ -205,15 +207,15 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                         data.Seek((offset * 4) + header.mainHeaderOffset, SeekOrigin.Begin);
                         writer.Write(peek(input) + header.mainHeaderOffset);
                         break;
-                    case 2:
+                    case 1:
                         data.Seek(offset + header.mainHeaderOffset, SeekOrigin.Begin);
                         writer.Write(peek(input) + header.stringTableOffset);
                         break;
-                    case 4:
+                    case 2:
                         data.Seek((offset * 4) + header.mainHeaderOffset, SeekOrigin.Begin);
                         writer.Write(peek(input) + header.gpuCommandsOffset);
                         break;
-                    case 0xe:
+                    case 7:
                         data.Seek((offset * 4) + header.mainHeaderOffset, SeekOrigin.Begin);
                         writer.Write(peek(input) + header.dataOffset);
                         break;
@@ -225,43 +227,43 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                 {
                     switch (flags)
                     {
-                        case 0x46: writer.Write(peek(input) + header.dataOffset); break; //Texture
-                        case 0x4c: writer.Write(((peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode
-                        case 0x4e: writer.Write((peek(input) + header.dataOffset) & 0x7fffffff); break; //Index 8 bits mode
-                        case 0x4a: writer.Write(peek(input) + header.dataOffset); break; //Vertex
+                        case 0x23: writer.Write(peek(input) + header.dataOffset); break; //Texture
+                        case 0x25: writer.Write(peek(input) + header.dataOffset); break; //Vertex
+                        case 0x26: writer.Write(((peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode
+                        case 0x27: writer.Write((peek(input) + header.dataOffset) & 0x7fffffff); break; //Index 8 bits mode
                     }
                 }
                 else if (header.backwardCompatibility < 8)
                 {
                     switch (flags)
                     {
-                        case 0x48: writer.Write(peek(input) + header.dataOffset); break; //Texture
-                        case 0x4e: writer.Write(((peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode
-                        case 0x50: writer.Write((peek(input) + header.dataOffset) & 0x7fffffff); break; //Index 8 bits mode
-                        case 0x4c: writer.Write(peek(input) + header.dataOffset); break; //Vertex
+                        case 0x24: writer.Write(peek(input) + header.dataOffset); break; //Texture
+                        case 0x26: writer.Write(peek(input) + header.dataOffset); break; //Vertex
+                        case 0x27: writer.Write(((peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode
+                        case 0x28: writer.Write((peek(input) + header.dataOffset) & 0x7fffffff); break; //Index 8 bits mode
                     }
                 }
                 else if (header.backwardCompatibility < 0x21)
                 {
                     switch (flags)
                     {
-                        case 0x4a: writer.Write(peek(input) + header.dataOffset); break; //Texture
-                        case 0x50: writer.Write(((peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode
-                        case 0x52: writer.Write((peek(input) + header.dataOffset) & 0x7fffffff); break; //Index 8 bits mode
-                        case 0x4e: writer.Write(peek(input) + header.dataOffset); break; //Vertex
+                        case 0x25: writer.Write(peek(input) + header.dataOffset); break; //Texture
+                        case 0x27: writer.Write(peek(input) + header.dataOffset); break; //Vertex
+                        case 0x28: writer.Write(((peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode
+                        case 0x29: writer.Write((peek(input) + header.dataOffset) & 0x7fffffff); break; //Index 8 bits mode
                     }
                 }
                 else
                 {
                     switch (flags)
                     {
-                        case 0x4a: writer.Write(peek(input) + header.dataOffset); break; //Texture
-                        case 0x4e: writer.Write(((peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode relative to Data Offset
-                        case 0x58: writer.Write(((peek(input) + header.dataExtendedOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode relative to Data Extended Offset
-                        case 0x50: writer.Write((peek(input) + header.dataOffset) & 0x7fffffff); break; //Index 8 bits mode relative to Data Offset
-                        case 0x5a: writer.Write((peek(input) + header.dataExtendedOffset) & 0x7fffffff); break; //Index 8 bits mode relative to Data Extended Offset                           
-                        case 0x4c: writer.Write(peek(input) + header.dataOffset); break; //Vertex relative to Data Offset
-                        case 0x56: writer.Write(peek(input) + header.dataExtendedOffset); break; //Vertex relative to Data Extended Offset
+                        case 0x25: writer.Write(peek(input) + header.dataOffset); break; //Texture
+                        case 0x26: writer.Write(peek(input) + header.dataOffset); break; //Vertex relative to Data Offset
+                        case 0x27: writer.Write(((peek(input) + header.dataOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode relative to Data Offset
+                        case 0x28: writer.Write((peek(input) + header.dataOffset) & 0x7fffffff); break; //Index 8 bits mode relative to Data Offset
+                        case 0x2b: writer.Write(peek(input) + header.dataExtendedOffset); break; //Vertex relative to Data Extended Offset
+                        case 0x2c: writer.Write(((peek(input) + header.dataExtendedOffset) & 0x7fffffff) | 0x80000000); break; //Index 16 bits mode relative to Data Extended Offset
+                        case 0x2d: writer.Write((peek(input) + header.dataExtendedOffset) & 0x7fffffff); break; //Index 8 bits mode relative to Data Extended Offset
                     }
                 }
             }
@@ -316,15 +318,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                 scenePointerTableEntries = input.ReadUInt32(),
                 sceneNameOffset = input.ReadUInt32()
             };
-
-            /*
-             * Note:
-             * All "NameOffset" uses an Radix tree.
-             * The root node have 0xc bytes, and after each node entry also have 0xc bytes.
-             * First UInt is reference, then comes two UShorts with left and right node index, and then the Name offset.
-             * On root node, first UInt is always 0xFFFFFFFF (-1), second UInt is the index of largest string, and thrid UInt is always 0.
-             * Note also that parsing that data isn't necessary for using the model, but may be handy when saving new files.
-             */
+            //Node: NameOffset are PATRICIA trees
 
             //Shaders
             for (int index = 0; index < contentHeader.shadersPointerTableEntries; index++)
@@ -361,7 +355,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                 input.Read(buffer, 0, buffer.Length);
                 texture = TextureCodec.decode(buffer, textureSize.Width, textureSize.Height, textureCommands.getTexUnit0Format());
 
-                models.addTexture(new RenderBase.OTexture(texture, textureName));
+                models.texture.Add(new RenderBase.OTexture(texture, textureName));
             }
 
             //LookUp Tables
@@ -395,7 +389,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     data.Seek(dataPosition, SeekOrigin.Begin);
                 }
 
-                models.addLUT(table);
+                models.lookUpTable.Add(table);
             }
 
             //Lights
@@ -450,15 +444,15 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                 switch (light.lightUse)
                 {
                     case RenderBase.OLightUse.hemiSphere:
-                        light.groundColor = getColorFloat(input);
-                        light.skyColor = getColorFloat(input);
+                        light.groundColor = MeshUtils.getColorFloat(input);
+                        light.skyColor = MeshUtils.getColorFloat(input);
                         light.direction = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
                         light.lerpFactor = input.ReadSingle();
                         break;
-                    case RenderBase.OLightUse.ambient: light.ambient = getColor(input); break;
+                    case RenderBase.OLightUse.ambient: light.ambient = MeshUtils.getColor(input); break;
                     case RenderBase.OLightUse.vertex:
-                        light.ambient = getColorFloat(input);
-                        light.diffuse = getColorFloat(input);
+                        light.ambient = MeshUtils.getColorFloat(input);
+                        light.diffuse = MeshUtils.getColorFloat(input);
                         light.direction = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
                         light.distanceAttenuationConstant = input.ReadSingle();
                         light.distanceAttenuationLinear = input.ReadSingle();
@@ -467,10 +461,10 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                         light.spotCutoffAngle = input.ReadSingle();
                         break;
                     case RenderBase.OLightUse.fragment:
-                        light.ambient = getColor(input);
-                        light.diffuse = getColor(input);
-                        light.specular0 = getColor(input);
-                        light.specular1 = getColor(input);
+                        light.ambient = MeshUtils.getColor(input);
+                        light.diffuse = MeshUtils.getColor(input);
+                        light.specular0 = MeshUtils.getColor(input);
+                        light.specular1 = MeshUtils.getColor(input);
                         light.direction = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
                         input.ReadUInt32();
                         input.ReadUInt32();
@@ -485,7 +479,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                         break;
                 }
 
-                models.addLight(light);
+                models.light.Add(light);
             }
 
             //Cameras
@@ -534,7 +528,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     case RenderBase.OCameraProjection.orthogonal: camera.height = input.ReadSingle(); break;
                 }
 
-                models.addCamera(camera);
+                models.camera.Add(camera);
             }
 
             //Fogs
@@ -555,13 +549,13 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                 fog.isZFlip = (fogFlags & 0x100) > 0;
                 fog.isAttenuateDistance = (fogFlags & 0x200) > 0;
 
-                fog.fogColor = getColor(input);
+                fog.fogColor = MeshUtils.getColor(input);
 
                 fog.minFogDepth = input.ReadSingle();
                 fog.maxFogDepth = input.ReadSingle();
                 fog.fogDensity = input.ReadSingle();
 
-                models.addFog(fog);
+                models.fog.Add(fog);
             }
 
             //Skeletal Animations
@@ -772,7 +766,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     skeletalAnimation.bone.Add(bone);
                 }
 
-                models.addSkeletalAnimaton(skeletalAnimation);
+                models.skeletalAnimation.list.Add(skeletalAnimation);
             }
 
             //Material Animations
@@ -855,7 +849,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     materialAnimation.data.Add(animationData);
                 }
 
-                models.addMaterialAnimation(materialAnimation);
+                models.materialAnimation.list.Add(materialAnimation);
             }
 
             //Visibility Animations
@@ -899,7 +893,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     visibilityAnimation.data.Add(animationData);
                 }
 
-                models.addVisibilityAnimation(visibilityAnimation);
+                models.visibilityAnimation.list.Add(visibilityAnimation);
             }
 
             //Light Animations
@@ -996,7 +990,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     lightAnimation.data.Add(animationData);
                 }
 
-                models.addLightAnimation(lightAnimation);
+                models.lightAnimation.list.Add(lightAnimation);
             }
 
             //Camera Animations
@@ -1083,7 +1077,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     cameraAnimation.data.Add(animationData);
                 }
 
-                models.addCameraAnimation(cameraAnimation);
+                models.cameraAnimation.list.Add(cameraAnimation);
             }
 
             //Fog Animations
@@ -1150,7 +1144,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     fogAnimation.data.Add(animationData);
                 }
 
-                models.addFogAnimation(fogAnimation);
+                models.fogAnimation.list.Add(fogAnimation);
             }
 
             //Scene Environment
@@ -1241,7 +1235,6 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                 modelHeader.objectsNodeVisibilityOffset = input.ReadUInt32();
                 modelHeader.objectsNodeCount = input.ReadUInt32();
                 modelHeader.modelName = readString(input);
-                
                 modelHeader.objectsNodeNameEntries = input.ReadUInt32();
                 modelHeader.objectsNodeNameOffset = input.ReadUInt32();
                 input.ReadUInt32(); //0x0
@@ -1252,7 +1245,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
 
                 string[] objectName = new string[modelHeader.objectsNodeNameEntries];
                 data.Seek(modelHeader.objectsNodeNameOffset, SeekOrigin.Begin);
-                int rootReference = input.ReadInt32(); //Radix tree
+                int rootReferenceBit = input.ReadInt32(); //Radix tree
                 uint rootLeftNode = input.ReadUInt16();
                 uint rootRightNode = input.ReadUInt16();
                 uint rootNameOffset = input.ReadUInt32();
@@ -1290,9 +1283,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                         data.Seek(0x30, SeekOrigin.Current);
                     }
                     else
-                    {
                         materialMapperOffset = input.ReadUInt32();
-                    }
 
                     material.name0 = readString(input);
                     material.name1 = readString(input);
@@ -1343,18 +1334,18 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                         material.lightSetIndex = input.ReadUInt16();
                         material.fogIndex = input.ReadUInt16();
 
-                        material.materialColor.emission = getColor(input);
-                        material.materialColor.ambient = getColor(input);
-                        material.materialColor.diffuse = getColor(input);
-                        material.materialColor.specular0 = getColor(input);
-                        material.materialColor.specular1 = getColor(input);
-                        material.materialColor.constant0 = getColor(input);
-                        material.materialColor.constant1 = getColor(input);
-                        material.materialColor.constant2 = getColor(input);
-                        material.materialColor.constant3 = getColor(input);
-                        material.materialColor.constant4 = getColor(input);
-                        material.materialColor.constant5 = getColor(input);
-                        material.fragmentOperation.blend.blendColor = getColor(input);
+                        material.materialColor.emission = MeshUtils.getColor(input);
+                        material.materialColor.ambient = MeshUtils.getColor(input);
+                        material.materialColor.diffuse = MeshUtils.getColor(input);
+                        material.materialColor.specular0 = MeshUtils.getColor(input);
+                        material.materialColor.specular1 = MeshUtils.getColor(input);
+                        material.materialColor.constant0 = MeshUtils.getColor(input);
+                        material.materialColor.constant1 = MeshUtils.getColor(input);
+                        material.materialColor.constant2 = MeshUtils.getColor(input);
+                        material.materialColor.constant3 = MeshUtils.getColor(input);
+                        material.materialColor.constant4 = MeshUtils.getColor(input);
+                        material.materialColor.constant5 = MeshUtils.getColor(input);
+                        material.fragmentOperation.blend.blendColor = MeshUtils.getColor(input);
                         material.materialColor.colorScale = input.ReadSingle();
 
                         input.ReadUInt32(); //TODO: Figure out
@@ -1373,6 +1364,14 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                         //Some Fragment Lighting related commands... This seems a bit out of place.
                         long position = data.Position;
                         PICACommandReader fshLightingCommands = new PICACommandReader(data, 6, true);
+
+                        PICACommand.fragmentSamplerAbsolute sAbs = fshLightingCommands.getReflectanceSamplerAbsolute();
+                        material.fragmentShader.lighting.reflectanceRSampler.isAbsolute = sAbs.r;
+                        material.fragmentShader.lighting.reflectanceGSampler.isAbsolute = sAbs.g;
+                        material.fragmentShader.lighting.reflectanceBSampler.isAbsolute = sAbs.b;
+                        material.fragmentShader.lighting.distribution0Sampler.isAbsolute = sAbs.d0;
+                        material.fragmentShader.lighting.distribution1Sampler.isAbsolute = sAbs.d1;
+                        material.fragmentShader.lighting.fresnelSampler.isAbsolute = sAbs.fresnel;
 
                         PICACommand.fragmentSamplerInput sInput = fshLightingCommands.getReflectanceSamplerInput();
                         material.fragmentShader.lighting.reflectanceRSampler.input = sInput.r;
@@ -1440,7 +1439,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                             mapper.minFilter = (RenderBase.OTextureMinFilter)(levelOfDetailAndMinFilter & 0xff);
                             mapper.minLOD = (levelOfDetailAndMinFilter >> 8) & 0xff; //max 232
                             mapper.LODBias = input.ReadSingle();
-                            mapper.borderColor = getColor(input);
+                            mapper.borderColor = MeshUtils.getColor(input);
 
                             material.textureMapper[i] = mapper;
                         }
@@ -1459,7 +1458,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                         material.fragmentOperation.blend.mode = blendMode;
                     }
 
-                    model.addMaterial(material);
+                    model.material.Add(material);
                 }
 
                 //Skeleton
@@ -1505,7 +1504,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                         data.Seek(position, SeekOrigin.Begin);
                     }
 
-                    model.addBone(bone);
+                    model.skeleton.Add(bone);
                 }
 
                 List<RenderBase.OMatrix> skeletonTransform = new List<RenderBase.OMatrix>();
@@ -1550,7 +1549,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                 {
                     if (objects[objIndex].isSilhouette) continue; //TODO: Figure out for what "Silhouette" is used.
 
-                    RenderBase.OModelObject obj = new RenderBase.OModelObject();
+                    RenderBase.OMesh obj = new RenderBase.OMesh();
                     obj.materialId = objects[objIndex].materialId;
                     obj.renderPriority = objects[objIndex].renderPriority;
                     if (objects[objIndex].nodeId < objectName.Length) obj.name = objectName[objects[objIndex].nodeId]; else obj.name = "mesh" + objIndex.ToString();
@@ -1706,21 +1705,21 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                         vertex.texture2 = new RenderBase.OVector2(vector.x * texture2Scale, vector.y * texture2Scale);
                                         break;
                                     case PICACommand.vshAttribute.boneIndex:
-                                        vertex.addNode(nodeList[(int)vector.x]);
+                                        vertex.node.Add(nodeList[(int)vector.x]);
                                         if (skinningMode == RenderBase.OSkinningMode.smoothSkinning)
                                         {
-                                            if (format.attributeLength > 0) vertex.addNode(nodeList[(int)vector.y]);
-                                            if (format.attributeLength > 1) vertex.addNode(nodeList[(int)vector.z]);
-                                            if (format.attributeLength > 2) vertex.addNode(nodeList[(int)vector.w]);
+                                            if (format.attributeLength > 0) vertex.node.Add(nodeList[(int)vector.y]);
+                                            if (format.attributeLength > 1) vertex.node.Add(nodeList[(int)vector.z]);
+                                            if (format.attributeLength > 2) vertex.node.Add(nodeList[(int)vector.w]);
                                         }
                                         break;
                                     case PICACommand.vshAttribute.boneWeight:
-                                        vertex.addWeight(vector.x * boneWeightScale);
+                                        vertex.weight.Add(vector.x * boneWeightScale);
                                         if (skinningMode == RenderBase.OSkinningMode.smoothSkinning)
                                         {
-                                            if (format.attributeLength > 0) vertex.addWeight(vector.y * boneWeightScale);
-                                            if (format.attributeLength > 1) vertex.addWeight(vector.z * boneWeightScale);
-                                            if (format.attributeLength > 2) vertex.addWeight(vector.w * boneWeightScale);
+                                            if (format.attributeLength > 0) vertex.weight.Add(vector.y * boneWeightScale);
+                                            if (format.attributeLength > 1) vertex.weight.Add(vector.z * boneWeightScale);
+                                            if (format.attributeLength > 2) vertex.weight.Add(vector.w * boneWeightScale);
                                         }
                                         break;
                                 }
@@ -1730,20 +1729,20 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                             //Instead, the entire list is used, since it supports up to 4 bones.
                             if (vertex.node.Count == 0 && nodeList.Count <= 4)
                             {
-                                for (int n = 0; n < nodeList.Count; n++) vertex.addNode(nodeList[n]);
-                                if (vertex.weight.Count == 0) vertex.addWeight(1);
+                                for (int n = 0; n < nodeList.Count; n++) vertex.node.Add(nodeList[n]);
+                                if (vertex.weight.Count == 0) vertex.weight.Add(1);
                             }
 
                             if (skinningMode != RenderBase.OSkinningMode.smoothSkinning && vertex.node.Count > 0)
                             {
                                 //Note: Rigid skinning can have only one bone per vertex
                                 //Note2: Vertex with Rigid skinning seems to be always have meshes centered, so is necessary to make them follow the skeleton
-                                if (vertex.weight.Count == 0) vertex.addWeight(1);
+                                if (vertex.weight.Count == 0) vertex.weight.Add(1);
                                 vertex.position = RenderBase.OVector3.transform(vertex.position, skeletonTransform[vertex.node[0]]);
                             }
 
                             MeshUtils.calculateBounds(model, vertex);
-                            obj.addVertex(vertex);
+                            obj.vertices.Add(vertex);
                             vshAttributesBuffer.Add(RenderBase.convertVertex(vertex));
 
                             data.Seek(dataPosition, SeekOrigin.Begin);
@@ -1785,12 +1784,12 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
 
                             bBox.size = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
 
-                            obj.addBoundingBox(bBox);
+                            obj.boundingBox.Add(bBox);
                         }
                     }
     
                     obj.renderBuffer = vshAttributesBuffer.ToArray();
-                    model.addObject(obj);
+                    model.mesh.Add(obj);
                 }
 
                 if (modelHeader.metaDataPointerOffset != 0)
@@ -1804,7 +1803,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     scaleSkeleton(model.skeleton, index, index);
                 }
 
-                models.addModel(model);
+                models.model.Add(model);
             }
 
             data.Close();
@@ -1903,36 +1902,6 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
             }
 
             return output;
-        }
-
-        /// <summary>
-        ///     Reads a Color from the Data.
-        /// </summary>
-        /// <param name="input">BCH reader</param>
-        /// <returns></returns>
-        private static Color getColor(BinaryReader input)
-        {
-            byte r = input.ReadByte();
-            byte g = input.ReadByte();
-            byte b = input.ReadByte();
-            byte a = input.ReadByte();
-
-            return Color.FromArgb(a, r, g, b);
-        }
-
-        /// <summary>
-        ///     Reads a Color stored in Float format from the Data.
-        /// </summary>
-        /// <param name="input">BCH reader</param>
-        /// <returns></returns>
-        private static Color getColorFloat(BinaryReader input)
-        {
-            byte r = (byte)(input.ReadSingle() * 0xff);
-            byte g = (byte)(input.ReadSingle() * 0xff);
-            byte b = (byte)(input.ReadSingle() * 0xff);
-            byte a = (byte)(input.ReadSingle() * 0xff);
-
-            return Color.FromArgb(a, r, g, b);
         }
 
         /// <summary>

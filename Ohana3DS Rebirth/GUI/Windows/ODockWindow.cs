@@ -11,9 +11,31 @@ namespace Ohana3DS_Rebirth.GUI
 {
     public partial class ODockWindow : UserControl
     {
+        const int gripSize = 4;
+
+        const int minimumWidth = 128;
+        const int minimumHeight = 64;
+
         private bool drag;
         private int mouseX;
         private int mouseY;
+
+        private Point dragStart;
+        private Point originalLocation;
+        private Size originalSize;
+        private bool isResize;
+        private enum resizeDirection
+        {
+            topLeft,
+            topRight,
+            bottomLeft,
+            bottomRight,
+            top,
+            bottom,
+            left,
+            right
+        }
+        resizeDirection resizeDir;
 
         private bool dockSwitch;
 
@@ -33,11 +55,25 @@ namespace Ohana3DS_Rebirth.GUI
             }
         }
 
+        private bool resizable = true;
+        public bool Resizable
+        {
+            get
+            {
+                return resizable;
+            }
+            set
+            {
+                resizable = value;
+                resize();
+            }
+        }
+
         public event EventHandler MoveEnded;
         public event EventHandler ToggleDockable;
 
-        private String title;
-        public Control container;
+        private string title;
+        public ODock container;
 
         public ODockWindow()
         {
@@ -55,11 +91,6 @@ namespace Ohana3DS_Rebirth.GUI
             SetStyle(ControlStyles.AllPaintingInWmPaint, true);
             SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
             InitializeComponent();
-        }
-
-        private void ODockWindow_Layout(object sender, LayoutEventArgs e)
-        {
-            updateTitle();
         }
 
         private void updateTitle()
@@ -129,8 +160,148 @@ namespace Ohana3DS_Rebirth.GUI
             }
         }
 
+        #region "Resize"
+        private void ODockWindow_Layout(object sender, LayoutEventArgs e)
+        {
+            resize();
+            updateTitle();
+        }
+
+        private void resize()
+        {
+            if (resizable)
+            {
+                ContentContainer.Location = new Point(gripSize, gripSize);
+                ContentContainer.Size = new Size(Width - gripSize * 2, Height - gripSize * 2);
+            }
+            else
+            {
+                ContentContainer.Location = Point.Empty;
+                ContentContainer.Size = Size;
+            }
+        }
+
+        private void ODockWindow_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (isResize)
+            {
+                int diffX = Cursor.Position.X - dragStart.X;
+                int diffY = Cursor.Position.Y - dragStart.Y;
+
+                container.SuspendDrawing();
+
+                switch (resizeDir)
+                {
+                    case resizeDirection.topLeft: // \ Top Left
+                        Cursor.Current = Cursors.SizeNWSE;
+                        Width = Math.Max(originalSize.Width - diffX, minimumWidth);
+                        Height = Math.Max(originalSize.Height - diffY, minimumHeight);
+                        Left = (originalLocation.X + originalSize.Width) - Width;
+                        Top = (originalLocation.Y + originalSize.Height) - Height;
+                        break;
+                    case resizeDirection.topRight: // / Top Right
+                        Cursor.Current = Cursors.SizeNESW;
+                        Width = Math.Max(originalSize.Width + diffX, minimumWidth);
+                        Height = Math.Max(originalSize.Height - diffY, minimumHeight);
+                        Top = (originalLocation.Y + originalSize.Height) - Height;
+                        break;
+                    case resizeDirection.bottomLeft: // / Bottom Left
+                        Cursor.Current = Cursors.SizeNESW;
+                        Width = Math.Max(originalSize.Width - diffX, minimumWidth);
+                        Height = Math.Max(originalSize.Height + diffY, minimumHeight);
+                        Left = (originalLocation.X + originalSize.Width) - Width;
+                        break;
+                    case resizeDirection.bottomRight: // \ Bottom Right
+                        Cursor.Current = Cursors.SizeNWSE;
+                        Width = Math.Max(originalSize.Width + diffX, minimumWidth);
+                        Height = Math.Max(originalSize.Height + diffY, minimumHeight);
+                        break;
+                    case resizeDirection.left: // — Left
+                        Cursor.Current = Cursors.SizeWE;
+                        Width = Math.Max(originalSize.Width - diffX, minimumWidth);
+                        Left = (originalLocation.X + originalSize.Width) - Width;
+                        break;
+                    case resizeDirection.right: // — Right
+                        Cursor.Current = Cursors.SizeWE;
+                        Width = Math.Max(originalSize.Width + diffX, minimumWidth);
+                        break;
+                    case resizeDirection.top: // | Top
+                        Cursor.Current = Cursors.SizeNS;
+                        Height = Math.Max(originalSize.Height - diffY, minimumHeight);
+                        Top = (originalLocation.Y + originalSize.Height) - Height;
+                        break;
+                    case resizeDirection.bottom: // | Bottom
+                        Cursor.Current = Cursors.SizeNS;
+                        Height = Math.Max(originalSize.Height + diffY, minimumHeight);
+                        break;
+                }
+
+                container.ResumeDrawing();
+            }
+            else
+            {
+                if (e.X < gripSize && e.Y < gripSize)
+                {
+                    Cursor.Current = Cursors.SizeNWSE;
+                    resizeDir = resizeDirection.topLeft;
+                }
+                else if (e.X >= ClientSize.Width - gripSize && e.Y < gripSize)
+                {
+                    Cursor.Current = Cursors.SizeNESW;
+                    resizeDir = resizeDirection.topRight;
+                }
+                else if (e.X < gripSize && e.Y >= ClientSize.Height - gripSize)
+                {
+                    Cursor.Current = Cursors.SizeNESW;
+                    resizeDir = resizeDirection.bottomLeft;
+                }
+                else if (e.X >= ClientSize.Width - gripSize && e.Y >= ClientSize.Height - gripSize)
+                {
+                    Cursor.Current = Cursors.SizeNWSE;
+                    resizeDir = resizeDirection.bottomRight;
+                }
+                else if (e.X < gripSize)
+                {
+                    Cursor.Current = Cursors.SizeWE;
+                    resizeDir = resizeDirection.left;
+                }
+                else if (e.X >= ClientSize.Width - gripSize)
+                {
+                    Cursor.Current = Cursors.SizeWE;
+                    resizeDir = resizeDirection.right;
+                }
+                else if (e.Y < gripSize)
+                {
+                    Cursor.Current = Cursors.SizeNS;
+                    resizeDir = resizeDirection.top;
+                }
+                else if (e.Y >= ClientSize.Height - gripSize)
+                {
+                    Cursor.Current = Cursors.SizeNS;
+                    resizeDir = resizeDirection.bottom;
+                }
+            }
+        }
+
+        private void ODockWindow_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                dragStart = Cursor.Position;
+                originalLocation = Location;
+                originalSize = Size;
+                isResize = true;
+            }
+        }
+
+        private void ODockWindow_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left) isResize = false;
+        }
+        #endregion
+
         #region "Control Box"
-            private void BtnClose_MouseEnter(object sender, EventArgs e)
+        private void BtnClose_MouseEnter(object sender, EventArgs e)
             {
                 BtnClose.BackgroundImage = hoverRed;
             }

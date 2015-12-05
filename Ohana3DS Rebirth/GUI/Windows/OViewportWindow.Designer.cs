@@ -29,15 +29,22 @@
         private void InitializeComponent()
         {
             this.Screen = new System.Windows.Forms.PictureBox();
+            this.ContentContainer.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Screen)).BeginInit();
             this.SuspendLayout();
+            // 
+            // ContentContainer
+            // 
+            this.ContentContainer.Controls.Add(this.Screen);
+            this.ContentContainer.Size = new System.Drawing.Size(632, 488);
+            this.ContentContainer.Controls.SetChildIndex(this.Screen, 0);
             // 
             // Screen
             // 
             this.Screen.Dock = System.Windows.Forms.DockStyle.Fill;
             this.Screen.Location = new System.Drawing.Point(0, 16);
             this.Screen.Name = "Screen";
-            this.Screen.Size = new System.Drawing.Size(640, 480);
+            this.Screen.Size = new System.Drawing.Size(632, 472);
             this.Screen.TabIndex = 1;
             this.Screen.TabStop = false;
             this.Screen.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Screen_MouseDown);
@@ -50,11 +57,10 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.Screen);
             this.Icon = global::Ohana3DS_Rebirth.Properties.Resources.icn_w_viewport;
             this.Name = "OViewportWindow";
             this.Size = new System.Drawing.Size(640, 496);
-            this.Controls.SetChildIndex(this.Screen, 0);
+            this.ContentContainer.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.Screen)).EndInit();
             this.ResumeLayout(false);
 

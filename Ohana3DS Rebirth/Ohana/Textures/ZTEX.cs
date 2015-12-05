@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Drawing;
 
-namespace Ohana3DS_Rebirth.Ohana.TextureFormats
+namespace Ohana3DS_Rebirth.Ohana.Textures
 {
     class ZTEX
     {
@@ -64,11 +61,11 @@ namespace Ohana3DS_Rebirth.Ohana.TextureFormats
                 Bitmap bmp = null;
                 switch (entry.format)
                 {
-                    case 1: bmp = TextureCodec.decode(buffer, entry.width, entry.height, TextureCodec.OTextureFormat.rgb565); break;
-                    case 5: bmp = TextureCodec.decode(buffer, entry.width, entry.height, TextureCodec.OTextureFormat.rgba4); break;
-                    case 9: bmp = TextureCodec.decode(buffer, entry.width, entry.height, TextureCodec.OTextureFormat.rgba8); break;
-                    case 0x18: bmp = TextureCodec.decode(buffer, entry.width, entry.height, TextureCodec.OTextureFormat.etc1); break;
-                    case 0x19: bmp = TextureCodec.decode(buffer, entry.width, entry.height, TextureCodec.OTextureFormat.etc1a4); break;
+                    case 1: bmp = TextureCodec.decode(buffer, entry.width, entry.height, RenderBase.OTextureFormat.rgb565); break;
+                    case 5: bmp = TextureCodec.decode(buffer, entry.width, entry.height, RenderBase.OTextureFormat.rgba4); break;
+                    case 9: bmp = TextureCodec.decode(buffer, entry.width, entry.height, RenderBase.OTextureFormat.rgba8); break;
+                    case 0x18: bmp = TextureCodec.decode(buffer, entry.width, entry.height, RenderBase.OTextureFormat.etc1); break;
+                    case 0x19: bmp = TextureCodec.decode(buffer, entry.width, entry.height, RenderBase.OTextureFormat.etc1a4); break;
                 }
                 
                 textures.Add(new RenderBase.OTexture(bmp, entry.name));

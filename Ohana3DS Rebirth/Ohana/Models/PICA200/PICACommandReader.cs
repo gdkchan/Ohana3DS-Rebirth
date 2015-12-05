@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Drawing;
 
-namespace Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200
+namespace Ohana3DS_Rebirth.Ohana.Models.PICA200
 {
     class PICACommandReader
     {
@@ -428,6 +428,25 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200
         }
 
         /// <summary>
+        ///     Gets if the Absolute value should be used before using the LUT for each Input.
+        /// </summary>
+        /// <returns></returns>
+        public PICACommand.fragmentSamplerAbsolute getReflectanceSamplerAbsolute()
+        {
+            PICACommand.fragmentSamplerAbsolute output = new PICACommand.fragmentSamplerAbsolute();
+
+            uint value = getParameter(PICACommand.lutSamplerAbsolute);
+            output.r = (value & 0x2000000) == 0;
+            output.g = (value & 0x200000) == 0;
+            output.b = (value & 0x20000) == 0;
+            output.d0 = (value & 2) == 0;
+            output.d1 = (value & 0x20) == 0;
+            output.fresnel = (value & 0x2000) == 0;
+
+            return output;
+        }
+
+        /// <summary>
         ///     Gets the Input used to pick a value from the LookUp Table on Fragment Shader.
         /// </summary>
         /// <returns></returns>
@@ -435,7 +454,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200
         {
             PICACommand.fragmentSamplerInput output = new PICACommand.fragmentSamplerInput();
 
-            uint value = getParameter(PICACommand.reflectanceSamplerInput);
+            uint value = getParameter(PICACommand.lutSamplerInput);
             output.r = (RenderBase.OFragmentSamplerInput)((value >> 24) & 0xf);
             output.g = (RenderBase.OFragmentSamplerInput)((value >> 20) & 0xf);
             output.b = (RenderBase.OFragmentSamplerInput)((value >> 16) & 0xf);
@@ -454,7 +473,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200
         {
             PICACommand.fragmentSamplerScale output = new PICACommand.fragmentSamplerScale();
 
-            uint value = getParameter(PICACommand.reflectanceSamplerScale);
+            uint value = getParameter(PICACommand.lutSamplerScale);
             output.r = (RenderBase.OFragmentSamplerScale)((value >> 24) & 0xf);
             output.g = (RenderBase.OFragmentSamplerScale)((value >> 20) & 0xf);
             output.b = (RenderBase.OFragmentSamplerScale)((value >> 16) & 0xf);
@@ -519,9 +538,9 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200
         /// <summary>
         ///     Gets the encoded format of the texture at Texture Unit 0.
         /// </summary>
-        public TextureCodec.OTextureFormat getTexUnit0Format()
+        public RenderBase.OTextureFormat getTexUnit0Format()
         {
-            return (TextureCodec.OTextureFormat)getParameter(PICACommand.texUnit0Type);
+            return (RenderBase.OTextureFormat)getParameter(PICACommand.texUnit0Type);
         }
 
         /// <summary>
@@ -578,9 +597,9 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200
         /// <summary>
         ///     Gets the encoded format of the texture at Texture Unit 1.
         /// </summary>
-        public TextureCodec.OTextureFormat getTexUnit1Format()
+        public RenderBase.OTextureFormat getTexUnit1Format()
         {
-            return (TextureCodec.OTextureFormat)getParameter(PICACommand.texUnit1Type);
+            return (RenderBase.OTextureFormat)getParameter(PICACommand.texUnit1Type);
         }
 
         /// <summary>
@@ -637,9 +656,9 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200
         /// <summary>
         ///     Gets the encoded format of the texture at Texture Unit 2.
         /// </summary>
-        public TextureCodec.OTextureFormat getTexUnit2Format()
+        public RenderBase.OTextureFormat getTexUnit2Format()
         {
-            return (TextureCodec.OTextureFormat)getParameter(PICACommand.texUnit2Type);
+            return (RenderBase.OTextureFormat)getParameter(PICACommand.texUnit2Type);
         }
     }
 }

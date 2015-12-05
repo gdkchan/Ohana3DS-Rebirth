@@ -6,29 +6,19 @@ namespace Ohana3DS_Rebirth.Ohana
 {
     class TextureCodec
     {
-        public enum OTextureFormat
-        {
-            rgba8 = 0,
-            rgb8 = 1,
-            rgba5551 = 2,
-            rgb565 = 3,
-            rgba4 = 4,
-            la8 = 5,
-            hilo8 = 6,
-            l8 = 7,
-            a8 = 8,
-            la4 = 9,
-            l4 = 0xa,
-            a4 = 0xb,
-            etc1 = 0xc,
-            etc1a4 = 0xd
-        }
-
         private static int[] tileOrder = { 0, 1, 8, 9, 2, 3, 10, 11, 16, 17, 24, 25, 18, 19, 26, 27, 4, 5, 12, 13, 6, 7, 14, 15, 20, 21, 28, 29, 22, 23, 30, 31, 32, 33, 40, 41, 34, 35, 42, 43, 48, 49, 56, 57, 50, 51, 58, 59, 36, 37, 44, 45, 38, 39, 46, 47, 52, 53, 60, 61, 54, 55, 62, 63 };
         private static int[,] etc1LUT = { { 2, 8, -2, -8 }, { 5, 17, -5, -17 }, { 9, 29, -9, -29 }, { 13, 42, -13, -42 }, { 18, 60, -18, -60 }, { 24, 80, -24, -80 }, { 33, 106, -33, -106 }, { 47, 183, -47, -183 } };
 
         #region "Decode"
-        public static Bitmap decode(byte[] data, int width, int height, OTextureFormat format)
+        /// <summary>
+        ///     Decodes a PICA200 Texture.
+        /// </summary>
+        /// <param name="data">Buffer with the Texture</param>
+        /// <param name="width">Width of the Texture</param>
+        /// <param name="height">Height of the Texture</param>
+        /// <param name="format">Pixel Format of the Texture</param>
+        /// <returns></returns>
+        public static Bitmap decode(byte[] data, int width, int height, RenderBase.OTextureFormat format)
         {
             byte[] output = new byte[width * height * 4];
             long dataOffset = 0;
@@ -36,7 +26,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
             switch (format)
             {
-                case OTextureFormat.rgba8:
+                case RenderBase.OTextureFormat.rgba8:
                     for (int tY = 0; tY < height / 8; tY++)
                     {
                         for (int tX = 0; tX < width / 8; tX++)
@@ -56,7 +46,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     break;
 
-                case OTextureFormat.rgb8:
+                case RenderBase.OTextureFormat.rgb8:
                     for (int tY = 0; tY < height / 8; tY++)
                     {
                         for (int tX = 0; tX < width / 8; tX++)
@@ -76,7 +66,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     break;
 
-                case OTextureFormat.rgba5551:
+                case RenderBase.OTextureFormat.rgba5551:
                     for (int tY = 0; tY < height / 8; tY++)
                     {
                         for (int tX = 0; tX < width / 8; tX++)
@@ -105,7 +95,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     break;
 
-                case OTextureFormat.rgb565:
+                case RenderBase.OTextureFormat.rgb565:
                     for (int tY = 0; tY < height / 8; tY++)
                     {
                         for (int tX = 0; tX < width / 8; tX++)
@@ -133,7 +123,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     break;
 
-                case OTextureFormat.rgba4:
+                case RenderBase.OTextureFormat.rgba4:
                     for (int tY = 0; tY < height / 8; tY++)
                     {
                         for (int tX = 0; tX < width / 8; tX++)
@@ -162,8 +152,8 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     break;
 
-                case OTextureFormat.la8:
-                case OTextureFormat.hilo8:
+                case RenderBase.OTextureFormat.la8:
+                case RenderBase.OTextureFormat.hilo8:
                     for (int tY = 0; tY < height / 8; tY++)
                     {
                         for (int tX = 0; tX < width / 8; tX++)
@@ -185,7 +175,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     break;
 
-                case OTextureFormat.l8:
+                case RenderBase.OTextureFormat.l8:
                     for (int tY = 0; tY < height / 8; tY++)
                     {
                         for (int tX = 0; tX < width / 8; tX++)
@@ -207,7 +197,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     break;
 
-                case OTextureFormat.a8:
+                case RenderBase.OTextureFormat.a8:
                     for (int tY = 0; tY < height / 8; tY++)
                     {
                         for (int tX = 0; tX < width / 8; tX++)
@@ -229,7 +219,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     break;
 
-                case OTextureFormat.la4:
+                case RenderBase.OTextureFormat.la4:
                     for (int tY = 0; tY < height / 8; tY++)
                     {
                         for (int tX = 0; tX < width / 8; tX++)
@@ -251,7 +241,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     break;
 
-                case OTextureFormat.l4:
+                case RenderBase.OTextureFormat.l4:
                     for (int tY = 0; tY < height / 8; tY++)
                     {
                         for (int tX = 0; tX < width / 8; tX++)
@@ -274,7 +264,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     break;
 
-                case OTextureFormat.a4:
+                case RenderBase.OTextureFormat.a4:
                     for (int tY = 0; tY < height / 8; tY++)
                     {
                         for (int tX = 0; tX < width / 8; tX++)
@@ -296,9 +286,9 @@ namespace Ohana3DS_Rebirth.Ohana
                     }
                     break;
 
-                case OTextureFormat.etc1:
-                case OTextureFormat.etc1a4:
-                    byte[] decodedData = etc1Decode(data, width, height, format == OTextureFormat.etc1a4);
+                case RenderBase.OTextureFormat.etc1:
+                case RenderBase.OTextureFormat.etc1a4:
+                    byte[] decodedData = etc1Decode(data, width, height, format == RenderBase.OTextureFormat.etc1a4);
                     int[] etc1Order = etc1Scramble(width, height);
 
                     int i = 0;
@@ -321,7 +311,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     break;
             }
 
-            return TextureHelper.getBitmap(output.ToArray(), width, height);
+            return TextureUtils.getBitmap(output.ToArray(), width, height);
         }
 
         #region "ETC1"
@@ -368,8 +358,8 @@ namespace Ohana3DS_Rebirth.Ohana
                             Buffer.BlockCopy(colorBlock, blockOffset, output, outputOffset, 3);
 
                             byte a = toggle ? (byte)((alphaBlock[alphaOffset++] & 0xf0) >> 4) : (byte)(alphaBlock[alphaOffset] & 0xf);
-                            toggle = !toggle;
                             output[outputOffset + 3] = (byte)((a << 4) | a);
+                            toggle = !toggle;
                         }
                     }
                 }
@@ -399,29 +389,31 @@ namespace Ohana3DS_Rebirth.Ohana
                 g2 = (uint)((sbyte)(g1 >> 3) + ((sbyte)((blockTop & 0x700) >> 3) >> 5));
                 b2 = (uint)((sbyte)(b1 >> 3) + ((sbyte)((blockTop & 0x70000) >> 11) >> 5));
 
-                r1 = r1 + (r1 >> 5);
-                g1 = g1 + (g1 >> 5);
-                b1 = b1 + (b1 >> 5);
+                r1 |= r1 >> 5;
+                g1 |= g1 >> 5;
+                b1 |= b1 >> 5;
 
-                r2 = (r2 << 3) + (r2 >> 2);
-                g2 = (g2 << 3) + (g2 >> 2);
-                b2 = (b2 << 3) + (b2 >> 2);
+                r2 = (r2 << 3) | (r2 >> 2);
+                g2 = (g2 << 3) | (g2 >> 2);
+                b2 = (b2 << 3) | (b2 >> 2);
             }
             else
             {
                 r1 = blockTop & 0xf0;
-                r1 = r1 + (r1 >> 4);
                 g1 = (blockTop & 0xf000) >> 8;
-                g1 = g1 + (g1 >> 4);
                 b1 = (blockTop & 0xf00000) >> 16;
-                b1 = b1 + (b1 >> 4);
 
                 r2 = (blockTop & 0xf) << 4;
-                r2 = r2 + (r2 >> 4);
                 g2 = (blockTop & 0xf00) >> 4;
-                g2 = g2 + (g2 >> 4);
                 b2 = (blockTop & 0xf0000) >> 12;
-                b2 = b2 + (b2 >> 4);
+
+                r1 |= r1 >> 4;
+                g1 |= g1 >> 4;
+                b1 |= b1 >> 4;
+
+                r2 |= r2 >> 4;
+                g2 |= g2 >> 4;
+                b2 |= b2 >> 4;
             }
 
             uint table1 = (blockTop >> 29) & 7;
@@ -508,7 +500,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
             for (int tile = 0; tile < tileScramble.Length; tile++)
             {
-                if ((tile % (width / 4) == 0) & tile > 0)
+                if ((tile % (width / 4) == 0) && tile > 0)
                 {
                     if (rowAccumulator < 1)
                     {
@@ -527,9 +519,15 @@ namespace Ohana3DS_Rebirth.Ohana
                 tileScramble[tile] = baseNumber;
 
                 if (baseAccumulator < 1)
-                    { baseAccumulator += 1; baseNumber += 1; }
+                {
+                    baseAccumulator++;
+                    baseNumber++;
+                }
                 else
-                    { baseAccumulator = 0; baseNumber += 3; }
+                {
+                    baseAccumulator = 0;
+                    baseNumber += 3;
+                }
             }
 
             return tileScramble;

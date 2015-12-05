@@ -51,6 +51,26 @@ namespace Ohana3DS_Rebirth.Ohana
         }
 
         /// <summary>
+        ///     Read an ASCII String from a given Reader with given size.
+        ///     It will also stop reading if a Null Terminator (0x0) is found.
+        ///     It WILL advance the position until the count is reached, or a 0x0 is found.
+        /// </summary>
+        /// <param name="input">The Reader of the File Stream</param>
+        /// <param name="count">Number of bytes that the text have</param>
+        /// <returns></returns>
+        public static string readStringWithLength(BinaryReader input, uint count)
+        {
+            MemoryStream bytes = new MemoryStream();
+            for (int i = 0; i < count; i++)
+            {
+                byte b = input.ReadByte();
+                if (b == 0) break;
+                bytes.WriteByte(b);
+            }
+            return Encoding.ASCII.GetString(bytes.ToArray());
+        }
+
+        /// <summary>
         ///     Sign extends the value, so it will keep the sign flag.
         /// </summary>
         /// <param name="value">The value that should be sign-extended</param>

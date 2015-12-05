@@ -1,11 +1,15 @@
-﻿using System;
+﻿/*
+ * CGFX Importer made by gdkchan for Ohana3DS.
+ */
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Drawing;
 
-using Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200;
+using Ohana3DS_Rebirth.Ohana.Models.PICA200;
 
-namespace Ohana3DS_Rebirth.Ohana.ModelFormats
+namespace Ohana3DS_Rebirth.Ohana.Models
 {
     class CGFX
     {
@@ -245,12 +249,12 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                 uint userDataOffset = getRelativeOffset(input);
                 int height = (int)input.ReadUInt32();
                 int width = (int)input.ReadUInt32();
-                input.ReadUInt32();
-                input.ReadUInt32();
+                uint openGLFormat = input.ReadUInt32();
+                uint openGLType = input.ReadUInt32();
                 uint mipmapLevels = input.ReadUInt32();
                 uint textureObject = input.ReadUInt32();
                 uint locationFlags = input.ReadUInt32();
-                TextureCodec.OTextureFormat format = (TextureCodec.OTextureFormat)input.ReadUInt32();
+                RenderBase.OTextureFormat format = (RenderBase.OTextureFormat)input.ReadUInt32();
                 input.ReadUInt32();
                 input.ReadUInt32();
                 input.ReadUInt32();
@@ -264,7 +268,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                 byte[] buffer = new byte[dataLength];
                 data.Seek(dataOffset, SeekOrigin.Begin);
                 input.Read(buffer, 0, buffer.Length);
-                models.addTexture(new RenderBase.OTexture(TextureCodec.decode(buffer, width, height, format), name));
+                models.texture.Add(new RenderBase.OTexture(TextureCodec.decode(buffer, width, height, format), name));
             }
 
             //Skeletal animations
@@ -436,7 +440,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     skeletalAnimation.bone.Add(bone);
                 }
 
-                models.addSkeletalAnimaton(skeletalAnimation);
+                models.skeletalAnimation.list.Add(skeletalAnimation);
             }
 
             //Models
@@ -510,29 +514,29 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     /*
                      * Material color
                      */
-                    getColorFloat(input); //Emission (stored as float4)
-                    getColorFloat(input); //Ambient (stored as float4)
-                    getColorFloat(input); //Diffuse (stored as float4)
-                    getColorFloat(input); //Specular 0 (stored as float4)
-                    getColorFloat(input); //Specular 1 (stored as float4)
-                    getColorFloat(input); //Constant 0 (stored as float4)
-                    getColorFloat(input); //Constant 1 (stored as float4)
-                    getColorFloat(input); //Constant 2 (stored as float4)
-                    getColorFloat(input); //Constant 3 (stored as float4)
-                    getColorFloat(input); //Constant 4 (stored as float4)
-                    getColorFloat(input); //Constant 5 (stored as float4)
+                    MeshUtils.getColorFloat(input); //Emission (stored as float4)
+                    MeshUtils.getColorFloat(input); //Ambient (stored as float4)
+                    MeshUtils.getColorFloat(input); //Diffuse (stored as float4)
+                    MeshUtils.getColorFloat(input); //Specular 0 (stored as float4)
+                    MeshUtils.getColorFloat(input); //Specular 1 (stored as float4)
+                    MeshUtils.getColorFloat(input); //Constant 0 (stored as float4)
+                    MeshUtils.getColorFloat(input); //Constant 1 (stored as float4)
+                    MeshUtils.getColorFloat(input); //Constant 2 (stored as float4)
+                    MeshUtils.getColorFloat(input); //Constant 3 (stored as float4)
+                    MeshUtils.getColorFloat(input); //Constant 4 (stored as float4)
+                    MeshUtils.getColorFloat(input); //Constant 5 (stored as float4)
 
-                    material.materialColor.emission = getColor(input);
-                    material.materialColor.ambient = getColor(input);
-                    material.materialColor.diffuse = getColor(input);
-                    material.materialColor.specular0 = getColor(input);
-                    material.materialColor.specular1 = getColor(input);
-                    material.materialColor.constant0 = getColor(input);
-                    material.materialColor.constant1 = getColor(input);
-                    material.materialColor.constant2 = getColor(input);
-                    material.materialColor.constant3 = getColor(input);
-                    material.materialColor.constant4 = getColor(input);
-                    material.materialColor.constant5 = getColor(input);
+                    material.materialColor.emission = MeshUtils.getColor(input);
+                    material.materialColor.ambient = MeshUtils.getColor(input);
+                    material.materialColor.diffuse = MeshUtils.getColor(input);
+                    material.materialColor.specular0 = MeshUtils.getColor(input);
+                    material.materialColor.specular1 = MeshUtils.getColor(input);
+                    material.materialColor.constant0 = MeshUtils.getColor(input);
+                    material.materialColor.constant1 = MeshUtils.getColor(input);
+                    material.materialColor.constant2 = MeshUtils.getColor(input);
+                    material.materialColor.constant3 = MeshUtils.getColor(input);
+                    material.materialColor.constant4 = MeshUtils.getColor(input);
+                    material.materialColor.constant5 = MeshUtils.getColor(input);
 
                     /*
                      * Rasterization
@@ -562,7 +566,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                         case 2: blendMode = RenderBase.OBlendMode.blend; break; //Separate blend
                         case 3: blendMode = RenderBase.OBlendMode.logical; break;
                     }
-                    Color blendColor = getColorFloat(input);
+                    Color blendColor = MeshUtils.getColorFloat(input);
                     PICACommandReader blendCommands = new PICACommandReader(data, 5, true);
                     material.fragmentOperation.blend = blendCommands.getBlendOperation();
                     material.fragmentOperation.blend.mode = blendMode;
@@ -642,7 +646,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                             }
 
                             data.Seek(samplerOffset, SeekOrigin.Begin);
-                            Color borderColor = getColorFloat(input); //Not needed, we already got from Commands buffer
+                            Color borderColor = MeshUtils.getColorFloat(input); //Not needed, we already got from Commands buffer
                             material.textureMapper[i].LODBias = input.ReadSingle();
                         }
                     }
@@ -697,7 +701,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     {
                         data.Seek(fragmentShaderOffset, SeekOrigin.Begin);
 
-                        material.fragmentShader.bufferColor = getColorFloat(input);
+                        material.fragmentShader.bufferColor = MeshUtils.getColorFloat(input);
 
                         flags = input.ReadUInt32();
                         material.fragmentShader.lighting.isClampHighLight = (flags & 1) > 0;
@@ -747,7 +751,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                         material.fragmentShader.alphaTest = alphaCommands.getAlphaTest();
                     }
 
-                    model.addMaterial(material);
+                    model.material.Add(material);
                 }
 
                 //Skeleton
@@ -796,7 +800,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                         uint userDataEntries = input.ReadUInt32();
                         uint userDataOffset = getRelativeOffset(input);
 
-                        model.addBone(bone);
+                        model.skeleton.Add(bone);
                     }
                 }
 
@@ -836,10 +840,10 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     shapeHeader.Add(shape);
                 }
 
-                List<RenderBase.OModelObject> shapes = new List<RenderBase.OModelObject>();
+                List<RenderBase.OMesh> shapes = new List<RenderBase.OMesh>();
                 foreach (cgfxShapeEntry shapeEntry in shapeHeader)
                 {
-                    RenderBase.OModelObject shape = new RenderBase.OModelObject();
+                    RenderBase.OMesh shape = new RenderBase.OMesh();
 
                     data.Seek(shapeEntry.vertexGroupOffset, SeekOrigin.Begin);
                     data.Seek(getRelativeOffset(input), SeekOrigin.Begin);
@@ -1006,22 +1010,22 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                         int b2 = (int)vector.z;
                                         int b3 = (int)vector.w;
 
-                                        if (b0 < nodeList.Count && format.attributeLength > 0) vertex.addNode((int)nodeList[b0]);
+                                        if (b0 < nodeList.Count && format.attributeLength > 0) vertex.node.Add((int)nodeList[b0]);
                                         if (skinningMode == RenderBase.OSkinningMode.smoothSkinning)
                                         {
-                                            if (b1 < nodeList.Count && format.attributeLength > 1) vertex.addNode((int)nodeList[b1]);
-                                            if (b2 < nodeList.Count && format.attributeLength > 2) vertex.addNode((int)nodeList[b2]);
-                                            if (b3 < nodeList.Count && format.attributeLength > 3) vertex.addNode((int)nodeList[b3]);
+                                            if (b1 < nodeList.Count && format.attributeLength > 1) vertex.node.Add((int)nodeList[b1]);
+                                            if (b2 < nodeList.Count && format.attributeLength > 2) vertex.node.Add((int)nodeList[b2]);
+                                            if (b3 < nodeList.Count && format.attributeLength > 3) vertex.node.Add((int)nodeList[b3]);
                                         }
 
                                         break;
                                     case PICACommand.vshAttribute.boneWeight:
-                                        if (format.attributeLength > 0) vertex.addWeight(vector.x * format.scale);
+                                        if (format.attributeLength > 0) vertex.weight.Add(vector.x * format.scale);
                                         if (skinningMode == RenderBase.OSkinningMode.smoothSkinning)
                                         {
-                                            if (format.attributeLength > 1) vertex.addWeight(vector.y * format.scale);
-                                            if (format.attributeLength > 2) vertex.addWeight(vector.z * format.scale);
-                                            if (format.attributeLength > 3) vertex.addWeight(vector.w * format.scale);
+                                            if (format.attributeLength > 1) vertex.weight.Add(vector.y * format.scale);
+                                            if (format.attributeLength > 2) vertex.weight.Add(vector.z * format.scale);
+                                            if (format.attributeLength > 3) vertex.weight.Add(vector.w * format.scale);
                                         }
                                         break;
                                 }
@@ -1031,20 +1035,20 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                             //Instead, the entire list is used, since it supports up to 4 bones.
                             if (vertex.node.Count == 0 && nodeList.Count <= 4)
                             {
-                                for (int n = 0; n < nodeList.Count; n++) vertex.addNode((int)nodeList[n]);
-                                if (vertex.weight.Count == 0) vertex.addWeight(1);
+                                for (int n = 0; n < nodeList.Count; n++) vertex.node.Add((int)nodeList[n]);
+                                if (vertex.weight.Count == 0) vertex.weight.Add(1);
                             }
 
                             if (skinningMode != RenderBase.OSkinningMode.smoothSkinning && vertex.node.Count > 0)
                             {
                                 //Note: Rigid skinning can have only one bone per vertex
                                 //Note2: Vertex with Rigid skinning seems to be always have meshes centered, so is necessary to make them follow the skeleton
-                                if (vertex.weight.Count == 0) vertex.addWeight(1);
+                                if (vertex.weight.Count == 0) vertex.weight.Add(1);
                                 vertex.position = RenderBase.OVector3.transform(vertex.position, skeletonTransform[vertex.node[0]]);
                             }
 
                             MeshUtils.calculateBounds(model, vertex);
-                            shape.addVertex(vertex);
+                            shape.vertices.Add(vertex);
                             vshAttributesBuffer.Add(RenderBase.convertVertex(vertex));
 
                             data.Seek(dataPosition, SeekOrigin.Begin);
@@ -1096,7 +1100,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
 
                 foreach (cgfxObjectEntry obj in objectHeader)
                 {
-                    RenderBase.OModelObject modelObject = shapes[(int)obj.shapeIndex];
+                    RenderBase.OMesh modelObject = shapes[(int)obj.shapeIndex];
 
                     if (objectNodeList.Count > 0)
                     {
@@ -1106,10 +1110,10 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     modelObject.materialId = (ushort)obj.materialId;
                     modelObject.renderPriority = obj.renderPriority;
 
-                    model.addObject(modelObject);
+                    model.mesh.Add(modelObject);
                 }
 
-                models.addModel(model);
+                models.model.Add(model);
             }
 
             data.Close();
@@ -1294,36 +1298,6 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
             }
 
             return output;
-        }
-
-        /// <summary>
-        ///     Reads a Color from the Data.
-        /// </summary>
-        /// <param name="input">CGFX reader</param>
-        /// <returns></returns>
-        private static Color getColor(BinaryReader input)
-        {
-            byte r = input.ReadByte();
-            byte g = input.ReadByte();
-            byte b = input.ReadByte();
-            byte a = input.ReadByte();
-
-            return Color.FromArgb(a, r, g, b);
-        }
-
-        /// <summary>
-        ///     Reads a Color stored in Float format from the Data.
-        /// </summary>
-        /// <param name="input">CGFX reader</param>
-        /// <returns></returns>
-        private static Color getColorFloat(BinaryReader input)
-        {
-            byte r = (byte)(input.ReadSingle() * 0xff);
-            byte g = (byte)(input.ReadSingle() * 0xff);
-            byte b = (byte)(input.ReadSingle() * 0xff);
-            byte a = (byte)(input.ReadSingle() * 0xff);
-
-            return Color.FromArgb(a, r, g, b);
         }
 
         /// <summary>

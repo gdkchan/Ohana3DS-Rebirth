@@ -1,4 +1,4 @@
-﻿namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
+﻿namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
 {
     class CMDL
     {

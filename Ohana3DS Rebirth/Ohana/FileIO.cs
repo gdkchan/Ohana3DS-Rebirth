@@ -5,9 +5,9 @@ using System.IO;
 using System.Diagnostics;
 
 using Ohana3DS_Rebirth.GUI.Forms;
-using Ohana3DS_Rebirth.Ohana.ModelFormats;
-using Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats;
-using Ohana3DS_Rebirth.Ohana.TextureFormats;
+using Ohana3DS_Rebirth.Ohana.Models;
+using Ohana3DS_Rebirth.Ohana.Models.GenericFormats;
+using Ohana3DS_Rebirth.Ohana.Textures;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
@@ -15,20 +15,21 @@ namespace Ohana3DS_Rebirth.Ohana
     {
         public enum fileFormat
         {
-            Unsupported,
-            H3D,
-            DMPTexture,
-            PkmnContainer,
-            BLZCompressed,
-            LZSSCompressed,
-            LZSSHeaderCompressed,
-            IECPCompressed,
-            DQVIIPack,
-            FPT0,
-            NLK2,
-            CGFX,
-            zmdl,
-            ztex
+            cmpBLZ,
+            cmpIECP,
+            cmpLZSS,
+            cmpLZSSHeader,
+            dq7DMP,
+            dq7FPT0,
+            dq7Model,
+            flZMdl,
+            flZTex,
+            fmNLK2,
+            nlpSMes,
+            nw4cCGfx,
+            nw4cH3D,
+            pkmnContainer,
+            unsupported
         }
 
         public static fileFormat identify(string fileName)
@@ -52,48 +53,48 @@ namespace Ohana3DS_Rebirth.Ohana
 
             switch (magic5b)
             {
-                case "MODEL": return fileFormat.DQVIIPack;
+                case "MODEL": return fileFormat.dq7Model;
             }
 
             switch (magic4b)
             {
-                case "CGFX": return fileFormat.CGFX;
-                case "zmdl": return fileFormat.zmdl;
-                case "ztex": return fileFormat.ztex;
-                case "IECP": return fileFormat.IECPCompressed;
-                case "FPT0": return fileFormat.FPT0;
-                case "NLK2": //Forbidden Magna models
-                    data.Seek(0x80, SeekOrigin.Begin);
-                    string magic = IOUtils.readString(input, 0, 4);
-                    data.Seek(0, SeekOrigin.Begin);
-                    return fileFormat.NLK2;
-
+                case "IECP": return fileFormat.cmpIECP;
+                case "FPT0": return fileFormat.dq7FPT0;
+                case "zmdl": return fileFormat.flZMdl;
+                case "ztex": return fileFormat.flZTex;
+                case "NLK2": return fileFormat.fmNLK2;
+                case "SMES": return fileFormat.nlpSMes;
+                case "CGFX": return fileFormat.nw4cCGfx;
             }
 
             switch (magic3b)
             {
-                case "BCH": return fileFormat.H3D;
-                case "DMP": return fileFormat.DMPTexture;
+                case "DMP": return fileFormat.dq7DMP;
+                case "BCH": return fileFormat.nw4cH3D;
             }
 
             switch (magic2b)
             {
                 case "PC":
+                case "PT":
+                case "PK":
+                case "PB":
                 case "GR":
                 case "MM":
-                    return fileFormat.PkmnContainer;
+                case "AD":
+                    return fileFormat.pkmnContainer;
             }
 
             //Unfortunately compression only have one byte for identification.
             //So, it may have a lot of false positives.
             switch (compression)
             {
-                case 0x11: return fileFormat.LZSSCompressed;
-                case 0x13: return fileFormat.LZSSHeaderCompressed;
-                case 0x90: return fileFormat.BLZCompressed;
+                case 0x90: return fileFormat.cmpBLZ;
+                case 0x11: return fileFormat.cmpLZSS;
+                case 0x13: return fileFormat.cmpLZSSHeader;
             }
 
-            return fileFormat.Unsupported;
+            return fileFormat.unsupported;
         }
 
         /// <summary>
@@ -105,12 +106,13 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             switch (format)
             {
-                case fileFormat.BLZCompressed:
-                case fileFormat.LZSSCompressed:
-                case fileFormat.LZSSHeaderCompressed:
-                case fileFormat.IECPCompressed:
+                case fileFormat.cmpBLZ:
+                case fileFormat.cmpIECP:
+                case fileFormat.cmpLZSS:
+                case fileFormat.cmpLZSSHeader:
                     return true;
             }
+
             return false;
         }
 
@@ -128,25 +130,25 @@ namespace Ohana3DS_Rebirth.Ohana
 
             switch (format)
             {
-                case fileFormat.BLZCompressed:
+                case fileFormat.cmpBLZ:
                     decompressedData = Compressions.BLZ.decompress(data);
                     content = new byte[decompressedData.Length - 1];
                     Buffer.BlockCopy(decompressedData, 1, content, 0, content.Length);
                     data = new MemoryStream(content);
                     format = identify(data);
                     break;
-                case fileFormat.LZSSCompressed:
-                case fileFormat.LZSSHeaderCompressed:
-                    if (format == fileFormat.LZSSHeaderCompressed) input.ReadUInt32();
-                    length = input.ReadUInt32() >> 8;
-                    decompressedData = Compressions.LZSS_Ninty.decompress(data, length);
+                case fileFormat.cmpIECP: //Stella Glow
+                    uint magic = input.ReadUInt32();
+                    length = input.ReadUInt32();
+                    decompressedData = Compressions.LZSS.decompress(data, length);
                     data = new MemoryStream(decompressedData);
                     format = identify(data);
                     break;
-                case fileFormat.IECPCompressed: //Stella glow
-                    input.ReadUInt32(); //Magic
-                    length = input.ReadUInt32();
-                    decompressedData = Compressions.LZSS.decompress(data, length);
+                case fileFormat.cmpLZSS:
+                case fileFormat.cmpLZSSHeader:
+                    if (format == fileFormat.cmpLZSSHeader) input.ReadUInt32();
+                    length = input.ReadUInt32() >> 8;
+                    decompressedData = Compressions.LZSS_Ninty.decompress(data, length);
                     data = new MemoryStream(decompressedData);
                     format = identify(data);
                     break;

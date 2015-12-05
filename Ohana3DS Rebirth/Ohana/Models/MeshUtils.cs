@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System.IO;
+using System.Drawing;
+using System.Collections.Generic;
 
-namespace Ohana3DS_Rebirth.Ohana.ModelFormats
+namespace Ohana3DS_Rebirth.Ohana.Models
 {
     class MeshUtils
     {
@@ -20,6 +22,36 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
         }
 
         /// <summary>
+        ///     Reads a Color from the Data.
+        /// </summary>
+        /// <param name="input">CGFX reader</param>
+        /// <returns></returns>
+        public static Color getColor(BinaryReader input)
+        {
+            byte r = input.ReadByte();
+            byte g = input.ReadByte();
+            byte b = input.ReadByte();
+            byte a = input.ReadByte();
+
+            return Color.FromArgb(a, r, g, b);
+        }
+
+        /// <summary>
+        ///     Reads a Color stored in Float format from the Data.
+        /// </summary>
+        /// <param name="input">CGFX reader</param>
+        /// <returns></returns>
+        public static Color getColorFloat(BinaryReader input)
+        {
+            byte r = (byte)(input.ReadSingle() * 0xff);
+            byte g = (byte)(input.ReadSingle() * 0xff);
+            byte b = (byte)(input.ReadSingle() * 0xff);
+            byte a = (byte)(input.ReadSingle() * 0xff);
+
+            return Color.FromArgb(a, r, g, b);
+        }
+
+        /// <summary>
         ///     Clamps a Float value between 0 and 255 and return as Byte.
         /// </summary>
         /// <param name="value">The float value</param>
@@ -29,40 +61,6 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
             if (value > 0xff) return 0xff;
             if (value < 0) return 0;
             return (byte)value;
-        }
-
-        /// <summary>
-        ///     Gets a generic Material, that can be used when the model don't have any, to make the shape visible on the viewport.
-        /// </summary>
-        /// <returns></returns>
-        public static RenderBase.OMaterial getGenericMaterial()
-        {
-            RenderBase.OMaterial material = new RenderBase.OMaterial();
-
-            material.fragmentShader.alphaTest.isTestEnabled = true;
-            material.fragmentShader.alphaTest.testFunction = RenderBase.OTestFunction.greaterOrEqual;
-            material.fragmentShader.alphaTest.testReference = 0x7f;
-
-            material.textureMapper[0].wrapU = RenderBase.OTextureWrap.repeat;
-            material.textureMapper[0].wrapV = RenderBase.OTextureWrap.repeat;
-
-            material.textureMapper[0].minFilter = RenderBase.OTextureMinFilter.linearMipmapLinear;
-            material.textureMapper[0].magFilter = RenderBase.OTextureMagFilter.linear;
-
-            for (int i = 0; i < 6; i++)
-            {
-                material.fragmentShader.textureCombiner[i].rgbSource[0] = RenderBase.OCombineSource.texture0;
-                material.fragmentShader.textureCombiner[i].rgbSource[1] = RenderBase.OCombineSource.primaryColor;
-                material.fragmentShader.textureCombiner[i].combineRgb = RenderBase.OCombineOperator.modulate;
-                material.fragmentShader.textureCombiner[i].alphaSource[0] = RenderBase.OCombineSource.texture0;
-                material.fragmentShader.textureCombiner[i].rgbScale = 1;
-                material.fragmentShader.textureCombiner[i].alphaScale = 1;
-            }
-            material.fragmentOperation.depth.isTestEnabled = true;
-            material.fragmentOperation.depth.testFunction = RenderBase.OTestFunction.lessOrEqual;
-            material.fragmentOperation.depth.isMaskEnabled = true;
-
-            return material;
         }
 
         const uint optimizerLookBack = 32;
@@ -85,7 +83,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
         /// </summary>
         /// <param name="mesh">The Mesh that should be optimized</param>
         /// <returns></returns>
-        public static optimizedMesh optimizeMesh(RenderBase.OModelObject mesh)
+        public static optimizedMesh optimizeMesh(RenderBase.OMesh mesh)
         {
             optimizedMesh output = new optimizedMesh();
 
@@ -96,14 +94,14 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
             output.hasWeight = mesh.hasWeight;
             output.texUVCount = mesh.texUVCount;
 
-            for (int i = 0; i < mesh.obj.Count; i++)
+            for (int i = 0; i < mesh.vertices.Count; i++)
             {
                 bool found = false;
                 for (int j = 1; j <= optimizerLookBack; j++)
                 {
                     int p = output.vertices.Count - j;
                     if (p < 0 || p >= output.vertices.Count) break;
-                    if (output.vertices[p].Equals(mesh.obj[i]))
+                    if (output.vertices[p].Equals(mesh.vertices[i]))
                     {
                         output.indices.Add((uint)p);
                         found = true;
@@ -113,7 +111,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
 
                 if (!found)
                 {
-                    output.vertices.Add(mesh.obj[i]);
+                    output.vertices.Add(mesh.vertices[i]);
                     output.indices.Add((uint)(output.vertices.Count - 1));
                 }
             }

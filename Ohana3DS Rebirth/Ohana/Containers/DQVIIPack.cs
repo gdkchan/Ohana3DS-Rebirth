@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-using Ohana3DS_Rebirth.Ohana.ModelFormats;
+using Ohana3DS_Rebirth.Ohana.Models;
 
 namespace Ohana3DS_Rebirth.Ohana.Containers
 {

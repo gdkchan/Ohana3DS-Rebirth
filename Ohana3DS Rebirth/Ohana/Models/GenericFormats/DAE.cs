@@ -7,7 +7,7 @@ using System.Globalization;
 using System.Drawing;
 using System.IO;
 
-namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
+namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
 {
     public class DAE
     {
@@ -604,7 +604,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
                 daeImage img = new daeImage();
                 img.id = tex.name + "_id";
                 img.name = tex.name;
-                img.init_from = "../" + tex.name + ".png";
+                img.init_from = "./" + tex.name + ".png";
 
                 dae.library_images.Add(img);
             }
@@ -704,7 +704,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
             vs.name = mdl.name;
             vs.id = vs.name + "_id";
             if (mdl.skeleton.Count > 0) writeSkeleton(mdl.skeleton, 0, ref vs.node);
-            foreach (RenderBase.OModelObject obj in mdl.modelObject)
+            foreach (RenderBase.OMesh obj in mdl.mesh)
             {
                 //Geometry
                 daeGeometry geometry = new daeGeometry();

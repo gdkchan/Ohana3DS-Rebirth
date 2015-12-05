@@ -8,7 +8,7 @@ using System.IO;
 using System.Globalization;
 using System.Windows.Forms;
 
-namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
+namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
 {
     class SMD
     {
@@ -104,11 +104,11 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
                 output.AppendLine("triangles");
                 uint triangleCount = 0;
                 int objectIndex = 0;
-                foreach (RenderBase.OModelObject obj in mdl.modelObject)
+                foreach (RenderBase.OMesh obj in mdl.mesh)
                 {
                     string textureName = mdl.material[obj.materialId].name0 ?? "material_" + objectIndex.ToString();
 
-                    foreach (RenderBase.OVertex vertex in obj.obj)
+                    foreach (RenderBase.OVertex vertex in obj.vertices)
                     {
                         if (triangleCount == 0) output.AppendLine(textureName);
 
@@ -248,7 +248,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
                                         bone.scale = new RenderBase.OVector3(1, 1, 1);
                                         bone.absoluteScale = new RenderBase.OVector3(bone.scale);
 
-                                        mdl.addBone(bone);
+                                        mdl.skeleton.Add(bone);
                                     }
                                     else
                                     {
@@ -327,7 +327,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
                         line = readLine(reader);
                         parameters = Regex.Split(line, "\\s+");
 
-                        RenderBase.OModelObject obj = new RenderBase.OModelObject();
+                        RenderBase.OMesh obj = new RenderBase.OMesh();
                         List<RenderBase.CustomVertex> buffer = new List<RenderBase.CustomVertex>();
                         int materialId = 0;
                         string oldTexture = null;
@@ -343,12 +343,12 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
 
                                 if (texture != oldTexture && oldTexture != null)
                                 {
-                                    mdl.addMaterial(getMaterial(oldTexture));
+                                    mdl.material.Add(getMaterial(oldTexture));
                                     obj.materialId = (ushort)materialId++;
                                     obj.renderBuffer = buffer.ToArray();
                                     buffer.Clear();
-                                    mdl.addObject(obj);
-                                    obj = new RenderBase.OModelObject();
+                                    mdl.mesh.Add(obj);
+                                    obj = new RenderBase.OMesh();
                                 }
                                 oldTexture = texture;
                             }
@@ -382,8 +382,8 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
                                         int joint = int.Parse(parameters[j++]);
                                         float weight = float.Parse(parameters[j++], CultureInfo.InvariantCulture);
 
-                                        vertex.addNode(joint);
-                                        vertex.addWeight(weight);
+                                        vertex.node.Add(joint);
+                                        vertex.weight.Add(weight);
 
                                         obj.hasNode = true;
                                         obj.hasWeight = true;
@@ -393,7 +393,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
                                     vertex.normal = new RenderBase.OVector3(nx, ny, nz);
                                     vertex.texture0 = new RenderBase.OVector2(u, v);
 
-                                    obj.addVertex(vertex);
+                                    obj.vertices.Add(vertex);
                                     buffer.Add(RenderBase.convertVertex(vertex));
                                 }
                             }
@@ -405,24 +405,25 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
                         }
 
                         //Add the last object
-                        mdl.addMaterial(getMaterial(oldTexture));
+                        mdl.material.Add(getMaterial(oldTexture));
                         obj.materialId = (ushort)materialId++;
                         obj.renderBuffer = buffer.ToArray();
                         buffer.Clear();
-                        mdl.addObject(obj);
+                        mdl.mesh.Add(obj);
 
                         break;
                 }
             }
 
-            model.addModel(mdl);
+            model.model.Add(mdl);
             return model;
         }
 
         private static RenderBase.OMaterial getMaterial(string name)
         {
-            RenderBase.OMaterial material = MeshUtils.getGenericMaterial();
-            material.name = material.name0 = name;
+            RenderBase.OMaterial material = new RenderBase.OMaterial();
+            material.name = "material_" + name;
+            material.name0 = name;
             return material;
         }
 

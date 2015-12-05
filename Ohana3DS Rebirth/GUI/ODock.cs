@@ -57,10 +57,23 @@ namespace Ohana3DS_Rebirth.GUI
         private class windowInfoStruct
         {
             public ODockWindow window;
-            public Size originalSize;
             public SizeF windowProportions;
             public int index;
-            public dockMode dock;
+
+            private dockMode currDock;
+            public dockMode dock
+            {
+                get
+                {
+                    return currDock;
+                }
+                set
+                {
+                    currDock = value;
+                    if (window != null) window.Resizable = currDock == dockMode.Floating;
+                }
+            }
+
             public bool dockable;
             public bool hasGrip;
         }
@@ -118,8 +131,6 @@ namespace Ohana3DS_Rebirth.GUI
         ///     Please note that the Tag property of the Window will contains the indentification Index, so do not change!
         /// </summary>
         /// <param name="window">The Window (ODockWindow control)</param>
-        //// <param name="x">Initial X position of the Window</param>
-        //// <param name="y">Initial Y position of the Window</param>
         public void launch(ODockWindow window)
         {
             Controls.Add(window);
@@ -129,14 +140,12 @@ namespace Ohana3DS_Rebirth.GUI
             window.ToggleDockable += Window_ToggleDockable;
 
             int windowIndex = getAvailableIndex();
-            if ((windowIndex & 0x80000000) != 0) throw new Exception("You added too many docks!");
-            
+
             windowInfoStruct info = new windowInfoStruct
             {
                 index = windowIndex,
                 dock = dockMode.Floating,
                 window = window,
-                originalSize = window.Size,
                 dockable = true
             };
 
@@ -468,44 +477,48 @@ namespace Ohana3DS_Rebirth.GUI
                         case dockMode.Left:
                             int dragDistanceY = Cursor.Position.Y - dragMousePosition.Y;
 
-                            int belowWindow = getBelowWindow(getRectangle(windowInfo[dragIndex].window), windowInfo[dragIndex].dock, dragIndex);
-                            int belowBelowWindow = getBelowWindow(getRectangle(windowInfo[belowWindow].window), windowInfo[dragIndex].dock, belowWindow);
+                            int b = getBelowWindow(getRectangle(windowInfo[dragIndex].window), windowInfo[dragIndex].dock, dragIndex);
+                            int bb = getBelowWindow(getRectangle(windowInfo[b].window), windowInfo[dragIndex].dock, b);
+
                             int belowWindowHeight;
-                            if (windowInfo[belowWindow].hasGrip)
-                                belowWindowHeight = (windowInfo[belowBelowWindow].window.Top - (dragNearWindowLocation.Y + dragDistanceY)) - gripSize;
+                            if (windowInfo[b].hasGrip)
+                                belowWindowHeight = (windowInfo[bb].window.Top - (dragNearWindowLocation.Y + dragDistanceY)) - gripSize;
                             else
                                 belowWindowHeight = (rect.Top + rect.Height) - (dragNearWindowLocation.Y + dragDistanceY);
 
-                            if ((dragSize.Height + dragDistanceY >= minimumHeight) && (belowWindowHeight >= minimumHeight || (windowInfo[belowWindow].window.Height < minimumHeight && belowWindowHeight >= windowInfo[belowWindow].window.Height)))
-                            {
-                                windowInfo[dragIndex].window.Height = dragSize.Height + dragDistanceY;
-                                windowInfo[belowWindow].window.Top = windowInfo[dragIndex].window.Top + windowInfo[dragIndex].window.Height + gripSize;
-                                windowInfo[belowWindow].window.Height = belowWindowHeight;
-                            }
-                            else if ((dragSize.Height + dragDistanceY < minimumHeight) && (windowInfo[dragIndex].window.Height > minimumHeight))
-                            {
-                                windowInfo[dragIndex].window.Height = minimumHeight;
-                                windowInfo[belowWindow].window.Top = (windowInfo[dragIndex].window.Top + windowInfo[dragIndex].window.Height) + gripSize;
-                                
-                                if (windowInfo[belowWindow].hasGrip)
-                                    windowInfo[belowWindow].window.Height = (windowInfo[belowBelowWindow].window.Top - windowInfo[belowWindow].window.Top) - gripSize;
-                                else
-                                    windowInfo[belowWindow].window.Height = (rect.Top + rect.Height) - windowInfo[belowWindow].window.Top;
-                            }
-                            else if (belowWindowHeight < minimumHeight)
+                            if (belowWindowHeight < minimumHeight)
                             {
                                 int top;
 
-                                if (windowInfo[belowWindow].hasGrip)
-                                    top = (windowInfo[belowBelowWindow].window.Top - minimumHeight) - gripSize;
+                                if (windowInfo[b].hasGrip)
+                                    top = (windowInfo[bb].window.Top - minimumHeight) - gripSize;
                                 else
                                     top = (rect.Top + rect.Height) - minimumHeight;
 
-                                int height = (windowInfo[belowWindow].window.Top - windowInfo[dragIndex].window.Top) - gripSize;
-                                if (height < minimumHeight) return;
-                                windowInfo[belowWindow].window.Top = top;
-                                windowInfo[belowWindow].window.Height = minimumHeight;
+                                int height = (windowInfo[b].window.Top - windowInfo[dragIndex].window.Top) - gripSize;
+                                windowInfo[b].window.Top = top;
+                                windowInfo[b].window.Height = minimumHeight;
                                 windowInfo[dragIndex].window.Height = height;
+                            }
+                            else
+                            {
+                                int windowHeight = dragSize.Height + dragDistanceY;
+
+                                if (windowHeight >= minimumHeight)
+                                {
+                                    windowInfo[dragIndex].window.Height = windowHeight;
+                                    windowInfo[b].window.Height = belowWindowHeight;
+                                }
+                                else
+                                {
+                                    windowInfo[dragIndex].window.Height = minimumHeight;
+                                    if (windowInfo[b].hasGrip)
+                                        windowInfo[b].window.Height = (windowInfo[bb].window.Top - windowInfo[b].window.Top) - gripSize;
+                                    else
+                                        windowInfo[b].window.Height = (rect.Top + rect.Height) - windowInfo[b].window.Top;
+                                }
+
+                                windowInfo[b].window.Top = windowInfo[dragIndex].window.Top + windowInfo[dragIndex].window.Height + gripSize;
                             }
 
                             break;
@@ -513,51 +526,55 @@ namespace Ohana3DS_Rebirth.GUI
                         case dockMode.Top:
                             int dragDistanceX = Cursor.Position.X - dragMousePosition.X;
 
-                            int rightWindow = getRightWindow(getRectangle(windowInfo[dragIndex].window), windowInfo[dragIndex].dock, dragIndex);
-                            int rightRightWindow = getRightWindow(getRectangle(windowInfo[rightWindow].window), windowInfo[dragIndex].dock, rightWindow);
+                            int r = getRightWindow(getRectangle(windowInfo[dragIndex].window), windowInfo[dragIndex].dock, dragIndex);
+                            int rr = getRightWindow(getRectangle(windowInfo[r].window), windowInfo[dragIndex].dock, r);
+
                             int rightWindowWidth;
-                            if (windowInfo[rightWindow].hasGrip)
-                                rightWindowWidth = (windowInfo[rightRightWindow].window.Left - (dragNearWindowLocation.X + dragDistanceX)) - gripSize;
+                            if (windowInfo[r].hasGrip)
+                                rightWindowWidth = (windowInfo[rr].window.Left - (dragNearWindowLocation.X + dragDistanceX)) - gripSize;
                             else
                                 rightWindowWidth = (rect.Left + rect.Width) - (dragNearWindowLocation.X + dragDistanceX);
 
-                            if (dragSize.Width + dragDistanceX >= minimumWidth && (rightWindowWidth >= minimumWidth || (windowInfo[rightWindow].window.Width < minimumWidth && rightWindowWidth >= windowInfo[rightWindow].window.Width)))
-                            {
-                                windowInfo[dragIndex].window.Width = dragSize.Width + dragDistanceX;
-                                windowInfo[rightWindow].window.Left = windowInfo[dragIndex].window.Left + windowInfo[dragIndex].window.Width + gripSize;
-                                windowInfo[rightWindow].window.Width = rightWindowWidth;
-                            }
-                            else if ((dragSize.Width + dragDistanceX < minimumWidth) && (windowInfo[dragIndex].window.Width > minimumWidth))
-                            {
-                                windowInfo[dragIndex].window.Width = minimumWidth;
-                                windowInfo[rightWindow].window.Left = (windowInfo[dragIndex].window.Left + windowInfo[dragIndex].window.Width) + gripSize;
-                                
-                                if (windowInfo[rightWindow].hasGrip)
-                                    windowInfo[rightWindow].window.Width = (windowInfo[rightRightWindow].window.Left - windowInfo[rightWindow].window.Left) - gripSize;
-                                else
-                                    windowInfo[rightWindow].window.Width = (rect.Left + rect.Width) - windowInfo[rightWindow].window.Left;
-                            }
-                            else if (rightWindowWidth < minimumWidth)
+                            if (rightWindowWidth < minimumWidth)
                             {
                                 int left;
 
-                                if (windowInfo[rightWindow].hasGrip)
-                                     left = (windowInfo[rightRightWindow].window.Left - minimumWidth) - gripSize;
+                                if (windowInfo[r].hasGrip)
+                                    left = (windowInfo[rr].window.Left - minimumWidth) - gripSize;
                                 else
                                     left = (rect.Left + rect.Width) - minimumWidth;
 
-                                int width = (windowInfo[rightWindow].window.Left - windowInfo[dragIndex].window.Left) - gripSize;
-                                if (width < minimumWidth) return;
-                                windowInfo[rightWindow].window.Left = left;
-                                windowInfo[rightWindow].window.Width = minimumWidth;
+                                int width = (windowInfo[r].window.Left - windowInfo[dragIndex].window.Left) - gripSize;
+                                windowInfo[r].window.Left = left;
+                                windowInfo[r].window.Width = minimumWidth;
                                 windowInfo[dragIndex].window.Width = width;
+                            }
+                            else
+                            {
+                                int windowWidth = dragSize.Width + dragDistanceX;
+
+                                if (windowWidth >= minimumWidth)
+                                {
+                                    windowInfo[dragIndex].window.Width = windowWidth;
+                                    windowInfo[r].window.Width = rightWindowWidth;
+                                }
+                                else
+                                {
+                                    windowInfo[dragIndex].window.Width = minimumWidth;
+                                    if (windowInfo[r].hasGrip)
+                                        windowInfo[r].window.Width = (windowInfo[rr].window.Left - windowInfo[r].window.Left) - gripSize;
+                                    else
+                                        windowInfo[r].window.Width = (rect.Left + rect.Width) - windowInfo[r].window.Left;
+                                }
+
+                                windowInfo[r].window.Left = windowInfo[dragIndex].window.Left + windowInfo[dragIndex].window.Width + gripSize;
                             }
 
                             break;
                     }
                 }
 
-                calculateProportions();
+                calculateProportions(true);
                 ResumeDrawing();
             }
             else
@@ -774,11 +791,8 @@ namespace Ohana3DS_Rebirth.GUI
 
             if (!windowInfo[infoIndex].dockable)
             {
-                dockMode oldDock = windowInfo[infoIndex].dock;
-                windowInfo[infoIndex].window.Size = windowInfo[infoIndex].originalSize;
                 windowInfo[infoIndex].window.BringToFront();
-
-                autoArrange(oldDock, getDockRect(oldDock));
+                autoArrange(windowInfo[infoIndex].dock, getDockRect(windowInfo[infoIndex].dock));
                 arrangeCenter();
 
                 return;
@@ -853,31 +867,36 @@ namespace Ohana3DS_Rebirth.GUI
                     if (aboveWindow > -1 && windowInfo[aboveWindow].window.Height / 2 > minimumHeight)
                     {
                         if (windowInfo[aboveWindow].hasGrip)
-                        {
                             windowInfo[aboveWindow].window.Height = ((windowInfo[aboveWindow].window.Height + gripSize) / 2) - gripSize;
-                        }
                         else
                         {
                             windowInfo[aboveWindow].window.Height = (windowInfo[aboveWindow].window.Height / 2) - gripSize;
                             windowInfo[aboveWindow].hasGrip = true;
                         }
-                        int top = (windowInfo[aboveWindow].window.Top - rect.Top) + (windowInfo[aboveWindow].window.Height + gripSize);
 
-                        window.Location = new Point(currentRect.X, rect.Top + top);
-                        int height = currentRect.Height - top;
-                        if (belowWindow > -1)
+                        if (mousePoint.Y < windowInfo[aboveWindow].window.Top + windowInfo[aboveWindow].window.Height)
                         {
-                            height = ((windowInfo[belowWindow].window.Top - rect.Top) - top) - gripSize;
+                            int top = windowInfo[aboveWindow].window.Top;
+                            windowInfo[aboveWindow].window.Top += windowInfo[aboveWindow].window.Height;
+                            window.Location = new Point(currentRect.X, top);
                             windowInfo[infoIndex].hasGrip = true;
+                            window.Size = new Size(currentRect.Width, (windowInfo[aboveWindow].window.Top - top) - gripSize);
                         }
                         else
                         {
-                            windowInfo[infoIndex].hasGrip = false;
+                            int top = windowInfo[aboveWindow].window.Top + (windowInfo[aboveWindow].window.Height + gripSize);
+                            window.Location = new Point(currentRect.X, top);
+                            windowInfo[infoIndex].hasGrip = belowWindow > -1;
+                            int height;
+                            if (windowInfo[infoIndex].hasGrip)
+                                height = (windowInfo[belowWindow].window.Top  - top) - gripSize;
+                            else
+                                height = currentRect.Height - top;
+
+                            window.Size = new Size(currentRect.Width, height);
                         }
 
-                        window.Size = new Size(currentRect.Width, height);
                         window.SendToBack();
-
                         windowInfo[infoIndex].dock = currentDock;
                     }
                     else if (belowWindow > -1 && windowInfo[belowWindow].window.Height / 2 > minimumHeight)
@@ -887,7 +906,8 @@ namespace Ohana3DS_Rebirth.GUI
                         {
                             int belowBelowWindow = getBelowWindow(getRectangle(windowInfo[belowWindow].window), currentDock, getWindowInfoIndex((int)windowInfo[belowWindow].window.Tag));
                             height = (windowInfo[belowWindow].window.Height + gripSize) / 2;
-                            windowInfo[belowWindow].window.Height = (windowInfo[belowBelowWindow].window.Top - (windowInfo[belowWindow].window.Top + height)) - gripSize;
+                            int belowWindowTop = windowInfo[belowWindow].window.Top + height;
+                            windowInfo[belowWindow].window.Height = (windowInfo[belowBelowWindow].window.Top - belowWindowTop) - gripSize;
                         }
                         else
                         {
@@ -915,9 +935,7 @@ namespace Ohana3DS_Rebirth.GUI
                         windowInfo[infoIndex].dock = currentDock;
                     }
                     else
-                    {
                          window.BringToFront();
-                    }
 
                     window.ResumeLayout();
                 }
@@ -960,31 +978,36 @@ namespace Ohana3DS_Rebirth.GUI
                     if (leftWindow > -1 && windowInfo[leftWindow].window.Width / 2 > minimumWidth)
                     {
                         if (windowInfo[leftWindow].hasGrip)
-                        {
                             windowInfo[leftWindow].window.Width = ((windowInfo[leftWindow].window.Width + gripSize) / 2) - gripSize;
-                        }
                         else
                         {
                             windowInfo[leftWindow].window.Width = (windowInfo[leftWindow].window.Width / 2) - gripSize;
                             windowInfo[leftWindow].hasGrip = true;
                         }
-                        int left = (windowInfo[leftWindow].window.Left - rect.Left) + (windowInfo[leftWindow].window.Width + gripSize);
 
-                        window.Location = new Point(rect.Left + left, currentRect.Y);
-                        int width = currentRect.Width - left;
-                        if (rightWindow > -1)
+                        if (mousePoint.X < windowInfo[leftWindow].window.Left + windowInfo[leftWindow].window.Width)
                         {
-                            width = ((windowInfo[rightWindow].window.Left - rect.Left) - left) - gripSize;
+                            int left = windowInfo[leftWindow].window.Left;
+                            windowInfo[leftWindow].window.Left += windowInfo[leftWindow].window.Width;
+                            window.Location = new Point(left, currentRect.Y);
                             windowInfo[infoIndex].hasGrip = true;
+                            window.Size = new Size((windowInfo[leftWindow].window.Left - left) - gripSize, currentRect.Height);
                         }
                         else
                         {
-                            windowInfo[infoIndex].hasGrip = false;
+                            int left = windowInfo[leftWindow].window.Left + (windowInfo[leftWindow].window.Width + gripSize);
+                            window.Location = new Point(left, currentRect.Y);
+                            windowInfo[infoIndex].hasGrip = rightWindow > -1;
+                            int width;
+                            if (windowInfo[infoIndex].hasGrip)
+                                width = ((windowInfo[rightWindow].window.Left - rect.Left) - left) - gripSize;
+                            else
+                                width = currentRect.Width - left;
+
+                            window.Size = new Size(width, currentRect.Height);
                         }
 
-                        window.Size = new Size(width, currentRect.Height);
                         window.SendToBack();
-
                         windowInfo[infoIndex].dock = currentDock;
                     }
                     else if (rightWindow > -1 && windowInfo[rightWindow].window.Width / 2 > minimumWidth)
@@ -994,7 +1017,8 @@ namespace Ohana3DS_Rebirth.GUI
                         {
                             int rightRightWindow = getRightWindow(getRectangle(windowInfo[rightWindow].window), currentDock, getWindowInfoIndex((int)windowInfo[rightWindow].window.Tag));
                             width = (windowInfo[rightWindow].window.Width + gripSize) / 2;
-                            windowInfo[rightWindow].window.Width = (windowInfo[rightRightWindow].window.Left - (windowInfo[rightWindow].window.Left + width)) - gripSize;
+                            int rightWindowLeft = windowInfo[rightWindow].window.Left + width;
+                            windowInfo[rightWindow].window.Width = (windowInfo[rightRightWindow].window.Left - rightWindowLeft) - gripSize;
                         }
                         else
                         {
@@ -1022,21 +1046,12 @@ namespace Ohana3DS_Rebirth.GUI
                         windowInfo[infoIndex].dock = currentDock;
                     }
                     else
-                    {
                         window.BringToFront();
-                    }
 
                     window.ResumeLayout();
                 }
             }
 
-            if (windowInfo[infoIndex].dock == dockMode.Floating)
-            {
-                windowInfo[infoIndex].window.Size = windowInfo[infoIndex].originalSize;
-
-                //Don't let the Form go to a unreachable position.
-                if (windowInfo[infoIndex].window.Left + windowInfo[infoIndex].window.Width < 40) windowInfo[infoIndex].window.Location = Point.Empty;
-            }
             autoArrangeAll();
             calculateProportions(true);
         }
@@ -1058,11 +1073,8 @@ namespace Ohana3DS_Rebirth.GUI
 
             if (windowInfo[infoIndex].dock != dockMode.Floating)
             {
-                windowInfo[infoIndex].dock = dockMode.Floating;
-                windowInfo[infoIndex].window.Size = windowInfo[infoIndex].originalSize;
-                
+                windowInfo[infoIndex].dock = dockMode.Floating;               
                 autoArrangeAll();
-
                 calculateProportions();
             }
         }
@@ -1312,7 +1324,6 @@ namespace Ohana3DS_Rebirth.GUI
         /// <summary>
         ///     Check if the control have any Window docked.
         /// </summary>
-        ///// <param name="dock"></param>
         /// <returns></returns>
         private bool hasDockedWindow()
         {
@@ -1322,7 +1333,7 @@ namespace Ohana3DS_Rebirth.GUI
         /// <summary>
         ///     Get the first window from top to bottom of a given dock side.
         /// </summary>
-        /// <param name="dock"></param>
+        /// <param name="dock">Left or Right dock side</param>
         /// <returns></returns>
         private int getTopmostWindow(dockMode dock)
         {
@@ -1347,7 +1358,7 @@ namespace Ohana3DS_Rebirth.GUI
         /// <summary>
         ///     Get the last window from top to bottom of a given dock side.
         /// </summary>
-        /// <param name="dock"></param>
+        /// <param name="dock">Left or Right dock side</param>
         /// <returns></returns>
         private int getBottommostWindow(dockMode dock)
         {
@@ -1372,7 +1383,7 @@ namespace Ohana3DS_Rebirth.GUI
         /// <summary>
         ///     Get the first window from left to right of a given dock side.
         /// </summary>
-        /// <param name="dock"></param>
+        /// <param name="dock">Top or Bottom dock side</param>
         /// <returns></returns>
         private int getLeftmostWindow(dockMode dock)
         {
@@ -1397,7 +1408,7 @@ namespace Ohana3DS_Rebirth.GUI
         /// <summary>
         ///     Get the last window from left to right of a given dock side.
         /// </summary>
-        /// <param name="dock"></param>
+        /// <param name="dock">Top or Bottom dock side</param>
         /// <returns></returns>
         private int getRightmostWindow(dockMode dock)
         {
@@ -1573,9 +1584,7 @@ namespace Ohana3DS_Rebirth.GUI
                             windowInfo[index].window.Height -= bottomHeight;
                         }
                         else
-                        {
                             hasBottom = false;
-                        }
                     }
 
                     return hasBottom;
@@ -1593,9 +1602,7 @@ namespace Ohana3DS_Rebirth.GUI
                             windowInfo[index].window.Top += topHeight;
                         }
                         else
-                        {
                             hasTop = false;
-                        }
                     }
 
                     return hasTop;

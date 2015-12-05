@@ -3,7 +3,7 @@ using System.Text;
 using System.Globalization;
 using System.IO;
 
-namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
+namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
 {
     class OBJ
     {
@@ -14,15 +14,15 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.GenericFormats
             RenderBase.OModel mdl = model.model[modelIndex];
 
             int faceIndexBase = 1;
-            for (int objIndex = 0; objIndex < mdl.modelObject.Count; objIndex++)
+            for (int objIndex = 0; objIndex < mdl.mesh.Count; objIndex++)
             {
-                output.AppendLine("g " + mdl.modelObject[objIndex].name);
+                output.AppendLine("g " + mdl.mesh[objIndex].name);
                 output.AppendLine(null);
 
-                output.AppendLine("usemtl " + mdl.material[mdl.modelObject[objIndex].materialId].name0 + ".png");
+                output.AppendLine("usemtl " + mdl.material[mdl.mesh[objIndex].materialId].name0 + ".png");
                 output.AppendLine(null);
 
-                MeshUtils.optimizedMesh obj = MeshUtils.optimizeMesh(mdl.modelObject[objIndex]);
+                MeshUtils.optimizedMesh obj = MeshUtils.optimizeMesh(mdl.mesh[objIndex]);
                 foreach (RenderBase.OVertex vertex in obj.vertices)
                 {
                     output.AppendLine("v " + getString(vertex.position.x) + " " + getString(vertex.position.y) + " " + getString(vertex.position.z));

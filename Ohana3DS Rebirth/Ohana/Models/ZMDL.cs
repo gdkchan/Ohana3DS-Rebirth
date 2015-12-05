@@ -1,10 +1,13 @@
-﻿//Fantasy Life ZMDL Model Import/Export made for Ohana3DS by gdkchan
-//Please give credits if you use in your project
+﻿/* 
+ * Fantasy Life ZMDL Model Importer made for Ohana3DS by gdkchan.
+ * Please give credits if you use in your project.
+ */
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Ohana3DS_Rebirth.Ohana.ModelFormats
+namespace Ohana3DS_Rebirth.Ohana.Models
 {
     /// <summary>
     ///     Fantasy Life ZMDL class.
@@ -13,17 +16,14 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
     /// </summary>
     class ZMDL
     {
-        private enum vshAttribute
-        {
-            position = 0,
-            normal = 1,
-            color = 2,
-            textureCoordinate0 = 3,
-            textureCoordinate1 = 4,
-            textureCoordinate2 = 5,
-            boneIndex = 6,
-            boneWeight = 7
-        }
+        const int aPosition = 0;
+        const int aNormal = 1;
+        const int aColor = 2;
+        const int aTex0 = 3;
+        const int aTex1 = 4;
+        const int aTex2 = 5;
+        const int aNode = 6;
+        const int aWeight = 7;
 
         private struct attributeEntry
         {
@@ -71,7 +71,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
             List<byte> materialObjectBinding = new List<byte>();
             for (int materialIndex = 0; materialIndex < materialsCount; materialIndex++)
             {
-                RenderBase.OMaterial material = MeshUtils.getGenericMaterial();
+                RenderBase.OMaterial material = new RenderBase.OMaterial();
 
                 material.name = IOUtils.readString(input, (uint)(materialsOffset + materialIndex * 0xb4));
                 data.Seek(materialsOffset + (materialIndex * 0xb4) + 0x94, SeekOrigin.Begin);
@@ -84,14 +84,14 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                 material.name0 = IOUtils.readString(input, textureReferenceOffset);
                 data.Seek(textureReferenceOffset + 0x40, SeekOrigin.Begin);
                 while ((data.Position & 3) != 0) input.ReadByte(); //Align Word
-                data.Seek(0x30, SeekOrigin.Current); //Unknow matrix (possibly UV transform)
+                data.Seek(0x30, SeekOrigin.Current); //Unknown matrix (possibly UV transform)
                 input.ReadUInt32();
                 input.ReadByte();
                 input.ReadByte();
                 byte wrap = input.ReadByte();
                 input.ReadByte();
 
-                model.addMaterial(material);
+                model.material.Add(material);
             }
 
             //Skeleton
@@ -111,12 +111,15 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                 bone.parentId = input.ReadInt16();
                 input.ReadUInt16();
 
-                model.addBone(bone);
+                model.skeleton.Add(bone);
             }
 
             //Meshes
             for (int objIndex = 0; objIndex < modelObjectsCount; objIndex++)
             {
+                RenderBase.OMesh obj = new RenderBase.OMesh();
+                obj.name = String.Format("mesh_{0}", objIndex);
+
                 data.Seek(modelOffset + objIndex * 0xc4, SeekOrigin.Begin);
 
                 attributeEntry[] attributes = new attributeEntry[9];
@@ -126,6 +129,18 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                     attributes[attribute].offset = input.ReadByte() * 4;
                     attributes[attribute].attributeLength = input.ReadByte();
                     attributes[attribute].stride = input.ReadUInt16() * 4;
+
+                    if (attributes[attribute].attributeLength > 0)
+                    {
+                        switch (attribute)
+                        {
+                            case aNormal: obj.hasNormal = true; break;
+                            case aColor: obj.hasColor = true; break;
+                            case aTex0: obj.texUVCount = 1; break;
+                            case aNode: obj.hasNode = true; break;
+                            case aWeight: obj.hasWeight = true; break;
+                        }
+                    }
                 }
 
                 int vertexStride = attributes[8].stride;
@@ -133,9 +148,6 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                 uint facesHeaderEntries = input.ReadUInt32();
                 uint vertexBufferOffset = input.ReadUInt32();
                 uint vertexBufferLength = input.ReadUInt32() * 4;
-
-                RenderBase.OModelObject obj = new RenderBase.OModelObject();
-                obj.name = String.Format("mesh_{0}", objIndex);
 
                 List<RenderBase.CustomVertex> vertexBuffer = new List<RenderBase.CustomVertex>();
                 for (int faceIndex = 0; faceIndex < facesHeaderEntries; faceIndex++)
@@ -162,46 +174,45 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
 
                         long position = data.Position;
                         long vertexOffset = vertexBufferOffset + index * vertexStride;
-                        data.Seek(vertexOffset + attributes[(int)vshAttribute.position].offset, SeekOrigin.Begin);
+                        data.Seek(vertexOffset + attributes[aPosition].offset, SeekOrigin.Begin);
                         vertex.position = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
 
-                        if (attributes[(int)vshAttribute.normal].attributeLength > 0)
+                        if (attributes[aNormal].attributeLength > 0)
                         {
-                            data.Seek(vertexOffset + attributes[(int)vshAttribute.normal].offset, SeekOrigin.Begin);
+                            data.Seek(vertexOffset + attributes[aNormal].offset, SeekOrigin.Begin);
                             vertex.normal = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
                         }
 
-                        if (attributes[(int)vshAttribute.color].attributeLength > 0)
+                        if (attributes[aColor].attributeLength > 0)
                         {
-                            data.Seek(vertexOffset + attributes[(int)vshAttribute.color].offset, SeekOrigin.Begin);
-                            uint r = (byte)(input.ReadSingle() * 0xff);
-                            uint g = (byte)(input.ReadSingle() * 0xff);
-                            uint b = (byte)(input.ReadSingle() * 0xff);
-                            uint a = (byte)(input.ReadSingle() * 0xff);
+                            data.Seek(vertexOffset + attributes[aColor].offset, SeekOrigin.Begin);
+                            uint r = MeshUtils.saturate(input.ReadSingle() * 0xff);
+                            uint g = MeshUtils.saturate(input.ReadSingle() * 0xff);
+                            uint b = MeshUtils.saturate(input.ReadSingle() * 0xff);
+                            uint a = MeshUtils.saturate(input.ReadSingle() * 0xff);
                             vertex.diffuseColor = b | (g << 8) | (r << 16) | (a << 24);
                         }
 
-                        if (attributes[(int)vshAttribute.textureCoordinate0].attributeLength > 0)
+                        if (attributes[aTex0].attributeLength > 0)
                         {
-                            data.Seek(vertexOffset + attributes[(int)vshAttribute.textureCoordinate0].offset, SeekOrigin.Begin);
+                            data.Seek(vertexOffset + attributes[aTex0].offset, SeekOrigin.Begin);
                             vertex.texture0 = new RenderBase.OVector2(input.ReadSingle(), input.ReadSingle());
                         }
 
-                        for (int boneIndex = 0; boneIndex < attributes[(int)vshAttribute.boneIndex].attributeLength; boneIndex++)
+                        for (int boneIndex = 0; boneIndex < attributes[aNode].attributeLength; boneIndex++)
                         {
-                            data.Seek(vertexOffset + attributes[(int)vshAttribute.boneIndex].offset + (boneIndex * 4), SeekOrigin.Begin);
-                            int b = (int)input.ReadSingle();
-                            if (b < nodeList.Count) vertex.addNode(nodeList[b]); //Check, just to be sure
+                            data.Seek(vertexOffset + attributes[aNode].offset + (boneIndex * 4), SeekOrigin.Begin);
+                            vertex.node.Add(nodeList[(int)input.ReadSingle()]);
                         }
 
-                        for (int boneWeight = 0; boneWeight < attributes[(int)vshAttribute.boneWeight].attributeLength; boneWeight++)
+                        for (int boneWeight = 0; boneWeight < attributes[aWeight].attributeLength; boneWeight++)
                         {
-                            data.Seek(vertexOffset + attributes[(int)vshAttribute.boneWeight].offset + (boneWeight * 4), SeekOrigin.Begin);
-                            vertex.addWeight(input.ReadSingle());
+                            data.Seek(vertexOffset + attributes[aWeight].offset + (boneWeight * 4), SeekOrigin.Begin);
+                            vertex.weight.Add(input.ReadSingle());
                         }
 
                         MeshUtils.calculateBounds(model, vertex);
-                        obj.addVertex(vertex);
+                        obj.vertices.Add(vertex);
                         vertexBuffer.Add(RenderBase.convertVertex(vertex));
 
                         data.Seek(position, SeekOrigin.Begin);
@@ -210,17 +221,13 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
 
                 int materialId = materialObjectBinding.IndexOf((byte)objIndex);
                 if (materialId > -1) obj.materialId = (ushort)materialId;
-                obj.hasNormal = true;
-                obj.texUVCount = 1;
-                obj.hasNode = true;
-                obj.hasWeight = true;
                 obj.renderBuffer = vertexBuffer.ToArray();
-                model.addObject(obj);
+                model.mesh.Add(obj);
             }
 
             data.Close();
 
-            models.addModel(model);
+            models.model.Add(model);
             return models;
         }
     }

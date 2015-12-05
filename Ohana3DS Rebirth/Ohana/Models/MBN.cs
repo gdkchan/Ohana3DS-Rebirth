@@ -1,8 +1,13 @@
-﻿using System;
+﻿/*
+ * Importer for the *.mbn format used on Super Smash Bros for 3DS.
+ * Made by gdkchan for Ohana3DS.
+ */
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Ohana3DS_Rebirth.Ohana.ModelFormats
+namespace Ohana3DS_Rebirth.Ohana.Models
 {
     class MBN
     {
@@ -73,8 +78,8 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
             {
                 models = new RenderBase.OModelGroup();
                 model = new RenderBase.OModel();
-                model.name = "mdl";
-                model.addMaterial(MeshUtils.getGenericMaterial());
+                model.name = "model";
+                model.material.Add(new RenderBase.OMaterial());
             }
 
             ushort format = input.ReadUInt16();
@@ -157,15 +162,15 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                 }
 
                 List<RenderBase.CustomVertex> vertexBuffer = new List<RenderBase.CustomVertex>();
-                RenderBase.OModelObject obj;
+                RenderBase.OMesh obj;
                 if (isBCHLoaded)
                 {
-                    obj = model.modelObject[0];
-                    model.modelObject.RemoveAt(0);
+                    obj = model.mesh[0];
+                    model.mesh.RemoveAt(0);
                 }
                 else
                 {
-                    obj = new RenderBase.OModelObject();
+                    obj = new RenderBase.OMesh();
                     obj.name = "mesh_" + i.ToString();
                 }
 
@@ -217,19 +222,19 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                                 case vtxAttributeType.boneIndex:
                                     byte n0 = vtxBuffer[pos];
                                     byte n1 = vtxBuffer[pos + 1];
-                                    vertex.addNode((int)idxDescriptors[faceIndex].nodeList[n0]);
-                                    vertex.addNode((int)idxDescriptors[faceIndex].nodeList[n1]);
+                                    vertex.node.Add((int)idxDescriptors[faceIndex].nodeList[n0]);
+                                    vertex.node.Add((int)idxDescriptors[faceIndex].nodeList[n1]);
                                     break;
                                 case vtxAttributeType.boneWeight:
                                     RenderBase.OVector2 w = getVector2(vtxBuffer, pos, att.format, scale);
-                                    vertex.addWeight(w.x);
-                                    vertex.addWeight(w.y);
+                                    vertex.weight.Add(w.x);
+                                    vertex.weight.Add(w.y);
                                     break;
                             }
                         }
 
                         MeshUtils.calculateBounds(model, vertex);
-                        obj.addVertex(vertex);
+                        obj.vertices.Add(vertex);
                         vertexBuffer.Add(RenderBase.convertVertex(vertex));
                     }
 
@@ -241,10 +246,10 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats
                 }
 
                 obj.renderBuffer = vertexBuffer.ToArray();
-                model.modelObject.Add(obj);
+                model.mesh.Add(obj);
             }
 
-            models.addModel(model);
+            models.model.Add(model);
 
             data.Close();
             return models;

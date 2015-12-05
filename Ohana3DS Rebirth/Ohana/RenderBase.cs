@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 
 namespace Ohana3DS_Rebirth.Ohana
@@ -41,6 +42,16 @@ namespace Ohana3DS_Rebirth.Ohana
             /// </summary>
             public OVector2()
             {
+            }
+
+            /// <summary>
+            ///     Writes the Vector to a Stream using a BinaryWriter.
+            /// </summary>
+            /// <param name="output">The Writer of the output Stream</param>
+            public void write(BinaryWriter output)
+            {
+                output.Write(x);
+                output.Write(y);
             }
 
             public override bool Equals(object obj)
@@ -110,6 +121,17 @@ namespace Ohana3DS_Rebirth.Ohana
             /// </summary>
             public OVector3()
             {
+            }
+
+            /// <summary>
+            ///     Writes the Vector to a Stream using a BinaryWriter.
+            /// </summary>
+            /// <param name="output">The Writer of the output Stream</param>
+            public void write(BinaryWriter output)
+            {
+                output.Write(x);
+                output.Write(y);
+                output.Write(z);
             }
 
             /// <summary>
@@ -200,6 +222,18 @@ namespace Ohana3DS_Rebirth.Ohana
             /// </summary>
             public OVector4()
             {
+            }
+
+            /// <summary>
+            ///     Writes the Vector to a Stream using a BinaryWriter.
+            /// </summary>
+            /// <param name="output">The Writer of the output Stream</param>
+            public void write(BinaryWriter output)
+            {
+                output.Write(x);
+                output.Write(y);
+                output.Write(z);
+                output.Write(w);
             }
 
             public override bool Equals(object obj)
@@ -304,25 +338,6 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Add a Node to the Vertex.
-            ///     It may contain multiple nodes, and each node must be the Id of a Bone on the Skeleton.
-            /// </summary>
-            /// <param name="_node"></param>
-            public void addNode(int _node)
-            {
-                node.Add(_node);
-            }
-
-            /// <summary>
-            ///     Add Weighting information of the Vertex.
-            /// </summary>
-            /// <param name="_weight"></param>
-            public void addWeight(float _weight)
-            {
-                weight.Add(_weight);
-            }
-
-            /// <summary>
             ///     Checks if two vertex are equal by comparing each element.
             /// </summary>
             /// <param name="vertex">Vertex to compare</param>
@@ -341,6 +356,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        /// <summary>
+        ///     Custom Vertex structure used on the DirectX Vertex Stream.
+        /// </summary>
         public struct CustomVertex
         {
             public float x, y, z;
@@ -420,15 +438,15 @@ namespace Ohana3DS_Rebirth.Ohana
             public float M43 { get { return matrix[3, 2]; } set { matrix[3, 2] = value; } }
             public float M44 { get { return matrix[3, 3]; } set { matrix[3, 3] = value; } }
 
-            public float this[int a, int b]
+            public float this[int col, int row]
             {
                 get
                 {
-                    return matrix[a, b];
+                    return matrix[col, row];
                 }
                 set
                 {
-                    matrix[a, b] = value;
+                    matrix[col, row] = value;
                 }
             }
 
@@ -535,7 +553,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Creates a scaling Matrix with a given proportion size.
+            ///     Creates a scaling Matrix with a given 3-D proportion size.
             /// </summary>
             /// <param name="scale">The Scale proportions</param>
             /// <returns></returns>
@@ -546,6 +564,22 @@ namespace Ohana3DS_Rebirth.Ohana
                     M11 = scale.x, 
                     M22 = scale.y, 
                     M33 = scale.z
+                };
+
+                return output;
+            }
+
+            /// <summary>
+            ///     Creates a scaling Matrix with a given 2-D proportion size.
+            /// </summary>
+            /// <param name="scale">The Scale proportions</param>
+            /// <returns></returns>
+            public static OMatrix scale(OVector2 scale)
+            {
+                OMatrix output = new OMatrix
+                {
+                    M11 = scale.x,
+                    M22 = scale.y
                 };
 
                 return output;
@@ -623,7 +657,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Creates a translation Matrix with the given position offset.
+            ///     Creates a translation Matrix with the given 3-D position offset.
             /// </summary>
             /// <param name="position">The Position offset</param>
             /// <returns></returns>
@@ -634,6 +668,22 @@ namespace Ohana3DS_Rebirth.Ohana
                     M41 = position.x, 
                     M42 = position.y, 
                     M43 = position.z
+                };
+
+                return output;
+            }
+
+            /// <summary>
+            ///     Creates a translation Matrix with the given 2-D position offset.
+            /// </summary>
+            /// <param name="position">The Position offset</param>
+            /// <returns></returns>
+            public static OMatrix translate(OVector2 position)
+            {
+                OMatrix output = new OMatrix
+                {
+                    M31 = position.x,
+                    M32 = position.y
                 };
 
                 return output;
@@ -682,9 +732,9 @@ namespace Ohana3DS_Rebirth.Ohana
         ///     Mesh of a model. A model is usually composed of several meshes.
         ///     For example, a human character may have one mesh for the head, other for the body, other for members and so on...
         /// </summary>
-        public class OModelObject
+        public class OMesh
         {
-            public List<OVertex> obj;
+            public List<OVertex> vertices;
             public CustomVertex[] renderBuffer;
             public ushort materialId;
             public ushort renderPriority;
@@ -699,29 +749,11 @@ namespace Ohana3DS_Rebirth.Ohana
             public bool hasWeight;
             public int texUVCount;
 
-            public OModelObject()
+            public OMesh()
             {
-                obj = new List<OVertex>();
+                vertices = new List<OVertex>();
                 boundingBox = new List<OOrientedBoundingBox>();
                 isVisible = true;
-            }
-
-            /// <summary>
-            ///     Adds a new Vertex to the Object.
-            /// </summary>
-            /// <param name="vertex">The Vertex</param>
-            public void addVertex(OVertex vertex)
-            {
-                obj.Add(vertex);
-            }
-
-            /// <summary>
-            ///     Adds a new Bounding Box to the Object.
-            /// </summary>
-            /// <param name="bBox">The Bounding Box</param>
-            public void addBoundingBox(OOrientedBoundingBox bBox)
-            {
-                boundingBox.Add(bBox);
             }
         }
 
@@ -1038,6 +1070,7 @@ namespace Ohana3DS_Rebirth.Ohana
         /// </summary>
         public struct OFragmentSampler
         {
+            public bool isAbsolute;
             public OFragmentSamplerInput input;
             public OFragmentSamplerScale scale;
             public string samplerName;
@@ -1259,6 +1292,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public OBlendOperation blend;
             public OStencilOperation stencil;
         }
+
         /// <summary>
         ///     The input format is the following: Id@Name.
         ///     The Id is used to choose data inside the group "Name", Id can be another name or an index.
@@ -1343,6 +1377,32 @@ namespace Ohana3DS_Rebirth.Ohana
                 textureCoordinator = new OTextureCoordinator[3];
                 textureMapper = new OTextureMapper[3];
                 fragmentShader = new OFragmentShader();
+
+                name = "material";
+
+                fragmentShader.alphaTest.isTestEnabled = true;
+                fragmentShader.alphaTest.testFunction = OTestFunction.greaterOrEqual;
+                fragmentShader.alphaTest.testReference = 0x7f;
+
+                textureMapper[0].wrapU = OTextureWrap.repeat;
+                textureMapper[0].wrapV = OTextureWrap.repeat;
+
+                textureMapper[0].minFilter = OTextureMinFilter.linearMipmapLinear;
+                textureMapper[0].magFilter = OTextureMagFilter.linear;
+
+                for (int i = 0; i < 6; i++)
+                {
+                    fragmentShader.textureCombiner[i].rgbSource[0] = OCombineSource.texture0;
+                    fragmentShader.textureCombiner[i].rgbSource[1] = OCombineSource.primaryColor;
+                    fragmentShader.textureCombiner[i].combineRgb = OCombineOperator.modulate;
+                    fragmentShader.textureCombiner[i].alphaSource[0] = OCombineSource.texture0;
+                    fragmentShader.textureCombiner[i].rgbScale = 1;
+                    fragmentShader.textureCombiner[i].alphaScale = 1;
+                }
+
+                fragmentOperation.depth.isTestEnabled = true;
+                fragmentOperation.depth.testFunction = OTestFunction.lessOrEqual;
+                fragmentOperation.depth.isMaskEnabled = true;
             }
         }
 
@@ -1393,7 +1453,7 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public string name;
             public uint layerId;
-            public List<OModelObject> modelObject;
+            public List<OMesh> mesh;
             public List<OBone> skeleton;
             public List<OMaterial> material;
             public List<OMetaData> userData;
@@ -1403,7 +1463,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
             public OModel()
             {
-                modelObject = new List<OModelObject>();
+                mesh = new List<OMesh>();
                 skeleton = new List<OBone>();
                 material = new List<OMaterial>();
                 userData = new List<OMetaData>();
@@ -1411,33 +1471,28 @@ namespace Ohana3DS_Rebirth.Ohana
                 minVector = new OVector3();
                 maxVector = new OVector3();
             }
+        }
 
-            /// <summary>
-            ///     Adds a Object to the model.
-            /// </summary>
-            /// <param name="obj">The Object</param>
-            public void addObject(OModelObject obj)
-            {
-                modelObject.Add(obj);
-            }
-
-            /// <summary>
-            ///     Adds a Bone to the skeleton.
-            /// </summary>
-            /// <param name="bone">The Bone</param>
-            public void addBone(OBone bone)
-            {
-                skeleton.Add(bone);
-            }
-
-            /// <summary>
-            ///     Adds a Material to the model.
-            /// </summary>
-            /// <param name="mat">The Material</param>
-            public void addMaterial(OMaterial mat)
-            {
-                material.Add(mat);
-            }
+        /// <summary>
+        ///     Format of the texture used on the PICA200.
+        /// </summary>
+        public enum OTextureFormat
+        {
+            rgba8 = 0,
+            rgb8 = 1,
+            rgba5551 = 2,
+            rgb565 = 3,
+            rgba4 = 4,
+            la8 = 5,
+            hilo8 = 6,
+            l8 = 7,
+            a8 = 8,
+            la4 = 9,
+            l4 = 0xa,
+            a4 = 0xb,
+            etc1 = 0xc,
+            etc1a4 = 0xd,
+            dontCare
         }
 
         /// <summary>
@@ -2157,123 +2212,6 @@ namespace Ohana3DS_Rebirth.Ohana
                 cameraAnimation = new OAnimationListBase();
                 fogAnimation = new OAnimationListBase();
                 scene = new List<OScene>();
-            }
-
-            /// <summary>
-            ///     Adds a new Model.
-            /// </summary>
-            /// <param name="_model">The Model</param>
-            public void addModel(OModel _model)
-            {
-                model.Add(_model);
-            }
-
-            /// <summary>
-            ///     Adds a new Texture.
-            /// </summary>
-            /// <param name="_texture">The Texture</param>
-            public void addTexture(OTexture _texture)
-            {
-                texture.Add(_texture);
-            }
-
-            /// <summary>
-            ///     Adds a new LookUp Table.
-            /// </summary>
-            /// <param name="_lookUpTable">The LUT</param>
-            public void addLUT(OLookUpTable _lookUpTable)
-            {
-                lookUpTable.Add(_lookUpTable);
-            }
-
-            /// <summary>
-            ///     Adds a new Light.
-            /// </summary>
-            /// <param name="_light">The Light</param>
-            public void addLight(OLight _light)
-            {
-                light.Add(_light);
-            }
-
-            /// <summary>
-            ///     Adds a new Camera.
-            /// </summary>
-            /// <param name="_camera">The Camera</param>
-            public void addCamera(OCamera _camera)
-            {
-                camera.Add(_camera);
-            }
-
-            /// <summary>
-            ///     Adds a new Fog.
-            /// </summary>
-            /// <param name="_fog">The Fog</param>
-            public void addFog(OFog _fog)
-            {
-                fog.Add(_fog);
-            }
-
-            /// <summary>
-            ///     Adds a new Skeletal Animation.
-            /// </summary>
-            /// <param name="_skeletalAnimation">The Skeletal Animation</param>
-            public void addSkeletalAnimaton(OSkeletalAnimation _skeletalAnimation)
-            {
-                skeletalAnimation.list.Add(_skeletalAnimation);
-            }
-
-            /// <summary>
-            ///     Adds a new Material Animation.
-            /// </summary>
-            /// <param name="_materialColorAnimation">The Material Animation</param>
-            public void addMaterialAnimation(OMaterialAnimation _materialAnimation)
-            {
-                materialAnimation.list.Add(_materialAnimation);
-            }
-
-            /// <summary>
-            ///     Adds a new Visibility Animation.
-            /// </summary>
-            /// <param name="_visibilityAnimation">The Visibility Animation</param>
-            public void addVisibilityAnimation(OVisibilityAnimation _visibilityAnimation)
-            {
-                visibilityAnimation.list.Add(_visibilityAnimation);
-            }
-
-            /// <summary>
-            ///     Adds a new Light Animation.
-            /// </summary>
-            /// <param name="_lightAnimation">The Light Animation</param>
-            public void addLightAnimation(OLightAnimation _lightAnimation)
-            {
-                lightAnimation.list.Add(_lightAnimation);
-            }
-
-            /// <summary>
-            ///     Adds a new Camera Animation.
-            /// </summary>
-            /// <param name="_cameraAnimation">The Camera Animation</param>
-            public void addCameraAnimation(OCameraAnimation _cameraAnimation)
-            {
-                cameraAnimation.list.Add(_cameraAnimation);
-            }
-
-            /// <summary>
-            ///     Adds a new Fog Animation.
-            /// </summary>
-            /// <param name="_fogAnimation">The Fog Animation</param>
-            public void addFogAnimation(OFogAnimation _fogAnimation)
-            {
-                fogAnimation.list.Add(_fogAnimation);
-            }
-
-            /// <summary>
-            ///     Adds a new Scene Environment.
-            /// </summary>
-            /// <param name="_scene">The Scene Environment</param>
-            public void addScene(OScene _scene)
-            {
-                scene.Add(_scene);
             }
         }
     }

@@ -35,8 +35,17 @@
             this.BtnClear = new Ohana3DS_Rebirth.GUI.OButton();
             this.BtnExport = new Ohana3DS_Rebirth.GUI.OButton();
             this.BtnImport = new Ohana3DS_Rebirth.GUI.OButton();
+            this.ContentContainer.SuspendLayout();
             this.TopControls.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // ContentContainer
+            // 
+            this.ContentContainer.Controls.Add(this.TextureList);
+            this.ContentContainer.Controls.Add(this.TopControls);
+            this.ContentContainer.Size = new System.Drawing.Size(248, 392);
+            this.ContentContainer.Controls.SetChildIndex(this.TopControls, 0);
+            this.ContentContainer.Controls.SetChildIndex(this.TextureList, 0);
             // 
             // TextureList
             // 
@@ -48,7 +57,7 @@
             this.TextureList.Location = new System.Drawing.Point(0, 40);
             this.TextureList.Name = "TextureList";
             this.TextureList.SelectedIndex = -1;
-            this.TextureList.Size = new System.Drawing.Size(256, 360);
+            this.TextureList.Size = new System.Drawing.Size(248, 352);
             this.TextureList.TabIndex = 1;
             // 
             // TopControls
@@ -67,7 +76,7 @@
             this.TopControls.Name = "TopControls";
             this.TopControls.RowCount = 1;
             this.TopControls.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.TopControls.Size = new System.Drawing.Size(256, 24);
+            this.TopControls.Size = new System.Drawing.Size(248, 24);
             this.TopControls.TabIndex = 5;
             // 
             // BtnDelete
@@ -78,10 +87,10 @@
             this.BtnDelete.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.BtnDelete.Hover = true;
             this.BtnDelete.Image = ((System.Drawing.Bitmap)(resources.GetObject("BtnDelete.Image")));
-            this.BtnDelete.Location = new System.Drawing.Point(128, 0);
+            this.BtnDelete.Location = new System.Drawing.Point(124, 0);
             this.BtnDelete.Margin = new System.Windows.Forms.Padding(0);
             this.BtnDelete.Name = "BtnDelete";
-            this.BtnDelete.Size = new System.Drawing.Size(64, 24);
+            this.BtnDelete.Size = new System.Drawing.Size(62, 24);
             this.BtnDelete.TabIndex = 9;
             this.BtnDelete.Text = "Delete";
             this.BtnDelete.Click += new System.EventHandler(this.BtnDelete_Click);
@@ -94,10 +103,10 @@
             this.BtnClear.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.BtnClear.Hover = true;
             this.BtnClear.Image = ((System.Drawing.Bitmap)(resources.GetObject("BtnClear.Image")));
-            this.BtnClear.Location = new System.Drawing.Point(192, 0);
+            this.BtnClear.Location = new System.Drawing.Point(186, 0);
             this.BtnClear.Margin = new System.Windows.Forms.Padding(0);
             this.BtnClear.Name = "BtnClear";
-            this.BtnClear.Size = new System.Drawing.Size(64, 24);
+            this.BtnClear.Size = new System.Drawing.Size(62, 24);
             this.BtnClear.TabIndex = 8;
             this.BtnClear.Text = "Clear";
             this.BtnClear.Click += new System.EventHandler(this.BtnClear_Click);
@@ -113,7 +122,7 @@
             this.BtnExport.Location = new System.Drawing.Point(0, 0);
             this.BtnExport.Margin = new System.Windows.Forms.Padding(0);
             this.BtnExport.Name = "BtnExport";
-            this.BtnExport.Size = new System.Drawing.Size(64, 24);
+            this.BtnExport.Size = new System.Drawing.Size(62, 24);
             this.BtnExport.TabIndex = 7;
             this.BtnExport.Text = "Export";
             this.BtnExport.Click += new System.EventHandler(this.BtnExport_Click);
@@ -126,10 +135,10 @@
             this.BtnImport.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.BtnImport.Hover = true;
             this.BtnImport.Image = ((System.Drawing.Bitmap)(resources.GetObject("BtnImport.Image")));
-            this.BtnImport.Location = new System.Drawing.Point(64, 0);
+            this.BtnImport.Location = new System.Drawing.Point(62, 0);
             this.BtnImport.Margin = new System.Windows.Forms.Padding(0);
             this.BtnImport.Name = "BtnImport";
-            this.BtnImport.Size = new System.Drawing.Size(64, 24);
+            this.BtnImport.Size = new System.Drawing.Size(62, 24);
             this.BtnImport.TabIndex = 6;
             this.BtnImport.Text = "Import";
             this.BtnImport.Click += new System.EventHandler(this.BtnImport_Click);
@@ -138,14 +147,11 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.TextureList);
-            this.Controls.Add(this.TopControls);
             this.Icon = global::Ohana3DS_Rebirth.Properties.Resources.icn_w_textures;
             this.Name = "OTextureWindow";
             this.Size = new System.Drawing.Size(256, 400);
             this.Title = "Textures";
-            this.Controls.SetChildIndex(this.TopControls, 0);
-            this.Controls.SetChildIndex(this.TextureList, 0);
+            this.ContentContainer.ResumeLayout(false);
             this.TopControls.ResumeLayout(false);
             this.ResumeLayout(false);
 

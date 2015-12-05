@@ -132,8 +132,8 @@ namespace Ohana3DS_Rebirth
                 {
                     BtnMinMax.Image = Resources.btnmaximize;
                     
-                    ContentContainer.Location = new Point(4, 4);
-                    ContentContainer.Size = new Size(Width - 8, Height - 8);
+                    ContentContainer.Location = new Point(gripSize, gripSize);
+                    ContentContainer.Size = new Size(Width - gripSize * 2, Height - gripSize * 2);
                 }
                 else
                 {

@@ -3,8 +3,10 @@ using System.Windows.Forms;
 using System.IO;
 
 using Ohana3DS_Rebirth.Ohana;
-using Ohana3DS_Rebirth.Ohana.ModelFormats;
-using Ohana3DS_Rebirth.Ohana.TextureFormats;
+using Ohana3DS_Rebirth.Ohana.Models;
+using Ohana3DS_Rebirth.Ohana.Textures;
+using Ohana3DS_Rebirth.Ohana.Containers;
+using Ohana3DS_Rebirth.GUI;
 using Ohana3DS_Rebirth.GUI.Forms;
 using Ohana3DS_Rebirth.Properties;
 
@@ -18,7 +20,7 @@ namespace Ohana3DS_Rebirth
         {
             InitializeComponent();
             WindowManager.initialize(DockContainer);
-            MainMenu.Renderer = new GUI.OMenuStrip();
+            MainMenu.Renderer = new OMenuStrip();
         }
 
         private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
@@ -28,7 +30,6 @@ namespace Ohana3DS_Rebirth
 
         private void LblTitle_MouseDown(object sender, MouseEventArgs e)
         {
-            MainMenu.Show(Left + LblTitle.Left, Top + LblTitle.Top + LblTitle.Height);
             if (e.Button == MouseButtons.Left) MainMenu.Show(Left + LblTitle.Left, Top + LblTitle.Top + LblTitle.Height);
         }
 
@@ -41,26 +42,28 @@ namespace Ohana3DS_Rebirth
         {
             using (OpenFileDialog openDlg = new OpenFileDialog())
             {
-                openDlg.Filter = "All supported files|*.bch;*.mbn;*.cx;*.lz;*.cmp;*.mm;*.gr;*.pc;*.pack;*.fpt;*.dmp;*.rel;*.bcres;*.bcmdl;*.bctex;*.bcskla;*.mdl;*.tex";
+                openDlg.Filter = "All supported files|*.bch;*.bcmdl;*.bcres;*.bcskla;*.bctex;*.cx;*.lz;*.cmp;*.fpt;*.pack;*.dmp;*.zmdl;*.ztex;*.rel;*.mdl.xml;*.smes;*.gr;*.mm;*.pc;*.mbn";
                 openDlg.Filter += "|Binary CTR H3D|*.bch";
-                openDlg.Filter += "|Sm4sh Model|*.mbn";
-                openDlg.Filter += "|Compressed file|*.cx;*.lz;*.cmp";
-                openDlg.Filter += "|Pokémon Overworld model|*.mm";
-                openDlg.Filter += "|Pokémon Map model|*.gr";
-                openDlg.Filter += "|Pokémon Species model|*.pc";
-                openDlg.Filter += "|Dragon Quest VII Package|*.pack";
-                openDlg.Filter += "|Dragon Quest VII Container|*.fpt";
-                openDlg.Filter += "|Dragon Quest VII Texture|*.dmp";
-                openDlg.Filter += "|Forbidden Magna CGFX|*.rel";
-                openDlg.Filter += "|Binary CTR Resource|*.bcres";
                 openDlg.Filter += "|Binary CTR Model|*.bcmdl";
-                openDlg.Filter += "|Binary CTR Texture|*.bctex";
+                openDlg.Filter += "|Binary CTR Resource|*.bcres";
                 openDlg.Filter += "|Binary CTR Skeletal Animation|*.bcskla";
+                openDlg.Filter += "|Binary CTR Texture|*.bctex";
+                openDlg.Filter += "|Compressed file|*.cx;*.lz;*.cmp";
+                openDlg.Filter += "|Dragon Quest VII Container|*.fpt";
+                openDlg.Filter += "|Dragon Quest VII Package|*.pack";
+                openDlg.Filter += "|Dragon Quest VII Texture|*.dmp";
                 openDlg.Filter += "|Fantasy Life Model|*.mdl";
                 openDlg.Filter += "|Fantasy Life Texture|*.tex";
+                openDlg.Filter += "|Forbidden Magna CGFX|*.rel";
+                openDlg.Filter += "|New Love Plus Model|*.mdl.xml";
+                openDlg.Filter += "|New Love Plus Mesh|*.smes";
+                openDlg.Filter += "|Pokémon Map model|*.gr";
+                openDlg.Filter += "|Pokémon Overworld model|*.mm";
+                openDlg.Filter += "|Pokémon Species model|*.pc";
+                openDlg.Filter += "|Sm4sh Model|*.mbn";
                 openDlg.Filter += "|All files|*.*";
-                if (openDlg.ShowDialog() != DialogResult.OK) return;
-                open(openDlg.FileName);
+
+                if (openDlg.ShowDialog() == DialogResult.OK) open(openDlg.FileName);
             }
         }
 
@@ -90,6 +93,10 @@ namespace Ohana3DS_Rebirth
                     WindowManager.flush();
                     launchModel(MBN.load(fileName), name);
                     return;
+                case ".xml":
+                    WindowManager.flush();
+                    launchModel(NLP.load(fileName), name);
+                    return;
             }
             open(new FileStream(fileName, FileMode.Open), name);
         }
@@ -105,14 +112,56 @@ namespace Ohana3DS_Rebirth
             OContainerForm containerForm;
             switch (format)
             {
-                case FileIO.fileFormat.H3D:
+                case FileIO.fileFormat.dq7DMP:
+                    OSingleTextureWindow singleTextureWindow = new OSingleTextureWindow();
+
+                    singleTextureWindow.Title = name;
+
+                    launchWindow(singleTextureWindow);
+                    DockContainer.dockMainWindow();
+                    WindowManager.Refresh();
+
+                    singleTextureWindow.initialize(DMP.load(data).texture);
+                    break;
+                case FileIO.fileFormat.dq7FPT0:
+                    containerForm = new OContainerForm();
+                    containerForm.launch(FPT0.load(data));
+                    containerForm.Show(this);
+                    break;
+                case FileIO.fileFormat.dq7Model:
+                    containerForm = new OContainerForm();
+                    containerForm.launch(DQVIIPack.load(data));
+                    containerForm.Show(this);
+                    break;
+                case FileIO.fileFormat.flZMdl: launchModel(ZMDL.load(data), name); break;
+                case FileIO.fileFormat.flZTex:
+                    OTextureWindow textureWindow = new OTextureWindow();
+
+                    textureWindow.Title = name;
+
+                    launchWindow(textureWindow);
+                    DockContainer.dockMainWindow();
+                    WindowManager.Refresh();
+
+                    textureWindow.initialize(ZTEX.load(data));
+                    break;
+                case FileIO.fileFormat.fmNLK2:
+                    buffer = new byte[data.Length - 0x80];
+                    data.Seek(0x80, SeekOrigin.Begin);
+                    data.Read(buffer, 0, buffer.Length);
+                    data.Close();
+                    launchModel(CGFX.load(new MemoryStream(buffer)), name);
+                    break;
+                case FileIO.fileFormat.nlpSMes: launchModel(NLP.loadMesh(data), name); break;
+                case FileIO.fileFormat.nw4cCGfx: launchModel(CGFX.load(data), name); break;
+                case FileIO.fileFormat.nw4cH3D:
                     buffer = new byte[data.Length];
                     data.Read(buffer, 0, buffer.Length);
                     data.Close();
                     launchModel(BCH.load(new MemoryStream(buffer)), name);
                     break;
-                case FileIO.fileFormat.PkmnContainer:
-                    Ohana.Containers.GenericContainer.OContainer container = Ohana.Containers.PkmnContainer.load(data);
+                case FileIO.fileFormat.pkmnContainer:
+                    GenericContainer.OContainer container = PkmnContainer.load(data);
                     switch (container.fileIdentifier)
                     {
                         case "PC": //Pokémon model
@@ -126,58 +175,6 @@ namespace Ohana3DS_Rebirth
                             break;
                     }
                     //TODO: Add windows for extra data
-
-                    break;
-                case FileIO.fileFormat.CGFX:
-                    buffer = new byte[data.Length];
-                    data.Read(buffer, 0, buffer.Length);
-                    data.Close();
-                    launchModel(CGFX.load(new MemoryStream(buffer)), name);
-                    break;
-                case FileIO.fileFormat.zmdl:
-                    buffer = new byte[data.Length];
-                    data.Read(buffer, 0, buffer.Length);
-                    data.Close();
-                    launchModel(ZMDL.load(new MemoryStream(buffer)), name);
-                    break;
-                case FileIO.fileFormat.ztex:
-                    GUI.OTextureWindow textureWindow = new GUI.OTextureWindow();
-
-                    textureWindow.Title = name;
-
-                    launchWindow(textureWindow);
-                    DockContainer.dockMainWindow();
-                    WindowManager.Refresh();
-
-                    textureWindow.initialize(ZTEX.load(data));
-                    break;
-                case FileIO.fileFormat.DQVIIPack:
-                    containerForm = new OContainerForm();
-                    containerForm.launch(Ohana.Containers.DQVIIPack.load(data));
-                    containerForm.Show(this);
-                    break;
-                case FileIO.fileFormat.FPT0:
-                    containerForm = new OContainerForm();
-                    containerForm.launch(Ohana.Containers.FPT0.load(data));
-                    containerForm.Show(this);
-                    break;
-                case FileIO.fileFormat.NLK2:
-                    buffer = new byte[data.Length - 0x80];
-                    data.Seek(0x80, SeekOrigin.Begin);
-                    data.Read(buffer, 0, buffer.Length);
-                    data.Close();
-                    launchModel(CGFX.load(new MemoryStream(buffer)), name);
-                    break;
-                case FileIO.fileFormat.DMPTexture:
-                    GUI.OSingleTextureWindow singleTextureWindow = new GUI.OSingleTextureWindow();
-
-                    singleTextureWindow.Title = name;
-
-                    launchWindow(singleTextureWindow);
-                    DockContainer.dockMainWindow();
-                    WindowManager.Refresh();
-
-                    singleTextureWindow.initialize(DMP.load(data).texture);
                     break;
                 default:
                     MessageBox.Show("Unsupported file format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
@@ -194,10 +191,10 @@ namespace Ohana3DS_Rebirth
         /// <param name="name">The file name (without the full path and extension)</param>
         private void launchModel(RenderBase.OModelGroup model, string name)
         {
-            GUI.OViewportWindow viewportWindow = new GUI.OViewportWindow();
-            GUI.OModelWindow modelWindow = new GUI.OModelWindow();
-            GUI.OTextureWindow textureWindow = new GUI.OTextureWindow();
-            GUI.OAnimationsWindow animationWindow = new GUI.OAnimationsWindow();
+            OViewportWindow viewportWindow = new OViewportWindow();
+            OModelWindow modelWindow = new OModelWindow();
+            OTextureWindow textureWindow = new OTextureWindow();
+            OAnimationsWindow animationWindow = new OAnimationsWindow();
 
             viewportWindow.Title = name;
 
@@ -223,7 +220,7 @@ namespace Ohana3DS_Rebirth
             viewportWindow.initialize(renderer);
         }
 
-        private void launchWindow(GUI.ODockWindow window, bool visible = true)
+        private void launchWindow(ODockWindow window, bool visible = true)
         {
             window.Visible = visible;
             DockContainer.launch(window);

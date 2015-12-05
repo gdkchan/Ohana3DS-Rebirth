@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Drawing;
 
-namespace Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200
+namespace Ohana3DS_Rebirth.Ohana.Models.PICA200
 {
     class PICACommandWriter : IDisposable
     {
@@ -93,13 +93,12 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200
             if (parameters.Count > 1)
             {
                 uint extraWords = (uint)(((parameters.Count - 1) & 0x7ff) << 20);
-                writer.Write((uint)((commandId | (uint)(mask << 16)) | extraWords));
+                writer.Write((commandId | (uint)(mask << 16)) | extraWords);
                 for (int p = 1; p < parameters.Count; p++) writer.Write(parameters[p]);
             }
             else
-            {
                 writer.Write((uint)(commandId | (mask << 16)));
-            }
+
             align(7);
         }
 
@@ -116,13 +115,34 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200
             if (parameters.Count > 1)
             {
                 uint extraWords = (uint)(((parameters.Count - 1) & 0x7ff) << 20);
-                writer.Write((uint)((commandId | (uint)(0xf << 16)) | extraWords));
+                writer.Write((commandId | (uint)(0xf << 16)) | extraWords);
                 for (int p = 1; p < parameters.Count; p++) writer.Write(parameters[p]);
             }
             else
-            {
                 writer.Write((uint)(commandId | (0xf << 16)));
+
+            align(7);
+        }
+
+        /// <summary>
+        ///     Sets a new command with multiple Float parameters.
+        /// </summary>
+        /// <param name="commandId">ID of the command</param>
+        /// <param name="parameters">Parameters of the command</param>
+        /// <param name="mask">Mask used when updating the register value</param>
+        public void setCommand(ushort commandId, float[] parameters)
+        {
+            if (parameters.Length == 0) return;
+            writer.Write(parameters[0]);
+            if (parameters.Length > 1)
+            {
+                uint extraWords = (uint)(((parameters.Length - 1) & 0x7ff) << 20);
+                writer.Write((commandId | (uint)(0xf << 16)) | extraWords);
+                for (int p = 1; p < parameters.Length; p++) writer.Write(parameters[p]);
             }
+            else
+                writer.Write((uint)(commandId | (0xf << 16)));
+
             align(7);
         }
 
@@ -140,13 +160,12 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200
             if (parameters.Count > 1)
             {
                 uint extraWords = (uint)(((parameters.Count - 1) & 0x7ff) << 20);
-                writer.Write((uint)((commandId | (uint)(mask << 16)) | extraWords) | 0x80000000);
+                writer.Write((commandId | (uint)(mask << 16)) | extraWords | 0x80000000);
                 for (int p = 1; p < parameters.Count; p++) writer.Write(parameters[p]);
             }
             else
-            {
                 writer.Write((uint)(commandId | (mask << 16)) | 0x80000000);
-            }
+
             align(7);
         }
 
@@ -163,13 +182,12 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200
             if (parameters.Count > 1)
             {
                 uint extraWords = (uint)(((parameters.Count - 1) & 0x7ff) << 20);
-                writer.Write((uint)((commandId | (uint)(0xf << 16)) | extraWords) | 0x80000000);
+                writer.Write((commandId | (uint)(0xf << 16)) | extraWords | 0x80000000);
                 for (int p = 1; p < parameters.Count; p++) writer.Write(parameters[p]);
             }
             else
-            {
                 writer.Write((uint)(commandId | (0xf << 16)) | 0x80000000);
-            }
+
             align(7);
         }
 
@@ -186,13 +204,12 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200
             if (parameters.Count > 0)
             {
                 uint extraWords = (uint)((parameters.Count & 0x7ff) << 20);
-                writer.Write((uint)((commandId | (uint)(0xf << 16)) | extraWords) | 0x80000000);
+                writer.Write((commandId | (uint)(0xf << 16)) | extraWords | 0x80000000);
                 for (int p = 1; p < parameters.Count; p++) writer.Write(parameters[p]);
             }
             else
-            {
                 writer.Write((uint)(commandId | (0xf << 16)) | 0x80000000);
-            }
+
             align(7);
         }
 
@@ -200,7 +217,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200
         ///     Adds padding 0x0 bytes on the data until all address bits of the mask equals 0.
         /// </summary>
         /// <param name="mask">The mask</param>
-        private void align(uint mask)
+        public void align(uint mask)
         {
             while ((writer.BaseStream.Position & mask) != 0) writer.Write((byte)0);
         }
@@ -210,7 +227,7 @@ namespace Ohana3DS_Rebirth.Ohana.ModelFormats.PICA200
         /// </summary>
         /// <param name="mask">The mask</param>
         /// <param name="maskedValue">Value that masked bits should equal to stop padding</param>
-        private void align(uint mask, uint maskedValue)
+        public void align(uint mask, uint maskedValue)
         {
             while ((writer.BaseStream.Position & mask) != maskedValue) writer.Write((byte)0);
         }
