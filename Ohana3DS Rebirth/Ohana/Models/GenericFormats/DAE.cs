@@ -1021,10 +1021,9 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
         /// <summary>
         ///     Writes the skeleton hierarchy to the DAE.
         /// </summary>
-        /// <param name="xml">XML Writer</param>
         /// <param name="skeleton">The skeleton</param>
         /// <param name="index">Index of the current bone (root bone when it's not a recursive call)</param>
-        /// <param name="acc">Bone index accumulator</param>
+        /// <param name="nodes">List with the DAE nodes</param>
         private static void writeSkeleton(List<RenderBase.OBone> skeleton, int index, ref List<daeNode> nodes)
         {
             daeNode node = new daeNode();

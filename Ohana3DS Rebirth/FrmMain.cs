@@ -16,11 +16,26 @@ namespace Ohana3DS_Rebirth
     {
         bool isSettingsOpen;
 
+        bool hasFileToOpen;
+        string fileToOpen;
+
         public FrmMain()
         {
             InitializeComponent();
             WindowManager.initialize(DockContainer);
             MainMenu.Renderer = new OMenuStrip();
+        }
+
+        public void setFileToOpen(string fileName)
+        {
+            hasFileToOpen = true;
+            fileToOpen = fileName;
+        }
+
+        private void FrmMain_Shown(object sender, EventArgs e)
+        {
+            if (hasFileToOpen) open(fileToOpen);
+            hasFileToOpen = false;
         }
 
         private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
@@ -42,7 +57,7 @@ namespace Ohana3DS_Rebirth
         {
             using (OpenFileDialog openDlg = new OpenFileDialog())
             {
-                openDlg.Filter = "All supported files|*.bch;*.bcmdl;*.bcres;*.bcskla;*.bctex;*.cx;*.lz;*.cmp;*.fpt;*.pack;*.dmp;*.zmdl;*.ztex;*.rel;*.mdl.xml;*.smes;*.gr;*.mm;*.pc;*.mbn";
+                openDlg.Filter = "All supported files|*.bch;*.bcmdl;*.bcres;*.bcskla;*.bctex;*.cx;*.lz;*.cmp;*.fpt;*.pack;*.dmp;*.zmdl;*.ztex;*.rel;*.mdl.xml;*.smes;*.texi.xml;*.gr;*.mm;*.pc;*.mbn";
                 openDlg.Filter += "|Binary CTR H3D|*.bch";
                 openDlg.Filter += "|Binary CTR Model|*.bcmdl";
                 openDlg.Filter += "|Binary CTR Resource|*.bcres";
@@ -52,11 +67,12 @@ namespace Ohana3DS_Rebirth
                 openDlg.Filter += "|Dragon Quest VII Container|*.fpt";
                 openDlg.Filter += "|Dragon Quest VII Package|*.pack";
                 openDlg.Filter += "|Dragon Quest VII Texture|*.dmp";
-                openDlg.Filter += "|Fantasy Life Model|*.mdl";
-                openDlg.Filter += "|Fantasy Life Texture|*.tex";
+                openDlg.Filter += "|Fantasy Life Model|*.zmdl";
+                openDlg.Filter += "|Fantasy Life Texture|*.ztex";
                 openDlg.Filter += "|Forbidden Magna CGFX|*.rel";
                 openDlg.Filter += "|New Love Plus Model|*.mdl.xml";
                 openDlg.Filter += "|New Love Plus Mesh|*.smes";
+                openDlg.Filter += "|New Love Plus Texture|*.texi.xml";
                 openDlg.Filter += "|Pokémon Map model|*.gr";
                 openDlg.Filter += "|Pokémon Overworld model|*.mm";
                 openDlg.Filter += "|Pokémon Species model|*.pc";
@@ -83,6 +99,8 @@ namespace Ohana3DS_Rebirth
             isSettingsOpen = false;
         }
 
+        private delegate void openFile(string fileNmame);
+
         public void open(string fileName)
         {
             string name = Path.GetFileNameWithoutExtension(fileName);
@@ -94,9 +112,26 @@ namespace Ohana3DS_Rebirth
                     launchModel(MBN.load(fileName), name);
                     return;
                 case ".xml":
-                    WindowManager.flush();
-                    launchModel(NLP.load(fileName), name);
-                    return;
+                    switch (Path.GetExtension(Path.GetFileNameWithoutExtension(fileName)).ToLower())
+                    {
+                        case ".mdl":
+                            WindowManager.flush();
+                            launchModel(NLP.load(fileName), name);
+                            return;
+                        case ".texi":
+                            WindowManager.flush();
+                            OSingleTextureWindow singleTextureWindow = new OSingleTextureWindow();
+
+                            singleTextureWindow.Title = name;
+
+                            launchWindow(singleTextureWindow);
+                            DockContainer.dockMainWindow();
+                            WindowManager.Refresh();
+
+                            singleTextureWindow.initialize(NLP.loadTexture(fileName).texture);
+                            return;
+                    }
+                    break;
             }
             open(new FileStream(fileName, FileMode.Open), name);
         }
@@ -229,12 +264,18 @@ namespace Ohana3DS_Rebirth
 
         private void FrmMain_DragDrop(object sender, DragEventArgs e)
         {
-            //stubbed
+            if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy;
         }
 
         private void FrmMain_DragEnter(object sender, DragEventArgs e)
         {
-            //stubbed
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            if (files.Length > 0)
+            {
+                openFile openFileDelegate = new openFile(open);
+                BeginInvoke(openFileDelegate, files[0]);
+                Activate();
+            }
         }
     }
 }

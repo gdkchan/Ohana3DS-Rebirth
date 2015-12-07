@@ -51,6 +51,7 @@
             this.Screen.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Screen_MouseMove);
             this.Screen.MouseUp += new System.Windows.Forms.MouseEventHandler(this.Screen_MouseUp);
             this.Screen.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.Screen_MouseWheel);
+            this.Screen.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.Screen_PreviewKeyDown);
             this.Screen.Resize += new System.EventHandler(this.Screen_Resize);
             // 
             // OViewportWindow

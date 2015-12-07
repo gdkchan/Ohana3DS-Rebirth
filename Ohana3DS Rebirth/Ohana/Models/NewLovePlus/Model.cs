@@ -144,39 +144,50 @@ namespace Ohana3DS_Rebirth.Ohana.Models.NewLovePlus
                 {
                     string fullTextureName = Path.Combine(basePath, textureName);
                     string descriptorName = fullTextureName + ".xml";
-
-                    if (File.Exists(fullTextureName) && File.Exists(descriptorName))
-                    {
-                        Serialization.SERI tex = Serialization.getSERI(descriptorName);
-
-                        int width = tex.getIntegerParameter("w");
-                        int height = tex.getIntegerParameter("h");
-                        int mipmap = tex.getIntegerParameter("mipmap");
-                        int format = tex.getIntegerParameter("format");
-
-                        RenderBase.OTextureFormat fmt = RenderBase.OTextureFormat.dontCare;
-                        switch (format)
-                        {
-                            case 0: fmt = RenderBase.OTextureFormat.l4; break;
-                            case 1: fmt = RenderBase.OTextureFormat.l8; break;
-                            case 7: fmt = RenderBase.OTextureFormat.rgb565; break;
-                            case 8: fmt = RenderBase.OTextureFormat.rgba5551; break;
-                            case 9: fmt = RenderBase.OTextureFormat.rgba4; break;
-                            case 0xa: fmt = RenderBase.OTextureFormat.rgba8; break;
-                            case 0xb: fmt = RenderBase.OTextureFormat.rgb8; break;
-                            case 0xc: fmt = RenderBase.OTextureFormat.etc1; break;
-                            case 0xd: fmt = RenderBase.OTextureFormat.etc1a4; break;
-                            default: Debug.WriteLine("NLP Model: Unknown Texture format 0x" + format.ToString("X8")); break;
-                        }
-
-                        string name = Path.GetFileNameWithoutExtension(textureName);
-                        byte[] buffer = File.ReadAllBytes(fullTextureName);
-                        models.texture.Add(new RenderBase.OTexture(TextureCodec.decode(buffer, width, height, fmt), name));
-                    }
+                    models.texture.Add(loadTexture(descriptorName));
                 }
             }
 
             return models;
+        }
+
+        public static RenderBase.OTexture loadTexture(string fileName)
+        {
+            if (File.Exists(fileName))
+            {
+                Serialization.SERI tex = Serialization.getSERI(fileName);
+
+                int width = tex.getIntegerParameter("w");
+                int height = tex.getIntegerParameter("h");
+                int mipmap = tex.getIntegerParameter("mipmap");
+                int format = tex.getIntegerParameter("format");
+                string textureName = tex.getStringParameter("tex");
+                string fullTextureName = Path.Combine(Path.GetDirectoryName(fileName), textureName);
+
+                if (File.Exists(fullTextureName))
+                {
+                    RenderBase.OTextureFormat fmt = RenderBase.OTextureFormat.dontCare;
+                    switch (format)
+                    {
+                        case 0: fmt = RenderBase.OTextureFormat.l4; break;
+                        case 1: fmt = RenderBase.OTextureFormat.l8; break;
+                        case 7: fmt = RenderBase.OTextureFormat.rgb565; break;
+                        case 8: fmt = RenderBase.OTextureFormat.rgba5551; break;
+                        case 9: fmt = RenderBase.OTextureFormat.rgba4; break;
+                        case 0xa: fmt = RenderBase.OTextureFormat.rgba8; break;
+                        case 0xb: fmt = RenderBase.OTextureFormat.rgb8; break;
+                        case 0xc: fmt = RenderBase.OTextureFormat.etc1; break;
+                        case 0xd: fmt = RenderBase.OTextureFormat.etc1a4; break;
+                        default: Debug.WriteLine("NLP Model: Unknown Texture format 0x" + format.ToString("X8")); break;
+                    }
+
+                    string name = Path.GetFileNameWithoutExtension(textureName);
+                    byte[] buffer = File.ReadAllBytes(fullTextureName);
+                    return new RenderBase.OTexture(TextureCodec.decode(buffer, width, height, fmt), name);
+                }
+            }
+
+            return null;
         }
     }
 }

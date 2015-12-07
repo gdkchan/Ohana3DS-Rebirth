@@ -1381,8 +1381,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 name = "material";
 
                 fragmentShader.alphaTest.isTestEnabled = true;
-                fragmentShader.alphaTest.testFunction = OTestFunction.greaterOrEqual;
-                fragmentShader.alphaTest.testReference = 0x7f;
+                fragmentShader.alphaTest.testFunction = OTestFunction.greater;
 
                 textureMapper[0].wrapU = OTextureWrap.repeat;
                 textureMapper[0].wrapV = OTextureWrap.repeat;
@@ -1458,8 +1457,17 @@ namespace Ohana3DS_Rebirth.Ohana
             public List<OMaterial> material;
             public List<OMetaData> userData;
             public OMatrix transform;
-            public float height;
+
             public OVector3 minVector, maxVector;
+            public int verticesCount
+            {
+                get
+                {
+                    int count = 0;
+                    foreach (RenderBase.OMesh obj in mesh) count += obj.vertices.Count;
+                    return count;
+                }
+            }
 
             public OModel()
             {

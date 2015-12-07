@@ -72,13 +72,23 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
                                 if (b.rotationY.exists) newBone.rotation.y = AnimationUtils.getKey(b.rotationY, frame);
                                 if (b.rotationZ.exists) newBone.rotation.z = AnimationUtils.getKey(b.rotationZ, frame);
 
-                                if (b.translationX.exists) newBone.translation.x = AnimationUtils.getKey(b.translationX, frame);
-                                if (b.translationY.exists) newBone.translation.y = AnimationUtils.getKey(b.translationY, frame);
-                                if (b.translationZ.exists) newBone.translation.z = AnimationUtils.getKey(b.translationZ, frame);
+                                if (b.translationX.exists)
+                                {
+                                    newBone.translation.x = AnimationUtils.getKey(b.translationX, frame);
+                                    newBone.translation.x *= mdl.skeleton[index].absoluteScale.x;
+                                }
 
-                                if (b.translationX.exists) newBone.translation.x *= mdl.skeleton[index].absoluteScale.x;
-                                if (b.translationY.exists) newBone.translation.y *= mdl.skeleton[index].absoluteScale.y;
-                                if (b.translationZ.exists) newBone.translation.z *= mdl.skeleton[index].absoluteScale.z;
+                                if (b.translationY.exists)
+                                {
+                                    newBone.translation.y = AnimationUtils.getKey(b.translationY, frame);
+                                    newBone.translation.y *= mdl.skeleton[index].absoluteScale.y;
+                                }
+
+                                if (b.translationZ.exists)
+                                {
+                                    newBone.translation.z = AnimationUtils.getKey(b.translationZ, frame);
+                                    newBone.translation.z *= mdl.skeleton[index].absoluteScale.z;
+                                }
 
                                 break;
                             }
@@ -112,11 +122,11 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
                     {
                         if (triangleCount == 0) output.AppendLine(textureName);
 
-                        string line = mdl.skeleton.Count.ToString();
+                        string line = "0";
 
                         line += " " + getString(vertex.position.x);
                         line += " " + getString(vertex.position.y);
-                        line += " " + getString(vertex.position.z /*+ (objectIndex * 5)*/); //Commented section helps split models apart, useful for things like Senran Kagura models
+                        line += " " + getString(vertex.position.z);
                         line += " " + getString(vertex.normal.x);
                         line += " " + getString(vertex.normal.y);
                         line += " " + getString(vertex.normal.z);

@@ -8,6 +8,7 @@ using Ohana3DS_Rebirth.GUI.Forms;
 using Ohana3DS_Rebirth.Ohana.Models;
 using Ohana3DS_Rebirth.Ohana.Models.GenericFormats;
 using Ohana3DS_Rebirth.Ohana.Textures;
+using Ohana3DS_Rebirth.Ohana.Compressions;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
@@ -32,6 +33,11 @@ namespace Ohana3DS_Rebirth.Ohana
             unsupported
         }
 
+        /// <summary>
+        ///     Identifies the format of a file based on Signature.
+        /// </summary>
+        /// <param name="fileName">The Full Path to the file</param>
+        /// <returns></returns>
         public static fileFormat identify(string fileName)
         {
             Stream data = new FileStream(fileName, FileMode.Open);
@@ -40,6 +46,12 @@ namespace Ohana3DS_Rebirth.Ohana
             return format;
         }
 
+        /// <summary>
+        ///     Identifies the format of a file based on Signature.
+        ///     Note that the Stream will REMAIN OPEN and at position 0, so it can be used afterwards.
+        /// </summary>
+        /// <param name="data">The Stream with the data</param>
+        /// <returns></returns>
         public static fileFormat identify(Stream data)
         {
             BinaryReader input = new BinaryReader(data);
@@ -131,7 +143,7 @@ namespace Ohana3DS_Rebirth.Ohana
             switch (format)
             {
                 case fileFormat.cmpBLZ:
-                    decompressedData = Compressions.BLZ.decompress(data);
+                    decompressedData = BLZ.decompress(data);
                     content = new byte[decompressedData.Length - 1];
                     Buffer.BlockCopy(decompressedData, 1, content, 0, content.Length);
                     data = new MemoryStream(content);
@@ -140,7 +152,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 case fileFormat.cmpIECP: //Stella Glow
                     uint magic = input.ReadUInt32();
                     length = input.ReadUInt32();
-                    decompressedData = Compressions.LZSS.decompress(data, length);
+                    decompressedData = LZSS.decompress(data, length);
                     data = new MemoryStream(decompressedData);
                     format = identify(data);
                     break;
@@ -148,7 +160,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 case fileFormat.cmpLZSSHeader:
                     if (format == fileFormat.cmpLZSSHeader) input.ReadUInt32();
                     length = input.ReadUInt32() >> 8;
-                    decompressedData = Compressions.LZSS_Ninty.decompress(data, length);
+                    decompressedData = LZSS_Ninty.decompress(data, length);
                     data = new MemoryStream(decompressedData);
                     format = identify(data);
                     break;
@@ -175,12 +187,21 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             using (OpenFileDialog openDlg = new OpenFileDialog())
             {
+                openDlg.Multiselect = true;
+
                 switch (type)
                 {
                     case fileType.model:
                         openDlg.Title = "Import Model";
-                        openDlg.Filter = "Binary CTR H3D|*.bch|Binary CTR Model|*.bcres;*.bcmdl|Source Model|*.smd";
-                        openDlg.Multiselect = true;
+                        openDlg.Filter = "All supported files|*.bch;*.bcmdl;*.bcres;*.cx;*.lz;*.cmp;*.zmdl;*.smes;*.smd";
+                        openDlg.Filter += "|Binary CTR H3D|*.bch";
+                        openDlg.Filter += "|Binary CTR Model|*.bcmdl";
+                        openDlg.Filter += "|Binary CTR Resource|*.bcres";
+                        openDlg.Filter += "|Compressed file|*.cx;*.lz;*.cmp";
+                        openDlg.Filter += "|Fantasy Life Model|*.zmdl";
+                        openDlg.Filter += "|New Love Plus Mesh|*.smes";
+                        openDlg.Filter += "|StudioMdl Model|*.smd";
+                        openDlg.Filter += "|All files|*.*";
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
@@ -189,16 +210,28 @@ namespace Ohana3DS_Rebirth.Ohana
                             {
                                 try
                                 {
-                                    switch (openDlg.FilterIndex)
+                                    switch (Path.GetExtension(fileName).ToLower())
                                     {
-                                        case 1: output.AddRange(BCH.load(fileName).model); break;
-                                        case 2: output.AddRange(CGFX.load(fileName).model); break;
-                                        case 3: output.AddRange(SMD.import(fileName).model); break;
+                                        case ".smd": output.AddRange(SMD.import(fileName).model); break;
+                                        default:
+                                            byte[] buffer = File.ReadAllBytes(fileName);
+                                            Stream data = new MemoryStream(buffer);
+                                            fileFormat format = identify(fileName);
+                                            if (isCompressed(format)) decompress(ref data, ref format);
+                                            switch (format)
+                                            {
+                                                case fileFormat.flZMdl: output.AddRange(ZMDL.load(data).model); break;
+                                                case fileFormat.nlpSMes: output.AddRange(NLP.loadMesh(data).model); break;
+                                                case fileFormat.nw4cCGfx: output.AddRange(CGFX.load(data).model); break;
+                                                case fileFormat.nw4cH3D: output.AddRange(BCH.load((MemoryStream)data).model); break;
+                                                default: data.Close(); break;
+                                            }
+                                            break;
                                     }
                                 }
                                 catch
                                 {
-                                    Debug.WriteLine("FileIO: Unable to import model file " + fileName + "!");
+                                    Debug.WriteLine("FileIO: Unable to import model file \"" + fileName + "\"!");
                                 }
                             }
                             return output;
@@ -206,19 +239,30 @@ namespace Ohana3DS_Rebirth.Ohana
                         break;
                     case fileType.texture:
                         openDlg.Title = "Import Texture";
-                        openDlg.Filter = "Binary CTR H3D|*.bch|Binary CTR Texture|*.bcres;*.bcmdl;*.bctex|Fantasy Life Texture|*.tex";
-                        openDlg.Multiselect = true;
+                        openDlg.Filter = "All supported files|*.bch;*.bcmdl;*.bcres;*.bctex;*.cx;*.lz;*.cmp;*.ztex";
+                        openDlg.Filter += "|Binary CTR H3D|*.bch";
+                        openDlg.Filter += "|Binary CTR Model|*.bcmdl";
+                        openDlg.Filter += "|Binary CTR Resource|*.bcres";
+                        openDlg.Filter += "|Binary CTR Texture|*.bctex";
+                        openDlg.Filter += "|Compressed file|*.cx;*.lz;*.cmp";
+                        openDlg.Filter += "|Fantasy Life Texture|*.ztex";
+                        openDlg.Filter += "|All files|*.*";
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
                             List<RenderBase.OTexture> output = new List<RenderBase.OTexture>();
                             foreach (string fileName in openDlg.FileNames)
                             {
-                                switch (openDlg.FilterIndex)
+                                byte[] buffer = File.ReadAllBytes(fileName);
+                                Stream data = new MemoryStream(buffer);
+                                fileFormat format = identify(fileName);
+                                if (isCompressed(format)) decompress(ref data, ref format);
+                                switch (format)
                                 {
-                                    case 1: output.AddRange(BCH.load(fileName).texture); break;
-                                    case 2: output.AddRange(CGFX.load(fileName).texture); break;
-                                    case 3: output.AddRange(ZTEX.load(fileName)); break;
+                                    case fileFormat.flZTex: output.AddRange(ZTEX.load(data)); break;
+                                    case fileFormat.nw4cCGfx: output.AddRange(CGFX.load(data).texture); break;
+                                    case fileFormat.nw4cH3D: output.AddRange(BCH.load((MemoryStream)data).texture); break;
+                                    default: data.Close(); break;
                                 }
                             }
                             return output;
@@ -226,19 +270,33 @@ namespace Ohana3DS_Rebirth.Ohana
                         break;
                     case fileType.skeletalAnimation:
                         openDlg.Title = "Import Skeletal Animation";
-                        openDlg.Filter = "Binary CTR H3D|*.bch|Binary CTR Skeletal Animation|*.bcres;*.bcskla|Source Model|*.smd";
-                        openDlg.Multiselect = true;
+                        openDlg.Filter = "All supported files|*.bch;*.bcres;*.bcskla;*.smd";
+                        openDlg.Filter += "|Binary CTR H3D|*.bch";
+                        openDlg.Filter += "|Binary CTR Resource|*.bcres";
+                        openDlg.Filter += "|Binary CTR Skeletal Animation|*.bcskla";
+                        openDlg.Filter += "|StudioMdl Model|*.smd";
+                        openDlg.Filter += "|All files|*.*";
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
                             RenderBase.OAnimationListBase output = new RenderBase.OAnimationListBase();
                             foreach (string fileName in openDlg.FileNames)
                             {
-                                switch (openDlg.FilterIndex)
+                                switch (Path.GetExtension(fileName).ToLower())
                                 {
-                                    case 1: output.list.AddRange(BCH.load(fileName).skeletalAnimation.list); break;
-                                    case 2: output.list.AddRange(CGFX.load(fileName).skeletalAnimation.list); break;
-                                    case 3: output.list.AddRange(SMD.import(fileName).skeletalAnimation.list); break;
+                                    case ".smd": output.list.AddRange(SMD.import(fileName).skeletalAnimation.list); break;
+                                    default:
+                                        byte[] buffer = File.ReadAllBytes(fileName);
+                                        Stream data = new MemoryStream(buffer);
+                                        fileFormat format = identify(fileName);
+                                        if (isCompressed(format)) decompress(ref data, ref format);
+                                        switch (format)
+                                        {
+                                            case fileFormat.nw4cCGfx: output.list.AddRange(CGFX.load(data).skeletalAnimation.list); break;
+                                            case fileFormat.nw4cH3D: output.list.AddRange(BCH.load((MemoryStream)data).skeletalAnimation.list); break;
+                                            default: data.Close(); break;
+                                        }
+                                        break;
                                 }
                             }
                             return output;
@@ -246,15 +304,55 @@ namespace Ohana3DS_Rebirth.Ohana
                         break;
                     case fileType.materialAnimation:
                         openDlg.Title = "Import Material Animation";
-                        openDlg.Filter = "Binary CTR H3D|*.bch";
+                        openDlg.Filter = "All supported files|*.bch;";
+                        openDlg.Filter += "|Binary CTR H3D|*.bch";
+                        openDlg.Filter += "|All files|*.*";
 
-                        if (openDlg.ShowDialog() == DialogResult.OK) return BCH.load(openDlg.FileName).materialAnimation;
+                        if (openDlg.ShowDialog() == DialogResult.OK)
+                        {
+                            RenderBase.OAnimationListBase output = new RenderBase.OAnimationListBase();
+                            foreach (string fileName in openDlg.FileNames)
+                            {
+
+                                byte[] buffer = File.ReadAllBytes(fileName);
+                                Stream data = new MemoryStream(buffer);
+                                fileFormat format = identify(fileName);
+                                if (isCompressed(format)) decompress(ref data, ref format);
+                                switch (format)
+                                {
+                                    case fileFormat.nw4cCGfx: output.list.AddRange(CGFX.load(data).materialAnimation.list); break;
+                                    case fileFormat.nw4cH3D: output.list.AddRange(BCH.load((MemoryStream)data).materialAnimation.list); break;
+                                    default: data.Close(); break;
+                                }
+                            }
+                            return output;
+                        }
                         break;
                     case fileType.visibilityAnimation:
                         openDlg.Title = "Import Visibility Animation";
-                        openDlg.Filter = "Binary CTR H3D|*.bch";
+                        openDlg.Filter = "All supported files|*.bch;";
+                        openDlg.Filter += "|Binary CTR H3D|*.bch";
+                        openDlg.Filter += "|All files|*.*";
 
-                        if (openDlg.ShowDialog() == DialogResult.OK) return BCH.load(openDlg.FileName).visibilityAnimation;
+                        if (openDlg.ShowDialog() == DialogResult.OK)
+                        {
+                            RenderBase.OAnimationListBase output = new RenderBase.OAnimationListBase();
+                            foreach (string fileName in openDlg.FileNames)
+                            {
+
+                                byte[] buffer = File.ReadAllBytes(fileName);
+                                Stream data = new MemoryStream(buffer);
+                                fileFormat format = identify(fileName);
+                                if (isCompressed(format)) decompress(ref data, ref format);
+                                switch (format)
+                                {
+                                    case fileFormat.nw4cCGfx: output.list.AddRange(CGFX.load(data).visibilityAnimation.list); break;
+                                    case fileFormat.nw4cH3D: output.list.AddRange(BCH.load((MemoryStream)data).visibilityAnimation.list); break;
+                                    default: data.Close(); break;
+                                }
+                            }
+                            return output;
+                        }
                         break;
                 }
             }

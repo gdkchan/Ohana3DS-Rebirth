@@ -89,6 +89,14 @@ namespace Ohana3DS_Rebirth.GUI
             }
         }
 
+        private void Screen_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.W: renderer.wireframeMode = !renderer.wireframeMode; break;
+            }
+        }
+
         private void Screen_MouseWheel(object sender, MouseEventArgs e)
         {
             float step = 1f;

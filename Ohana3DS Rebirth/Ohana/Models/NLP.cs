@@ -10,7 +10,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models
         /// <summary>
         ///     Loads a New Love Plus Model file.
         /// </summary>
-        /// <param name="fileName">File Name of the Model file</param>
+        /// <param name="fileName">File Name of the XML Model file</param>
         /// <returns></returns>
         public static RenderBase.OModelGroup load(string fileName)
         {
@@ -32,6 +32,16 @@ namespace Ohana3DS_Rebirth.Ohana.Models
             model.material.Add(new RenderBase.OMaterial());
             models.model.Add(model);
             return models;
+        }
+
+        /// <summary>
+        ///     Loads a New Love Plus Texture file.
+        /// </summary>
+        /// <param name="data">XML Stream of the Texture</param>
+        /// <returns></returns>
+        public static RenderBase.OTexture loadTexture(string fileName)
+        {
+            return Model.loadTexture(fileName);
         }
     }
 }

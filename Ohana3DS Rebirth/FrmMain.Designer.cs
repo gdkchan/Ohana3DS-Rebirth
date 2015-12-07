@@ -61,7 +61,6 @@
             // 
             // DockContainer
             // 
-            this.DockContainer.AllowDrop = true;
             this.DockContainer.BackColor = System.Drawing.Color.Transparent;
             this.DockContainer.Dock = System.Windows.Forms.DockStyle.Fill;
             this.DockContainer.Location = new System.Drawing.Point(0, 20);
@@ -87,13 +86,13 @@
             this.mnuLineSeparator0,
             this.mnuAbout});
             this.MainMenu.Name = "MainMenu";
-            this.MainMenu.Size = new System.Drawing.Size(153, 98);
+            this.MainMenu.Size = new System.Drawing.Size(117, 76);
             // 
             // mnuOpen
             // 
             this.mnuOpen.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_open;
             this.mnuOpen.Name = "mnuOpen";
-            this.mnuOpen.Size = new System.Drawing.Size(152, 22);
+            this.mnuOpen.Size = new System.Drawing.Size(116, 22);
             this.mnuOpen.Text = "&Open";
             this.mnuOpen.Click += new System.EventHandler(this.mnuOpen_Click);
             // 
@@ -101,25 +100,26 @@
             // 
             this.mnuSettings.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_gear;
             this.mnuSettings.Name = "mnuSettings";
-            this.mnuSettings.Size = new System.Drawing.Size(152, 22);
+            this.mnuSettings.Size = new System.Drawing.Size(116, 22);
             this.mnuSettings.Text = "&Settings";
             this.mnuSettings.Click += new System.EventHandler(this.mnuSettings_Click);
             // 
             // mnuLineSeparator0
             // 
             this.mnuLineSeparator0.Name = "mnuLineSeparator0";
-            this.mnuLineSeparator0.Size = new System.Drawing.Size(149, 6);
+            this.mnuLineSeparator0.Size = new System.Drawing.Size(113, 6);
             // 
             // mnuAbout
             // 
             this.mnuAbout.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_info;
             this.mnuAbout.Name = "mnuAbout";
-            this.mnuAbout.Size = new System.Drawing.Size(152, 22);
+            this.mnuAbout.Size = new System.Drawing.Size(116, 22);
             this.mnuAbout.Text = "&About";
             this.mnuAbout.Click += new System.EventHandler(this.mnuAbout_Click);
             // 
             // FrmMain
             // 
+            this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.ClientSize = new System.Drawing.Size(640, 480);
             this.Cursor = System.Windows.Forms.Cursors.Default;
@@ -127,6 +127,7 @@
             this.Name = "FrmMain";
             this.Text = "Ohana3DS";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmMain_FormClosing);
+            this.Shown += new System.EventHandler(this.FrmMain_Shown);
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.FrmMain_DragDrop);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.FrmMain_DragEnter);
             this.Controls.SetChildIndex(this.ContentContainer, 0);
