@@ -1002,17 +1002,19 @@ namespace Ohana3DS_Rebirth.Ohana
             boxBuffer[2] = new CustomVertex.TransformedColored(x, y + height, 0, 1, c);
             boxBuffer[3] = new CustomVertex.TransformedColored(x + width, y + height, 0, 1, c);
 
-            VertexBuffer vertexBuffer = new VertexBuffer(typeof(CustomVertex.TransformedColored), 4, device, Usage.None, CustomVertex.TransformedColored.Format, Pool.Managed);
-            vertexBuffer.SetData(boxBuffer, 0, LockFlags.None);
+            using (VertexBuffer vertexBuffer = new VertexBuffer(typeof(CustomVertex.TransformedColored), 4, device, Usage.None, CustomVertex.TransformedColored.Format, Pool.Managed))
+            {
+                vertexBuffer.SetData(boxBuffer, 0, LockFlags.None);
 
-            device.SetTexture(0, null);
-            device.RenderState.AlphaBlendEnable = true;
-            device.RenderState.SourceBlend = Blend.SourceAlpha;
-            device.RenderState.DestinationBlend = Blend.InvSourceAlpha;
-            device.RenderState.AlphaBlendOperation = BlendOperation.Add;
-            device.VertexFormat = CustomVertex.TransformedColored.Format;
+                device.SetTexture(0, null);
+                device.RenderState.AlphaBlendEnable = true;
+                device.RenderState.SourceBlend = Blend.SourceAlpha;
+                device.RenderState.DestinationBlend = Blend.InvSourceAlpha;
+                device.RenderState.AlphaBlendOperation = BlendOperation.Add;
+                device.VertexFormat = CustomVertex.TransformedColored.Format;
 
-            device.SetStreamSource(0, vertexBuffer, 0);
+                device.SetStreamSource(0, vertexBuffer, 0);
+            }
 
             device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
             infoHUD.DrawText(null, text, new Point(x + 8, y + 8), Color.White);

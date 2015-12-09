@@ -246,11 +246,13 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(384, 384);
+            this.KeyPreview = true;
             this.Name = "OModelExportForm";
             this.Resizable = false;
             this.ShowMinimize = false;
             this.Text = "OModelExportForm";
             this.Load += new System.EventHandler(this.OModelExportForm_Load);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.OModelExportForm_KeyDown);
             this.ContentContainer.ResumeLayout(false);
             this.ContentContainer.PerformLayout();
             this.ResumeLayout(false);

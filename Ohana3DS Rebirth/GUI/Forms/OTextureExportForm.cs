@@ -29,7 +29,21 @@ namespace Ohana3DS_Rebirth.GUI.Forms
             TxtTextureName.Enabled = !ChkExportAllTextures.Checked;
         }
 
+        private void OTextureExportForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.Enter: ok(); break;
+                case Keys.Escape: Close(); break;
+            }
+        }
+
         private void BtnOk_Click(object sender, EventArgs e)
+        {
+            ok();
+        }
+
+        private void ok()
         {
             if (!Directory.Exists(TxtOutFolder.Text))
             {

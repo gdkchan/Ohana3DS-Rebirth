@@ -357,21 +357,23 @@ namespace Ohana3DS_Rebirth.GUI
                         if (i == columns.Count - 1 || columns.Count == 0) columnWidth = Width - x; else columnWidth = columns[i].width;
                         if (columnWidth < 1) break;
 
-                        int textX = x;
                         if (subItem.thumbnail != null)
                         {
-                            int height = Math.Min(tileSize, subItem.thumbnail.Height);
-                            int y = startY + ((tileSize / 2) - (height / 2));
-                            if (subItem.thumbnail.Width > columnWidth)
-                                e.Graphics.DrawImage(subItem.thumbnail, new Rectangle(x, y, columnWidth, height), new Rectangle((subItem.thumbnail.Width / 2) - (columnWidth / 2), 0, columnWidth, subItem.thumbnail.Height), GraphicsUnit.Pixel);
+                            float ar = (float)subItem.thumbnail.Width / subItem.thumbnail.Height;
+                            int w = (int)(tileSize * ar);
+                            int h = (int)(columnWidth / ar);
+                            Rectangle dst;
+                            if (w > columnWidth)
+                                dst = new Rectangle(x, startY + ((tileSize / 2) - (h / 2)), columnWidth, h);
                             else
-                                e.Graphics.DrawImage(subItem.thumbnail, new Rectangle(x + ((columnWidth / 2) - (subItem.thumbnail.Width / 2)), y, subItem.thumbnail.Width, height));
-                            
-                            textX += Math.Min(columnWidth, subItem.thumbnail.Width);
+                                dst = new Rectangle(x + ((columnWidth / 2) - (w / 2)), startY, w, tileSize);
+
+                            Rectangle src = new Rectangle(0, 0, subItem.thumbnail.Width, subItem.thumbnail.Height);
+                            e.Graphics.DrawImage(subItem.thumbnail, dst, src, GraphicsUnit.Pixel);
                         }
 
                         int textHeight = (int)e.Graphics.MeasureString(subItem.text, Font).Height;
-                        e.Graphics.DrawString(DrawingUtils.clampText(e.Graphics, subItem.text, Font, columnWidth), Font, new SolidBrush(ForeColor), new Point(textX, startY + ((tileSize / 2) - (textHeight / 2))));
+                        e.Graphics.DrawString(DrawingUtils.clampText(e.Graphics, subItem.text, Font, columnWidth), Font, new SolidBrush(ForeColor), new Point(x, startY + ((tileSize / 2) - (textHeight / 2))));
 
                         x += columnWidth;
                         i++;
@@ -454,13 +456,9 @@ namespace Ohana3DS_Rebirth.GUI
             if (totalSize > Height)
             {
                 if (positionY < startY)
-                {
                     ListScroll.Value = positionY;
-                }
                 else if (positionY > startY + Height)
-                {
                     ListScroll.Value = (positionY + tileSize - 1) - Height;
-                }
             }
 
             Refresh();

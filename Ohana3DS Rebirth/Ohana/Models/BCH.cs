@@ -189,8 +189,11 @@ namespace Ohana3DS_Rebirth.Ohana.Models
             header.uninitializedDataSectionLength = input.ReadUInt32();
             header.uninitializedDescriptionSectionLength = input.ReadUInt32();
 
-            header.flags = input.ReadUInt16();
-            header.addressCount = input.ReadUInt16();
+            if (header.backwardCompatibility > 7)
+            {
+                header.flags = input.ReadUInt16();
+                header.addressCount = input.ReadUInt16();
+            }
 
             //Transform relative offsets to absolute offsets, also add extra bits if necessary.
             //The game does this on RAM after the BCH is loaded, so offsets to data is absolute and points to VRAM.
