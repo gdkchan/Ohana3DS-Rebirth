@@ -250,10 +250,12 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(320, 384);
+            this.KeyPreview = true;
             this.Name = "FrmSettings";
             this.Resizable = false;
             this.Text = "FrmSettings";
             this.Load += new System.EventHandler(this.FrmSettings_Load);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.FrmSettings_KeyDown);
             this.ContentContainer.ResumeLayout(false);
             this.ContentContainer.PerformLayout();
             this.ResumeLayout(false);

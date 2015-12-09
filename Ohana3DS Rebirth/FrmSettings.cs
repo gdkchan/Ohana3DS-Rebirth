@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Windows.Forms;
 
 using Ohana3DS_Rebirth.Properties;
 
@@ -28,7 +29,21 @@ namespace Ohana3DS_Rebirth
             ChkShowHUD.Checked = Settings.Default.reShowHUD;
         }
 
+        private void FrmSettings_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.Enter: ok(); break;
+                case Keys.Escape: Close(); break;
+            }
+        }
+
         private void BtnOk_Click(object sender, EventArgs e)
+        {
+            ok();
+        }
+
+        private void ok()
         {
             if (RadioAANone.Checked)
                 Settings.Default.reAALevel = 0;

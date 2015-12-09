@@ -211,9 +211,9 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                                 case vtxAttributeType.normal: vertex.normal = getVector3(vtxBuffer, pos, att.format, scale); break;
                                 case vtxAttributeType.color:
                                     RenderBase.OVector4 c = getVector4(vtxBuffer, pos, att.format, scale);
-                                    uint b = MeshUtils.saturate(c.x * 0xff);
+                                    uint r = MeshUtils.saturate(c.x * 0xff);
                                     uint g = MeshUtils.saturate(c.y * 0xff);
-                                    uint r = MeshUtils.saturate(c.z * 0xff);
+                                    uint b = MeshUtils.saturate(c.z * 0xff);
                                     uint a = MeshUtils.saturate(c.w * 0xff);
                                     vertex.diffuseColor = b | (g << 8) | (r << 16) | (a << 24);
                                     break;
@@ -269,6 +269,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                 vtxAttribute att = new vtxAttribute();
 
                 att.type = (vtxAttributeType)input.ReadUInt32();
+                if (att.type != vtxAttributeType.color) while ((vtx.stride & 1) != 0) vtx.stride++;
                 att.format = (vtxAttributeQuantization)input.ReadUInt32();
                 att.scale = input.ReadSingle();
                 att.offset = vtx.stride;
@@ -295,8 +296,8 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                     case vtxAttributeType.unk1: vtx.stride += 2 * len; break;
                     default: throw new Exception("MBN: Unknown Vertex Attribute type, can't calculate Stride! STOP!");
                 }
-                while ((vtx.stride & 1) != 0) vtx.stride++; //Attributes must be aligned to a 2 bytes boundary
             }
+            while ((vtx.stride & 1) != 0) vtx.stride++;
             vtx.length = input.ReadUInt32();
             return vtx;
         }
