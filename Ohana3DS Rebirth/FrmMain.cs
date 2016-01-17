@@ -206,20 +206,20 @@ namespace Ohana3DS_Rebirth
                             launchModel(BCH.load(new MemoryStream(container.content[0].data)), name);
                             break;
                         case "GR": //Pokémon Map model
+                            launchModel(BCH.load(new MemoryStream(container.content[1].data)), name);
+                            break;
+                        case "PT": //Pokémon texture
                             launchModel(BCH.load(new MemoryStream(container.content[0].data)), name);
                             break;
-						case "PT": //Pokémon texture
-							launchModel(BCH.load(new MemoryStream(container.content[0].data)), name);
-							break;
-						case "PK": //Pokemon Visibility/Skeletal animations
-							launchModel(BCH.load(new MemoryStream(container.content[0].data)), name);
-							break;
-						case "PB": //Pokémon material animations
-							launchModel(BCH.load(new MemoryStream(container.content[0].data)), name);
-							break;
-						case "AD": //???
-							launchModel(BCH.load(new MemoryStream(container.content[0].data)), name);
-							break;
+                        case "PK": //Pokemon Visibility/Skeletal animations
+                            launchModel(BCH.load(new MemoryStream(container.content[0].data)), name);
+                            break;
+                        case "PB": //Pokémon material animations
+                            launchModel(BCH.load(new MemoryStream(container.content[0].data)), name);
+                            break;
+                        case "AD": //???
+                            launchModel(BCH.load(new MemoryStream(container.content[0].data)), name);
+                            break;
                     }
                     //TODO: Add windows for extra data
                     break;
