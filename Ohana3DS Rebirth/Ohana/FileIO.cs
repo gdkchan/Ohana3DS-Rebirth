@@ -236,7 +236,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                                             output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).model);
                                                             break;
                                                         case "GR": //Pokémon Map model
-                                                            output.AddRange(BCH.load(new MemoryStream(container.content[1].data)).model);
+                                                            output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).model);
                                                             break;
 														case "PT": //Pokémon texture
 															output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).model);
@@ -245,10 +245,10 @@ namespace Ohana3DS_Rebirth.Ohana
 															output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).model);
 															break;
 														case "PB": //Pokémon material animations
-															output.AddRange(BCH.load(new MemoryStream(container.content[1].data)).model);
+															output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).model);
 															break;
 														case "AD": //???
-															output.AddRange(BCH.load(new MemoryStream(container.content[1].data)).model);
+															output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).model);
 															break;
                                                     }
                                                     break;
@@ -301,7 +301,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                                 output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).texture);
                                                 break;
                                             case "GR": //Pokémon Map model
-                                                output.AddRange(BCH.load(new MemoryStream(container.content[1].data)).texture);
+                                                output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).texture);
                                                 break;
                                             case "PT": //Pokémon texture
                                                 output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).texture);
@@ -310,10 +310,10 @@ namespace Ohana3DS_Rebirth.Ohana
                                                 output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).texture);
                                                 break;
                                             case "PB": //Pokémon material animations
-                                                output.AddRange(BCH.load(new MemoryStream(container.content[1].data)).texture);
+                                                output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).texture);
                                                 break;
                                             case "AD": //???
-                                                output.AddRange(BCH.load(new MemoryStream(container.content[1].data)).texture);
+                                                output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).texture);
                                                 break;
                                         }
                                         break;
