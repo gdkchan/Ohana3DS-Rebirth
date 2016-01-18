@@ -9,6 +9,7 @@ using Ohana3DS_Rebirth.Ohana.Models;
 using Ohana3DS_Rebirth.Ohana.Models.GenericFormats;
 using Ohana3DS_Rebirth.Ohana.Textures;
 using Ohana3DS_Rebirth.Ohana.Compressions;
+using Ohana3DS_Rebirth.Ohana.Containers;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
@@ -224,6 +225,33 @@ namespace Ohana3DS_Rebirth.Ohana
                                                 case fileFormat.nlpSMes: output.AddRange(NLP.loadMesh(data).model); break;
                                                 case fileFormat.nw4cCGfx: output.AddRange(CGFX.load(data).model); break;
                                                 case fileFormat.nw4cH3D: output.AddRange(BCH.load((MemoryStream)data).model); break;
+                                                case fileFormat.pkmnContainer: 
+                                                    GenericContainer.OContainer container = PkmnContainer.load(data);
+                                                    switch (container.fileIdentifier)
+                                                    {
+                                                        case "PC": //Pokémon model
+                                                            output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).model);
+                                                            break;
+                                                        case "MM": //Pokémon Overworld model
+                                                            output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).model);
+                                                            break;
+                                                        case "GR": //Pokémon Map model
+                                                            output.AddRange(BCH.load(new MemoryStream(container.content[1].data)).model);
+                                                            break;
+                                                        case "PT": //Pokémon texture
+                                                            output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).model);
+                                                            break;
+                                                        case "PK": //Pokemon Visibility/Skeletal animations
+                                                            output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).model);
+                                                            break;
+                                                        case "PB": //Pokémon material animations
+                                                            output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).model);
+                                                            break;
+                                                        case "AD": //???
+                                                            output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).model);
+                                                            break;
+                                                    }
+                                                    break;
                                                 default: data.Close(); break;
                                             }
                                             break;
@@ -262,6 +290,33 @@ namespace Ohana3DS_Rebirth.Ohana
                                     case fileFormat.flZTex: output.AddRange(ZTEX.load(data)); break;
                                     case fileFormat.nw4cCGfx: output.AddRange(CGFX.load(data).texture); break;
                                     case fileFormat.nw4cH3D: output.AddRange(BCH.load((MemoryStream)data).texture); break;
+                                    case fileFormat.pkmnContainer: 
+                                        GenericContainer.OContainer container = PkmnContainer.load(data);
+                                        switch (container.fileIdentifier)
+                                        {
+                                            case "PC": //Pokémon model
+                                                output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).texture);
+                                                break;
+                                            case "MM": //Pokémon Overworld model
+                                                output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).texture);
+                                                break;
+                                            case "GR": //Pokémon Map model
+                                                output.AddRange(BCH.load(new MemoryStream(container.content[1].data)).texture);
+                                                break;
+                                            case "PT": //Pokémon texture
+                                                output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).texture);
+                                                break;
+                                            case "PK": //Pokemon Visibility/Skeletal animations
+                                                output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).texture);
+                                                break;
+                                            case "PB": //Pokémon material animations
+                                                output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).texture);
+                                                break;
+                                            case "AD": //???
+                                                output.AddRange(BCH.load(new MemoryStream(container.content[0].data)).texture);
+                                                break;
+                                        }
+                                        break;
                                     default: data.Close(); break;
                                 }
                             }
