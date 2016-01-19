@@ -8,10 +8,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Windows.Forms;
 using System.Drawing;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 namespace Ohana3DS_Rebirth.GUI
 {
@@ -1471,7 +1471,8 @@ namespace Ohana3DS_Rebirth.GUI
                             break;
                         }
 
-                        bIndex = dock == dockMode.Right ? getLeftWindow(getRectangle(windowInfo[bIndex].window), dockMode.Bottom, bIndex) : getRightWindow(getRectangle(windowInfo[bIndex].window), dockMode.Bottom, bIndex);
+                        Rectangle w = getRectangle(windowInfo[bIndex].window);
+                        bIndex = dock == dockMode.Right ? getLeftWindow(w, dockMode.Bottom, bIndex) : getRightWindow(w, dockMode.Bottom, bIndex);
                     }
 
                     int tIndex = dock == dockMode.Right ? getRightmostWindow(dockMode.Top) : getLeftmostWindow(dockMode.Top); //Top
@@ -1483,7 +1484,8 @@ namespace Ohana3DS_Rebirth.GUI
                             break;
                         }
 
-                        tIndex = dock == dockMode.Right ? getLeftWindow(getRectangle(windowInfo[tIndex].window), dockMode.Top, tIndex) : getRightWindow(getRectangle(windowInfo[tIndex].window), dockMode.Top, tIndex);
+                        Rectangle w = getRectangle(windowInfo[tIndex].window);
+                        tIndex = dock == dockMode.Right ? getLeftWindow(w, dockMode.Top, tIndex) : getRightWindow(w, dockMode.Top, tIndex);
                     }
 
                     foreach (windowInfoStruct w in windowInfo.Where(w => w.dock == dockMode.Center && (w.window.Width - width) >= minimumWidth))
@@ -1580,9 +1582,7 @@ namespace Ohana3DS_Rebirth.GUI
                     {
                         int index = getCenterWindow();
                         if (windowInfo[index].window.Height - bottomHeight >= minimumHeight)
-                        {
                             windowInfo[index].window.Height -= bottomHeight;
-                        }
                         else
                             hasBottom = false;
                     }

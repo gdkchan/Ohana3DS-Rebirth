@@ -210,15 +210,19 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                         data.Seek((offset * 4) + header.mainHeaderOffset, SeekOrigin.Begin);
                         writer.Write(peek(input) + header.mainHeaderOffset);
                         break;
+
                     case 1:
                         data.Seek(offset + header.mainHeaderOffset, SeekOrigin.Begin);
                         writer.Write(peek(input) + header.stringTableOffset);
                         break;
+
                     case 2:
                         data.Seek((offset * 4) + header.mainHeaderOffset, SeekOrigin.Begin);
                         writer.Write(peek(input) + header.gpuCommandsOffset);
                         break;
+
                     case 7:
+                    case 0xc:
                         data.Seek((offset * 4) + header.mainHeaderOffset, SeekOrigin.Begin);
                         writer.Write(peek(input) + header.dataOffset);
                         break;
@@ -321,7 +325,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                 scenePointerTableEntries = input.ReadUInt32(),
                 sceneNameOffset = input.ReadUInt32()
             };
-            //Node: NameOffset are PATRICIA trees
+            //Note: NameOffset are PATRICIA trees
 
             //Shaders
             for (int index = 0; index < contentHeader.shadersPointerTableEntries; index++)
@@ -1620,6 +1624,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                         else
                         {
                             data.Seek(facesTableOffset + f * 8, SeekOrigin.Begin);
+                            
                             idxBufferOffset = input.ReadUInt32();
                             idxBufferFormat = PICACommand.indexBufferFormat.unsignedShort;
                             idxBufferTotalVertices = input.ReadUInt32();
