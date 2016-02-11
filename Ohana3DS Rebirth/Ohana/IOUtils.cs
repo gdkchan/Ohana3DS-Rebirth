@@ -1,5 +1,5 @@
-﻿using System.Text;
-using System.IO;
+﻿using System.IO;
+using System.Text;
 
 namespace Ohana3DS_Rebirth.Ohana
 {

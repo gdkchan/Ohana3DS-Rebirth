@@ -28,6 +28,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models
             RenderBase.OModelGroup models = new RenderBase.OModelGroup();
             RenderBase.OModel model = new RenderBase.OModel();
             Mesh.load(data, model, true);
+            model.name = "model";
 
             model.material.Add(new RenderBase.OMaterial());
             models.model.Add(model);

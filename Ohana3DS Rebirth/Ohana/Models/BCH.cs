@@ -6,18 +6,19 @@
 
 /*
  * BCH Version Chart
- * r38xxx - Pokémon X/Y
- * r41xxx - Some Senran Kagura models
- * r42xxx - Pokémon OR/AS, SSB3DS, Zelda ALBW, Senran Kagura
- * r43xxx - Codename S.T.E.A.M. (lastest revision at date of writing)
+ * r38497 - Kirby Triple Deluxe (first game to use the format?) (bc 0x5)
+ * r38xxx - Pokémon X/Y (bc 0x7)
+ * r41xxx - Some Senran Kagura models (bc 0x20)
+ * r42xxx - Pokémon OR/AS, SSB3DS, Zelda ALBW, Senran Kagura (bc 0x21)
+ * r43xxx - Codename S.T.E.A.M. (lastest revision at date of writing) (bc 0x22/0x23)
  */
 
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using System.Drawing;
 using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Text;
 
 using Ohana3DS_Rebirth.Ohana.Models.PICA200;
 
@@ -439,7 +440,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                             case 0xb: light.lightType = RenderBase.OLightType.spot; break;
                         }
                         break;
-                    default: Debug.WriteLine(String.Format("BCH: Warning - Unknow Light Flags {0}", lightFlags.ToString("X8"))); break;
+                    default: Debug.WriteLine(string.Format("BCH: Warning - Unknow Light Flags {0}", lightFlags.ToString("X8"))); break;
                 }
                 light.isLightEnabled = (lightFlags & 0x100) > 0;
                 light.isTwoSideDiffuse = (lightFlags & 0x10000) > 0;
@@ -679,7 +680,8 @@ namespace Ohana3DS_Rebirth.Ohana.Models
 
                                 if ((flags & 2) > 0)
                                 {
-                                    bone.rotationQuaternion.vector.Add(new RenderBase.OVector4(input.ReadSingle(),
+                                    bone.rotationQuaternion.vector.Add(new RenderBase.OVector4(
+                                        input.ReadSingle(),
                                         input.ReadSingle(),
                                         input.ReadSingle(),
                                         input.ReadSingle()));
@@ -696,7 +698,8 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                                     data.Seek(rotationDataOffset, SeekOrigin.Begin);
                                     for (int j = 0; j < rotationEntries; j++)
                                     {
-                                        bone.rotationQuaternion.vector.Add(new RenderBase.OVector4(input.ReadSingle(),
+                                        bone.rotationQuaternion.vector.Add(new RenderBase.OVector4(
+                                            input.ReadSingle(),
                                             input.ReadSingle(),
                                             input.ReadSingle(),
                                             input.ReadSingle()));
@@ -711,7 +714,8 @@ namespace Ohana3DS_Rebirth.Ohana.Models
 
                                 if ((flags & 1) > 0)
                                 {
-                                    bone.translation.vector.Add(new RenderBase.OVector4(input.ReadSingle(),
+                                    bone.translation.vector.Add(new RenderBase.OVector4(
+                                        input.ReadSingle(),
                                         input.ReadSingle(),
                                         input.ReadSingle(),
                                         0));
@@ -728,7 +732,8 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                                     data.Seek(translationDataOffset, SeekOrigin.Begin);
                                     for (int j = 0; j < translationEntries; j++)
                                     {
-                                        bone.translation.vector.Add(new RenderBase.OVector4(input.ReadSingle(),
+                                        bone.translation.vector.Add(new RenderBase.OVector4(
+                                            input.ReadSingle(),
                                             input.ReadSingle(),
                                             input.ReadSingle(),
                                             0));
@@ -767,7 +772,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                             }
 
                             break;
-                        default: throw new Exception(String.Format("BCH: Unknow Segment Type {0} on Skeletal Animation bone {1}! STOP!", segmentType, bone.name));
+                        default: throw new Exception(string.Format("BCH: Unknow Segment Type {0} on Skeletal Animation bone {1}! STOP!", segmentType, bone.name));
                     }
 
                     skeletalAnimation.bone.Add(bone);
@@ -1568,7 +1573,8 @@ namespace Ohana3DS_Rebirth.Ohana.Models
 
                     Stack<float> vshAttributesUniformReg6 = vshCommands.getVSHFloatUniformData(6);
                     Stack<float> vshAttributesUniformReg7 = vshCommands.getVSHFloatUniformData(7);
-                    RenderBase.OVector4 positionOffset = new RenderBase.OVector4(vshAttributesUniformReg6.Pop(),
+                    RenderBase.OVector4 positionOffset = new RenderBase.OVector4(
+                        vshAttributesUniformReg6.Pop(),
                         vshAttributesUniformReg6.Pop(),
                         vshAttributesUniformReg6.Pop(),
                         vshAttributesUniformReg6.Pop());
@@ -1580,8 +1586,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                     float normalScale = vshAttributesUniformReg7.Pop();
                     float tangentScale = vshAttributesUniformReg7.Pop();
                     float colorScale = vshAttributesUniformReg7.Pop();
-
-                    List<RenderBase.CustomVertex> vshAttributesBuffer = new List<RenderBase.CustomVertex>();
 
                     //Faces
                     uint facesCount = objects[objIndex].facesHeaderEntries;
@@ -1751,7 +1755,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models
 
                             MeshUtils.calculateBounds(model, vertex);
                             obj.vertices.Add(vertex);
-                            vshAttributesBuffer.Add(RenderBase.convertVertex(vertex));
 
                             data.Seek(dataPosition, SeekOrigin.Begin);
                         }
@@ -1796,7 +1799,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                         }
                     }
     
-                    obj.renderBuffer = vshAttributesBuffer.ToArray();
                     model.mesh.Add(obj);
                 }
 

@@ -2,10 +2,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.IO;
-using System.Globalization;
 using System.Windows.Forms;
 
 namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
@@ -105,7 +105,11 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
                     }
                 }
 
-                if (error) MessageBox.Show("One or more bones uses an animation type unsupported by Source Model!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                if (error) MessageBox.Show(
+                    "One or more bones uses an animation type unsupported by Source Model!", 
+                    "Warning", 
+                    MessageBoxButtons.OK, 
+                    MessageBoxIcon.Exclamation);
             }
             output.AppendLine("end");
 
@@ -190,7 +194,11 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
                     case "version":
                         if (parameters.Length == 1)
                         {
-                            MessageBox.Show("Corrupted SMD file! The version isn't specified!", "SMD Importer", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show(
+                                "Corrupted SMD file! The version isn't specified!", 
+                                "SMD Importer", 
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
                             return null;
                         }
                         else if (parameters[1] != "1")
@@ -338,7 +346,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
                         parameters = Regex.Split(line, "\\s+");
 
                         RenderBase.OMesh obj = new RenderBase.OMesh();
-                        List<RenderBase.CustomVertex> buffer = new List<RenderBase.CustomVertex>();
                         int materialId = 0;
                         string oldTexture = null;
 
@@ -355,8 +362,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
                                 {
                                     mdl.material.Add(getMaterial(oldTexture));
                                     obj.materialId = (ushort)materialId++;
-                                    obj.renderBuffer = buffer.ToArray();
-                                    buffer.Clear();
                                     mdl.mesh.Add(obj);
                                     obj = new RenderBase.OMesh();
                                 }
@@ -404,7 +409,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
                                     vertex.texture0 = new RenderBase.OVector2(u, v);
 
                                     obj.vertices.Add(vertex);
-                                    buffer.Add(RenderBase.convertVertex(vertex));
                                 }
                             }
 
@@ -417,8 +421,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
                         //Add the last object
                         mdl.material.Add(getMaterial(oldTexture));
                         obj.materialId = (ushort)materialId++;
-                        obj.renderBuffer = buffer.ToArray();
-                        buffer.Clear();
                         mdl.mesh.Add(obj);
 
                         break;

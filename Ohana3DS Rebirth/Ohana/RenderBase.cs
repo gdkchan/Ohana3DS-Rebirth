@@ -79,7 +79,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
             public override string ToString()
             {
-                return String.Format("X:{0}; Y:{1}", x, y);
+                return string.Format("X:{0}; Y:{1}", x, y);
             }
         }
 
@@ -176,7 +176,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
             public override string ToString()
             {
-                return String.Format("X:{0}; Y:{1}; Z:{2}", x, y, z);
+                return string.Format("X:{0}; Y:{1}; Z:{2}", x, y, z);
             }
         }
 
@@ -265,7 +265,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
             public override string ToString()
             {
-                return String.Format("X:{0}; Y:{1}; Z:{2}; W:{3}", x, y, z, w);
+                return string.Format("X:{0}; Y:{1}; Z:{2}; W:{3}", x, y, z, w);
             }
         }
 
@@ -354,51 +354,6 @@ namespace Ohana3DS_Rebirth.Ohana
                        weight.SequenceEqual(vertex.weight) &&
                        diffuseColor == vertex.diffuseColor;
             }
-        }
-
-        /// <summary>
-        ///     Custom Vertex structure used on the DirectX Vertex Stream.
-        /// </summary>
-        public struct CustomVertex
-        {
-            public float x, y, z;
-            public float nx, ny, nz;
-            public uint color;
-            public float u0, v0;
-            public float u1, v1;
-            public float u2, v2;
-        }
-
-        /// <summary>
-        ///     Converts OVertex to CustomVertex.
-        ///     A CustomVertex buffer can be directly passed to the renderer.
-        /// </summary>
-        /// <param name="input">The OVertex to be converted</param>
-        /// <returns>The CustomVertex</returns>
-        public static CustomVertex convertVertex(OVertex input)
-        {
-            CustomVertex vertex;
-
-            vertex.x = input.position.x;
-            vertex.y = input.position.y;
-            vertex.z = input.position.z;
-
-            vertex.nx = input.normal.x;
-            vertex.ny = input.normal.y;
-            vertex.nz = input.normal.z;
-
-            vertex.u0 = input.texture0.x;
-            vertex.v0 = input.texture0.y;
-
-            vertex.u1 = input.texture1.x;
-            vertex.v1 = input.texture1.y;
-
-            vertex.u2 = input.texture2.x;
-            vertex.v2 = input.texture2.y;
-
-            vertex.color = input.diffuseColor;
-
-            return vertex;
         }
 
         /// <summary>
@@ -735,7 +690,6 @@ namespace Ohana3DS_Rebirth.Ohana
         public class OMesh
         {
             public List<OVertex> vertices;
-            public CustomVertex[] renderBuffer;
             public ushort materialId;
             public ushort renderPriority;
             public string name;
@@ -1427,11 +1381,11 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public string name;
             public OMetaDataValueType type;
-            public List<Object> values;
+            public List<object> values;
 
             public OMetaData()
             {
-                values = new List<Object>();
+                values = new List<object>();
             }
         }
 
@@ -1509,14 +1463,14 @@ namespace Ohana3DS_Rebirth.Ohana
         public class OTexture
         {
             public Bitmap texture;
-            public String name;
+            public string name;
 
             /// <summary>
             ///     Creates a new Texture.
             /// </summary>
             /// <param name="_texture">The texture, size must be a power of 2</param>
             /// <param name="_name">Texture name</param>
-            public OTexture(Bitmap _texture, String _name)
+            public OTexture(Bitmap _texture, string _name)
             {
                 texture = new Bitmap(_texture);
                 _texture.Dispose();
@@ -1761,7 +1715,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
             public override string ToString()
             {
-                return String.Format("Frame:{0}; Value (float):{1}; Value (boolean):{2}; InSlope:{3}; OutSlope:{4}", frame, value, bValue, inSlope, outSlope);
+                return string.Format("Frame:{0}; Value (float):{1}; Value (boolean):{2}; InSlope:{3}; OutSlope:{4}", frame, value, bValue, inSlope, outSlope);
             }
         }
 
@@ -2220,6 +2174,27 @@ namespace Ohana3DS_Rebirth.Ohana
                 cameraAnimation = new OAnimationListBase();
                 fogAnimation = new OAnimationListBase();
                 scene = new List<OScene>();
+            }
+
+            /// <summary>
+            ///     Merges all the content of a ModelGroup with this ModelGroup.
+            /// </summary>
+            /// <param name="data">The contents to be merged</param>
+            public void merge(OModelGroup data)
+            {
+                model.AddRange(data.model);
+                texture.AddRange(data.texture);
+                lookUpTable.AddRange(data.lookUpTable);
+                light.AddRange(data.light);
+                camera.AddRange(data.camera);
+                fog.AddRange(data.fog);
+                skeletalAnimation.list.AddRange(data.skeletalAnimation.list);
+                materialAnimation.list.AddRange(data.materialAnimation.list);
+                visibilityAnimation.list.AddRange(data.visibilityAnimation.list);
+                lightAnimation.list.AddRange(data.lightAnimation.list);
+                cameraAnimation.list.AddRange(data.cameraAnimation.list);
+                fogAnimation.list.AddRange(data.fogAnimation.list);
+                scene.AddRange(data.scene);
             }
         }
     }

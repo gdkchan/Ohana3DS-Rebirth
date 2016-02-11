@@ -1,12 +1,18 @@
 ﻿using System;
-using System.Text;
 using System.Globalization;
 using System.IO;
+using System.Text;
 
 namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
 {
     class OBJ
     {
+        /// <summary>
+        ///     Exports a model to the Wavefront OBJ format.
+        /// </summary>
+        /// <param name="model">The model to be exported</param>
+        /// <param name="fileName">The output file name</param>
+        /// <param name="modelIndex">The index of the model that should be exported</param>
         public static void export(RenderBase.OModelGroup model, string fileName, int modelIndex)
         {
             StringBuilder output = new StringBuilder();
@@ -33,7 +39,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
 
                 for (int i = 0; i < obj.indices.Count; i += 3)
                 {
-                    output.AppendLine(String.Format("f {0}/{0}/{0} {1}/{1}/{1} {2}/{2}/{2}",
+                    output.AppendLine(string.Format("f {0}/{0}/{0} {1}/{1}/{1} {2}/{2}/{2}",
                         faceIndexBase + obj.indices[i],
                         faceIndexBase + obj.indices[i + 1],
                         faceIndexBase + obj.indices[i + 2]));

@@ -118,127 +118,91 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="btnmaximize" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\btnmaximize.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="btnnormal" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\btnnormal.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="hover_maximize" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\hover_maximize.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="hover_minimize" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\hover_minimize.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="hover_normal" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\hover_normal.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="hover_red" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\hover_red.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="icn_close" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_close.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="icn_dockable" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_dockable.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="icn_locked" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_locked.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="icn_ticked" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_ticked.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="icn_wm_close" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_wm_close.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="icn_wm_scroll_left" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_wm_scroll_left.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="icn_wm_scroll_right" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_wm_scroll_right.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="icn_wm_up_arrow" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_wm_up_arrow.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="OFragmentShader" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\OFragmentShader.txt;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;shift_jis</value>
-  </data>
-  <data name="icn_collapse" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_collapse.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="icn_expand" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_expand.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="icn_arrow_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_arrow_down.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="icn_arrow_up" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_arrow_up.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="icn_edit" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_edit.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="icn_trash" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_trash.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="icn_big_next" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_big_next.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="icn_big_pause" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_big_pause.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="icn_big_play" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_big_play.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="icn_big_previous" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_big_previous.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="icn_big_stop" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_big_stop.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="ui_knob" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ui_knob.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="icn_bottom_scrn" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_bottom_scrn.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="icn_top_scrn" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_top_scrn.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="icn_camera" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_camera.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="icn_lightbulb" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_lightbulb.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="ui_alpha_grid" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ui_alpha_grid.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="ui_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\ui_down.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="ui_icon_minus" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_minus.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="ui_up" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\ui_up.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="ui_icon_plus" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_plus.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="icn_open" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_open.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="ui_icon_arrowdown" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_arrowdown.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="icn_w_animations" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_w_animations.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="ui_icon_arrowup" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_arrowup.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="icn_w_models" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_w_models.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="ui_icon_delete" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_delete.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="icn_w_textures" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_w_textures.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="ui_icon_download" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_download.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="icn_w_viewport" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_w_viewport.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="ui_icon_imagedelete" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_imagedelete.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="icn_gear" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_gear.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="ui_icon_trash" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_trash.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="icn_info" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\icn_info.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="ui_icon_upload" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_upload.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ui_icon_videodelete" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_videodelete.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ui_icon_arrowleft" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_arrowleft.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ui_icon_arrowright" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_arrowright.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ui_icon_block" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_block.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ui_icon_close" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_close.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ui_icon_closehover" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_closehover.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ui_icon_folder" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_folder.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ui_icon_maximize" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_maximize.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ui_icon_maximizehover" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_maximizehover.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ui_icon_minimize" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_minimize.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ui_icon_minimizehover" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_minimizehover.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ui_icon_pause" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_pause.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ui_icon_play" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_play.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ui_icon_stop" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_stop.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ui_icon_tick" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_tick.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ui_icon_unmaximize" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_unmaximize.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ui_icon_unmaximizehover" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ui_icon_unmaximizehover.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

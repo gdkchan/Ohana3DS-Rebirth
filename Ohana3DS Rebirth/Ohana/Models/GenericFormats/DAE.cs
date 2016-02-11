@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Globalization;
+using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
-using System.Globalization;
-using System.Drawing;
-using System.IO;
 
 namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
 {
@@ -32,7 +32,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
             public List<daeGeometry> library_geometries = new List<daeGeometry>();
 
             [XmlArrayItem("controller")]
-            public List<daeController> library_controllers = new List<daeController>();
+            public List<daeController> library_controllers;
 
             [XmlArrayItem("visual_scene")]
             public List<daeVisualScene> library_visual_scenes = new List<daeVisualScene>();
@@ -133,7 +133,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
 
             public void set(Color col)
             {
-                color = String.Format("{0} {1} {2} {3}", 
+                color = string.Format("{0} {1} {2} {3}", 
                     getString(col.R / 255f), 
                     getString(col.G / 255f), 
                     getString(col.B / 255f), 
@@ -701,7 +701,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
 
             int meshIndex = 0;
             daeVisualScene vs = new daeVisualScene();
-            vs.name = mdl.name;
+            vs.name = "vs_" + mdl.name;
             vs.id = vs.name + "_id";
             if (mdl.skeleton.Count > 0) writeSkeleton(mdl.skeleton, 0, ref vs.node);
             foreach (RenderBase.OMesh obj in mdl.mesh)
@@ -856,9 +856,13 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
 
                 dae.library_geometries.Add(geometry);
 
+                bool hasNode = obj.vertices[0].node.Count > 0;
+                bool hasWeight = obj.vertices[0].weight.Count > 0;
+                bool hasController = hasNode && hasWeight;
+
                 //Controller
                 daeController controller = new daeController();
-                if (obj.hasNode && obj.hasWeight)
+                if (hasController)
                 {
                     controller.id = meshName + "_ctrl_id";
 
@@ -957,6 +961,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
                     controller.skin.vertex_weights.addInput("JOINT", "#" + joints.id);
                     controller.skin.vertex_weights.addInput("WEIGHT", "#" + weights.id, 1);
 
+                    if (dae.library_controllers == null) dae.library_controllers = new List<daeController>();
                     dae.library_controllers.Add(controller);
                 }
 
@@ -965,7 +970,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
                 node.name = "vsn_" + meshName;
                 node.id = node.name + "_id";
                 node.matrix.set(new RenderBase.OMatrix());
-                if (obj.hasNode && obj.hasWeight)
+                if (hasController)
                 {
                     node.instance_controller = new daeInstanceController();
                     node.instance_controller.url = "#" + controller.id;

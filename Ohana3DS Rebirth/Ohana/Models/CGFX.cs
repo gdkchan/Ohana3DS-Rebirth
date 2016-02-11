@@ -4,8 +4,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Drawing;
+using System.IO;
 
 using Ohana3DS_Rebirth.Ohana.Models.PICA200;
 
@@ -379,7 +379,8 @@ namespace Ohana3DS_Rebirth.Ohana.Models
 
                                 if ((constantFlags & 1) > 0)
                                 {
-                                    bone.rotationQuaternion.vector.Add(new RenderBase.OVector4(input.ReadSingle(),
+                                    bone.rotationQuaternion.vector.Add(new RenderBase.OVector4(
+                                        input.ReadSingle(),
                                         input.ReadSingle(),
                                         input.ReadSingle(),
                                         input.ReadSingle()));
@@ -390,7 +391,8 @@ namespace Ohana3DS_Rebirth.Ohana.Models
 
                                     for (int j = 0; j < rotationEntries; j++)
                                     {
-                                        bone.rotationQuaternion.vector.Add(new RenderBase.OVector4(input.ReadSingle(),
+                                        bone.rotationQuaternion.vector.Add(new RenderBase.OVector4(
+                                            input.ReadSingle(),
                                             input.ReadSingle(),
                                             input.ReadSingle(),
                                             input.ReadSingle()));
@@ -412,7 +414,8 @@ namespace Ohana3DS_Rebirth.Ohana.Models
 
                                 if ((constantFlags & 1) > 0)
                                 {
-                                    bone.translation.vector.Add(new RenderBase.OVector4(input.ReadSingle(),
+                                    bone.translation.vector.Add(new RenderBase.OVector4(
+                                        input.ReadSingle(),
                                         input.ReadSingle(),
                                         input.ReadSingle(),
                                         0));
@@ -423,7 +426,8 @@ namespace Ohana3DS_Rebirth.Ohana.Models
 
                                     for (int j = 0; j < translationEntries; j++)
                                     {
-                                        bone.translation.vector.Add(new RenderBase.OVector4(input.ReadSingle(),
+                                        bone.translation.vector.Add(new RenderBase.OVector4(
+                                            input.ReadSingle(),
                                             input.ReadSingle(),
                                             input.ReadSingle(),
                                             0));
@@ -886,8 +890,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                         vshAttributeFormats.Add(format);
                     }
 
-                    List<RenderBase.CustomVertex> vshAttributesBuffer = new List<RenderBase.CustomVertex>();
-
                     //Faces
                     for (int faceIndex = 0; faceIndex < shapeEntry.facesGroupEntries; faceIndex++)
                     {
@@ -1043,19 +1045,20 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                             {
                                 //Note: Rigid skinning can have only one bone per vertex
                                 //Note2: Vertex with Rigid skinning seems to be always have meshes centered, so is necessary to make them follow the skeleton
-                                if (vertex.weight.Count == 0) vertex.weight.Add(1);
-                                vertex.position = RenderBase.OVector3.transform(vertex.position, skeletonTransform[vertex.node[0]]);
+                                if (vertex.node[0] < skeletonTransform.Count)
+                                {
+                                    if (vertex.weight.Count == 0) vertex.weight.Add(1);
+                                    vertex.position = RenderBase.OVector3.transform(vertex.position, skeletonTransform[vertex.node[0]]);
+                                }
                             }
 
                             MeshUtils.calculateBounds(model, vertex);
                             shape.vertices.Add(vertex);
-                            vshAttributesBuffer.Add(RenderBase.convertVertex(vertex));
 
                             data.Seek(dataPosition, SeekOrigin.Begin);
                         }
                     }
 
-                    shape.renderBuffer = vshAttributesBuffer.ToArray();
                     shapes.Add(shape);
                 }
 

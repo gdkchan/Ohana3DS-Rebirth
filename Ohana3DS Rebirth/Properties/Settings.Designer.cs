@@ -25,66 +25,6 @@ namespace Ohana3DS_Rebirth.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int reAALevel {
-            get {
-                return ((int)(this["reAALevel"]));
-            }
-            set {
-                this["reAALevel"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("-10526881")]
-        public int reBgColor {
-            get {
-                return ((int)(this["reBgColor"]));
-            }
-            set {
-                this["reBgColor"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool reUseLegacyTexturing {
-            get {
-                return ((bool)(this["reUseLegacyTexturing"]));
-            }
-            set {
-                this["reUseLegacyTexturing"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool reShowGrids {
-            get {
-                return ((bool)(this["reShowGrids"]));
-            }
-            set {
-                this["reShowGrids"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool reShowHUD {
-            get {
-                return ((bool)(this["reShowHUD"]));
-            }
-            set {
-                this["reShowHUD"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("C:\\")]
         public string meOutFolder {
             get {
@@ -152,6 +92,114 @@ namespace Ohana3DS_Rebirth.Properties {
             }
             set {
                 this["teExportAllTxs"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int reAntiAlias {
+            get {
+                return ((int)(this["reAntiAlias"]));
+            }
+            set {
+                this["reAntiAlias"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("-9868951")]
+        public int reBackgroundColor {
+            get {
+                return ((int)(this["reBackgroundColor"]));
+            }
+            set {
+                this["reBackgroundColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool reShowGuidelines {
+            get {
+                return ((bool)(this["reShowGuidelines"]));
+            }
+            set {
+                this["reShowGuidelines"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool reShowInformation {
+            get {
+                return ((bool)(this["reShowInformation"]));
+            }
+            set {
+                this["reShowInformation"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool reShowAllMeshes {
+            get {
+                return ((bool)(this["reShowAllMeshes"]));
+            }
+            set {
+                this["reShowAllMeshes"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool reFragmentShader {
+            get {
+                return ((bool)(this["reFragmentShader"]));
+            }
+            set {
+                this["reFragmentShader"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int reLegacyTexturingMode {
+            get {
+                return ((int)(this["reLegacyTexturingMode"]));
+            }
+            set {
+                this["reLegacyTexturingMode"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool viewShowSidebar {
+            get {
+                return ((bool)(this["viewShowSidebar"]));
+            }
+            set {
+                this["viewShowSidebar"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool reWireframeMode {
+            get {
+                return ((bool)(this["reWireframeMode"]));
+            }
+            set {
+                this["reWireframeMode"] = value;
             }
         }
     }

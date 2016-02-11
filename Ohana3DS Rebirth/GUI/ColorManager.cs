@@ -4,8 +4,10 @@ namespace Ohana3DS_Rebirth.GUI
 {
     class ColorManager
     {
-        public static Color highlight = Color.FromArgb(21, 46, 84);
-        public static Color hover = Color.FromArgb(15, 82, 186);
-        public static Color hoverClose = Color.Crimson;
+        public static Color ui_bgDark = Color.DimGray;
+        public static Color ui_bgLight = Color.Gray;
+
+        public static Color ui_hoveredDark = Color.FromArgb(8, 37, 103);
+        public static Color ui_hoveredLight = Color.FromArgb(15, 82, 186);
     }
 }

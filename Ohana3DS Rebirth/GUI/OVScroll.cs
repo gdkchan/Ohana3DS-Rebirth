@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Windows.Forms;
 using System.Drawing;
+using System.Windows.Forms;
 
 namespace Ohana3DS_Rebirth.GUI
 {
@@ -16,7 +16,7 @@ namespace Ohana3DS_Rebirth.GUI
         private Color foreColor;
 
         private Color barColor = Color.White;
-        private Color barColorHover = Color.WhiteSmoke;
+        private Color barColorHover = Color.LightGray;
 
         private int max = 100;
 

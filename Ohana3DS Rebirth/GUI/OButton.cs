@@ -9,7 +9,7 @@ namespace Ohana3DS_Rebirth.GUI
         private Color bgColor;
         private Bitmap img;
         private bool centered = true;
-        private bool hover = true;
+        private bool hover;
 
         public OButton()
         {
@@ -69,27 +69,20 @@ namespace Ohana3DS_Rebirth.GUI
             }
         }
 
-        /// <summary>
-        ///     Set to true to make Background change color when user hovers mouse on the button.
-        /// </summary>
-        public bool Hover
-        {
-            get
-            {
-                return hover;
-            }
-            set
-            {
-                hover = value;
-            }
-        }
-
         protected override void OnPaint(PaintEventArgs pevent)
         {
-            pevent.Graphics.FillRectangle(new SolidBrush(bgColor), new Rectangle(0, 0, Width, Height));
+            Brush bg = new SolidBrush(hover ? ColorManager.ui_hoveredDark : ColorManager.ui_bgDark);
+            pevent.Graphics.FillRectangle(bg, ClientRectangle);
+
+            int bx = Width - 1;
+            int by = Height - 1;
+            pevent.Graphics.DrawLine(new Pen(Color.FromArgb(64, Color.White)), 0, 0, bx, 0);
+            pevent.Graphics.DrawLine(new Pen(Color.FromArgb(64, Color.White)), 0, 1, 0, by);
+            pevent.Graphics.DrawLine(new Pen(Color.FromArgb(64, Color.Black)), 0, by, bx, by);
+            pevent.Graphics.DrawLine(new Pen(Color.FromArgb(64, Color.Black)), bx, 1, bx, by);
 
             string text = null;
-            if (Text.Length > 0) text = DrawingUtils.clampText(pevent.Graphics, Text, Font, Width - (img != null ? img.Width : 0));
+            if (Text.Length > 0) text = DrawingUtils.clampText(pevent.Graphics, Text, Font, Width - (img != null ? img.Width : 0) - 2);
             SizeF textSize = DrawingUtils.measureText(pevent.Graphics, text, Font);
             int width = (int)textSize.Width;
             int yImage = 0;
@@ -98,24 +91,24 @@ namespace Ohana3DS_Rebirth.GUI
                 width += img.Width;
                 yImage = (Height / 2) - (img.Height / 2);
             }
-            int x = centered ? Math.Max(0, (Width / 2) - (width / 2)) : 0;
+
+            int x = centered ? (Width / 2) - (width / 2) : 0;
             int yText = (Height / 2) - (int)(textSize.Height / 2);
+            Brush textBrush = new SolidBrush(Enabled ? ForeColor : Color.Silver);
             if (img != null)
             {
                 pevent.Graphics.DrawImage(img, new Rectangle(x, yImage, img.Width, img.Height));
-                pevent.Graphics.DrawString(text, Font, new SolidBrush(Enabled ? ForeColor : Color.Silver), new Point(x + img.Width, yText));
+                pevent.Graphics.DrawString(text, Font, textBrush, new Point(x + img.Width, yText));
             }
             else
-            {
-                pevent.Graphics.DrawString(text, Font, new SolidBrush(Enabled ? ForeColor : Color.Silver), new Point(x, yText));
-            }
+                pevent.Graphics.DrawString(text, Font, textBrush, new Point(x, yText));
 
             base.OnPaint(pevent);
         }
 
         protected override void OnMouseEnter(EventArgs e)
         {
-            if (hover) bgColor = ColorManager.highlight;
+            hover = true;
             Refresh();
 
             base.OnMouseEnter(e);
@@ -123,7 +116,7 @@ namespace Ohana3DS_Rebirth.GUI
 
         protected override void OnMouseLeave(EventArgs e)
         {
-            bgColor = this.BackColor;
+            hover = false;
             Refresh();
 
             base.OnMouseLeave(e);

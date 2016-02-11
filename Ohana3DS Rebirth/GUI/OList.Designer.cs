@@ -35,7 +35,6 @@
             // ListScroll
             // 
             this.ListScroll.BarColor = System.Drawing.Color.White;
-            this.ListScroll.BarColorHover = System.Drawing.Color.WhiteSmoke;
             this.ListScroll.Dock = System.Windows.Forms.DockStyle.Right;
             this.ListScroll.Location = new System.Drawing.Point(248, 0);
             this.ListScroll.MaximumScroll = 100;

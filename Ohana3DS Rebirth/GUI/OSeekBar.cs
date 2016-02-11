@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Windows.Forms;
 using System.Drawing;
+using System.Windows.Forms;
 
 using Ohana3DS_Rebirth.Properties;
 
@@ -16,7 +16,7 @@ namespace Ohana3DS_Rebirth.GUI
         private int seek;
         private bool mouseDrag;
 
-        private Color fillColor = ColorManager.highlight;
+        private Color fillColor = ColorManager.ui_hoveredDark;
 
         private int max = 100;
 

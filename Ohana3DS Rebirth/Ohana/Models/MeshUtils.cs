@@ -1,6 +1,6 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
 using System.Drawing;
-using System.Collections.Generic;
+using System.IO;
 
 namespace Ohana3DS_Rebirth.Ohana.Models
 {
@@ -14,11 +14,11 @@ namespace Ohana3DS_Rebirth.Ohana.Models
         public static void calculateBounds(RenderBase.OModel mdl, RenderBase.OVertex vertex)
         {
             if (vertex.position.x < mdl.minVector.x) mdl.minVector.x = vertex.position.x;
-            else if (vertex.position.x > mdl.maxVector.x) mdl.maxVector.x = vertex.position.x;
-            else if (vertex.position.y < mdl.minVector.y) mdl.minVector.y = vertex.position.y;
-            else if (vertex.position.y > mdl.maxVector.y) mdl.maxVector.y = vertex.position.y;
-            else if (vertex.position.z < mdl.minVector.z) mdl.minVector.z = vertex.position.z;
-            else if (vertex.position.z > mdl.maxVector.z) mdl.maxVector.z = vertex.position.z;
+            if (vertex.position.x > mdl.maxVector.x) mdl.maxVector.x = vertex.position.x;
+            if (vertex.position.y < mdl.minVector.y) mdl.minVector.y = vertex.position.y;
+            if (vertex.position.y > mdl.maxVector.y) mdl.maxVector.y = vertex.position.y;
+            if (vertex.position.z < mdl.minVector.z) mdl.minVector.z = vertex.position.z;
+            if (vertex.position.z > mdl.maxVector.z) mdl.maxVector.z = vertex.position.z;
         }
 
         /// <summary>
