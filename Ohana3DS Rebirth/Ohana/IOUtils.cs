@@ -71,30 +71,6 @@ namespace Ohana3DS_Rebirth.Ohana
         }
 
         /// <summary>
-        ///     Reads the "magic string" at the beggining of a byte array, and returns an extension accordingly.
-        ///     If it can't find valid ASCII characters (A-Z or a-z), the *.bin extension will be returned.
-        /// </summary>
-        /// <param name="data">The byte array with the data</param>
-        /// <param name="startAddress">The (optional) start address</param>
-        /// <returns>The extension</returns>
-        public static string getExtensionFromMagic(byte[] data, int startAddress = 0)
-        {
-            string output = null;
-
-            for (int i = startAddress; i < data.Length; i++)
-            {
-                byte b = data[i];
-                if ((b > 0x40 && b < 0x5b) || (b > 0x60 && b < 0x7b))
-                    output += (char)b;
-                else
-                    break;
-            }
-
-            if (output == null) return ".bin";
-            return "." + output.ToLower();
-        }
-
-        /// <summary>
         ///     Sign extends the value, so it will keep the sign flag.
         /// </summary>
         /// <param name="value">The value that should be sign-extended</param>

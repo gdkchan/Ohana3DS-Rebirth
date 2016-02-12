@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Windows.Forms;
 
 using Ohana3DS_Rebirth.GUI.Forms;
@@ -139,11 +140,55 @@ namespace Ohana3DS_Rebirth.Ohana
             return new file { type = formatType.unsupported };
         }
 
+        public static string getExtension(byte[] data, int startIndex = 0)
+        {
+            if (data.Length > 3)
+            {
+                switch (getMagic(data, 4, startIndex))
+                {
+                    case "CGFX": return ".bcres";
+                }
+            }
+
+            if (data.Length > 2)
+            {
+                switch (getMagic(data, 3, startIndex))
+                {
+                    case "BCH": return ".bch";
+                }
+            }
+
+            if (data.Length > 1)
+            {
+                switch (getMagic(data, 2, startIndex))
+                {
+                    case "AD": return ".ad";
+                    case "BM": return ".bm";
+                    case "GR": return ".gr";
+                    case "MM": return ".mm";
+                    case "PB": return ".pb";
+                    case "PC": return ".pc";
+                    case "PF": return ".pf";
+                    case "PK": return ".pk";
+                    case "PO": return ".po";
+                    case "PT": return ".pt";
+                    case "TM": return ".tm";
+                }
+            }
+
+            return ".bin";
+        }
+
         private static string getMagic(BinaryReader input, uint length)
         {
             string magic = IOUtils.readString(input, 0, length);
             input.BaseStream.Seek(0, SeekOrigin.Begin);
             return magic;
+        }
+
+        private static string getMagic(byte[] data, int length, int startIndex = 0)
+        {
+            return Encoding.ASCII.GetString(data, startIndex, length);
         }
 
         public enum fileType

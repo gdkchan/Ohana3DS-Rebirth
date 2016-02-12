@@ -45,13 +45,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
         {
             public string created;
             public string modified;
-            public daeContributor contributor = new daeContributor();
-        }
-
-        public class daeContributor
-        {
-            public string author;
-            public string authoring_tool;
         }
 
         public class daeImage
@@ -119,7 +112,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
             public string texture;
 
             [XmlAttribute]
-            public string texcoord;
+            public string texcoord = "uv";
         }
 
         public class daePhongDiffuse
@@ -133,7 +126,8 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
 
             public void set(Color col)
             {
-                color = string.Format("{0} {1} {2} {3}", 
+                color = string.Format(
+                    "{0} {1} {2} {3}", 
                     getString(col.R / 255f), 
                     getString(col.G / 255f), 
                     getString(col.B / 255f), 
@@ -156,6 +150,9 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
 
         public class daeTechnique
         {
+            [XmlAttribute]
+            public string sid;
+
             public daePhong phong = new daePhong();
         }
 
@@ -311,11 +308,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
 
             [XmlAttribute]
             public string source;
-
-            [XmlAttribute]
-            public uint set;
-
-            public bool ShouldSerializeset() { return semantic == "TEXCOORD"; }
         }
 
         public class daeInputTable
@@ -326,13 +318,12 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
             [XmlElement("input")]
             public List<daeInput> input = new List<daeInput>();
 
-            public void addInput(string semantic, string source, uint set = 0)
+            public void addInput(string semantic, string source)
             {
                 daeInput i = new daeInput();
 
                 i.semantic = semantic;
                 i.source = source;
-                i.set = set;
 
                 input.Add(i);
             }
@@ -348,6 +339,11 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
 
             [XmlAttribute]
             public uint offset;
+
+            [XmlAttribute]
+            public uint set;
+
+            public bool ShouldSerializeset() { return semantic == "TEXCOORD"; }
         }
 
         public class daeTriangles
@@ -363,13 +359,14 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
 
             public string p;
 
-            public void addInput(string semantic, string source, uint offset = 0)
+            public void addInput(string semantic, string source, uint offset = 0, uint set = 0)
             {
                 daeInputOffset i = new daeInputOffset();
 
                 i.semantic = semantic;
                 i.source = source;
                 i.offset = offset;
+                i.set = set;
 
                 input.Add(i);
             }
@@ -596,8 +593,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
 
             dae.asset.created = DateTime.Now.ToString("yyyy-MM-ddThh:mm:ssZ");
             dae.asset.modified = dae.asset.created;
-            dae.asset.contributor.authoring_tool = "Ohana3DS";
-            dae.asset.contributor.author = Environment.UserName;
 
             foreach (RenderBase.OTexture tex in model.texture)
             {
@@ -673,6 +668,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
 
                 eff.profile_COMMON.newparam.Add(sampler);
 
+                eff.profile_COMMON.technique.sid = "img_technique";
                 eff.profile_COMMON.technique.phong.emission.set(Color.Black);
                 eff.profile_COMMON.technique.phong.ambient.set(Color.Black);
                 eff.profile_COMMON.technique.phong.specular.set(Color.White);
@@ -832,26 +828,27 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
 
                 geometry.mesh.vertices.id = meshName + "_vertices_id";
                 geometry.mesh.vertices.addInput("POSITION", "#" + position.id);
-                if (mesh.hasNormal) geometry.mesh.vertices.addInput("NORMAL", "#" + normal.id);
+
+
+                geometry.mesh.triangles.material = mdl.material[obj.materialId].name;
+                geometry.mesh.triangles.addInput("VERTEX", "#" + geometry.mesh.vertices.id);
+                if (mesh.hasNormal) geometry.mesh.triangles.addInput("NORMAL", "#" + normal.id);
+                if (mesh.hasColor) geometry.mesh.triangles.addInput("COLOR", "#" + color.id);
                 if (mesh.texUVCount > 0)
                 {
                     texUV[0].float_array.set(uv0);
-                    geometry.mesh.vertices.addInput("TEXCOORD", "#" + texUV[0].id);
+                    geometry.mesh.triangles.addInput("TEXCOORD", "#" + texUV[0].id);
                 }
                 if (mesh.texUVCount > 1)
                 {
                     texUV[1].float_array.set(uv1);
-                    geometry.mesh.vertices.addInput("TEXCOORD", "#" + texUV[1].id, 1);
+                    geometry.mesh.triangles.addInput("TEXCOORD", "#" + texUV[1].id, 0, 1);
                 }
                 if (mesh.texUVCount > 2)
                 {
                     texUV[2].float_array.set(uv2);
-                    geometry.mesh.vertices.addInput("TEXCOORD", "#" + texUV[2].id, 2);
+                    geometry.mesh.triangles.addInput("TEXCOORD", "#" + texUV[2].id, 0, 2);
                 }
-                if (mesh.hasColor) geometry.mesh.vertices.addInput("COLOR", "#" + color.id);
-
-                geometry.mesh.triangles.material = mdl.material[obj.materialId].name;
-                geometry.mesh.triangles.addInput("VERTEX", "#" + geometry.mesh.vertices.id);
                 geometry.mesh.triangles.set(mesh.indices);
 
                 dae.library_geometries.Add(geometry);

@@ -58,7 +58,12 @@ namespace Ohana3DS_Rebirth.Ohana.Containers
                 uint endOffset = input.ReadUInt32();
                 uint length = input.ReadUInt32();
 
-                string extension = guessExtension(input, startOffset + dataOffset, length);
+                input.BaseStream.Seek(startOffset + dataOffset, SeekOrigin.Begin);
+                byte[] buffer = new byte[Math.Min(0x10, length)];
+                input.Read(buffer, 0, buffer.Length);
+
+                bool isCompressed = buffer.Length > 0 ? buffer[0] == 0x11 : false;
+                string extension = FileIO.getExtension(buffer, isCompressed ? 5 : 0);
                 string name = string.Format("file_{0:D5}{1}", i, extension);
 
                 //And add the file to the container list
@@ -71,58 +76,6 @@ namespace Ohana3DS_Rebirth.Ohana.Containers
             }
 
             return output;
-        }
-
-        private static string guessExtension(BinaryReader input, uint fileOffset, uint fileLength)
-        {
-            input.BaseStream.Seek(fileOffset, SeekOrigin.Begin);
-            byte[] buffer = new byte[Math.Min(0x10, fileLength)];
-            input.Read(buffer, 0, buffer.Length);
-            bool isCompressed = buffer.Length > 0 ? buffer[0] == 0x11 : false;
-            string extension = IOUtils.getExtensionFromMagic(buffer, isCompressed ? 5 : 0);
-
-            //Make sure we don't grab garbage within the extension
-            bool goodExtension = false;
-
-            if (extension.Length > 2)
-            {
-                string ext = extension.Substring(0, 3);
-                switch (ext)
-                {
-                    case ".ad":
-                    case ".bm":
-                    case ".gr":
-                    case ".mm":
-                    case ".pb":
-                    case ".pc":
-                    case ".pk":
-                    case ".po":
-                    case ".pt":
-                    case ".tm":
-                        extension = ext;
-                        goodExtension = true;
-                        break;
-                }
-            }
-
-            if (extension.Length > 3)
-            {
-                switch (extension.Substring(0, 4))
-                {
-                    case ".bch": goodExtension = true; break;
-                }
-            }
-
-            if (extension.Length > 4)
-            {
-                switch (extension.Substring(0, 5))
-                {
-                    case ".cgfx": extension = ".bcres"; goodExtension = true; break;
-                }
-            }
-
-            if (!goodExtension) extension = ".bin";
-            return extension;
         }
     }
 }
