@@ -54,6 +54,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             BinaryReader input = new BinaryReader(data);
+            uint magic, length;
 
             switch (getMagic(input, 5))
             {
@@ -63,10 +64,12 @@ namespace Ohana3DS_Rebirth.Ohana
             switch (getMagic(input, 4))
             {
                 case "CGFX": return new file { data = CGFX.load(data), type = formatType.model };
+                case "CRAG": return new file { data = GARC.load(data), type = formatType.container };
+                case "darc": return new file { data = DARC.load(data), type = formatType.container };
                 case "FPT0": return new file { data = FPT0.load(data), type = formatType.container };
                 case "IECP":
-                    uint magic = input.ReadUInt32();
-                    uint length = input.ReadUInt32();
+                    magic = input.ReadUInt32();
+                    length = input.ReadUInt32();
                     return load(new MemoryStream(LZSS.decompress(data, length)));
                 case "NLK2":
                     data.Seek(0x80, SeekOrigin.Begin);
@@ -75,9 +78,23 @@ namespace Ohana3DS_Rebirth.Ohana
                         data = CGFX.load(data),
                         type = formatType.model
                     };
+                case "SARC": return new file { data = SARC.load(data), type = formatType.container };
                 case "SMES": return new file { data = NLP.loadMesh(data), type = formatType.model };
+                case "Yaz0":
+                    magic = input.ReadUInt32();
+                    length = IOUtils.endianSwap(input.ReadUInt32());
+                    data.Seek(8, SeekOrigin.Current);
+                    return load(new MemoryStream(Yaz0.decompress(data, length)));
                 case "zmdl": return new file { data = ZMDL.load(data), type = formatType.model };
                 case "ztex": return new file { data = ZTEX.load(data), type = formatType.texture };
+            }
+
+            //Check if is a BCLIM or BFLIM file (header on the end)
+            if (data.Length > 0x28)
+            {
+                data.Seek(-0x28, SeekOrigin.End);
+                string clim = IOUtils.readStringWithLength(input, 4);
+                if (clim == "CLIM" || clim == "FLIM") return new file { data = BCLIM.load(data), type = formatType.image };
             }
 
             switch (getMagic(input, 3))

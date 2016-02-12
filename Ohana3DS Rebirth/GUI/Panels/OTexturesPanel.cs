@@ -82,12 +82,7 @@ namespace Ohana3DS_Rebirth.GUI
         private void BtnClear_Click(object sender, EventArgs e)
         {
             TextureList.flush(true);
-
-            if (renderer != null)
-            {
-                renderer.models.texture.Clear();
-                renderer.updateTextures();
-            }
+            if (renderer != null) renderer.removeAllTextures();
         }
     }
 }

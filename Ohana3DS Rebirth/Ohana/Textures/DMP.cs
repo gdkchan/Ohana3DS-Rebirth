@@ -7,6 +7,11 @@ namespace Ohana3DS_Rebirth.Ohana.Textures
 {
     class DMP
     {
+        /// <summary>
+        ///     Loads a Dragon Quest VII image.
+        /// </summary>
+        /// <param name="data">The DMP image data</param>
+        /// <returns>The image as a texture</returns>
         public static RenderBase.OTexture load(Stream data)
         {
             BinaryReader input = new BinaryReader(data);

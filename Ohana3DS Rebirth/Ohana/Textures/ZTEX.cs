@@ -15,11 +15,21 @@ namespace Ohana3DS_Rebirth.Ohana.Textures
             public byte format;
         }
 
+        /// <summary>
+        ///     Loads a Fantasy Life ZTEX texture from a file.
+        /// </summary>
+        /// <param name="data">The full path to the file</param>
+        /// <returns>The list of textures</returns>
         public static List<RenderBase.OTexture> load(string fileName)
         {
             return load(new MemoryStream(File.ReadAllBytes(fileName)));
         }
 
+        /// <summary>
+        ///     Loads a Fantasy Life ZTEX texture from a Stream.
+        /// </summary>
+        /// <param name="data">The Stream with the data</param>
+        /// <returns>The list of textures</returns>
         public static List<RenderBase.OTexture> load(Stream data)
         {
             List<RenderBase.OTexture> textures = new List<RenderBase.OTexture>();

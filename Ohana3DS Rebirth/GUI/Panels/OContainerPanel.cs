@@ -16,7 +16,11 @@ namespace Ohana3DS_Rebirth.GUI
 
         public void finalize()
         {
-            //Nothing needs disposing here...
+            if (container.data != null)
+            {
+                container.data.Close();
+                container.data = null;
+            }
         }
 
         public void launch(object data)
@@ -36,7 +40,17 @@ namespace Ohana3DS_Rebirth.GUI
                     foreach (OContainer.fileEntry file in container.content)
                     {
                         string fileName = Path.Combine(browserDlg.SelectedPath, file.name);
-                        File.WriteAllBytes(fileName, file.data);
+                        string dir = Path.GetDirectoryName(fileName);
+                        if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                        if (file.loadFromDisk)
+                        {
+                            byte[] buffer = new byte[file.fileLength];
+                            container.data.Seek(file.fileOffset, SeekOrigin.Begin);
+                            container.data.Read(buffer, 0, buffer.Length);
+                            File.WriteAllBytes(fileName, buffer);
+                        }
+                        else
+                            File.WriteAllBytes(fileName, file.data);
                     }
                 }
             }
@@ -50,9 +64,20 @@ namespace Ohana3DS_Rebirth.GUI
                 saveDlg.Title = "Export file";
                 saveDlg.FileName = container.content[FileList.SelectedIndex].name;
                 saveDlg.Filter = "All files|*.*";
-                if (saveDlg.ShowDialog() == DialogResult.OK) File.WriteAllBytes(
-                    saveDlg.FileName,
-                    container.content[FileList.SelectedIndex].data);
+                if (saveDlg.ShowDialog() == DialogResult.OK)
+                {
+                    OContainer.fileEntry file = container.content[FileList.SelectedIndex];
+
+                    if (file.loadFromDisk)
+                    {
+                        byte[] buffer = new byte[file.fileLength];
+                        container.data.Seek(file.fileOffset, SeekOrigin.Begin);
+                        container.data.Read(buffer, 0, buffer.Length);
+                        File.WriteAllBytes(saveDlg.FileName, buffer);
+                    }
+                    else
+                        File.WriteAllBytes(saveDlg.FileName, file.data);
+                }
             }
         }
     }

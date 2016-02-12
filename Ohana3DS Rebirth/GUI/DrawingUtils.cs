@@ -46,10 +46,10 @@ namespace Ohana3DS_Rebirth.GUI
             StringFormat format = new StringFormat();
             RectangleF rect = new RectangleF(0, 0, 1000, 1000);
             CharacterRange[] ranges = { new CharacterRange(0, text.Length) };
-            Region[] regions = new Region[1];
 
             format.SetMeasurableCharacterRanges(ranges);
-            regions = g.MeasureCharacterRanges(text, font, rect, format);
+            Region[] regions = g.MeasureCharacterRanges(text, font, rect, format);
+            if (regions.Length == 0) return SizeF.Empty; 
             rect = regions[0].GetBounds(g);
 
             return new SizeF(rect.Right + 1f, rect.Bottom + 1f);

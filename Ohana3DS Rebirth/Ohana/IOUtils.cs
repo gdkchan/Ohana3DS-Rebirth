@@ -71,6 +71,30 @@ namespace Ohana3DS_Rebirth.Ohana
         }
 
         /// <summary>
+        ///     Reads the "magic string" at the beggining of a byte array, and returns an extension accordingly.
+        ///     If it can't find valid ASCII characters (A-Z or a-z), the *.bin extension will be returned.
+        /// </summary>
+        /// <param name="data">The byte array with the data</param>
+        /// <param name="startAddress">The (optional) start address</param>
+        /// <returns>The extension</returns>
+        public static string getExtensionFromMagic(byte[] data, int startAddress = 0)
+        {
+            string output = null;
+
+            for (int i = startAddress; i < data.Length; i++)
+            {
+                byte b = data[i];
+                if ((b > 0x40 && b < 0x5b) || (b > 0x60 && b < 0x7b))
+                    output += (char)b;
+                else
+                    break;
+            }
+
+            if (output == null) return ".bin";
+            return "." + output.ToLower();
+        }
+
+        /// <summary>
         ///     Sign extends the value, so it will keep the sign flag.
         /// </summary>
         /// <param name="value">The value that should be sign-extended</param>
@@ -95,6 +119,20 @@ namespace Ohana3DS_Rebirth.Ohana
             bool sign = (value & (1 << (bits - 1))) > 0;
             if (sign) value -= (1 << bits);
             return value;
+        }
+
+        /// <summary>
+        ///     Converts a value from Little to Big or Big to Little endian.
+        /// </summary>
+        /// <param name="value">The value to be swapped</param>
+        /// <returns>The swapped value</returns>
+        public static uint endianSwap(uint value)
+        {
+            return
+                (value >> 24) |
+                ((value >> 8) & 0xff00) |
+                ((value & 0xff00) << 8) |
+                ((value & 0xff) << 24);
         }
     }
 }

@@ -229,6 +229,10 @@
       <DependentUpon>OForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Ohana\AnimationUtils.cs" />
+    <Compile Include="Ohana\Compressions\Yaz0.cs" />
+    <Compile Include="Ohana\Containers\DARC.cs" />
+    <Compile Include="Ohana\Containers\GARC.cs" />
+    <Compile Include="Ohana\Containers\SARC.cs" />
     <Compile Include="Ohana\Models\MeshUtils.cs" />
     <Compile Include="Ohana\Models\BCH.cs" />
     <Compile Include="Ohana\Models\CGFX.cs" />
@@ -249,6 +253,7 @@
     <Compile Include="Ohana\Models\PocketMonsters\MM.cs" />
     <Compile Include="Ohana\Models\PocketMonsters\PC.cs" />
     <Compile Include="Ohana\PatriciaTree.cs" />
+    <Compile Include="Ohana\Textures\BCLIM.cs" />
     <Compile Include="Ohana\Textures\DMP.cs" />
     <Compile Include="Ohana\FileIO.cs" />
     <Compile Include="Ohana\Models\GenericFormats\CMDL.cs" />
