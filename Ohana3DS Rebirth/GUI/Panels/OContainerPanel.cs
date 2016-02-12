@@ -26,7 +26,16 @@ namespace Ohana3DS_Rebirth.GUI
         public void launch(object data)
         {
             container = (OContainer)data;
-            foreach (OContainer.fileEntry file in container.content) FileList.addItem(file.name);
+            FileList.addColumn(new OList.columnHeader(384, "Name"));
+            FileList.addColumn(new OList.columnHeader(128, "Size"));
+            foreach (OContainer.fileEntry file in container.content)
+            {
+                OList.listItemGroup item = new OList.listItemGroup();
+                item.columns.Add(new OList.listItem(file.name));
+                uint length = file.loadFromDisk ? file.fileLength : (uint)file.data.Length;
+                item.columns.Add(new OList.listItem(getLength(length)));
+                FileList.addItem(item);
+            }
             FileList.Refresh();
         }
 
@@ -79,6 +88,19 @@ namespace Ohana3DS_Rebirth.GUI
                         File.WriteAllBytes(saveDlg.FileName, file.data);
                 }
             }
+        }
+
+        string[] lengthUnits = { "Bytes", "KB", "MB", "GB", "TB" };
+        private string getLength(uint length)
+        {
+            int i = 0;
+            while (length > 0x400)
+            {
+                length /= 0x400;
+                i++;
+            }
+
+            return length.ToString() + " " + lengthUnits[i];
         }
     }
 }

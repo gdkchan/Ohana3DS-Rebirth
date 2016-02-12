@@ -114,6 +114,7 @@ namespace Ohana3DS_Rebirth.Ohana
             switch (getMagic(input, 2))
             {
                 case "AD": return new file { data = AD.load(data), type = formatType.model };
+                case "BM": return new file { data = MM.load(data), type = formatType.model };
                 case "GR": return new file { data = GR.load(data), type = formatType.model };
                 case "MM": return new file { data = MM.load(data), type = formatType.model };
                 case "PC": return new file { data = PC.load(data), type = formatType.model };
