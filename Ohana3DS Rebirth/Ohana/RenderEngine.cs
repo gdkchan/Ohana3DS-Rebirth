@@ -864,8 +864,8 @@ namespace Ohana3DS_Rebirth.Ohana
                                 #endregion
                             }
 
-                            int textureUnit = 0;
-                            int legacyTexture = -1;
+                            int legacyTextureIndex = -1;
+                            int legacyTextureUnit = -1;
                             for (int i = 0; i < textures.Count; i++)
                             {
                                 string[] name = new string[3];
@@ -879,32 +879,33 @@ namespace Ohana3DS_Rebirth.Ohana
                                     for (int j = 0; j < 3; j++) if (textureId[j] > -1) name[j] = ma.textureName[textureId[j]];
                                 }
 
-                                for (int j = 0; j < 3; j++)
+                                if (cfgLegacyTexturingMode == 0 && !fragmentShaderMode)
                                 {
-                                    if (fragmentShaderMode)
+                                    if (textures[i].name == name[0])
                                     {
-                                        if (textures[i].name == name[j])
-                                        {
-                                            fragmentShader.SetValue(string.Format("texture{0}", j), textures[i].texture);
-                                            break;
-                                        }
+                                        legacyTextureIndex = i;
+                                        legacyTextureUnit = 0;
+                                        break;
                                     }
-                                    else
+                                }
+                                else
+                                {
+                                    for (int j = 0; j < 3; j++)
                                     {
-                                        if (cfgLegacyTexturingMode == 0)
+                                        if (fragmentShaderMode)
                                         {
-                                            if (textures[i].name == name[0])
+                                            if (textures[i].name == name[j])
                                             {
-                                                legacyTexture = i;
-                                                break;
+                                                string shaderTexture = string.Format("texture{0}", j);
+                                                fragmentShader.SetValue(shaderTexture, textures[i].texture);
                                             }
                                         }
                                         else
                                         {
-                                            if (textures[i].name == name[j] && textureUnit < j + 1)
+                                            if (textures[i].name == name[j] && legacyTextureUnit < j)
                                             {
-                                                legacyTexture = i;
-                                                textureUnit = j + 1;
+                                                legacyTextureIndex = i;
+                                                legacyTextureUnit = j;
                                             }
                                         }
                                     }
@@ -913,8 +914,8 @@ namespace Ohana3DS_Rebirth.Ohana
 
                             if (!fragmentShaderMode)
                             {
-                                if (legacyTexture > -1)
-                                    device.SetTexture(0, textures[legacyTexture].texture);
+                                if (legacyTextureIndex > -1)
+                                    device.SetTexture(0, textures[legacyTextureIndex].texture);
                                 else
                                     device.SetTexture(0, null);
                             }
@@ -963,7 +964,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                 {
                                     device.SetTextureStageState(s, TextureStageStates.TextureTransform, (int)TextureTransform.Count2);
                                     Matrix uvTransform = rotateCenter2D(rotate) * Matrix.Scaling(scaling.X, scaling.Y, 1) * translate2D(-translate);
-                                    if (s == legacyTexture) device.Transform.Texture0 = uvTransform;
+                                    if (s == legacyTextureUnit) device.Transform.Texture0 = uvTransform;
                                 }
 
                                 device.SetSamplerState(s, SamplerStageStates.MinFilter, (int)TextureFilter.Linear);
