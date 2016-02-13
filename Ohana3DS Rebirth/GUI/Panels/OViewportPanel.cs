@@ -41,8 +41,8 @@ namespace Ohana3DS_Rebirth.GUI
         public void launch(object data)
         {
             renderer = new RenderEngine();
-            renderer.initialize(Screen.Handle, Screen.Width, Screen.Height);
             renderer.models = (RenderBase.OModelGroup)data;
+            renderer.initialize(Screen.Handle, Screen.Width, Screen.Height);
 
             ModelsPanel.launch(renderer);
             TexturesPanel.launch(renderer);

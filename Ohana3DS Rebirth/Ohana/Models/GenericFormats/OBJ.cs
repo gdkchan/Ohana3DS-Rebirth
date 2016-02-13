@@ -39,7 +39,8 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
 
                 for (int i = 0; i < obj.indices.Count; i += 3)
                 {
-                    output.AppendLine(string.Format("f {0}/{0}/{0} {1}/{1}/{1} {2}/{2}/{2}",
+                    output.AppendLine(
+                        string.Format("f {0}/{0}/{0} {1}/{1}/{1} {2}/{2}/{2}",
                         faceIndexBase + obj.indices[i],
                         faceIndexBase + obj.indices[i + 1],
                         faceIndexBase + obj.indices[i + 2]));

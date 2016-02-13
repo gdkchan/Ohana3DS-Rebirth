@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Threading;
 using System.Windows.Forms;
 
 using Ohana3DS_Rebirth.GUI;
@@ -110,7 +109,8 @@ namespace Ohana3DS_Rebirth
             if (files.Length > 0)
             {
                 destroyOpenPanels();
-                ThreadPool.QueueUserWorkItem(waitAndOpen, files[0]);
+                openFile openFileDelegate = new openFile(open);
+                BeginInvoke(openFileDelegate, files[0]);
                 Activate();
             }
         }
@@ -139,24 +139,9 @@ namespace Ohana3DS_Rebirth
                 if (openDlg.ShowDialog() == DialogResult.OK)
                 {
                     destroyOpenPanels();
-                    ThreadPool.QueueUserWorkItem(waitAndOpen, openDlg.FileName);
+                    open(openDlg.FileName);
                 }
             }
-        }
-
-        private void waitAndOpen(object state)
-        {
-            //Waits until the rendering loops checks the "rendering" flag and exits
-            //Otherwise, the loop will get stuck forever and memory leaks will occur
-            if (currentFormat == FileIO.formatType.model)
-            {
-                OViewportPanel viewport = (OViewportPanel)currentPanel;
-                while (!viewport.renderer.finalized) Thread.Sleep(10);
-            }
-
-            currentPanel = null;
-            openFile openFileDelegate = new openFile(open);
-            BeginInvoke(openFileDelegate, (string)state);
         }
 
         /*
