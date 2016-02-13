@@ -326,7 +326,7 @@ namespace Ohana3DS_Rebirth.Ohana
             updateSettings();
 
             animator = new Timer();
-            animator.Interval = 16;
+            animator.Interval = 1;
             animator.Tick += refresh;
 
             animator.Enabled = true;
