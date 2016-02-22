@@ -9,7 +9,6 @@ namespace Ohana3DS_Rebirth.Ohana
         private static int[] tileOrder = { 0, 1, 8, 9, 2, 3, 10, 11, 16, 17, 24, 25, 18, 19, 26, 27, 4, 5, 12, 13, 6, 7, 14, 15, 20, 21, 28, 29, 22, 23, 30, 31, 32, 33, 40, 41, 34, 35, 42, 43, 48, 49, 56, 57, 50, 51, 58, 59, 36, 37, 44, 45, 38, 39, 46, 47, 52, 53, 60, 61, 54, 55, 62, 63 };
         private static int[,] etc1LUT = { { 2, 8, -2, -8 }, { 5, 17, -5, -17 }, { 9, 29, -9, -29 }, { 13, 42, -13, -42 }, { 18, 60, -18, -60 }, { 24, 80, -24, -80 }, { 33, 106, -33, -106 }, { 47, 183, -47, -183 } };
 
-        #region "Decode"
         /// <summary>
         ///     Decodes a PICA200 Texture.
         /// </summary>
@@ -314,6 +313,46 @@ namespace Ohana3DS_Rebirth.Ohana
             return TextureUtils.getBitmap(output.ToArray(), width, height);
         }
 
+        /// <summary>
+        ///     Encodes a PICA200 Texture.
+        /// </summary>
+        /// <param name="img">Input image to be encoded</param>
+        /// <param name="format">Pixel Format of the Texture</param>
+        /// <returns></returns>
+        public static byte[] encode(Bitmap img, RenderBase.OTextureFormat format)
+        {
+            byte[] data = TextureUtils.getArray(img);
+            byte[] output = new byte[data.Length];
+
+            uint outputOffset = 0;
+            switch (format)
+            {
+                case RenderBase.OTextureFormat.rgba8:
+                    for (int tY = 0; tY < img.Height / 8; tY++)
+                    {
+                        for (int tX = 0; tX < img.Width / 8; tX++)
+                        {
+                            for (int pixel = 0; pixel < 64; pixel++)
+                            {
+                                int x = tileOrder[pixel] % 8;
+                                int y = (tileOrder[pixel] - x) / 8;
+                                long dataOffset = ((tX * 8) + x + ((tY * 8 + y) * img.Width)) * 4;
+
+                                Buffer.BlockCopy(data, (int)dataOffset, output, (int)outputOffset + 1, 3);
+                                output[outputOffset] = data[dataOffset + 3];
+
+                                outputOffset += 4;
+                            }
+                        }
+                    }
+                    break;
+
+                default: throw new NotImplementedException();
+            }
+
+            return output;
+        }
+
         #region "ETC1"
         private static byte[] etc1Decode(byte[] input, int width, int height, bool alpha)
         {
@@ -533,8 +572,5 @@ namespace Ohana3DS_Rebirth.Ohana
             return tileScramble;
         }
         #endregion
-
-        #endregion
-
     }
 }

@@ -261,6 +261,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models
         private static vtxEntry getVtxDescriptor(BinaryReader input)
         {
             vtxEntry vtx = new vtxEntry();
+
             uint attributesCount = input.ReadUInt32();
             for (int j = 0; j < attributesCount; j++)
             {
@@ -295,6 +296,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                     default: throw new Exception("MBN: Unknown Vertex Attribute type, can't calculate Stride! STOP!");
                 }
             }
+
             while ((vtx.stride & 1) != 0) vtx.stride++;
             vtx.length = input.ReadUInt32();
             return vtx;

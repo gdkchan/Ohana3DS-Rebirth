@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using Ohana3DS_Rebirth.GUI;
 using Ohana3DS_Rebirth.Ohana;
 using Ohana3DS_Rebirth.Properties;
+using Ohana3DS_Rebirth.Tools;
 
 namespace Ohana3DS_Rebirth
 {
@@ -74,6 +75,12 @@ namespace Ohana3DS_Rebirth
 
         public void open(string fileName)
         {
+            if (currentPanel != null)
+            {
+                currentPanel.finalize();
+                ContentContainer.Controls.Remove((Control)currentPanel);
+            }
+
             FileIO.file file = FileIO.load(fileName);
             currentFormat = file.type;
 
@@ -108,19 +115,9 @@ namespace Ohana3DS_Rebirth
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             if (files.Length > 0)
             {
-                destroyOpenPanels();
                 openFile openFileDelegate = new openFile(open);
                 BeginInvoke(openFileDelegate, files[0]);
                 Activate();
-            }
-        }
-
-        private void destroyOpenPanels()
-        {
-            if (currentPanel != null)
-            {
-                currentPanel.finalize();
-                ContentContainer.Controls.Remove((Control)currentPanel);
             }
         }
 
@@ -136,11 +133,7 @@ namespace Ohana3DS_Rebirth
             using (OpenFileDialog openDlg = new OpenFileDialog())
             {
                 openDlg.Filter = "All files|*.*";
-                if (openDlg.ShowDialog() == DialogResult.OK)
-                {
-                    destroyOpenPanels();
-                    open(openDlg.FileName);
-                }
+                if (openDlg.ShowDialog() == DialogResult.OK) open(openDlg.FileName);
             }
         }
 
@@ -327,6 +320,20 @@ namespace Ohana3DS_Rebirth
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
             }
+        }
+
+        /*
+         * Tools
+         */
+
+        private void MenuToolBCHTextureReplace_Click(object sender, EventArgs e)
+        {
+            new OBCHTextureReplacer(this).Show();
+        }
+
+        private void MenuToolSm4shModelCreator_Click(object sender, EventArgs e)
+        {
+            new OSm4shModelCreator(this).Show();
         }
 
         /*

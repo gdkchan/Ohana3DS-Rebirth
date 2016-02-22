@@ -61,8 +61,10 @@
             this.MenuViewShowSidebar = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuViewWireframeMode = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuTools = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuToolBCHTextureReplace = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuHelp = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuAbout = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuToolSm4shModelCreator = new System.Windows.Forms.ToolStripMenuItem();
             this.ContentContainer.SuspendLayout();
             this.TopMenu.SuspendLayout();
             this.SuspendLayout();
@@ -86,7 +88,6 @@
             this.TopMenu.Name = "TopMenu";
             this.TopMenu.Size = new System.Drawing.Size(792, 24);
             this.TopMenu.TabIndex = 10;
-            this.TopMenu.Text = "menuStrip1";
             // 
             // MenuFile
             // 
@@ -319,9 +320,19 @@
             // 
             // MenuTools
             // 
+            this.MenuTools.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MenuToolBCHTextureReplace,
+            this.MenuToolSm4shModelCreator});
             this.MenuTools.Name = "MenuTools";
             this.MenuTools.Size = new System.Drawing.Size(47, 20);
             this.MenuTools.Text = "&Tools";
+            // 
+            // MenuToolBCHTextureReplace
+            // 
+            this.MenuToolBCHTextureReplace.Name = "MenuToolBCHTextureReplace";
+            this.MenuToolBCHTextureReplace.Size = new System.Drawing.Size(195, 22);
+            this.MenuToolBCHTextureReplace.Text = "&BCH texture replacer...";
+            this.MenuToolBCHTextureReplace.Click += new System.EventHandler(this.MenuToolBCHTextureReplace_Click);
             // 
             // MenuHelp
             // 
@@ -334,9 +345,16 @@
             // MenuAbout
             // 
             this.MenuAbout.Name = "MenuAbout";
-            this.MenuAbout.Size = new System.Drawing.Size(107, 22);
+            this.MenuAbout.Size = new System.Drawing.Size(152, 22);
             this.MenuAbout.Text = "&About";
             this.MenuAbout.Click += new System.EventHandler(this.MenuAbout_Click);
+            // 
+            // MenuToolSm4shModelCreator
+            // 
+            this.MenuToolSm4shModelCreator.Name = "MenuToolSm4shModelCreator";
+            this.MenuToolSm4shModelCreator.Size = new System.Drawing.Size(195, 22);
+            this.MenuToolSm4shModelCreator.Text = "&Sm4sh model creator...";
+            this.MenuToolSm4shModelCreator.Click += new System.EventHandler(this.MenuToolSm4shModelCreator_Click);
             // 
             // FrmMain
             // 
@@ -397,5 +415,7 @@
         private System.Windows.Forms.ToolStripMenuItem MenuViewShowAllMeshes;
         private System.Windows.Forms.ToolStripMenuItem MenuViewShowSidebar;
         private System.Windows.Forms.ToolStripMenuItem MenuViewWireframeMode;
+        private System.Windows.Forms.ToolStripMenuItem MenuToolBCHTextureReplace;
+        private System.Windows.Forms.ToolStripMenuItem MenuToolSm4shModelCreator;
     }
 }

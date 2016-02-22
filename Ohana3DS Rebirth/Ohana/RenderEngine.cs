@@ -685,7 +685,6 @@ namespace Ohana3DS_Rebirth.Ohana
 
                                     Quaternion ql = getQuaternion(vl);
                                     Quaternion qr = getQuaternion(vr);
-
                                     newBone.rotationQuaternion = Quaternion.Slerp(ql, qr, mu);
 
                                     //Translation
@@ -1244,9 +1243,11 @@ namespace Ohana3DS_Rebirth.Ohana
         private Matrix rotateCenter2D(float rotation)
         {
             Matrix output = Matrix.Identity;
+
             output *= translate2D(new Vector2(-0.5f, -0.5f));
             output *= Matrix.RotationZ(rotation);
             output *= translate2D(new Vector2(0.5f, 0.5f));
+
             return output;
         }
         /// <summary>
@@ -1257,8 +1258,10 @@ namespace Ohana3DS_Rebirth.Ohana
         private Matrix translate2D(Vector2 translation)
         {
             Matrix output = Matrix.Identity;
+
             output.M31 = translation.X;
             output.M32 = translation.Y;
+
             return output;
         }
 

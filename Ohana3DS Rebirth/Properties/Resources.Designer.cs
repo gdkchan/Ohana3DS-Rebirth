@@ -181,6 +181,16 @@ namespace Ohana3DS_Rebirth.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap ui_icon_floppy {
+            get {
+                object obj = ResourceManager.GetObject("ui_icon_floppy", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap ui_icon_folder {
             get {
                 object obj = ResourceManager.GetObject("ui_icon_folder", resourceCulture);
@@ -194,6 +204,16 @@ namespace Ohana3DS_Rebirth.Properties {
         internal static System.Drawing.Bitmap ui_icon_imagedelete {
             get {
                 object obj = ResourceManager.GetObject("ui_icon_imagedelete", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap ui_icon_imageed {
+            get {
+                object obj = ResourceManager.GetObject("ui_icon_imageed", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

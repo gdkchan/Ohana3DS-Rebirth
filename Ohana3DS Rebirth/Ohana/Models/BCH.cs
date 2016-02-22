@@ -187,6 +187,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models
             header.dataLength = input.ReadUInt32();
             if (header.backwardCompatibility > 0x20) header.dataExtendedLength = input.ReadUInt32();
             header.relocationTableLength = input.ReadUInt32();
+
             header.uninitializedDataSectionLength = input.ReadUInt32();
             header.uninitializedDescriptionSectionLength = input.ReadUInt32();
 
@@ -356,12 +357,15 @@ namespace Ohana3DS_Rebirth.Ohana.Models
 
                 //Note: It have textures for the 3 texture units.
                 //The other texture units are used with textureCoordinate1 and 2.
-                Bitmap texture = null;
                 data.Seek(textureCommands.getTexUnit0Address(), SeekOrigin.Begin);
                 Size textureSize = textureCommands.getTexUnit0Size();
                 byte[] buffer = new byte[textureSize.Width * textureSize.Height * 4];
                 input.Read(buffer, 0, buffer.Length);
-                texture = TextureCodec.decode(buffer, textureSize.Width, textureSize.Height, textureCommands.getTexUnit0Format());
+                Bitmap texture = TextureCodec.decode(
+                    buffer,
+                    textureSize.Width,
+                    textureSize.Height,
+                    textureCommands.getTexUnit0Format());
 
                 models.texture.Add(new RenderBase.OTexture(texture, textureName));
             }

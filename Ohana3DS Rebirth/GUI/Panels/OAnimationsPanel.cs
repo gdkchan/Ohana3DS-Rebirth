@@ -93,6 +93,7 @@ namespace Ohana3DS_Rebirth.GUI
             BtnPlayPause.Image = Properties.Resources.ui_icon_play;
             control.stop();
             paused = true;
+            Seeker.Value = 0;
         }
 
         private void BtnPrevious_MouseDown(object sender, MouseEventArgs e)
