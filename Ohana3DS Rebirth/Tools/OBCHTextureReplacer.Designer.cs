@@ -46,7 +46,6 @@
             this.MenuExit = new System.Windows.Forms.ToolStripMenuItem();
             this.ContentContainer.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PicPreview)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.SplitPanel)).BeginInit();
             this.SplitPanel.Panel1.SuspendLayout();
             this.SplitPanel.Panel2.SuspendLayout();
             this.SplitPanel.SuspendLayout();
@@ -255,7 +254,6 @@
             this.SplitPanel.Panel1.ResumeLayout(false);
             this.SplitPanel.Panel2.ResumeLayout(false);
             this.SplitPanel.Panel2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.SplitPanel)).EndInit();
             this.SplitPanel.ResumeLayout(false);
             this.ButtonsLayout.ResumeLayout(false);
             this.TopMenu.ResumeLayout(false);
