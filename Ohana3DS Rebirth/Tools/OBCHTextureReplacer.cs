@@ -25,6 +25,15 @@ namespace Ohana3DS_Rebirth.Tools
             public RenderBase.OTexture texture;
         }
 
+        private struct loadedMaterial
+        {
+            public string texture0;
+            public string texture1;
+            public string texture2;
+            public uint gpuCommandsOffset;
+            public uint gpuCommandsWordCount;
+        }
+
         private class loadedBCH
         {
             public uint mainHeaderOffset;
@@ -33,10 +42,12 @@ namespace Ohana3DS_Rebirth.Tools
             public uint relocationTableOffset;
             public uint relocationTableLength;
             public List<loadedTexture> textures;
+            public List<loadedMaterial> materials;
 
             public loadedBCH()
             {
                 textures = new List<loadedTexture>();
+                materials = new List<loadedMaterial>();
             }
         }
 
@@ -134,6 +145,10 @@ namespace Ohana3DS_Rebirth.Tools
                 uint dataExtendedLength = backwardCompatibility > 0x20 ? input.ReadUInt32() : 0;
                 uint relocationTableLength = input.ReadUInt32();
 
+                data.Seek(mainHeaderOffset, SeekOrigin.Begin);
+                uint modelsPointerTableOffset = input.ReadUInt32() + mainHeaderOffset;
+                uint modelsPointerTableEntries = input.ReadUInt32();
+
                 data.Seek(mainHeaderOffset + 0x24, SeekOrigin.Begin);
                 uint texturesPointerTableOffset = input.ReadUInt32() + mainHeaderOffset;
                 uint texturesPointerTableEntries = input.ReadUInt32();
@@ -188,11 +203,51 @@ namespace Ohana3DS_Rebirth.Tools
                         buffer,
                         textureSize.Width,
                         textureSize.Height,
-                        textureCommands.getTexUnit0Format());
+                        fmt);
 
                     tex.texture = new RenderBase.OTexture(texture, textureName);
 
                     bch.textures.Add(tex);
+                }
+
+                //Materials
+                for (int mdlIndex = 0; mdlIndex < modelsPointerTableEntries; mdlIndex++)
+                {
+                    data.Seek(modelsPointerTableOffset + (mdlIndex * 4), SeekOrigin.Begin);
+                    data.Seek(input.ReadUInt32() + mainHeaderOffset, SeekOrigin.Begin);
+                    data.Seek(0x34, SeekOrigin.Current);
+
+                    uint materialsTableOffset = input.ReadUInt32() + mainHeaderOffset;
+                    uint materialsTableEntries = input.ReadUInt32();
+
+                    for (int index = 0; index < materialsTableEntries; index++)
+                    {
+                        if (backwardCompatibility < 0x21)
+                            data.Seek(materialsTableOffset + (index * 0x58), SeekOrigin.Begin);
+                        else
+                            data.Seek(materialsTableOffset + (index * 0x2c), SeekOrigin.Begin);
+
+                        loadedMaterial mat;
+
+                        data.Seek(0x10, SeekOrigin.Current);
+                        mat.gpuCommandsOffset = input.ReadUInt32() + gpuCommandsOffset;
+                        mat.gpuCommandsWordCount = input.ReadUInt32();
+
+                        if (backwardCompatibility < 0x21)
+                            data.Seek(0x30, SeekOrigin.Current);
+                        else
+                            data.Seek(4, SeekOrigin.Current);
+
+                        uint texture0Offset = input.ReadUInt32() + stringTableOffset;
+                        uint texture1Offset = input.ReadUInt32() + stringTableOffset;
+                        uint texture2Offset = input.ReadUInt32() + stringTableOffset;
+
+                        mat.texture0 = IOUtils.readString(input, texture0Offset);
+                        mat.texture1 = IOUtils.readString(input, texture1Offset);
+                        mat.texture2 = IOUtils.readString(input, texture2Offset);
+
+                        bch.materials.Add(mat);
+                    }
                 }
 
                 bch.mainHeaderOffset = mainHeaderOffset;
@@ -360,6 +415,8 @@ namespace Ohana3DS_Rebirth.Tools
                             }
                         }
 
+                        uint newSize = (uint)((tex.texture.texture.Width << 16) | tex.texture.texture.Height);
+
                         //Update texture format
                         data.Seek(tex.gpuCommandsOffset, SeekOrigin.Begin);
                         for (int index = 0; index < tex.gpuCommandsWordCount * 3; index++)
@@ -371,18 +428,30 @@ namespace Ohana3DS_Rebirth.Tools
                                 case 0xf008e:
                                 case 0xf0096:
                                 case 0xf009e:
-                                    data.Seek(-8, SeekOrigin.Current);
-                                    output.Write((uint)0); //Set texture format to 0 = RGBA8888
-                                    data.Seek(4, SeekOrigin.Current);
+                                    replaceCommand(data, output, 0); //Set texture format to 0 = RGBA8888
                                     break;
                                 case 0xf0082:
                                 case 0xf0092:
                                 case 0xf009a:
-                                    data.Seek(-8, SeekOrigin.Current);
-                                    uint size = (uint)((tex.texture.texture.Width << 16) | tex.texture.texture.Height);
-                                    output.Write(size); //Set new texture size
-                                    data.Seek(4, SeekOrigin.Current);
+                                    replaceCommand(data, output, newSize); //Set new texture size
                                     break;
+                            }
+                        }
+
+                        //Update material texture format
+                        foreach (loadedMaterial mat in bch.materials)
+                        {
+                            data.Seek(mat.gpuCommandsOffset, SeekOrigin.Begin);
+                            for (int index = 0; index < mat.gpuCommandsWordCount; index++)
+                            {
+                                uint command = input.ReadUInt32();
+
+                                switch (command)
+                                {
+                                    case 0xf008e: if (mat.texture0 == tex.texture.name || mat.texture0 == "") replaceCommand(data, output, 0); break;
+                                    case 0xf0096: if (mat.texture1 == tex.texture.name || mat.texture1 == "") replaceCommand(data, output, 0); break;
+                                    case 0xf009e: if (mat.texture2 == tex.texture.name || mat.texture2 == "") replaceCommand(data, output, 0); break;
+                                }
                             }
                         }
 
@@ -413,6 +482,13 @@ namespace Ohana3DS_Rebirth.Tools
             byte[] output = new byte[length];
             Buffer.BlockCopy(input, 0, output, 0, input.Length);
             return output;
+        }
+
+        private void replaceCommand(Stream data, BinaryWriter output, uint newVal)
+        {
+            data.Seek(-8, SeekOrigin.Current);
+            output.Write(newVal);
+            data.Seek(4, SeekOrigin.Current);
         }
 
         private void replaceData(Stream data, uint offset, int length, byte[] newData)
