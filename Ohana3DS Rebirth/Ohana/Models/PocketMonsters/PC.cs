@@ -7,6 +7,15 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
     class PC
     {
         /// <summary>
+        ///  Seems to add a context menu option in file/open. Need to test a build.
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        public static RenderBase.OModelGroup load(string file)
+        {
+            return load(File.Open(file, FileMode.Open));
+        }
+        /// <summary>
         ///     Loads a PC monster model from Pokémon.
         /// </summary>
         /// <param name="data">The data</param>
