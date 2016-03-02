@@ -12,11 +12,16 @@ using Ohana3DS_Rebirth.Ohana.Textures;
 using Ohana3DS_Rebirth.Ohana.Textures.PocketMonsters;
 using Ohana3DS_Rebirth.Ohana.Compressions;
 using Ohana3DS_Rebirth.Ohana.Containers;
+using Ohana3DS_Rebirth.Ohana.Animations;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
     public class FileIO
     {
+//        static RenderBase.OAnimationListBase output;
+//        static List<RenderBase.OModel> omodelOutput;
+//        static List<RenderBase.OTexture> otexOutput;
+
         [Flags]
         public enum formatType : uint
         {
@@ -26,6 +31,7 @@ namespace Ohana3DS_Rebirth.Ohana
             image = 4,
             model = 8,
             texture = 0x10,
+            animation = 0x20,
             all = 0xffffffff
         }
 
@@ -120,6 +126,9 @@ namespace Ohana3DS_Rebirth.Ohana
                 case "MM": return new file { data = MM.load(data), type = formatType.model };
                 case "PC": return new file { data = PC.load(data), type = formatType.model };
                 case "PT": return new file { data = PT.load(data), type = formatType.texture };
+                case "PK": return new file { data = PK.load(data), type = formatType.animation };
+                case "PB": return new file { data = PB.load(data), type = formatType.animation };
+                case "PF": return new file { data = PF.load(data), type = formatType.animation };
             }
 
             //Compressions
@@ -305,32 +314,48 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="arguments">Optional arguments to be used by the exporter</param>
         public static void export(fileType type, object data, params int[] arguments)
         {
-            using (SaveFileDialog saveDlg = new SaveFileDialog())
+            if (arguments.Length < 3)
             {
-                switch (type)
+                using (SaveFileDialog saveDlg = new SaveFileDialog())
                 {
-                    case fileType.model:
-                        OModelExportForm exportMdl = new OModelExportForm((RenderBase.OModelGroup)data, arguments[0]);
-                        exportMdl.Show();
-                        break;
-                    case fileType.texture:
-                        OTextureExportForm exportTex = new OTextureExportForm((RenderBase.OModelGroup)data, arguments[0]);
-                        exportTex.Show();
-                        break;
-                    case fileType.skeletalAnimation:
-                        saveDlg.Title = "Export Skeletal Animation";
-                        saveDlg.Filter = "Source Model|*.smd";
-                        if (saveDlg.ShowDialog() == DialogResult.OK)
-                        {
-                            switch (saveDlg.FilterIndex)
+                    switch (type)
+                    {
+                        case fileType.model:
+                            OModelExportForm exportMdl = new OModelExportForm((RenderBase.OModelGroup)data, arguments[0]);
+                            exportMdl.Show();
+                            break;
+                        case fileType.texture:
+                            OTextureExportForm exportTex = new OTextureExportForm((RenderBase.OModelGroup)data, arguments[0]);
+                            exportTex.Show();
+                            break;
+                        case fileType.skeletalAnimation:
+                            saveDlg.Title = "Export Skeletal Animation";
+                            saveDlg.Filter = "Source Model|*.smd|Autodesk DAE|*.dae";
+                            if (saveDlg.ShowDialog() == DialogResult.OK)
                             {
-                                case 1:
-                                    SMD.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0], arguments[1]);
-                                    break;
+                                switch (saveDlg.FilterIndex)
+                                {
+                                    case 1:
+                                        for (int i = 0; i < ((RenderBase.OModelGroup)data).skeletalAnimation.list.Count; i++)
+                                        {
+                                            SMD.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0], i);
+                                        }
+                                        break;
+                                    case 2:
+                                        for (int i = 0; i < ((RenderBase.OModelGroup)data).skeletalAnimation.list.Count; i++)
+                                        {
+                                            DAE.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0], i);
+                                        }
+                                        break;
+                                }
                             }
-                        }
-                        break;
+                            break;
+                    }
                 }
+            }
+            else
+            {
+                DAE.export((RenderBase.OModelGroup)data, arguments[2].ToString() + ".dae", arguments[0]);
             }
         }
     }

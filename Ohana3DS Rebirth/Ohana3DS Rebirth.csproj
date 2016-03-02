@@ -230,6 +230,9 @@
     <Compile Include="OForm.Designer.cs">
       <DependentUpon>OForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Ohana\Animations\PB.cs" />
+    <Compile Include="Ohana\Animations\PF.cs" />
+    <Compile Include="Ohana\Animations\PK.cs" />
     <Compile Include="Ohana\AnimationUtils.cs" />
     <Compile Include="Ohana\Compressions\Yaz0.cs" />
     <Compile Include="Ohana\Containers\DARC.cs" />
