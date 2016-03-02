@@ -1,23 +1,20 @@
 ﻿using System;
-using System.Drawing;
 using System.ComponentModel;
+using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
-using System.Runtime.InteropServices;
 
 namespace Ohana3DS_Rebirth.GUI
 {
     [Designer(typeof(OGroupBoxDesigner))]
     public partial class OGroupBox : UserControl
     {
-        [DllImport("user32.dll")]
-        public static extern int SendMessage(IntPtr hWnd, int wMsg, int wParam, int lParam);
-        private const int WM_SETREDRAW = 11;
-
-        private String title;
+        private string title;
         private int originalHeight = 256;
         private bool collapsed;
         private bool autoSize;
+
+        public const int collapsedHeight = 24;
 
         public OGroupBox()
         {
@@ -31,17 +28,6 @@ namespace Ohana3DS_Rebirth.GUI
             SetStyle(ControlStyles.UserPaint, true);
             SetStyle(ControlStyles.AllPaintingInWmPaint, true);
             SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
-        }
-
-        public void SuspendDrawing()
-        {
-            SendMessage(Handle, WM_SETREDRAW, 0, 0);
-        }
-
-        public void ResumeDrawing()
-        {
-            SendMessage(Handle, WM_SETREDRAW, 1, 0);
-            Refresh();
         }
 
         [Category("Appearance")]
@@ -62,6 +48,7 @@ namespace Ohana3DS_Rebirth.GUI
             }
             set
             {
+                if (value == collapsed) return;
                 if (value) collapse(); else expand();
             }
         }
@@ -122,13 +109,18 @@ namespace Ohana3DS_Rebirth.GUI
         {
             get
             {
-                return originalHeight - 17;
+                return originalHeight - TitleBar.Height;
             }
             set
             {
-                originalHeight = value + 17;
+                originalHeight = value + TitleBar.Height;
             }
         }
+
+        /// <summary>
+        ///     Occurs whenever the GroupBox is expanded from a collapsed state.
+        /// </summary>
+        public event EventHandler GroupBoxExpanded;
 
         protected override void OnControlAdded(ControlEventArgs e)
         {
@@ -137,7 +129,7 @@ namespace Ohana3DS_Rebirth.GUI
             base.OnControlAdded(e);
         }
 
-        private void Control_Layout(Object sender, EventArgs e)
+        private void Control_Layout(object sender, EventArgs e)
         {
             recalc();
         }
@@ -150,12 +142,9 @@ namespace Ohana3DS_Rebirth.GUI
                 foreach (Control child in ContentPanel.Controls)
                 {
                     int y = child.Top + child.Height;
-                    if (child.Visible && y > maxY)
-                    {
-                        maxY = y;
-                    }
+                    if (child.Visible && y > maxY) maxY = y;
                 }
-                originalHeight = maxY + 17; //16 = Top, 1 = Bottom border
+                originalHeight = maxY + TitleBar.Height;
                 if (!collapsed) Height = originalHeight;
             }
         }
@@ -170,8 +159,8 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void OGroupBox_Layout(object sender, LayoutEventArgs e)
         {
-            ContentPanel.Size = new Size(Width - 2, Height - 17);
-            BtnToggle.Location = new Point(Width - 16, 0);
+            ContentPanel.Location = new Point(0, TitleBar.Height);
+            ContentPanel.Size = new Size(Width, Height - TitleBar.Height);
             updateTitle();
         }
 
@@ -182,7 +171,7 @@ namespace Ohana3DS_Rebirth.GUI
 
         private void BtnToggle_MouseEnter(object sender, EventArgs e)
         {
-            BtnToggle.BackColor = ColorManager.highlight;
+            BtnToggle.BackColor = ColorManager.ui_hoveredDark;
         }
 
         private void BtnToggle_MouseLeave(object sender, EventArgs e)
@@ -200,7 +189,7 @@ namespace Ohana3DS_Rebirth.GUI
         {
             using (Graphics g = Graphics.FromHwnd(Handle))
             {
-                LblTitle.Text = DrawingUtils.clampText(g, title, LblTitle.Font, Width - 16);
+                LblTitle.Text = DrawingUtils.clampText(g, title, LblTitle.Font, Width - (BtnToggle.Width + 4));
             }
         }
 
@@ -208,26 +197,28 @@ namespace Ohana3DS_Rebirth.GUI
         {
             recalc();
             collapsed = false;
-            BtnToggle.Image = Properties.Resources.icn_collapse;
+            BtnToggle.Image = Properties.Resources.ui_icon_minus;
             Height = originalHeight;
+
+            if (GroupBoxExpanded != null) GroupBoxExpanded(this, EventArgs.Empty);
         }
 
         private void collapse()
         {
             collapsed = true;
-            BtnToggle.Image = Properties.Resources.icn_expand;
-            Height = 16;
+            BtnToggle.Image = Properties.Resources.ui_icon_plus;
+            Height = TitleBar.Height;
         }
 
         public class OGroupBoxDesigner : ParentControlDesigner
         {
-            public override void Initialize(System.ComponentModel.IComponent component)
+            public override void Initialize(IComponent component)
             {
                 base.Initialize(component);
 
-                if (this.Control is OGroupBox)
+                if (Control is OGroupBox)
                 {
-                    this.EnableDesignMode(((OGroupBox)this.Control).ContentArea, "ContentArea");
+                    EnableDesignMode(((OGroupBox)Control).ContentArea, "ContentArea");
                 }
             }
         }

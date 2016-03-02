@@ -118,14 +118,18 @@ namespace Ohana3DS_Rebirth.Ohana.Models
             for (int objIndex = 0; objIndex < modelObjectsCount; objIndex++)
             {
                 RenderBase.OMesh obj = new RenderBase.OMesh();
-                obj.name = String.Format("mesh_{0}", objIndex);
+                obj.name = string.Format("mesh_{0}", objIndex);
 
                 data.Seek(modelOffset + objIndex * 0xc4, SeekOrigin.Begin);
 
                 attributeEntry[] attributes = new attributeEntry[9];
                 for (int attribute = 0; attribute < 9; attribute++)
                 {
-                    attributes[attribute].floats = new RenderBase.OVector4(input.ReadSingle(), input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
+                    attributes[attribute].floats = new RenderBase.OVector4(
+                        input.ReadSingle(),
+                        input.ReadSingle(),
+                        input.ReadSingle(),
+                        input.ReadSingle());
                     attributes[attribute].offset = input.ReadByte() * 4;
                     attributes[attribute].attributeLength = input.ReadByte();
                     attributes[attribute].stride = input.ReadUInt16() * 4;
@@ -149,7 +153,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                 uint vertexBufferOffset = input.ReadUInt32();
                 uint vertexBufferLength = input.ReadUInt32() * 4;
 
-                List<RenderBase.CustomVertex> vertexBuffer = new List<RenderBase.CustomVertex>();
                 for (int faceIndex = 0; faceIndex < facesHeaderEntries; faceIndex++)
                 {
                     data.Seek(facesHeaderOffset + faceIndex * 0x14, SeekOrigin.Begin);
@@ -213,7 +216,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models
 
                         MeshUtils.calculateBounds(model, vertex);
                         obj.vertices.Add(vertex);
-                        vertexBuffer.Add(RenderBase.convertVertex(vertex));
 
                         data.Seek(position, SeekOrigin.Begin);
                     }
@@ -221,7 +223,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models
 
                 int materialId = materialObjectBinding.IndexOf((byte)objIndex);
                 if (materialId > -1) obj.materialId = (ushort)materialId;
-                obj.renderBuffer = vertexBuffer.ToArray();
                 model.mesh.Add(obj);
             }
 

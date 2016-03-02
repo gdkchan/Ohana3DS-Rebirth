@@ -84,8 +84,8 @@ namespace Ohana3DS_Rebirth.GUI
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            int w = Resources.icn_ticked.Width;
-            int h = Resources.icn_ticked.Height;
+            int w = Resources.ui_icon_tick.Width;
+            int h = Resources.ui_icon_tick.Height;
 
             //Draw box around
             Color lineColor = ForeColor;
@@ -96,13 +96,14 @@ namespace Ohana3DS_Rebirth.GUI
 
             //Ticked icon (if checked)
             Rectangle checkRect = new Rectangle(0, (Height / 2) - (h / 2), w, h);
-            if (_checked) e.Graphics.DrawImage(Resources.icn_ticked, checkRect);
+            if (_checked) e.Graphics.DrawImage(Resources.ui_icon_tick, checkRect);
 
             //Draw text at the right of the box
             string text = autoSize ? Text : DrawingUtils.clampText(e.Graphics, Text, Font, Width);
             SizeF textSize = DrawingUtils.measureText(e.Graphics, text, Font);
             if (autoSize) Size = new Size((int)textSize.Width + checkRect.Width, (int)textSize.Height);
-            e.Graphics.DrawString(text, Font, new SolidBrush(Enabled ? ForeColor : Color.Silver), new Point(checkRect.Width, (Height / 2) - ((int)textSize.Height / 2)));
+            Point textLocation = new Point(checkRect.Width, (Height / 2) - ((int)textSize.Height / 2));
+            e.Graphics.DrawString(text, Font, new SolidBrush(Enabled ? ForeColor : Color.Silver), textLocation);
 
             base.OnPaint(e);
         }
@@ -111,7 +112,7 @@ namespace Ohana3DS_Rebirth.GUI
         {
             if (e.Button == MouseButtons.Left)
             {
-                int h = Resources.icn_ticked.Height;
+                int h = Resources.ui_icon_tick.Height;
 
                 if (ClientRectangle.Contains(e.Location))
                 {

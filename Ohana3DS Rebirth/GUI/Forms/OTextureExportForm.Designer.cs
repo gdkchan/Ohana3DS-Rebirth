@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OTextureExportForm));
             this.BtnOk = new Ohana3DS_Rebirth.GUI.OButton();
             this.BtnCancel = new Ohana3DS_Rebirth.GUI.OButton();
             this.ChkExportAllTextures = new Ohana3DS_Rebirth.GUI.OCheckBox();
@@ -41,6 +42,7 @@
             // 
             // ContentContainer
             // 
+            this.ContentContainer.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
             this.ContentContainer.Controls.Add(this.BtnOk);
             this.ContentContainer.Controls.Add(this.BtnCancel);
             this.ContentContainer.Controls.Add(this.ChkExportAllTextures);
@@ -49,8 +51,8 @@
             this.ContentContainer.Controls.Add(this.BtnBrowseFolder);
             this.ContentContainer.Controls.Add(this.TxtOutFolder);
             this.ContentContainer.Controls.Add(this.LblDummyOutFolder);
-            this.ContentContainer.Location = new System.Drawing.Point(0, 0);
-            this.ContentContainer.Size = new System.Drawing.Size(384, 384);
+            this.ContentContainer.Location = new System.Drawing.Point(1, 1);
+            this.ContentContainer.Size = new System.Drawing.Size(382, 382);
             this.ContentContainer.Controls.SetChildIndex(this.LblDummyOutFolder, 0);
             this.ContentContainer.Controls.SetChildIndex(this.TxtOutFolder, 0);
             this.ContentContainer.Controls.SetChildIndex(this.BtnBrowseFolder, 0);
@@ -60,17 +62,11 @@
             this.ContentContainer.Controls.SetChildIndex(this.BtnCancel, 0);
             this.ContentContainer.Controls.SetChildIndex(this.BtnOk, 0);
             // 
-            // LblTitle
-            // 
-            this.LblTitle.Size = new System.Drawing.Size(105, 19);
-            this.LblTitle.Text = "Texture exporter";
-            // 
             // BtnOk
             // 
             this.BtnOk.Centered = true;
-            this.BtnOk.Hover = true;
-            this.BtnOk.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_ticked;
-            this.BtnOk.Location = new System.Drawing.Point(238, 348);
+            this.BtnOk.Image = global::Ohana3DS_Rebirth.Properties.Resources.ui_icon_tick;
+            this.BtnOk.Location = new System.Drawing.Point(237, 347);
             this.BtnOk.Name = "BtnOk";
             this.BtnOk.Size = new System.Drawing.Size(64, 24);
             this.BtnOk.TabIndex = 32;
@@ -80,9 +76,8 @@
             // BtnCancel
             // 
             this.BtnCancel.Centered = true;
-            this.BtnCancel.Hover = true;
-            this.BtnCancel.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_close;
-            this.BtnCancel.Location = new System.Drawing.Point(308, 348);
+            this.BtnCancel.Image = global::Ohana3DS_Rebirth.Properties.Resources.ui_icon_block;
+            this.BtnCancel.Location = new System.Drawing.Point(307, 347);
             this.BtnCancel.Name = "BtnCancel";
             this.BtnCancel.Size = new System.Drawing.Size(64, 24);
             this.BtnCancel.TabIndex = 31;
@@ -95,39 +90,42 @@
             this.ChkExportAllTextures.BackColor = System.Drawing.Color.Transparent;
             this.ChkExportAllTextures.BoxColor = System.Drawing.Color.Black;
             this.ChkExportAllTextures.Checked = false;
-            this.ChkExportAllTextures.Location = new System.Drawing.Point(8, 122);
+            this.ChkExportAllTextures.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ChkExportAllTextures.Location = new System.Drawing.Point(11, 124);
             this.ChkExportAllTextures.Name = "ChkExportAllTextures";
-            this.ChkExportAllTextures.Size = new System.Drawing.Size(245, 16);
+            this.ChkExportAllTextures.Size = new System.Drawing.Size(259, 17);
             this.ChkExportAllTextures.TabIndex = 30;
             this.ChkExportAllTextures.Text = "Export all textures (with their internal names)";
             this.ChkExportAllTextures.CheckedChanged += new System.EventHandler(this.ChkExportAllTextures_CheckedChanged);
             // 
             // TxtTextureName
             // 
-            this.TxtTextureName.BackColor = System.Drawing.Color.Black;
+            this.TxtTextureName.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
             this.TxtTextureName.CharacterWhiteList = null;
-            this.TxtTextureName.Location = new System.Drawing.Point(8, 96);
+            this.TxtTextureName.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.TxtTextureName.Location = new System.Drawing.Point(11, 98);
             this.TxtTextureName.Name = "TxtTextureName";
-            this.TxtTextureName.Size = new System.Drawing.Size(364, 20);
+            this.TxtTextureName.Size = new System.Drawing.Size(360, 20);
             this.TxtTextureName.TabIndex = 29;
             this.TxtTextureName.Text = "texture_name";
             // 
             // LblDummyTextureName
             // 
             this.LblDummyTextureName.AutomaticSize = true;
+            this.LblDummyTextureName.BackColor = System.Drawing.Color.Transparent;
             this.LblDummyTextureName.Centered = false;
-            this.LblDummyTextureName.Location = new System.Drawing.Point(8, 74);
+            this.LblDummyTextureName.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblDummyTextureName.Location = new System.Drawing.Point(11, 75);
             this.LblDummyTextureName.Name = "LblDummyTextureName";
-            this.LblDummyTextureName.Size = new System.Drawing.Size(72, 16);
+            this.LblDummyTextureName.Size = new System.Drawing.Size(78, 17);
             this.LblDummyTextureName.TabIndex = 28;
             this.LblDummyTextureName.Text = "Texture name:";
             // 
             // BtnBrowseFolder
             // 
             this.BtnBrowseFolder.Centered = true;
-            this.BtnBrowseFolder.Hover = true;
-            this.BtnBrowseFolder.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_open;
-            this.BtnBrowseFolder.Location = new System.Drawing.Point(340, 48);
+            this.BtnBrowseFolder.Image = global::Ohana3DS_Rebirth.Properties.Resources.ui_icon_folder;
+            this.BtnBrowseFolder.Location = new System.Drawing.Point(339, 49);
             this.BtnBrowseFolder.Name = "BtnBrowseFolder";
             this.BtnBrowseFolder.Size = new System.Drawing.Size(32, 20);
             this.BtnBrowseFolder.TabIndex = 27;
@@ -135,21 +133,24 @@
             // 
             // TxtOutFolder
             // 
-            this.TxtOutFolder.BackColor = System.Drawing.Color.Black;
+            this.TxtOutFolder.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
             this.TxtOutFolder.CharacterWhiteList = null;
-            this.TxtOutFolder.Location = new System.Drawing.Point(8, 48);
+            this.TxtOutFolder.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.TxtOutFolder.Location = new System.Drawing.Point(11, 49);
             this.TxtOutFolder.Name = "TxtOutFolder";
-            this.TxtOutFolder.Size = new System.Drawing.Size(326, 20);
+            this.TxtOutFolder.Size = new System.Drawing.Size(322, 20);
             this.TxtOutFolder.TabIndex = 26;
             this.TxtOutFolder.Text = "C:\\";
             // 
             // LblDummyOutFolder
             // 
             this.LblDummyOutFolder.AutomaticSize = true;
+            this.LblDummyOutFolder.BackColor = System.Drawing.Color.Transparent;
             this.LblDummyOutFolder.Centered = false;
-            this.LblDummyOutFolder.Location = new System.Drawing.Point(8, 26);
+            this.LblDummyOutFolder.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblDummyOutFolder.Location = new System.Drawing.Point(11, 26);
             this.LblDummyOutFolder.Name = "LblDummyOutFolder";
-            this.LblDummyOutFolder.Size = new System.Drawing.Size(73, 16);
+            this.LblDummyOutFolder.Size = new System.Drawing.Size(78, 17);
             this.LblDummyOutFolder.TabIndex = 25;
             this.LblDummyOutFolder.Text = "Output folder:";
             // 
@@ -162,7 +163,8 @@
             this.Name = "OTextureExportForm";
             this.Resizable = false;
             this.ShowMinimize = false;
-            this.Text = "OTextureExportForm";
+            this.Text = "Export texture";
+            this.TitleIcon = ((System.Drawing.Image)(resources.GetObject("$this.TitleIcon")));
             this.Load += new System.EventHandler(this.OTextureExportForm_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.OTextureExportForm_KeyDown);
             this.ContentContainer.ResumeLayout(false);

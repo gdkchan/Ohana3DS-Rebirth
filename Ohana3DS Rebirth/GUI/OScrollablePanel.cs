@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Drawing;
 using System.ComponentModel;
+using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
 
@@ -46,7 +46,7 @@ namespace Ohana3DS_Rebirth.GUI
             base.OnControlAdded(e);
         }
 
-        private void Control_Layout(Object sender, EventArgs e)
+        private void Control_Layout(object sender, EventArgs e)
         {
             if (!suspended) recalc();
         }
@@ -57,20 +57,21 @@ namespace Ohana3DS_Rebirth.GUI
             foreach (Control child in ContentPanel.Controls)
             {
                 int y = child.Top + child.Height;
-                if (child.Visible && y > maxY)
-                {
-                    maxY = y;
-                }
+                if (child.Visible && y > maxY) maxY = y;
             }
+
             int height = maxY;
             PnlVScroll.Visible = height > Height;
             ContentPanel.Size = new Size(Width - (PnlVScroll.Visible ? PnlVScroll.Width : 0), height);
-            if (!PnlVScroll.Visible) ContentPanel.Top = 0;
+
             if (PnlVScroll.Visible)
             {
                 PnlVScroll.MaximumScroll = ContentPanel.Height - Height;
                 ContentPanel.Top = -PnlVScroll.Value;
             }
+            else
+                ContentPanel.Top = 0;
+
             PnlVScroll.Left = Width - PnlVScroll.Width;
             PnlVScroll.Height = Height;
         }
@@ -94,13 +95,13 @@ namespace Ohana3DS_Rebirth.GUI
 
         public class OScrollablePanelDesigner : ParentControlDesigner
         {
-            public override void Initialize(System.ComponentModel.IComponent component)
+            public override void Initialize(IComponent component)
             {
                 base.Initialize(component);
 
-                if (this.Control is OScrollablePanel)
+                if (Control is OScrollablePanel)
                 {
-                    this.EnableDesignMode(((OScrollablePanel)this.Control).ContentArea, "ContentArea");
+                    EnableDesignMode(((OScrollablePanel)Control).ContentArea, "ContentArea");
                 }
             }
         }

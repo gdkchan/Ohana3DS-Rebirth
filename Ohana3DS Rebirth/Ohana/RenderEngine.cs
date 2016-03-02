@@ -1,12 +1,14 @@
 ﻿//Ohana3DS 3D Rendering Engine by gdkchan
 using System;
 using System.Collections.Generic;
-using System.Windows.Forms;
 using System.Drawing;
+using System.Text;
+using System.Windows.Forms;
 
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
-using System.Text;
+
+using Ohana3DS_Rebirth.Properties;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
@@ -19,15 +21,28 @@ namespace Ohana3DS_Rebirth.Ohana
         private Device device;
         private Microsoft.DirectX.Direct3D.Font infoHUD;
 
-        public RenderBase.OModelGroup model;
-        private struct CustomTexture
+        public RenderBase.OModelGroup models;
+
+        public struct customVertex
+        {
+            public float x, y, z;
+            public float nx, ny, nz;
+            public uint color;
+            public float u0, v0;
+            public float u1, v1;
+            public float u2, v2;
+        }
+
+        private struct customTexture
         {
             public string name;
             public Texture texture;
             public int width;
             public int height;
         }
-        private List<CustomTexture> textures = new List<CustomTexture>();
+
+        private customVertex[][] meshes;
+        private List<customTexture> textures = new List<customTexture>();
 
         private Vector2 translation;
         private Vector2 rotation;
@@ -39,20 +54,23 @@ namespace Ohana3DS_Rebirth.Ohana
             get { return zoom; }
         }
 
-        private bool keepRendering;
+        private int cfgAntiAlias;
+        private int cfgBackColor;
+        private bool cfgShowGuidelines;
+        private bool cfgShowInformation;
+        private bool cfgShowAllMeshes;
+        private bool cfgFragmentShader;
+        private int cfgLegacyTexturingMode;
+        private bool cfgWireframeMode;
 
-        public int MSAALevel = 1;
-        public int bgColor;
-        public bool useLegacyTexturing = true;
-        public bool showGrid = true;
-        public bool showHUD = false;
-        public bool wireframeMode = false;
+        private bool fragmentShaderMode;
 
         const string infoHUDFontFamily = "Segoe UI";
         const int infoHUDFontSize = 12;
 
         public class animationControl
         {
+            public RenderBase.OAnimationListBase animations;
             public float animationStep = 1;
             private int currentAnimation = -1;
             private float frame;
@@ -85,6 +103,17 @@ namespace Ohana3DS_Rebirth.Ohana
                 {
                     currentAnimation = value;
                     if (AnimationChanged != null) AnimationChanged(this, EventArgs.Empty);
+                }
+            }
+
+            public string CurrentFrameInfo
+            {
+                get
+                {
+                    if (currentAnimation > -1)
+                        return frame + " / " + animations.list[currentAnimation].frameSize;
+                    else
+                        return null;
                 }
             }
 
@@ -132,11 +161,16 @@ namespace Ohana3DS_Rebirth.Ohana
             ///     Advances the current animation Frame.
             /// </summary>
             /// <param name="frameSize">The total number of frames</param>
-            public void advanceFrame(float frameSize)
+            public void advanceFrame()
             {
-                if (!paused) if (frame < frameSize) Frame += animationStep; else Frame = 0;
+                if (!paused && animate)
+                {
+                    float frameSize = animations.list[currentAnimation].frameSize;
+                    if (frame < frameSize) Frame += animationStep; else Frame = 0;
+                }
             }
         }
+
         public animationControl ctrlSA = new animationControl();
         public animationControl ctrlMA = new animationControl();
         public animationControl ctrlVA = new animationControl();
@@ -152,6 +186,7 @@ namespace Ohana3DS_Rebirth.Ohana
             {
                 if (value != currentModel) resetCamera();
                 currentModel = value;
+                updateMeshes();
             }
         }
 
@@ -159,9 +194,11 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public RenderBase.OMatrix transform;
             public bool hasTransform;
+
             public RenderBase.OVector3 translation;
             public Quaternion rotationQuaternion;
             public RenderBase.OVector3 scale;
+
             public short parentId;
             public string name = null;
 
@@ -176,6 +213,9 @@ namespace Ohana3DS_Rebirth.Ohana
             }
         }
 
+        CustomVertex.PositionColored[] gridBuffer;
+        Timer animator;
+
         /// <summary>
         ///     Initialize the renderer at a given target.
         /// </summary>
@@ -184,12 +224,13 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="height">Render height</param>
         public void initialize(IntPtr handle, int width, int height)
         {
-            MultiSampleType Samples = MultiSampleType.None;
-            if (Manager.CheckDeviceMultiSampleType(0, DeviceType.Hardware, Format.D16, true, (MultiSampleType)MSAALevel))
-                Samples = (MultiSampleType)MSAALevel;
-            else
+            cfgAntiAlias = Settings.Default.reAntiAlias;
+            if (!Manager.CheckDeviceMultiSampleType(0, DeviceType.Hardware, Format.D16, true, (MultiSampleType)cfgAntiAlias))
+            {
                 MessageBox.Show("MSAA level not supported by GPU!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            
+                cfgAntiAlias = 0;
+            }
+
             pParams = new PresentParameters
             {
                 BackBufferCount = 1,
@@ -200,7 +241,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 SwapEffect = SwapEffect.Discard,
                 EnableAutoDepthStencil = true,
                 AutoDepthStencilFormat = DepthFormat.D24S8,
-                MultiSample = Samples
+                MultiSample = (MultiSampleType)cfgAntiAlias
             };
 
             try
@@ -213,109 +254,30 @@ namespace Ohana3DS_Rebirth.Ohana
                 device = new Device(0, DeviceType.Hardware, handle, CreateFlags.SoftwareVertexProcessing, pParams);
             }
 
+            //Information font setup
             using (System.Drawing.Font HUDFont = new System.Drawing.Font(infoHUDFontFamily, infoHUDFontSize))
             {
                 infoHUD = new Microsoft.DirectX.Direct3D.Font(device, HUDFont);
             }
-        }
 
-        /// <summary>
-        ///     Resizes the Back Buffer.
-        /// </summary>
-        /// <param name="width">New width</param>
-        /// <param name="height">New height</param>
-        public void resize(int width, int height)
-        {
-            if (width == 0 || height == 0) return;
-            pParams.BackBufferWidth = width;
-            pParams.BackBufferHeight = height;
-            device.Reset(pParams);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposed) return;
-
-            keepRendering = false;
-
-            foreach (CustomTexture texture in textures) texture.texture.Dispose();
-            foreach (RenderBase.OTexture texture in model.texture) texture.texture.Dispose();
-            textures.Clear();
-            if (!useLegacyTexturing) fragmentShader.Dispose();
-            device.Dispose();
-            infoHUD.Dispose();
-            model.model.Clear();
-            model.texture.Clear();
-            model.lookUpTable.Clear();
-            model.light.Clear();
-            model.camera.Clear();
-            model.fog.Clear();
-            model.skeletalAnimation.list.Clear();
-            model.materialAnimation.list.Clear();
-            model.cameraAnimation.list.Clear();
-            model = null;
-
-            disposed = true;
-        }
-
-        /// <summary>
-        ///     Forces all textures to be updated.
-        ///     Call this if you add or remove textures to reflect changes.
-        /// </summary>
-        public void updateTextures()
-        {
-            foreach (CustomTexture texture in textures) texture.texture.Dispose();
-            textures.Clear();
-
-            foreach (RenderBase.OTexture texture in model.texture)
-            {
-                CustomTexture tex;
-                tex.name = texture.name;
-                Bitmap bmp = new Bitmap(texture.texture);
-                bmp.RotateFlip(RotateFlipType.RotateNoneFlipY);
-                tex.texture = new Texture(device, bmp, Usage.None, Pool.Managed);
-                tex.width = bmp.Width;
-                tex.height = bmp.Height;
-                textures.Add(tex);
-                bmp.Dispose();
-            }
-        }
-
-        /// <summary>
-        ///     Removes a texture at the given index.
-        /// </summary>
-        /// <param name="index">The index of the texture</param>
-        public void removeTexture(int index)
-        {
-            if (index < 0 || index > textures.Count - 1) return;
-            textures[index].texture.Dispose();
-            textures.RemoveAt(index);
-        }
-
-        public void render()
-        {
             //Compile the Fragment Shader
-            if (!useLegacyTexturing)
+            fragmentShaderMode = Settings.Default.reFragmentShader;
+            if (fragmentShaderMode)
             {
-                string compilationErros;
-                fragmentShader = Effect.FromString(device, Properties.Resources.OFragmentShader, null, null, ShaderFlags.SkipOptimization, null, out compilationErros);
-                if (compilationErros != "") MessageBox.Show("Failed to compile Fragment Shader!" + Environment.NewLine + compilationErros, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                string compilationErrors;
+                fragmentShader = Effect.FromString(device, Resources.OFragmentShader, null, null, ShaderFlags.SkipOptimization, null, out compilationErrors);
                 fragmentShader.Technique = "Combiner";
+                if (compilationErrors != "")
+                    MessageBox.Show(
+                        "Failed to compile Fragment Shader!" + Environment.NewLine +
+                        compilationErrors,
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
             }
-            
-            RenderBase.OVector3 minVector = new RenderBase.OVector3();
-            RenderBase.OVector3 maxVector = new RenderBase.OVector3();
-            if (model.model.Count > 0) currentModel = 0;
-            updateTextures();
 
             #region "Grid buffer creation"
-            CustomVertex.PositionColored[] gridBuffer = new CustomVertex.PositionColored[218];
+            gridBuffer = new CustomVertex.PositionColored[218];
             int bufferIndex = 0;
             for (int i = -50; i <= 50; i += 2)
             {
@@ -355,616 +317,807 @@ namespace Ohana3DS_Rebirth.Ohana
             gridBuffer[bufferIndex] = new CustomVertex.PositionColored(0, 0, -5f, Color.Blue.ToArgb());
             #endregion
 
-            keepRendering = true;
-            while (keepRendering)
+            ctrlSA.animations = models.skeletalAnimation;
+            ctrlMA.animations = models.materialAnimation;
+            ctrlVA.animations = models.visibilityAnimation;
+
+            updateMeshes();
+            updateTextures();
+            updateSettings();
+
+            animator = new Timer();
+            animator.Interval = 1;
+            animator.Tick += refresh;
+
+            animator.Enabled = true;
+        }
+
+        private void refresh(object sender, EventArgs e)
+        {
+            render();
+        }
+
+        /// <summary>
+        ///     Resizes the Back Buffer.
+        /// </summary>
+        /// <param name="width">New width</param>
+        /// <param name="height">New height</param>
+        public void resize(int width, int height)
+        {
+            if (width == 0 || height == 0) return;
+
+            pParams.BackBufferWidth = width;
+            pParams.BackBufferHeight = height;
+            device.Reset(pParams);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed) return;
+
+            foreach (customTexture texture in textures) texture.texture.Dispose();
+            foreach (RenderBase.OTexture texture in models.texture) texture.texture.Dispose();
+
+            if (fragmentShaderMode) fragmentShader.Dispose();
+            device.Dispose();
+            infoHUD.Dispose();
+            animator.Dispose();
+
+            disposed = true;
+        }
+
+        /// <summary>
+        ///     Updates the internal meshes buffer used for rendering.
+        ///     Call this if you change the current model or the meshes on the current model.
+        /// </summary>
+        public void updateMeshes()
+        {
+            if (currentModel > -1)
             {
-                device.Clear(ClearFlags.Stencil | ClearFlags.Target | ClearFlags.ZBuffer, bgColor, 1.0f, 15);
-                device.SetTexture(0, null);
-                device.BeginScene();
-
-                device.Transform.Projection = Matrix.PerspectiveFovLH((float)Math.PI / 4, (float)pParams.BackBufferWidth / pParams.BackBufferHeight, 0.01f, 1000.0f);
-                device.Transform.View = Matrix.LookAtLH(new Vector3(0.0f, 0.0f, 20.0f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 0.0f));
-
-                //View
-                if (currentModel > -1)
+                meshes = new customVertex[models.model[currentModel].mesh.Count][];
+                for (int i = 0; i < models.model[currentModel].mesh.Count; i++)
                 {
-                    minVector = model.model[currentModel].minVector;
-                    maxVector = model.model[currentModel].maxVector;
-                }
-                float minSize = Math.Min(Math.Min(minVector.x, minVector.y), minVector.z);
-                float maxSize = Math.Max(Math.Max(maxVector.x, maxVector.y), maxVector.z);
-                float scale = (10f / (maxSize - minSize)); //Try to adjust to screen
-                if (maxSize - minSize == 0) scale = 1;
+                    RenderBase.OMesh mesh = models.model[currentModel].mesh[i];
+                    meshes[i] = new customVertex[mesh.vertices.Count];
 
-                Matrix centerMatrix = Matrix.Translation(
-                    -(minVector.x + maxVector.x) / 2,
-                    -(minVector.y + maxVector.y) / 2,
-                    -(minVector.z + maxVector.z) / 2);
-                Matrix translationMatrix = Matrix.Translation(
-                    (-translation.X / 50) / scale,
-                    (translation.Y / 50) / scale,
-                    zoom / scale);
-                Matrix baseTransform = Matrix.Identity;
-                baseTransform *= Matrix.RotationY(rotation.Y) * Matrix.RotationX(rotation.X);
-                baseTransform *= centerMatrix * translationMatrix * Matrix.Scaling(-scale, scale, scale);
-
-                //Grid
-                if (showGrid)
-                {
-                    resetRenderState();
-                    device.Transform.World = baseTransform;
-                    device.VertexFormat = CustomVertex.PositionColored.Format;
-                    VertexBuffer lineBuffer = new VertexBuffer(typeof(CustomVertex.PositionColored), gridBuffer.Length, device, Usage.None, CustomVertex.PositionColored.Format, Pool.Managed);
-                    lineBuffer.SetData(gridBuffer, 0, LockFlags.None);
-                    device.SetStreamSource(0, lineBuffer, 0);
-                    device.DrawPrimitives(PrimitiveType.LineList, 0, gridBuffer.Length / 2);
-                    lineBuffer.Dispose();
-                }
-
-                if (!useLegacyTexturing)
-                {
-                    fragmentShader.Begin(0);
-
-                    #region "Shader Setup"
-                    fragmentShader.SetValue("world", device.Transform.World);
-                    fragmentShader.SetValue("view", device.Transform.View);
-                    fragmentShader.SetValue("projection", device.Transform.Projection);
-
-                    fragmentShader.SetValue("lights[0].pos", new Vector4(0, -10, -10, 0));
-                    fragmentShader.SetValue("lights[0].ambient", new Vector4(0.1f, 0.1f, 0.1f, 1));
-                    fragmentShader.SetValue("lights[0].diffuse", new Vector4(1, 1, 1, 1));
-                    fragmentShader.SetValue("lights[0].specular", new Vector4(1, 1, 1, 1));
-                    fragmentShader.SetValue("numLights", 1);
-                    #endregion
-                }
-
-                if (wireframeMode)
-                    device.RenderState.FillMode = FillMode.WireFrame;
-                else
-                    device.RenderState.FillMode = FillMode.Solid;
-
-                if (currentModel > -1)
-                {
-                    RenderBase.OModel mdl = model.model[currentModel];
-                    device.Transform.World = getMatrix(mdl.transform) * baseTransform;
-
-                    #region "Skeletal Animation"
-                    Matrix[] animationSkeletonTransform = new Matrix[mdl.skeleton.Count];
-                    if (ctrlSA.animate)
+                    for (int j = 0; j < mesh.vertices.Count; j++)
                     {
-                        Matrix[] skeletonTransform = new Matrix[mdl.skeleton.Count];
+                        customVertex vertex;
 
-                        for (int index = 0; index < mdl.skeleton.Count; index++)
-                        {
-                            skeletonTransform[index] = Matrix.Identity;
-                            transformSkeleton(mdl.skeleton, index, ref skeletonTransform[index]);
-                        }
+                        //Position
+                        vertex.x = mesh.vertices[j].position.x;
+                        vertex.y = mesh.vertices[j].position.y;
+                        vertex.z = mesh.vertices[j].position.z;
 
-                        List<RenderBase.OSkeletalAnimationBone> bone = ((RenderBase.OSkeletalAnimation)model.skeletalAnimation.list[ctrlSA.CurrentAnimation]).bone;
-                        List<OAnimationBone> frameAnimationSkeleton = new List<OAnimationBone>();
-                        for (int index = 0; index < mdl.skeleton.Count; index++)
-                        {
-                            OAnimationBone newBone = new OAnimationBone();
-                            newBone.parentId = mdl.skeleton[index].parentId;
-                            newBone.rotationQuaternion = getQuaternion(mdl.skeleton[index].rotation);
-                            newBone.translation = new RenderBase.OVector3(mdl.skeleton[index].translation);
-                            foreach (RenderBase.OSkeletalAnimationBone b in bone)
-                            {
-                                if (b.name == mdl.skeleton[index].name)
-                                {
-                                    if (b.isFullBakedFormat)
-                                    {
-                                        newBone.hasTransform = true;
-                                        newBone.transform = b.transform[(int)ctrlSA.Frame % b.transform.Count];
-                                    }
-                                    else if (b.isFrameFormat)
-                                    {
-                                        float fa = (float)Math.Floor(ctrlSA.Frame);
-                                        float fb = (float)Math.Ceiling(ctrlSA.Frame);
+                        //Normal
+                        vertex.nx = mesh.vertices[j].normal.x;
+                        vertex.ny = mesh.vertices[j].normal.y;
+                        vertex.nz = mesh.vertices[j].normal.z;
 
-                                        if (b.rotationQuaternion.exists)
-                                        {
-                                            int aIndex = Math.Min((int)fa, b.rotationQuaternion.vector.Count - 1);
-                                            int bIndex = Math.Min((int)fb, b.rotationQuaternion.vector.Count - 1);
+                        //Texture
+                        vertex.u0 = mesh.vertices[j].texture0.x;
+                        vertex.v0 = mesh.vertices[j].texture0.y;
 
-                                            Quaternion q1 = getQuaternion(b.rotationQuaternion.vector[aIndex]);
-                                            Quaternion q2 = getQuaternion(b.rotationQuaternion.vector[bIndex]);
+                        vertex.u1 = mesh.vertices[j].texture1.x;
+                        vertex.v1 = mesh.vertices[j].texture1.y;
 
-                                            newBone.rotationQuaternion = Quaternion.Slerp(q1, q2, ctrlSA.Frame - fa);
-                                        }
+                        vertex.u2 = mesh.vertices[j].texture2.x;
+                        vertex.v2 = mesh.vertices[j].texture2.y;
 
-                                        if (b.translation.exists)
-                                        {
-                                            int aIndex = Math.Min((int)fa, b.translation.vector.Count - 1);
-                                            int bIndex = Math.Min((int)fb, b.translation.vector.Count - 1);
+                        //Color
+                        vertex.color = mesh.vertices[j].diffuseColor;
 
-                                            RenderBase.OVector4 t1 = b.translation.vector[aIndex];
-                                            RenderBase.OVector4 t2 = b.translation.vector[bIndex];
-                                            RenderBase.OVector4 t = AnimationUtils.interpolateLinear(t1, t2, ctrlSA.Frame - fa);
-                                            newBone.translation = new RenderBase.OVector3(t.x, t.y, t.z);
-
-                                            newBone.translation.x *= mdl.skeleton[index].absoluteScale.x;
-                                            newBone.translation.y *= mdl.skeleton[index].absoluteScale.y;
-                                            newBone.translation.z *= mdl.skeleton[index].absoluteScale.z;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        /*
-                                         * Rotation
-                                         */
-                                        float fa = (float)Math.Floor(ctrlSA.Frame);
-                                        float fb = (float)Math.Ceiling(ctrlSA.Frame);
-
-                                        float x1, x2, y1, y2, z1, z2;
-                                        x1 = x2 = mdl.skeleton[index].rotation.x;
-                                        y1 = y2 = mdl.skeleton[index].rotation.y;
-                                        z1 = z2 = mdl.skeleton[index].rotation.z;
-
-                                        if (b.rotationX.exists) x1 = AnimationUtils.getKey(b.rotationX, fa);
-                                        if (b.rotationY.exists) y1 = AnimationUtils.getKey(b.rotationY, fa);
-                                        if (b.rotationZ.exists) z1 = AnimationUtils.getKey(b.rotationZ, fa);
-
-                                        if (b.rotationX.exists) x2 = AnimationUtils.getKey(b.rotationX, fb);
-                                        if (b.rotationY.exists) y2 = AnimationUtils.getKey(b.rotationY, fb);
-                                        if (b.rotationZ.exists) z2 = AnimationUtils.getKey(b.rotationZ, fb);
-
-                                        Quaternion q1 = getQuaternion(new RenderBase.OVector3(x1, y1, z1));
-                                        Quaternion q2 = getQuaternion(new RenderBase.OVector3(x2, y2, z2));
-
-                                        newBone.rotationQuaternion = Quaternion.Slerp(q1, q2, ctrlSA.Frame - fa);
-
-                                        /*
-                                         * Translation
-                                         */
-                                        if (b.translationX.exists)
-                                        {
-                                            newBone.translation.x = AnimationUtils.getKey(b.translationX, ctrlSA.Frame);
-                                            newBone.translation.x *= mdl.skeleton[index].absoluteScale.x;
-                                        }
-
-                                        if (b.translationY.exists)
-                                        {
-                                            newBone.translation.y = AnimationUtils.getKey(b.translationY, ctrlSA.Frame);
-                                            newBone.translation.y *= mdl.skeleton[index].absoluteScale.y;
-                                        }
-
-                                        if (b.translationZ.exists)
-                                        {
-                                            newBone.translation.z = AnimationUtils.getKey(b.translationZ, ctrlSA.Frame);
-                                            newBone.translation.z *= mdl.skeleton[index].absoluteScale.z;
-                                        }
-                                    }
-
-                                    break;
-                                }
-                            }
-
-                            frameAnimationSkeleton.Add(newBone);
-                        }
-
-                        for (int index = 0; index < mdl.skeleton.Count; index++)
-                        {
-                            animationSkeletonTransform[index] = Matrix.Identity;
-
-                            if (frameAnimationSkeleton[index].hasTransform)
-                                animationSkeletonTransform[index] = getMatrix(frameAnimationSkeleton[index].transform);
-                            else
-                                transformAnimationSkeleton(frameAnimationSkeleton, index, ref animationSkeletonTransform[index]);
-
-                            animationSkeletonTransform[index] = Matrix.Invert(skeletonTransform[index]) * animationSkeletonTransform[index];
-                        }
-                    }
-                    #endregion
-
-                    int objectIndex = 0;
-                    foreach (RenderBase.OMesh obj in mdl.mesh)
-                    {
-                        bool isVisible = obj.isVisible;
-
-                        if (ctrlVA.animate)
-                        {
-                            foreach (RenderBase.OVisibilityAnimationData data in ((RenderBase.OVisibilityAnimation)model.visibilityAnimation.list[ctrlVA.CurrentAnimation]).data)
-                            {
-                                RenderBase.OAnimationKeyFrame frame = AnimationUtils.getSmallerPoint(data.visibilityList.keyFrames, ctrlVA.Frame);
-                                if (data.name == obj.name) isVisible = frame.bValue;
-                            }
-                        }
-
-                        if (isVisible)
-                        {
-                            RenderBase.OMaterial material = mdl.material[obj.materialId];
-
-                            #region "Material Animation"
-                            int[] textureId = { -1, -1, -1 };
-                            Color blendColor = material.fragmentOperation.blend.blendColor;
-                            Color[] borderColor = new Color[3];
-                            borderColor[0] = material.textureMapper[0].borderColor;
-                            borderColor[1] = material.textureMapper[1].borderColor;
-                            borderColor[2] = material.textureMapper[2].borderColor;
-                            if (ctrlMA.animate)
-                            {
-                                foreach (RenderBase.OMaterialAnimationData data in ((RenderBase.OMaterialAnimation)model.materialAnimation.list[ctrlMA.CurrentAnimation]).data)
-                                {
-                                    if (data.name == material.name)
-                                    {
-                                        switch (data.type)
-                                        {
-                                            case RenderBase.OMaterialAnimationType.textureMapper0: getMaterialAnimationInt(data, ref textureId[0]); break;
-                                            case RenderBase.OMaterialAnimationType.textureMapper1: getMaterialAnimationInt(data, ref textureId[1]); break;
-                                            case RenderBase.OMaterialAnimationType.textureMapper2: getMaterialAnimationInt(data, ref textureId[2]); break;
-                                            case RenderBase.OMaterialAnimationType.borderColorMapper0: getMaterialAnimationColor(data, ref borderColor[0]); break;
-                                            case RenderBase.OMaterialAnimationType.borderColorMapper1: getMaterialAnimationColor(data, ref borderColor[1]); break;
-                                            case RenderBase.OMaterialAnimationType.borderColorMapper2: getMaterialAnimationColor(data, ref borderColor[2]); break;
-                                            case RenderBase.OMaterialAnimationType.blendColor: getMaterialAnimationColor(data, ref blendColor); break;
-                                        }
-                                    }
-                                }
-                            }
-                            #endregion
-
-                            int legacyTexture = -1;
-                            if (!useLegacyTexturing)
-                            {
-                                #region "Shader combiner parameters"
-                                RenderBase.OMaterialColor materialColor = new RenderBase.OMaterialColor();
-                                materialColor = material.materialColor;
-
-                                if (ctrlMA.animate)
-                                {
-                                    foreach (RenderBase.OMaterialAnimationData data in ((RenderBase.OMaterialAnimation)model.materialAnimation.list[ctrlMA.CurrentAnimation]).data)
-                                    {
-                                        if (data.name == material.name)
-                                        {
-                                            switch (data.type)
-                                            {
-                                                case RenderBase.OMaterialAnimationType.constant0: getMaterialAnimationColor(data, ref materialColor.constant0); break;
-                                                case RenderBase.OMaterialAnimationType.constant1: getMaterialAnimationColor(data, ref materialColor.constant1); break;
-                                                case RenderBase.OMaterialAnimationType.constant2: getMaterialAnimationColor(data, ref materialColor.constant2); break;
-                                                case RenderBase.OMaterialAnimationType.constant3: getMaterialAnimationColor(data, ref materialColor.constant3); break;
-                                                case RenderBase.OMaterialAnimationType.constant4: getMaterialAnimationColor(data, ref materialColor.constant4); break;
-                                                case RenderBase.OMaterialAnimationType.constant5: getMaterialAnimationColor(data, ref materialColor.constant5); break;
-                                                case RenderBase.OMaterialAnimationType.diffuse: getMaterialAnimationColor(data, ref materialColor.diffuse); break;
-                                                case RenderBase.OMaterialAnimationType.specular0: getMaterialAnimationColor(data, ref materialColor.specular0); break;
-                                                case RenderBase.OMaterialAnimationType.specular1: getMaterialAnimationColor(data, ref materialColor.specular1); ; break;
-                                                case RenderBase.OMaterialAnimationType.ambient: getMaterialAnimationColor(data, ref materialColor.ambient); break;
-                                            }
-                                        }
-                                    }
-                                }
-
-                                fragmentShader.SetValue("hasTextures", textures.Count > 0);
-                                fragmentShader.SetValue("uvCount", obj.texUVCount);
-
-                                fragmentShader.SetValue("isD0Enabled", material.fragmentShader.lighting.isDistribution0Enabled);
-                                fragmentShader.SetValue("isD1Enabled", material.fragmentShader.lighting.isDistribution1Enabled);
-                                fragmentShader.SetValue("isG0Enabled", material.fragmentShader.lighting.isGeometryFactor0Enabled);
-                                fragmentShader.SetValue("isG1Enabled", material.fragmentShader.lighting.isGeometryFactor1Enabled);
-                                fragmentShader.SetValue("isREnabled", material.fragmentShader.lighting.isReflectionEnabled);
-
-                                fragmentShader.SetValue("bumpIndex", (int)material.fragmentShader.bump.texture);
-                                fragmentShader.SetValue("bumpMode", (int)material.fragmentShader.bump.mode);
-
-                                fragmentShader.SetValue("mEmissive", getColor(materialColor.emission));
-                                fragmentShader.SetValue("mAmbient", getColor(materialColor.ambient));
-                                fragmentShader.SetValue("mDiffuse", getColor(materialColor.diffuse));
-                                fragmentShader.SetValue("mSpecular", getColor(materialColor.specular0));
-
-                                fragmentShader.SetValue("hasNormal", obj.hasNormal);
-
-                                for (int i = 0; i < 6; i++)
-                                {
-                                    RenderBase.OTextureCombiner textureCombiner = material.fragmentShader.textureCombiner[i];
-
-                                    fragmentShader.SetValue(String.Format("combiners[{0}].colorCombine", i), (int)textureCombiner.combineRgb);
-                                    fragmentShader.SetValue(String.Format("combiners[{0}].alphaCombine", i), (int)textureCombiner.combineAlpha);
-
-                                    fragmentShader.SetValue(String.Format("combiners[{0}].colorScale", i), (float)textureCombiner.rgbScale);
-                                    fragmentShader.SetValue(String.Format("combiners[{0}].alphaScale", i), (float)textureCombiner.alphaScale);
-
-                                    for (int j = 0; j < 3; j++)
-                                    {
-                                        fragmentShader.SetValue(String.Format("combiners[{0}].colorArg[{1}]", i, j), (int)textureCombiner.rgbSource[j]);
-                                        fragmentShader.SetValue(String.Format("combiners[{0}].colorOp[{1}]", i, j), (int)textureCombiner.rgbOperand[j]);
-                                        fragmentShader.SetValue(String.Format("combiners[{0}].alphaArg[{1}]", i, j), (int)textureCombiner.alphaSource[j]);
-                                        fragmentShader.SetValue(String.Format("combiners[{0}].alphaOp[{1}]", i, j), (int)textureCombiner.alphaOperand[j]);
-                                    }
-
-                                    Color constantColor = Color.White;
-                                    switch (textureCombiner.constantColor)
-                                    {
-                                        case RenderBase.OConstantColor.ambient: constantColor = materialColor.ambient; break;
-                                        case RenderBase.OConstantColor.constant0: constantColor = materialColor.constant0; break;
-                                        case RenderBase.OConstantColor.constant1: constantColor = materialColor.constant1; break;
-                                        case RenderBase.OConstantColor.constant2: constantColor = materialColor.constant2; break;
-                                        case RenderBase.OConstantColor.constant3: constantColor = materialColor.constant3; break;
-                                        case RenderBase.OConstantColor.constant4: constantColor = materialColor.constant4; break;
-                                        case RenderBase.OConstantColor.constant5: constantColor = materialColor.constant5; break;
-                                        case RenderBase.OConstantColor.diffuse: constantColor = materialColor.diffuse; break;
-                                        case RenderBase.OConstantColor.emission: constantColor = materialColor.emission; break;
-                                        case RenderBase.OConstantColor.specular0: constantColor = materialColor.specular0; break;
-                                        case RenderBase.OConstantColor.specular1: constantColor = materialColor.specular1; break;
-                                    }
-
-                                    fragmentShader.SetValue(String.Format("combiners[{0}].constant", i), new Vector4(
-                                        (float)constantColor.R / 0xff,
-                                        (float)constantColor.G / 0xff,
-                                        (float)constantColor.B / 0xff,
-                                        (float)constantColor.A / 0xff));
-                                }
-
-                                if (ctrlMA.animate)
-                                {
-                                    RenderBase.OMaterialAnimation materialAnimation = (RenderBase.OMaterialAnimation)model.materialAnimation.list[ctrlMA.CurrentAnimation];
-                                    foreach (CustomTexture texture in textures)
-                                    {
-                                        if (texture.name == (textureId[0] > -1 ? materialAnimation.textureName[textureId[0]] : material.name0)) fragmentShader.SetValue("texture0", texture.texture);
-                                        else if (texture.name == (textureId[1] > -1 ? materialAnimation.textureName[textureId[1]] : material.name1)) fragmentShader.SetValue("texture1", texture.texture);
-                                        else if (texture.name == (textureId[2] > -1 ? materialAnimation.textureName[textureId[2]] : material.name2)) fragmentShader.SetValue("texture2", texture.texture);
-                                    }
-                                }
-                                else
-                                {
-                                    foreach (CustomTexture texture in textures)
-                                    {
-                                        if (texture.name == material.name0) fragmentShader.SetValue("texture0", texture.texture);
-                                        else if (texture.name == material.name1) fragmentShader.SetValue("texture1", texture.texture);
-                                        else if (texture.name == material.name2) fragmentShader.SetValue("texture2", texture.texture);
-                                    }
-                                }
-
-                                #endregion
-                            }
-                            else
-                            {
-                                string[] name = new string[3];
-                                name[0] = material.name0;
-                                name[1] = material.name1;
-                                name[2] = material.name2;
-
-                                if (ctrlMA.animate)
-                                {
-                                    RenderBase.OMaterialAnimation materialAnimation = (RenderBase.OMaterialAnimation)model.materialAnimation.list[ctrlMA.CurrentAnimation];
-                                    for (int i = 0; i < 3; i++) if (textureId[i] > -1) name[i] = materialAnimation.textureName[textureId[i]];
-                                }
-
-                                int nCount = int.MaxValue;
-                                int maxPixelCount = 0;
-                                for (int i = 0; i < textures.Count; i++)
-                                {
-                                    for (int j = 0; j < 3; j++)
-                                    {
-                                        if (textures[i].name == name[j])
-                                        {
-                                            //Strings with more "n" on the names are most likely to be Normal Maps, and we don't want those.
-                                            int n = textures[i].name.Length - textures[i].name.ToLower().Replace("n", "").Length;
-                                            int pixelCount = textures[i].width * textures[i].height; //Bigger textures are more likely to contain relevant stuff
-                                            if (n <= nCount && pixelCount >= maxPixelCount)
-                                            {
-                                                legacyTexture = i;
-                                                nCount = n;
-                                                maxPixelCount = pixelCount;
-                                            }
-                                        }
-                                    }
-                                }
-
-                                if (legacyTexture > -1)
-                                    device.SetTexture(0, textures[legacyTexture].texture);
-                                else
-                                    device.SetTexture(0, null);
-                            }
-
-                            #region "Texture Filtering/Addressing Setup"
-                            //Filtering
-                            for (int s = 0; s < 3; s++)
-                            {
-                                RenderBase.OTextureCoordinator coordinator = material.textureCoordinator[s];
-
-                                Vector2 translate = new Vector2(coordinator.translateU, coordinator.translateV);
-                                Vector2 scaling = new Vector2(coordinator.scaleU, coordinator.scaleV);
-                                if (scaling == Vector2.Empty) scaling = new Vector2(1, 1);
-                                float rotate = coordinator.rotate;
-                                #region "Material Animation"
-                                if (ctrlMA.animate)
-                                {
-                                    foreach (RenderBase.OMaterialAnimationData data in ((RenderBase.OMaterialAnimation)model.materialAnimation.list[ctrlMA.CurrentAnimation]).data)
-                                    {
-                                        if (data.name == material.name)
-                                        {
-                                            switch (data.type)
-                                            {
-                                                case RenderBase.OMaterialAnimationType.translateCoordinator0: if (s == 0) getMaterialAnimationVector2(data, ref translate); break; //Translation
-                                                case RenderBase.OMaterialAnimationType.translateCoordinator1: if (s == 1) getMaterialAnimationVector2(data, ref translate); break;
-                                                case RenderBase.OMaterialAnimationType.translateCoordinator2: if (s == 2) getMaterialAnimationVector2(data, ref translate); break;
-                                                case RenderBase.OMaterialAnimationType.scaleCoordinator0: if (s == 0) getMaterialAnimationVector2(data, ref scaling); break; //Scaling
-                                                case RenderBase.OMaterialAnimationType.scaleCoordinator1: if (s == 1) getMaterialAnimationVector2(data, ref scaling); break;
-                                                case RenderBase.OMaterialAnimationType.scaleCoordinator2: if (s == 2) getMaterialAnimationVector2(data, ref scaling); break;
-                                                case RenderBase.OMaterialAnimationType.rotateCoordinator0: if (s == 0) getMaterialAnimationFloat(data, ref rotate); break; //Rotation
-                                                case RenderBase.OMaterialAnimationType.rotateCoordinator1: if (s == 1) getMaterialAnimationFloat(data, ref rotate); break;
-                                                case RenderBase.OMaterialAnimationType.rotateCoordinator2: if (s == 2) getMaterialAnimationFloat(data, ref rotate); break;
-                                            }
-                                        }
-                                    }
-                                }
-                                #endregion
-                                translate.X = -translate.X; //For some reason UVs need to be flipped to show up correct on animation
-                                translate.Y = -translate.Y;
-                                Matrix uvTransform = rotateCenter2D(rotate) * Matrix.Scaling(scaling.X, scaling.Y, 1) * translate2D(translate);
-                                if (!useLegacyTexturing)
-                                {
-                                    fragmentShader.SetValue(String.Format("uvTranslate[{0}]", s), new Vector4(translate.X, translate.Y, 0, 0));
-                                    fragmentShader.SetValue(String.Format("uvScale[{0}]", s), new Vector4(scaling.X, scaling.Y, 0, 0));
-                                    fragmentShader.SetValue(String.Format("uvTransform[{0}]", s), Matrix.RotationZ(rotate));
-                                }
-                                else
-                                {
-                                    device.SetTextureStageState(s, TextureStageStates.TextureTransform, (int)TextureTransform.Count2);
-                                    if (s == legacyTexture) device.Transform.Texture0 = uvTransform;
-                                }
-
-                                device.SetSamplerState(s, SamplerStageStates.MinFilter, (int)TextureFilter.Linear);
-                                switch (material.textureMapper[s].magFilter)
-                                {
-                                    case RenderBase.OTextureMagFilter.nearest: device.SetSamplerState(s, SamplerStageStates.MagFilter, (int)TextureFilter.None); break;
-                                    case RenderBase.OTextureMagFilter.linear: device.SetSamplerState(s, SamplerStageStates.MagFilter, (int)TextureFilter.Linear); break;
-                                }
-
-                                //Addressing
-                                device.SetSamplerState(s, SamplerStageStates.BorderColor, borderColor[s].ToArgb());
-                                switch (material.textureMapper[s].wrapU)
-                                {
-                                    case RenderBase.OTextureWrap.repeat: device.SetSamplerState(s, SamplerStageStates.AddressU, (int)TextureAddress.Wrap); break;
-                                    case RenderBase.OTextureWrap.mirroredRepeat: device.SetSamplerState(s, SamplerStageStates.AddressU, (int)TextureAddress.Mirror); break;
-                                    case RenderBase.OTextureWrap.clampToEdge: device.SetSamplerState(s, SamplerStageStates.AddressU, (int)TextureAddress.Clamp); break;
-                                    case RenderBase.OTextureWrap.clampToBorder: device.SetSamplerState(s, SamplerStageStates.AddressU, (int)TextureAddress.Border); break;
-                                }
-                                switch (material.textureMapper[s].wrapV)
-                                {
-                                    case RenderBase.OTextureWrap.repeat: device.SetSamplerState(s, SamplerStageStates.AddressV, (int)TextureAddress.Wrap); break;
-                                    case RenderBase.OTextureWrap.mirroredRepeat: device.SetSamplerState(s, SamplerStageStates.AddressV, (int)TextureAddress.Mirror); break;
-                                    case RenderBase.OTextureWrap.clampToEdge: device.SetSamplerState(s, SamplerStageStates.AddressV, (int)TextureAddress.Clamp); break;
-                                    case RenderBase.OTextureWrap.clampToBorder: device.SetSamplerState(s, SamplerStageStates.AddressV, (int)TextureAddress.Border); break;
-                                }
-                            }
-                            #endregion
-
-                            #region "Culling/Alpha/Depth/Stencil testing/blending stuff Setup"
-                            //Culling
-                            switch (material.rasterization.cullMode)
-                            {
-                                case RenderBase.OCullMode.backFace: device.RenderState.CullMode = Cull.Clockwise; break;
-                                case RenderBase.OCullMode.frontFace: device.RenderState.CullMode = Cull.CounterClockwise; break;
-                                case RenderBase.OCullMode.never: device.RenderState.CullMode = Cull.None; break;
-                            }
-
-                            //Alpha testing
-                            RenderBase.OAlphaTest alpha = material.fragmentShader.alphaTest;
-                            device.RenderState.AlphaTestEnable = alpha.isTestEnabled;
-                            device.RenderState.AlphaFunction = getCompare(alpha.testFunction);
-                            device.RenderState.ReferenceAlpha = (int)alpha.testReference;
-
-                            //Depth testing
-                            RenderBase.ODepthOperation depth = material.fragmentOperation.depth;
-                            device.RenderState.ZBufferEnable = depth.isTestEnabled;
-                            device.RenderState.ZBufferFunction = getCompare(depth.testFunction);
-                            device.RenderState.ZBufferWriteEnable = depth.isMaskEnabled;
-
-                            //Alpha blending
-                            RenderBase.OBlendOperation blend = material.fragmentOperation.blend;
-                            device.RenderState.AlphaBlendEnable = blend.mode == RenderBase.OBlendMode.blend;
-                            device.RenderState.SeparateAlphaBlendEnabled = true;
-                            device.RenderState.SourceBlend = getBlend(blend.rgbFunctionSource);
-                            device.RenderState.DestinationBlend = getBlend(blend.rgbFunctionDestination);
-                            device.RenderState.BlendOperation = getBlendOperation(blend.rgbBlendEquation);
-                            device.RenderState.AlphaSourceBlend = getBlend(blend.alphaFunctionSource);
-                            device.RenderState.AlphaDestinationBlend = getBlend(blend.alphaFunctionDestination);
-                            device.RenderState.AlphaBlendOperation = getBlendOperation(blend.alphaBlendEquation);
-                            device.RenderState.BlendFactorColor = blendColor.ToArgb();
-
-                            //Stencil testing
-                            RenderBase.OStencilOperation stencil = material.fragmentOperation.stencil;
-                            device.RenderState.StencilEnable = stencil.isTestEnabled;
-                            device.RenderState.StencilFunction = getCompare(stencil.testFunction);
-                            device.RenderState.ReferenceStencil = (int)stencil.testReference;
-                            device.RenderState.StencilWriteMask = (int)stencil.testMask;
-                            device.RenderState.StencilFail = getStencilOperation(stencil.failOperation);
-                            device.RenderState.StencilZBufferFail = getStencilOperation(stencil.zFailOperation);
-                            device.RenderState.StencilPass = getStencilOperation(stencil.passOperation);
-                            #endregion
-
-                            #region "Rendering"
-                            //Vertex rendering
-                            VertexFormats vertexFormat = VertexFormats.Position | VertexFormats.Normal | VertexFormats.Texture3 | VertexFormats.Diffuse;
-                            device.VertexFormat = vertexFormat;
-                            VertexBuffer vertexBuffer;
-
-                            if (!useLegacyTexturing) fragmentShader.BeginPass(0);
-                            if (obj.renderBuffer.Length > 0)
-                            {
-                                if (ctrlSA.animate)
-                                {
-                                    RenderBase.CustomVertex[] buffer = new RenderBase.CustomVertex[obj.renderBuffer.Length];
-
-                                    for (int vertex = 0; vertex < obj.renderBuffer.Length; vertex++)
-                                    {
-                                        buffer[vertex] = obj.renderBuffer[vertex];
-                                        RenderBase.OVertex input = obj.vertices[vertex];
-                                        Vector3 position = new Vector3(input.position.x, input.position.y, input.position.z);
-                                        Vector4 p = new Vector4();
-
-                                        int weightIndex = 0;
-                                        float weightSum = 0;
-                                        foreach (int boneIndex in input.node)
-                                        {
-                                            float weight = 0;
-                                            if (weightIndex < input.weight.Count) weight = input.weight[weightIndex++];
-                                            weightSum += weight;
-                                            p += Vector3.Transform(position, animationSkeletonTransform[boneIndex]) * weight;
-                                        }
-                                        if (weightSum < 1) p += new Vector4(position.X, position.Y, position.Z, 0) * (1 - weightSum);
-
-                                        buffer[vertex].x = p.X;
-                                        buffer[vertex].y = p.Y;
-                                        buffer[vertex].z = p.Z;
-                                    }
-
-                                    vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), buffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
-                                    vertexBuffer.SetData(buffer, 0, LockFlags.None);
-                                    device.SetStreamSource(0, vertexBuffer, 0);
-
-                                    device.DrawPrimitives(PrimitiveType.TriangleList, 0, buffer.Length / 3);
-                                }
-                                else
-                                {
-                                    vertexBuffer = new VertexBuffer(typeof(RenderBase.CustomVertex), obj.renderBuffer.Length, device, Usage.None, vertexFormat, Pool.Managed);
-                                    vertexBuffer.SetData(obj.renderBuffer, 0, LockFlags.None);
-                                    device.SetStreamSource(0, vertexBuffer, 0);
-
-                                    device.DrawPrimitives(PrimitiveType.TriangleList, 0, obj.renderBuffer.Length / 3);
-                                }
-
-                                vertexBuffer.Dispose();
-                            }
-
-                            if (!useLegacyTexturing) fragmentShader.EndPass();
-                            #endregion
-
-                            objectIndex++;
-                        }
+                        //Set it to the buffer
+                        meshes[i][j] = vertex;
                     }
                 }
-
-                if (!useLegacyTexturing) fragmentShader.End();
-
-                //HUD
-                if (showHUD && currentModel > -1)
-                {
-                    resetRenderState();
-                    RenderBase.OModel mdl = model.model[currentModel];
-
-                    StringBuilder info = new StringBuilder();
-                    info.AppendLine("Meshes: " + model.model[currentModel].mesh.Count);
-                    info.AppendLine("Triangles: " + (model.model[currentModel].verticesCount / 3));
-                    info.AppendLine("Bones: " + mdl.skeleton.Count);
-                    info.AppendLine("Materials: " + mdl.material.Count);
-                    info.AppendLine("Textures: " + model.texture.Count);
-                    if (ctrlSA.CurrentAnimation > -1) info.AppendLine("S. Frame: " + ctrlSA.Frame + " / " + model.skeletalAnimation.list[ctrlSA.CurrentAnimation].frameSize.ToString());
-                    if (ctrlMA.CurrentAnimation > -1) info.AppendLine("M. Frame: " + ctrlMA.Frame + " / " + model.materialAnimation.list[ctrlMA.CurrentAnimation].frameSize.ToString());
-                    if (ctrlVA.CurrentAnimation > -1) info.AppendLine("V. Frame: " + ctrlVA.Frame + " / " + model.visibilityAnimation.list[ctrlVA.CurrentAnimation].frameSize.ToString());
-
-                    drawText(info.ToString(), 256, 192);
-                }
-
-                device.EndScene();
-                device.Present();
-
-                if (ctrlSA.animate) ctrlSA.advanceFrame(model.skeletalAnimation.list[ctrlSA.CurrentAnimation].frameSize);
-                if (ctrlMA.animate) ctrlMA.advanceFrame(model.materialAnimation.list[ctrlMA.CurrentAnimation].frameSize);
-                if (ctrlVA.animate) ctrlVA.advanceFrame(model.visibilityAnimation.list[ctrlVA.CurrentAnimation].frameSize);
-
-                Application.DoEvents();
             }
+        }
+
+        /// <summary>
+        ///     Forces all textures on the model to be cached.
+        /// </summary>
+        public void updateTextures()
+        {
+            foreach (RenderBase.OTexture texture in models.texture) cacheTexture(texture);
+        }
+
+        /// <summary>
+        ///     Adds a list of textures to the model and the cache.
+        /// </summary>
+        /// <param name="textures">The list of textures to be added</param>
+        public void addTextureRange(List<RenderBase.OTexture> textures)
+        {
+            foreach (RenderBase.OTexture texture in textures)
+            {
+                models.texture.Add(texture);
+                cacheTexture(texture);
+            }
+        }
+
+        /// <summary>
+        ///     Adds a single texture to the model and the cache.
+        /// </summary>
+        /// <param name="texture">The texture to be added</param>
+        public void addTexture(RenderBase.OTexture texture)
+        {
+            models.texture.Add(texture);
+            cacheTexture(texture);
+        }
+
+        /// <summary>
+        ///     Adds a texture to the texture cache.
+        /// </summary>
+        /// <param name="texture"></param>
+        private void cacheTexture(RenderBase.OTexture texture)
+        {
+            customTexture tex;
+            tex.name = texture.name;
+            Bitmap bmp = new Bitmap(texture.texture);
+            bmp.RotateFlip(RotateFlipType.RotateNoneFlipY);
+            tex.texture = new Texture(device, bmp, Usage.None, Pool.Managed);
+            tex.width = bmp.Width;
+            tex.height = bmp.Height;
+            textures.Add(tex);
+            bmp.Dispose();
+        }
+
+        /// <summary>
+        ///     Removes all textures from the model and the cache.
+        /// </summary>
+        public void removeAllTextures()
+        {
+            foreach (RenderBase.OTexture texture in models.texture) texture.texture.Dispose();
+            foreach (customTexture texture in textures) texture.texture.Dispose();
+
+            models.texture.Clear();
+            textures.Clear();
+        }
+
+        /// <summary>
+        ///     Removes a texture at the given index.
+        /// </summary>
+        /// <param name="index">The index of the texture</param>
+        public void removeTexture(int index)
+        {
+            if (index < 0 || index > textures.Count - 1) return;
+
+            models.texture[index].texture.Dispose();
+            textures[index].texture.Dispose();
+
+            models.texture.RemoveAt(index);
+            textures.RemoveAt(index);
+        }
+
+        /// <summary>
+        ///     Reloads all settings from the app settings file.
+        ///     Call this when you changes the settings.
+        /// </summary>
+        public void updateSettings()
+        {
+            cfgBackColor = Settings.Default.reBackgroundColor;
+            cfgFragmentShader = Settings.Default.reFragmentShader;
+            cfgShowGuidelines = Settings.Default.reShowGuidelines;
+            cfgShowInformation = Settings.Default.reShowInformation;
+            cfgShowAllMeshes = Settings.Default.reShowAllMeshes;
+            cfgLegacyTexturingMode = Settings.Default.reLegacyTexturingMode;
+            cfgWireframeMode = Settings.Default.reWireframeMode;
+        }
+
+        /// <summary>
+        ///     Renders a single frame of the scene.
+        /// </summary>
+        public void render()
+        {
+            device.Clear(ClearFlags.Stencil | ClearFlags.Target | ClearFlags.ZBuffer, cfgBackColor, 1f, 15);
+            device.SetTexture(0, null);
+            device.BeginScene();
+
+            float fovy = (float)Math.PI / 4;
+            float aspectRatio = (float)pParams.BackBufferWidth / pParams.BackBufferHeight;
+            device.Transform.Projection = Matrix.PerspectiveFovLH(fovy, aspectRatio, 0.01f, 1000f);
+            device.Transform.View = Matrix.LookAtLH(
+                new Vector3(0f, 0f, 20f),
+                new Vector3(0f, 0f, 0f),
+                new Vector3(0f, 1f, 0f));
+
+            //View
+            RenderBase.OVector3 minVector = new RenderBase.OVector3();
+            RenderBase.OVector3 maxVector = new RenderBase.OVector3();
+
+            if (currentModel > -1)
+            {
+                minVector = models.model[currentModel].minVector;
+                maxVector = models.model[currentModel].maxVector;
+            }
+
+            float minSize = Math.Min(Math.Min(minVector.x, minVector.y), minVector.z);
+            float maxSize = Math.Max(Math.Max(maxVector.x, maxVector.y), maxVector.z);
+            float scale = (10f / (maxSize - minSize)); //Try to adjust to screen
+            if (maxSize - minSize == 0) scale = 1;
+
+            Matrix centerMatrix = Matrix.Translation(
+                -(minVector.x + maxVector.x) / 2,
+                -(minVector.y + maxVector.y) / 2,
+                -(minVector.z + maxVector.z) / 2);
+            Matrix translationMatrix = Matrix.Translation(
+                (-translation.X / 50) / scale,
+                (translation.Y / 50) / scale,
+                zoom / scale);
+
+            Matrix baseTransform = Matrix.Identity;
+            baseTransform *= Matrix.RotationY(rotation.Y) * Matrix.RotationX(rotation.X);
+            baseTransform *= centerMatrix * translationMatrix * Matrix.Scaling(-scale, scale, scale);
+
+            //Grid
+            if (cfgShowGuidelines)
+            {
+                resetRenderState();
+                device.Transform.World = baseTransform;
+                device.VertexFormat = CustomVertex.PositionColored.Format;
+                using (VertexBuffer buffer = new VertexBuffer(typeof(CustomVertex.PositionColored), gridBuffer.Length, device, Usage.None, CustomVertex.PositionColored.Format, Pool.Managed))
+                {
+                    buffer.SetData(gridBuffer, 0, LockFlags.None);
+                    device.SetStreamSource(0, buffer, 0);
+                    device.DrawPrimitives(PrimitiveType.LineList, 0, gridBuffer.Length / 2);
+                }
+            }
+
+            if (fragmentShaderMode)
+            {
+                fragmentShader.Begin(0);
+
+                fragmentShader.SetValue("world", device.Transform.World);
+                fragmentShader.SetValue("view", device.Transform.View);
+                fragmentShader.SetValue("projection", device.Transform.Projection);
+
+                fragmentShader.SetValue("lights[0].pos", new Vector4(0, -10, -10, 0));
+                fragmentShader.SetValue("lights[0].ambient", new Vector4(0.1f, 0.1f, 0.1f, 1));
+                fragmentShader.SetValue("lights[0].diffuse", new Vector4(1, 1, 1, 1));
+                fragmentShader.SetValue("lights[0].specular", new Vector4(1, 1, 1, 1));
+                fragmentShader.SetValue("numLights", 1);
+            }
+
+            if (cfgWireframeMode)
+                device.RenderState.FillMode = FillMode.WireFrame;
+            else
+                device.RenderState.FillMode = FillMode.Solid;
+
+            if (currentModel > -1)
+            {
+                RenderBase.OModel mdl = models.model[currentModel];
+                device.Transform.World = getMatrix(mdl.transform) * baseTransform;
+
+                #region "Skeletal Animation"
+                Matrix[] animationSkeletonTransform = new Matrix[mdl.skeleton.Count];
+                if (ctrlSA.animate)
+                {
+                    Matrix[] skeletonTransform = new Matrix[mdl.skeleton.Count];
+
+                    for (int index = 0; index < mdl.skeleton.Count; index++)
+                    {
+                        skeletonTransform[index] = Matrix.Identity;
+                        transformSkeleton(mdl.skeleton, index, ref skeletonTransform[index]);
+                    }
+
+                    List<RenderBase.OSkeletalAnimationBone> bone = ((RenderBase.OSkeletalAnimation)models.skeletalAnimation.list[ctrlSA.CurrentAnimation]).bone;
+                    List<OAnimationBone> frameAnimationSkeleton = new List<OAnimationBone>();
+                    for (int index = 0; index < mdl.skeleton.Count; index++)
+                    {
+                        OAnimationBone newBone = new OAnimationBone();
+                        newBone.parentId = mdl.skeleton[index].parentId;
+                        newBone.rotationQuaternion = getQuaternion(mdl.skeleton[index].rotation);
+                        newBone.translation = new RenderBase.OVector3(mdl.skeleton[index].translation);
+                        foreach (RenderBase.OSkeletalAnimationBone b in bone)
+                        {
+                            if (b.name == mdl.skeleton[index].name)
+                            {
+                                if (b.isFullBakedFormat)
+                                {
+                                    newBone.hasTransform = true;
+                                    newBone.transform = b.transform[(int)ctrlSA.Frame % b.transform.Count];
+                                }
+                                else if (b.isFrameFormat)
+                                {
+                                    float fl = (float)Math.Floor(ctrlSA.Frame);
+                                    float fr = (float)Math.Ceiling(ctrlSA.Frame);
+                                    float mu = ctrlSA.Frame - fl;
+
+                                    if (b.rotationQuaternion.exists)
+                                    {
+                                        int il = Math.Min((int)fl, b.rotationQuaternion.vector.Count - 1);
+                                        int ir = Math.Min((int)fr, b.rotationQuaternion.vector.Count - 1);
+
+                                        Quaternion ql = getQuaternion(b.rotationQuaternion.vector[il]);
+                                        Quaternion qr = getQuaternion(b.rotationQuaternion.vector[ir]);
+
+                                        newBone.rotationQuaternion = Quaternion.Slerp(ql, qr, mu);
+                                    }
+
+                                    if (b.translation.exists)
+                                    {
+                                        int il = Math.Min((int)fl, b.translation.vector.Count - 1);
+                                        int ir = Math.Min((int)fr, b.translation.vector.Count - 1);
+
+                                        RenderBase.OVector4 tl = b.translation.vector[il];
+                                        RenderBase.OVector4 tr = b.translation.vector[ir];
+                                        RenderBase.OVector4 t = AnimationUtils.interpolateLinear(tl, tr, mu);
+                                        newBone.translation = new RenderBase.OVector3(t.x, t.y, t.z);
+
+                                        newBone.translation.x *= mdl.skeleton[index].absoluteScale.x;
+                                        newBone.translation.y *= mdl.skeleton[index].absoluteScale.y;
+                                        newBone.translation.z *= mdl.skeleton[index].absoluteScale.z;
+                                    }
+                                }
+                                else
+                                {
+                                    //Rotation
+                                    float fl = (float)Math.Floor(ctrlSA.Frame);
+                                    float fr = (float)Math.Ceiling(ctrlSA.Frame);
+                                    float mu = ctrlSA.Frame - fl;
+
+                                    RenderBase.OVector3 vl = new RenderBase.OVector3(mdl.skeleton[index].rotation);
+                                    RenderBase.OVector3 vr = new RenderBase.OVector3(mdl.skeleton[index].rotation);
+
+                                    if (b.rotationX.exists)
+                                    {
+                                        vl.x = AnimationUtils.getKey(b.rotationX, fl);
+                                        vr.x = AnimationUtils.getKey(b.rotationX, fr);
+                                    }
+
+                                    if (b.rotationY.exists)
+                                    {
+                                        vl.y = AnimationUtils.getKey(b.rotationY, fl);
+                                        vr.y = AnimationUtils.getKey(b.rotationY, fr);
+                                    }
+
+                                    if (b.rotationZ.exists)
+                                    {
+                                        vl.z = AnimationUtils.getKey(b.rotationZ, fl);
+                                        vr.z = AnimationUtils.getKey(b.rotationZ, fr);
+                                    }
+
+                                    Quaternion ql = getQuaternion(vl);
+                                    Quaternion qr = getQuaternion(vr);
+                                    newBone.rotationQuaternion = Quaternion.Slerp(ql, qr, mu);
+
+                                    //Translation
+                                    if (b.translationX.exists)
+                                    {
+                                        newBone.translation.x = AnimationUtils.getKey(b.translationX, ctrlSA.Frame);
+                                        newBone.translation.x *= mdl.skeleton[index].absoluteScale.x;
+                                    }
+
+                                    if (b.translationY.exists)
+                                    {
+                                        newBone.translation.y = AnimationUtils.getKey(b.translationY, ctrlSA.Frame);
+                                        newBone.translation.y *= mdl.skeleton[index].absoluteScale.y;
+                                    }
+
+                                    if (b.translationZ.exists)
+                                    {
+                                        newBone.translation.z = AnimationUtils.getKey(b.translationZ, ctrlSA.Frame);
+                                        newBone.translation.z *= mdl.skeleton[index].absoluteScale.z;
+                                    }
+                                }
+
+                                break;
+                            }
+                        }
+
+                        frameAnimationSkeleton.Add(newBone);
+                    }
+
+                    for (int index = 0; index < mdl.skeleton.Count; index++)
+                    {
+                        animationSkeletonTransform[index] = Matrix.Identity;
+
+                        if (frameAnimationSkeleton[index].hasTransform)
+                            animationSkeletonTransform[index] = getMatrix(frameAnimationSkeleton[index].transform);
+                        else
+                            transformAnimationSkeleton(frameAnimationSkeleton, index, ref animationSkeletonTransform[index]);
+
+                        animationSkeletonTransform[index] = Matrix.Invert(skeletonTransform[index]) * animationSkeletonTransform[index];
+                    }
+                }
+                #endregion
+
+                for (int objectIndex = 0; objectIndex < mdl.mesh.Count; objectIndex++)
+                {
+                    RenderBase.OMesh obj = mdl.mesh[objectIndex];
+                    bool isVisible = obj.isVisible;
+
+                    if (ctrlVA.animate)
+                    {
+                        foreach (RenderBase.OVisibilityAnimationData data in ((RenderBase.OVisibilityAnimation)models.visibilityAnimation.list[ctrlVA.CurrentAnimation]).data)
+                        {
+                            RenderBase.OAnimationKeyFrame frame = AnimationUtils.getLeftFrame(data.visibilityList.keyFrames, ctrlVA.Frame);
+                            if (data.name == obj.name) isVisible = frame.bValue;
+                        }
+                    }
+
+                    if (!(isVisible || cfgShowAllMeshes)) continue;
+
+                    RenderBase.OMaterial material = mdl.material[obj.materialId];
+
+                    #region "Material Animation"
+                    int[] textureId = { -1, -1, -1 };
+                    Color blendColor = material.fragmentOperation.blend.blendColor;
+                    Color[] borderColor = new Color[3];
+                    borderColor[0] = material.textureMapper[0].borderColor;
+                    borderColor[1] = material.textureMapper[1].borderColor;
+                    borderColor[2] = material.textureMapper[2].borderColor;
+                    if (ctrlMA.animate)
+                    {
+                        foreach (RenderBase.OMaterialAnimationData data in ((RenderBase.OMaterialAnimation)models.materialAnimation.list[ctrlMA.CurrentAnimation]).data)
+                        {
+                            if (data.name == material.name)
+                            {
+                                switch (data.type)
+                                {
+                                    case RenderBase.OMaterialAnimationType.textureMapper0: getMaterialAnimationInt(data, ref textureId[0]); break;
+                                    case RenderBase.OMaterialAnimationType.textureMapper1: getMaterialAnimationInt(data, ref textureId[1]); break;
+                                    case RenderBase.OMaterialAnimationType.textureMapper2: getMaterialAnimationInt(data, ref textureId[2]); break;
+                                    case RenderBase.OMaterialAnimationType.borderColorMapper0: getMaterialAnimationColor(data, ref borderColor[0]); break;
+                                    case RenderBase.OMaterialAnimationType.borderColorMapper1: getMaterialAnimationColor(data, ref borderColor[1]); break;
+                                    case RenderBase.OMaterialAnimationType.borderColorMapper2: getMaterialAnimationColor(data, ref borderColor[2]); break;
+                                    case RenderBase.OMaterialAnimationType.blendColor: getMaterialAnimationColor(data, ref blendColor); break;
+                                }
+                            }
+                        }
+                    }
+                    #endregion
+
+                    if (fragmentShaderMode)
+                    {
+                        #region "Shader combiner parameters"
+                        RenderBase.OMaterialColor materialColor = new RenderBase.OMaterialColor();
+                        materialColor = material.materialColor;
+
+                        if (ctrlMA.animate)
+                        {
+                            foreach (RenderBase.OMaterialAnimationData data in ((RenderBase.OMaterialAnimation)models.materialAnimation.list[ctrlMA.CurrentAnimation]).data)
+                            {
+                                if (data.name == material.name)
+                                {
+                                    switch (data.type)
+                                    {
+                                        case RenderBase.OMaterialAnimationType.constant0: getMaterialAnimationColor(data, ref materialColor.constant0); break;
+                                        case RenderBase.OMaterialAnimationType.constant1: getMaterialAnimationColor(data, ref materialColor.constant1); break;
+                                        case RenderBase.OMaterialAnimationType.constant2: getMaterialAnimationColor(data, ref materialColor.constant2); break;
+                                        case RenderBase.OMaterialAnimationType.constant3: getMaterialAnimationColor(data, ref materialColor.constant3); break;
+                                        case RenderBase.OMaterialAnimationType.constant4: getMaterialAnimationColor(data, ref materialColor.constant4); break;
+                                        case RenderBase.OMaterialAnimationType.constant5: getMaterialAnimationColor(data, ref materialColor.constant5); break;
+                                        case RenderBase.OMaterialAnimationType.diffuse: getMaterialAnimationColor(data, ref materialColor.diffuse); break;
+                                        case RenderBase.OMaterialAnimationType.specular0: getMaterialAnimationColor(data, ref materialColor.specular0); break;
+                                        case RenderBase.OMaterialAnimationType.specular1: getMaterialAnimationColor(data, ref materialColor.specular1); ; break;
+                                        case RenderBase.OMaterialAnimationType.ambient: getMaterialAnimationColor(data, ref materialColor.ambient); break;
+                                    }
+                                }
+                            }
+                        }
+
+                        fragmentShader.SetValue("hasTextures", textures.Count > 0);
+                        fragmentShader.SetValue("uvCount", obj.texUVCount);
+
+                        fragmentShader.SetValue("isD0Enabled", material.fragmentShader.lighting.isDistribution0Enabled);
+                        fragmentShader.SetValue("isD1Enabled", material.fragmentShader.lighting.isDistribution1Enabled);
+                        fragmentShader.SetValue("isG0Enabled", material.fragmentShader.lighting.isGeometryFactor0Enabled);
+                        fragmentShader.SetValue("isG1Enabled", material.fragmentShader.lighting.isGeometryFactor1Enabled);
+                        fragmentShader.SetValue("isREnabled", material.fragmentShader.lighting.isReflectionEnabled);
+
+                        fragmentShader.SetValue("bumpIndex", (int)material.fragmentShader.bump.texture);
+                        fragmentShader.SetValue("bumpMode", (int)material.fragmentShader.bump.mode);
+
+                        fragmentShader.SetValue("mEmissive", getColor(materialColor.emission));
+                        fragmentShader.SetValue("mAmbient", getColor(materialColor.ambient));
+                        fragmentShader.SetValue("mDiffuse", getColor(materialColor.diffuse));
+                        fragmentShader.SetValue("mSpecular", getColor(materialColor.specular0));
+
+                        fragmentShader.SetValue("hasNormal", obj.hasNormal);
+
+                        for (int i = 0; i < 6; i++)
+                        {
+                            RenderBase.OTextureCombiner textureCombiner = material.fragmentShader.textureCombiner[i];
+
+                            fragmentShader.SetValue(string.Format("combiners[{0}].colorCombine", i), (int)textureCombiner.combineRgb);
+                            fragmentShader.SetValue(string.Format("combiners[{0}].alphaCombine", i), (int)textureCombiner.combineAlpha);
+
+                            fragmentShader.SetValue(string.Format("combiners[{0}].colorScale", i), (float)textureCombiner.rgbScale);
+                            fragmentShader.SetValue(string.Format("combiners[{0}].alphaScale", i), (float)textureCombiner.alphaScale);
+
+                            for (int j = 0; j < 3; j++)
+                            {
+                                fragmentShader.SetValue(string.Format("combiners[{0}].colorArg[{1}]", i, j), (int)textureCombiner.rgbSource[j]);
+                                fragmentShader.SetValue(string.Format("combiners[{0}].colorOp[{1}]", i, j), (int)textureCombiner.rgbOperand[j]);
+                                fragmentShader.SetValue(string.Format("combiners[{0}].alphaArg[{1}]", i, j), (int)textureCombiner.alphaSource[j]);
+                                fragmentShader.SetValue(string.Format("combiners[{0}].alphaOp[{1}]", i, j), (int)textureCombiner.alphaOperand[j]);
+                            }
+
+                            Color constantColor = Color.White;
+                            switch (textureCombiner.constantColor)
+                            {
+                                case RenderBase.OConstantColor.ambient: constantColor = materialColor.ambient; break;
+                                case RenderBase.OConstantColor.constant0: constantColor = materialColor.constant0; break;
+                                case RenderBase.OConstantColor.constant1: constantColor = materialColor.constant1; break;
+                                case RenderBase.OConstantColor.constant2: constantColor = materialColor.constant2; break;
+                                case RenderBase.OConstantColor.constant3: constantColor = materialColor.constant3; break;
+                                case RenderBase.OConstantColor.constant4: constantColor = materialColor.constant4; break;
+                                case RenderBase.OConstantColor.constant5: constantColor = materialColor.constant5; break;
+                                case RenderBase.OConstantColor.diffuse: constantColor = materialColor.diffuse; break;
+                                case RenderBase.OConstantColor.emission: constantColor = materialColor.emission; break;
+                                case RenderBase.OConstantColor.specular0: constantColor = materialColor.specular0; break;
+                                case RenderBase.OConstantColor.specular1: constantColor = materialColor.specular1; break;
+                            }
+
+                            fragmentShader.SetValue(string.Format("combiners[{0}].constant", i), new Vector4(
+                                (float)constantColor.R / 0xff,
+                                (float)constantColor.G / 0xff,
+                                (float)constantColor.B / 0xff,
+                                (float)constantColor.A / 0xff));
+                        }
+                        #endregion
+                    }
+
+                    int legacyTextureIndex = -1;
+                    int legacyTextureUnit = -1;
+                    for (int i = 0; i < textures.Count; i++)
+                    {
+                        string[] name = new string[3];
+                        name[0] = material.name0;
+                        name[1] = material.name1;
+                        name[2] = material.name2;
+
+                        if (ctrlMA.animate)
+                        {
+                            RenderBase.OMaterialAnimation ma = (RenderBase.OMaterialAnimation)models.materialAnimation.list[ctrlMA.CurrentAnimation];
+                            for (int j = 0; j < 3; j++) if (textureId[j] > -1) name[j] = ma.textureName[textureId[j]];
+                        }
+
+                        if (cfgLegacyTexturingMode == 0 && !fragmentShaderMode)
+                        {
+                            if (textures[i].name == name[0])
+                            {
+                                legacyTextureIndex = i;
+                                legacyTextureUnit = 0;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            for (int j = 0; j < 3; j++)
+                            {
+                                if (fragmentShaderMode)
+                                {
+                                    if (textures[i].name == name[j])
+                                    {
+                                        string shaderTexture = string.Format("texture{0}", j);
+                                        fragmentShader.SetValue(shaderTexture, textures[i].texture);
+                                    }
+                                }
+                                else
+                                {
+                                    if (textures[i].name == name[j] && legacyTextureUnit < j)
+                                    {
+                                        legacyTextureIndex = i;
+                                        legacyTextureUnit = j;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (!fragmentShaderMode)
+                    {
+                        if (legacyTextureIndex > -1)
+                            device.SetTexture(0, textures[legacyTextureIndex].texture);
+                        else
+                            device.SetTexture(0, null);
+                    }
+
+                    #region "Texture Filtering/Addressing Setup"
+                    //Filtering
+                    for (int s = 0; s < 3; s++)
+                    {
+                        RenderBase.OTextureCoordinator coordinator = material.textureCoordinator[s];
+
+                        Vector2 translate = new Vector2(coordinator.translateU, coordinator.translateV);
+                        Vector2 scaling = new Vector2(coordinator.scaleU, coordinator.scaleV);
+                        if (scaling == Vector2.Empty) scaling = new Vector2(1, 1);
+                        float rotate = coordinator.rotate;
+                        #region "Material Animation"
+                        if (ctrlMA.animate)
+                        {
+                            foreach (RenderBase.OMaterialAnimationData data in ((RenderBase.OMaterialAnimation)models.materialAnimation.list[ctrlMA.CurrentAnimation]).data)
+                            {
+                                if (data.name == material.name)
+                                {
+                                    switch (data.type)
+                                    {
+                                        case RenderBase.OMaterialAnimationType.translateCoordinator0: if (s == 0) getMaterialAnimationVector2(data, ref translate); break; //Translation
+                                        case RenderBase.OMaterialAnimationType.translateCoordinator1: if (s == 1) getMaterialAnimationVector2(data, ref translate); break;
+                                        case RenderBase.OMaterialAnimationType.translateCoordinator2: if (s == 2) getMaterialAnimationVector2(data, ref translate); break;
+                                        case RenderBase.OMaterialAnimationType.scaleCoordinator0: if (s == 0) getMaterialAnimationVector2(data, ref scaling); break; //Scaling
+                                        case RenderBase.OMaterialAnimationType.scaleCoordinator1: if (s == 1) getMaterialAnimationVector2(data, ref scaling); break;
+                                        case RenderBase.OMaterialAnimationType.scaleCoordinator2: if (s == 2) getMaterialAnimationVector2(data, ref scaling); break;
+                                        case RenderBase.OMaterialAnimationType.rotateCoordinator0: if (s == 0) getMaterialAnimationFloat(data, ref rotate); break; //Rotation
+                                        case RenderBase.OMaterialAnimationType.rotateCoordinator1: if (s == 1) getMaterialAnimationFloat(data, ref rotate); break;
+                                        case RenderBase.OMaterialAnimationType.rotateCoordinator2: if (s == 2) getMaterialAnimationFloat(data, ref rotate); break;
+                                    }
+                                }
+                            }
+                        }
+                        #endregion
+
+                        if (fragmentShaderMode)
+                        {
+                            fragmentShader.SetValue(string.Format("uvTranslate[{0}]", s), new Vector4(-translate.X, -translate.Y, 0, 0));
+                            fragmentShader.SetValue(string.Format("uvScale[{0}]", s), new Vector4(scaling.X, scaling.Y, 0, 0));
+                            fragmentShader.SetValue(string.Format("uvTransform[{0}]", s), Matrix.RotationZ(rotate));
+                        }
+                        else
+                        {
+                            device.SetTextureStageState(s, TextureStageStates.TextureTransform, (int)TextureTransform.Count2);
+                            Matrix uvTransform = rotateCenter2D(rotate) * Matrix.Scaling(scaling.X, scaling.Y, 1) * translate2D(-translate);
+                            if (s == legacyTextureUnit) device.Transform.Texture0 = uvTransform;
+                        }
+
+                        device.SetSamplerState(s, SamplerStageStates.MinFilter, (int)TextureFilter.Linear);
+                        switch (material.textureMapper[s].magFilter)
+                        {
+                            case RenderBase.OTextureMagFilter.nearest: device.SetSamplerState(s, SamplerStageStates.MagFilter, (int)TextureFilter.None); break;
+                            case RenderBase.OTextureMagFilter.linear: device.SetSamplerState(s, SamplerStageStates.MagFilter, (int)TextureFilter.Linear); break;
+                        }
+
+                        //Addressing
+                        device.SetSamplerState(s, SamplerStageStates.BorderColor, borderColor[s].ToArgb());
+                        switch (material.textureMapper[s].wrapU)
+                        {
+                            case RenderBase.OTextureWrap.repeat: device.SetSamplerState(s, SamplerStageStates.AddressU, (int)TextureAddress.Wrap); break;
+                            case RenderBase.OTextureWrap.mirroredRepeat: device.SetSamplerState(s, SamplerStageStates.AddressU, (int)TextureAddress.Mirror); break;
+                            case RenderBase.OTextureWrap.clampToEdge: device.SetSamplerState(s, SamplerStageStates.AddressU, (int)TextureAddress.Clamp); break;
+                            case RenderBase.OTextureWrap.clampToBorder: device.SetSamplerState(s, SamplerStageStates.AddressU, (int)TextureAddress.Border); break;
+                        }
+                        switch (material.textureMapper[s].wrapV)
+                        {
+                            case RenderBase.OTextureWrap.repeat: device.SetSamplerState(s, SamplerStageStates.AddressV, (int)TextureAddress.Wrap); break;
+                            case RenderBase.OTextureWrap.mirroredRepeat: device.SetSamplerState(s, SamplerStageStates.AddressV, (int)TextureAddress.Mirror); break;
+                            case RenderBase.OTextureWrap.clampToEdge: device.SetSamplerState(s, SamplerStageStates.AddressV, (int)TextureAddress.Clamp); break;
+                            case RenderBase.OTextureWrap.clampToBorder: device.SetSamplerState(s, SamplerStageStates.AddressV, (int)TextureAddress.Border); break;
+                        }
+                    }
+                    #endregion
+
+                    #region "Culling/Alpha/Depth/Stencil testing/blending stuff Setup"
+                    //Culling
+                    switch (material.rasterization.cullMode)
+                    {
+                        case RenderBase.OCullMode.backFace: device.RenderState.CullMode = Cull.Clockwise; break;
+                        case RenderBase.OCullMode.frontFace: device.RenderState.CullMode = Cull.CounterClockwise; break;
+                        case RenderBase.OCullMode.never: device.RenderState.CullMode = Cull.None; break;
+                    }
+
+                    //Alpha testing
+                    RenderBase.OAlphaTest alpha = material.fragmentShader.alphaTest;
+                    device.RenderState.AlphaTestEnable = alpha.isTestEnabled;
+                    device.RenderState.AlphaFunction = getCompare(alpha.testFunction);
+                    device.RenderState.ReferenceAlpha = (int)alpha.testReference;
+
+                    //Depth testing
+                    RenderBase.ODepthOperation depth = material.fragmentOperation.depth;
+                    device.RenderState.ZBufferEnable = depth.isTestEnabled;
+                    device.RenderState.ZBufferFunction = getCompare(depth.testFunction);
+                    device.RenderState.ZBufferWriteEnable = depth.isMaskEnabled;
+
+                    //Alpha blending
+                    RenderBase.OBlendOperation blend = material.fragmentOperation.blend;
+                    device.RenderState.AlphaBlendEnable = blend.mode == RenderBase.OBlendMode.blend;
+                    device.RenderState.SeparateAlphaBlendEnabled = true;
+                    device.RenderState.SourceBlend = getBlend(blend.rgbFunctionSource);
+                    device.RenderState.DestinationBlend = getBlend(blend.rgbFunctionDestination);
+                    device.RenderState.BlendOperation = getBlendOperation(blend.rgbBlendEquation);
+                    device.RenderState.AlphaSourceBlend = getBlend(blend.alphaFunctionSource);
+                    device.RenderState.AlphaDestinationBlend = getBlend(blend.alphaFunctionDestination);
+                    device.RenderState.AlphaBlendOperation = getBlendOperation(blend.alphaBlendEquation);
+                    device.RenderState.BlendFactorColor = blendColor.ToArgb();
+
+                    //Stencil testing
+                    RenderBase.OStencilOperation stencil = material.fragmentOperation.stencil;
+                    device.RenderState.StencilEnable = stencil.isTestEnabled;
+                    device.RenderState.StencilFunction = getCompare(stencil.testFunction);
+                    device.RenderState.ReferenceStencil = (int)stencil.testReference;
+                    device.RenderState.StencilWriteMask = (int)stencil.testMask;
+                    device.RenderState.StencilFail = getStencilOperation(stencil.failOperation);
+                    device.RenderState.StencilZBufferFail = getStencilOperation(stencil.zFailOperation);
+                    device.RenderState.StencilPass = getStencilOperation(stencil.passOperation);
+                    #endregion
+
+                    #region "Rendering"
+                    //Vertex rendering
+                    VertexFormats vertexFormat = VertexFormats.Position | VertexFormats.Normal | VertexFormats.Texture3 | VertexFormats.Diffuse;
+                    device.VertexFormat = vertexFormat;
+
+                    if (fragmentShaderMode) fragmentShader.BeginPass(0);
+
+                    if (meshes[objectIndex].Length > 0)
+                    {
+                        customVertex[] buffer = meshes[objectIndex];
+
+                        if (ctrlSA.animate)
+                        {
+                            buffer = new customVertex[meshes[objectIndex].Length];
+
+                            for (int vertex = 0; vertex < buffer.Length; vertex++)
+                            {
+                                buffer[vertex] = meshes[objectIndex][vertex];
+                                RenderBase.OVertex input = obj.vertices[vertex];
+                                Vector3 position = new Vector3(input.position.x, input.position.y, input.position.z);
+                                Vector4 p = new Vector4();
+
+                                int weightIndex = 0;
+                                float weightSum = 0;
+                                foreach (int boneIndex in input.node)
+                                {
+                                    float weight = 0;
+                                    if (weightIndex < input.weight.Count) weight = input.weight[weightIndex++];
+                                    weightSum += weight;
+                                    p += Vector3.Transform(position, animationSkeletonTransform[boneIndex]) * weight;
+                                }
+                                if (weightSum < 1) p += new Vector4(position.X, position.Y, position.Z, 0) * (1 - weightSum);
+
+                                buffer[vertex].x = p.X;
+                                buffer[vertex].y = p.Y;
+                                buffer[vertex].z = p.Z;
+                            }
+                        }
+
+                        using (VertexBuffer vertexBuffer = new VertexBuffer(typeof(customVertex), buffer.Length, device, Usage.None, vertexFormat, Pool.Managed))
+                        {
+                            vertexBuffer.SetData(buffer, 0, LockFlags.None);
+                            device.SetStreamSource(0, vertexBuffer, 0);
+
+                            device.DrawPrimitives(PrimitiveType.TriangleList, 0, buffer.Length / 3);
+                        }
+                    }
+
+                    if (fragmentShaderMode) fragmentShader.EndPass();
+                    #endregion
+                }
+            }
+
+            if (fragmentShaderMode) fragmentShader.End();
+
+            //HUD
+            if (cfgShowInformation && currentModel > -1)
+            {
+                resetRenderState();
+                RenderBase.OModel mdl = models.model[currentModel];
+
+                StringBuilder info = new StringBuilder();
+                info.AppendLine("Meshes: " + mdl.mesh.Count);
+                info.AppendLine("Triangles: " + (models.model[currentModel].verticesCount / 3));
+                info.AppendLine("Bones: " + mdl.skeleton.Count);
+                info.AppendLine("Materials: " + mdl.material.Count);
+                info.AppendLine("Textures: " + models.texture.Count);
+                if (ctrlSA.CurrentAnimation > -1) info.AppendLine("S. Frame: " + ctrlSA.CurrentFrameInfo);
+                if (ctrlMA.CurrentAnimation > -1) info.AppendLine("M. Frame: " + ctrlMA.CurrentFrameInfo);
+                if (ctrlVA.CurrentAnimation > -1) info.AppendLine("V. Frame: " + ctrlVA.CurrentFrameInfo);
+
+                drawText(info.ToString(), 256, 192);
+            }
+
+            device.EndScene();
+            device.Present();
+
+            ctrlSA.advanceFrame();
+            ctrlMA.advanceFrame();
+            ctrlVA.advanceFrame();
         }
 
         /// <summary>
@@ -1030,6 +1183,8 @@ namespace Ohana3DS_Rebirth.Ohana
             if (lockCamera) return;
             rotation.X = wrap(rotation.X + x);
             rotation.Y = wrap(rotation.Y + y);
+
+            render();
         }
 
         /// <summary>
@@ -1042,6 +1197,8 @@ namespace Ohana3DS_Rebirth.Ohana
             if (lockCamera) return;
             translation.X = x;
             translation.Y = y;
+
+            render();
         }
 
         /// <summary>
@@ -1052,6 +1209,8 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             if (lockCamera) return;
             zoom = z;
+
+            render();
         }
 
         /// <summary>
@@ -1062,6 +1221,8 @@ namespace Ohana3DS_Rebirth.Ohana
             translation = Vector2.Empty;
             rotation = Vector2.Empty;
             zoom = 0;
+
+            render();
         }
 
         /// <summary>
@@ -1072,6 +1233,36 @@ namespace Ohana3DS_Rebirth.Ohana
         private float wrap(float value)
         {
             return (float)(value - 2 * Math.PI * Math.Floor(value / (2 * Math.PI) + 0.5f));
+        }
+
+        /// <summary>
+        ///     Rotates a 2-D UV Coordinate around the center.
+        /// </summary>
+        /// <param name="rotation">The Rotation angle in radians</param>
+        /// <returns></returns>
+        private Matrix rotateCenter2D(float rotation)
+        {
+            Matrix output = Matrix.Identity;
+
+            output *= translate2D(new Vector2(-0.5f, -0.5f));
+            output *= Matrix.RotationZ(rotation);
+            output *= translate2D(new Vector2(0.5f, 0.5f));
+
+            return output;
+        }
+        /// <summary>
+        ///     Builds a 2-D translation Matrix.
+        /// </summary>
+        /// <param name="translation">Translation vector</param>
+        /// <returns>Translation matrix</returns>
+        private Matrix translate2D(Vector2 translation)
+        {
+            Matrix output = Matrix.Identity;
+
+            output.M31 = translation.X;
+            output.M32 = translation.Y;
+
+            return output;
         }
 
         /// <summary>
@@ -1132,7 +1323,11 @@ namespace Ohana3DS_Rebirth.Ohana
             return new Quaternion(vector.x, vector.y, vector.z, vector.w);
         }
 
-        #region "Materials helper functions"
+        /// <summary>
+        ///     Gets a DirectX Compare from a RenderBase Compare.
+        /// </summary>
+        /// <param name="function">The compare test function</param>
+        /// <returns></returns>
         private Compare getCompare(RenderBase.OTestFunction function)
         {
             switch (function)
@@ -1150,6 +1345,11 @@ namespace Ohana3DS_Rebirth.Ohana
             return 0;
         }
 
+        /// <summary>
+        ///     Gets a DirectX Blend from a RenderBase Blend.
+        /// </summary>
+        /// <param name="function">The blend test function</param>
+        /// <returns></returns>
         private Blend getBlend(RenderBase.OBlendFunction function)
         {
             switch (function)
@@ -1174,6 +1374,11 @@ namespace Ohana3DS_Rebirth.Ohana
             return 0;
         }
 
+        /// <summary>
+        ///     Gets a DirectX Blend operation from a RenderBase Blend operation.
+        /// </summary>
+        /// <param name="function">The blend operation</param>
+        /// <returns></returns>
         private BlendOperation getBlendOperation(RenderBase.OBlendEquation equation)
         {
             switch (equation)
@@ -1188,6 +1393,11 @@ namespace Ohana3DS_Rebirth.Ohana
             return 0;
         }
 
+        /// <summary>
+        ///     Gets a DirectX Stencil operation from a RenderBase Stencil operation.
+        /// </summary>
+        /// <param name="function">The stencil operation</param>
+        /// <returns></returns>
         private StencilOperation getStencilOperation(RenderBase.OStencilOp operation)
         {
             switch (operation)
@@ -1204,14 +1414,16 @@ namespace Ohana3DS_Rebirth.Ohana
             return 0;
         }
 
+        /// <summary>
+        ///     Transforms a Color into a Vector4.
+        /// </summary>
+        /// <param name="input">The color to be converted</param>
+        /// <returns></returns>
         private Vector4 getColor(Color input)
         {
             return new Vector4((float)input.R / 0xff, (float)input.G / 0xff, (float)input.B / 0xff, (float)input.A / 0xff);
         }
-        #endregion
 
-        #region "Animation"
-        #region "Skeletal Animation"
         /// <summary>
         ///     Transforms a Skeleton from relative to absolute positions.
         /// </summary>
@@ -1223,7 +1435,11 @@ namespace Ohana3DS_Rebirth.Ohana
             target *= Matrix.RotationX(skeleton[index].rotation.x);
             target *= Matrix.RotationY(skeleton[index].rotation.y);
             target *= Matrix.RotationZ(skeleton[index].rotation.z);
-            target *= Matrix.Translation(skeleton[index].translation.x, skeleton[index].translation.y, skeleton[index].translation.z);
+            target *= Matrix.Translation(
+                skeleton[index].translation.x,
+                skeleton[index].translation.y,
+                skeleton[index].translation.z);
+
             if (skeleton[index].parentId > -1) transformSkeleton(skeleton, skeleton[index].parentId, ref target);
         }
 
@@ -1237,70 +1453,63 @@ namespace Ohana3DS_Rebirth.Ohana
         private void transformAnimationSkeleton(List<OAnimationBone> skeleton, int index, ref Matrix target)
         {
             target *= Matrix.RotationQuaternion(skeleton[index].rotationQuaternion);
-            target *= Matrix.Translation(skeleton[index].translation.x, skeleton[index].translation.y, skeleton[index].translation.z);
+            target *= Matrix.Translation(
+                skeleton[index].translation.x,
+                skeleton[index].translation.y,
+                skeleton[index].translation.z);
+
             if (skeleton[index].parentId > -1) transformAnimationSkeleton(skeleton, skeleton[index].parentId, ref target);
         }
-        #endregion
 
-        #region "Material Animation"
-        private void getMaterialAnimationColor(RenderBase.OMaterialAnimationData data, ref Color baseColor)
+        /// <summary>
+        ///     Gets the current frame of a Material Animation color.
+        /// </summary>
+        /// <param name="data">The animation data</param>
+        /// <param name="color">The color where the animation will be applied</param>
+        private void getMaterialAnimationColor(RenderBase.OMaterialAnimationData data, ref Color color)
         {
             float r = AnimationUtils.getKey(data.frameList[0], ctrlMA.Frame);
             float g = AnimationUtils.getKey(data.frameList[1], ctrlMA.Frame);
             float b = AnimationUtils.getKey(data.frameList[2], ctrlMA.Frame);
             float a = AnimationUtils.getKey(data.frameList[3], ctrlMA.Frame);
 
-            byte R = data.frameList[0].exists ? (byte)(r * 0xff) : baseColor.R;
-            byte G = data.frameList[1].exists ? (byte)(g * 0xff) : baseColor.G;
-            byte B = data.frameList[2].exists ? (byte)(b * 0xff) : baseColor.B;
-            byte A = data.frameList[3].exists ? (byte)(a * 0xff) : baseColor.A;
+            byte R = data.frameList[0].exists ? (byte)(r * 0xff) : color.R;
+            byte G = data.frameList[1].exists ? (byte)(g * 0xff) : color.G;
+            byte B = data.frameList[2].exists ? (byte)(b * 0xff) : color.B;
+            byte A = data.frameList[3].exists ? (byte)(a * 0xff) : color.A;
 
-            baseColor = Color.FromArgb(A, R, G, B);
+            color = Color.FromArgb(A, R, G, B);
         }
-
-        private void getMaterialAnimationVector2(RenderBase.OMaterialAnimationData data, ref Vector2 baseVector)
-        {
-            if (data.frameList[0].exists) baseVector.X = AnimationUtils.getKey(data.frameList[0], ctrlMA.Frame);
-            if (data.frameList[1].exists) baseVector.Y = AnimationUtils.getKey(data.frameList[1], ctrlMA.Frame);
-        }
-
-        private void getMaterialAnimationFloat(RenderBase.OMaterialAnimationData data, ref float baseFloat)
-        {
-            if (data.frameList[0].exists) baseFloat = AnimationUtils.getKey(data.frameList[0], ctrlMA.Frame);
-        }
-
-        private void getMaterialAnimationInt(RenderBase.OMaterialAnimationData data, ref int baseInt)
-        {
-            if (data.frameList[0].exists) baseInt = (int)AnimationUtils.getKey(data.frameList[0], ctrlMA.Frame);
-        }
-        #endregion
 
         /// <summary>
-        ///     Rotates a 2-D UV Coordinate around the center.
+        ///     Gets the current frame of a Material Animation 2-D vector.
         /// </summary>
-        /// <param name="rotation">The Rotation angle in radians</param>
-        /// <returns></returns>
-        private Matrix rotateCenter2D(float rotation)
+        /// <param name="data">The animation data</param>
+        /// <param name="color">The vector where the animation will be applied</param>
+        private void getMaterialAnimationVector2(RenderBase.OMaterialAnimationData data, ref Vector2 vector)
         {
-            Matrix output = Matrix.Identity;
-            output *= translate2D(new Vector2(-0.5f, -0.5f));
-            output *= Matrix.RotationZ(rotation);
-            output *= translate2D(new Vector2(0.5f, 0.5f));
-            return output;
+            if (data.frameList[0].exists) vector.X = AnimationUtils.getKey(data.frameList[0], ctrlMA.Frame);
+            if (data.frameList[1].exists) vector.Y = AnimationUtils.getKey(data.frameList[1], ctrlMA.Frame);
         }
-        /// <summary>
-        ///     Builds a 2-D translation Matrix.
-        /// </summary>
-        /// <param name="translation">Translation vector</param>
-        /// <returns>Translation matrix</returns>
-        private Matrix translate2D(Vector2 translation)
-        {
-            Matrix output = Matrix.Identity;
-            output.M31 = translation.X;
-            output.M32 = translation.Y;
-            return output;
-        }
-        #endregion
 
+        /// <summary>
+        ///     Gets the current frame of a Material Animation float value.
+        /// </summary>
+        /// <param name="data">The animation data</param>
+        /// <param name="color">The float value where the animation will be applied</param>
+        private void getMaterialAnimationFloat(RenderBase.OMaterialAnimationData data, ref float value)
+        {
+            if (data.frameList[0].exists) value = AnimationUtils.getKey(data.frameList[0], ctrlMA.Frame);
+        }
+
+        /// <summary>
+        ///     Gets the current frame of a Material Animation integer value.
+        /// </summary>
+        /// <param name="data">The animation data</param>
+        /// <param name="color">The integer value where the animation will be applied</param>
+        private void getMaterialAnimationInt(RenderBase.OMaterialAnimationData data, ref int value)
+        {
+            if (data.frameList[0].exists) value = (int)AnimationUtils.getKey(data.frameList[0], ctrlMA.Frame);
+        }
     }
 }

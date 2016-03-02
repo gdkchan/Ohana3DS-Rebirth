@@ -1,5 +1,4 @@
 ﻿//A bunch of functions to help drawing of the other controls
-using System;
 using System.Drawing;
 
 namespace Ohana3DS_Rebirth.GUI
@@ -15,7 +14,7 @@ namespace Ohana3DS_Rebirth.GUI
         /// <param name="font">The font that will be used to render the text</param>
         /// <param name="maxWidth">The maximum space the text can use</param>
         /// <returns></returns>
-        public static String clampText(Graphics g, string text, Font font, int maxWidth)
+        public static string clampText(Graphics g, string text, Font font, int maxWidth)
         {
             string outText = text;
             int i = 1;
@@ -47,10 +46,10 @@ namespace Ohana3DS_Rebirth.GUI
             StringFormat format = new StringFormat();
             RectangleF rect = new RectangleF(0, 0, 1000, 1000);
             CharacterRange[] ranges = { new CharacterRange(0, text.Length) };
-            Region[] regions = new Region[1];
 
             format.SetMeasurableCharacterRanges(ranges);
-            regions = g.MeasureCharacterRanges(text, font, rect, format);
+            Region[] regions = g.MeasureCharacterRanges(text, font, rect, format);
+            if (regions.Length == 0) return SizeF.Empty; 
             rect = regions[0].GetBounds(g);
 
             return new SizeF(rect.Right + 1f, rect.Bottom + 1f);

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OModelExportForm));
             this.LblDummyOutFolder = new Ohana3DS_Rebirth.GUI.OLabel();
             this.TxtOutFolder = new Ohana3DS_Rebirth.GUI.OTextBox();
             this.BtnBrowseFolder = new Ohana3DS_Rebirth.GUI.OButton();
@@ -47,6 +48,7 @@
             // 
             // ContentContainer
             // 
+            this.ContentContainer.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
             this.ContentContainer.Controls.Add(this.BtnOk);
             this.ContentContainer.Controls.Add(this.BtnCancel);
             this.ContentContainer.Controls.Add(this.ChkExportAllAnimations);
@@ -61,8 +63,8 @@
             this.ContentContainer.Controls.Add(this.BtnBrowseFolder);
             this.ContentContainer.Controls.Add(this.TxtOutFolder);
             this.ContentContainer.Controls.Add(this.LblDummyOutFolder);
-            this.ContentContainer.Location = new System.Drawing.Point(0, 0);
-            this.ContentContainer.Size = new System.Drawing.Size(384, 384);
+            this.ContentContainer.Location = new System.Drawing.Point(1, 1);
+            this.ContentContainer.Size = new System.Drawing.Size(382, 382);
             this.ContentContainer.Controls.SetChildIndex(this.LblDummyOutFolder, 0);
             this.ContentContainer.Controls.SetChildIndex(this.TxtOutFolder, 0);
             this.ContentContainer.Controls.SetChildIndex(this.BtnBrowseFolder, 0);
@@ -78,37 +80,34 @@
             this.ContentContainer.Controls.SetChildIndex(this.BtnCancel, 0);
             this.ContentContainer.Controls.SetChildIndex(this.BtnOk, 0);
             // 
-            // LblTitle
-            // 
-            this.LblTitle.Size = new System.Drawing.Size(98, 19);
-            this.LblTitle.Text = "Model exporter";
-            // 
             // LblDummyOutFolder
             // 
             this.LblDummyOutFolder.AutomaticSize = true;
+            this.LblDummyOutFolder.BackColor = System.Drawing.Color.Transparent;
             this.LblDummyOutFolder.Centered = false;
-            this.LblDummyOutFolder.Location = new System.Drawing.Point(8, 26);
+            this.LblDummyOutFolder.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblDummyOutFolder.Location = new System.Drawing.Point(11, 26);
             this.LblDummyOutFolder.Name = "LblDummyOutFolder";
-            this.LblDummyOutFolder.Size = new System.Drawing.Size(73, 16);
+            this.LblDummyOutFolder.Size = new System.Drawing.Size(78, 17);
             this.LblDummyOutFolder.TabIndex = 10;
             this.LblDummyOutFolder.Text = "Output folder:";
             // 
             // TxtOutFolder
             // 
-            this.TxtOutFolder.BackColor = System.Drawing.Color.Black;
+            this.TxtOutFolder.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
             this.TxtOutFolder.CharacterWhiteList = null;
-            this.TxtOutFolder.Location = new System.Drawing.Point(8, 48);
+            this.TxtOutFolder.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.TxtOutFolder.Location = new System.Drawing.Point(11, 49);
             this.TxtOutFolder.Name = "TxtOutFolder";
-            this.TxtOutFolder.Size = new System.Drawing.Size(326, 20);
+            this.TxtOutFolder.Size = new System.Drawing.Size(322, 20);
             this.TxtOutFolder.TabIndex = 11;
             this.TxtOutFolder.Text = "C:\\";
             // 
             // BtnBrowseFolder
             // 
             this.BtnBrowseFolder.Centered = true;
-            this.BtnBrowseFolder.Hover = true;
-            this.BtnBrowseFolder.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_open;
-            this.BtnBrowseFolder.Location = new System.Drawing.Point(340, 48);
+            this.BtnBrowseFolder.Image = global::Ohana3DS_Rebirth.Properties.Resources.ui_icon_folder;
+            this.BtnBrowseFolder.Location = new System.Drawing.Point(339, 49);
             this.BtnBrowseFolder.Name = "BtnBrowseFolder";
             this.BtnBrowseFolder.Size = new System.Drawing.Size(32, 20);
             this.BtnBrowseFolder.TabIndex = 12;
@@ -117,30 +116,35 @@
             // LblDummyModelName
             // 
             this.LblDummyModelName.AutomaticSize = true;
+            this.LblDummyModelName.BackColor = System.Drawing.Color.Transparent;
             this.LblDummyModelName.Centered = false;
-            this.LblDummyModelName.Location = new System.Drawing.Point(8, 74);
+            this.LblDummyModelName.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblDummyModelName.Location = new System.Drawing.Point(11, 75);
             this.LblDummyModelName.Name = "LblDummyModelName";
-            this.LblDummyModelName.Size = new System.Drawing.Size(69, 16);
+            this.LblDummyModelName.Size = new System.Drawing.Size(73, 17);
             this.LblDummyModelName.TabIndex = 13;
             this.LblDummyModelName.Text = "Model name:";
             // 
             // TxtModelName
             // 
-            this.TxtModelName.BackColor = System.Drawing.Color.Black;
+            this.TxtModelName.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
             this.TxtModelName.CharacterWhiteList = null;
-            this.TxtModelName.Location = new System.Drawing.Point(8, 96);
+            this.TxtModelName.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.TxtModelName.Location = new System.Drawing.Point(11, 98);
             this.TxtModelName.Name = "TxtModelName";
-            this.TxtModelName.Size = new System.Drawing.Size(364, 20);
+            this.TxtModelName.Size = new System.Drawing.Size(360, 20);
             this.TxtModelName.TabIndex = 14;
             this.TxtModelName.Text = "model_name";
             // 
             // LblDummyFormat
             // 
             this.LblDummyFormat.AutomaticSize = true;
+            this.LblDummyFormat.BackColor = System.Drawing.Color.Transparent;
             this.LblDummyFormat.Centered = false;
-            this.LblDummyFormat.Location = new System.Drawing.Point(8, 122);
+            this.LblDummyFormat.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblDummyFormat.Location = new System.Drawing.Point(11, 124);
             this.LblDummyFormat.Name = "LblDummyFormat";
-            this.LblDummyFormat.Size = new System.Drawing.Size(41, 16);
+            this.LblDummyFormat.Size = new System.Drawing.Size(44, 17);
             this.LblDummyFormat.TabIndex = 15;
             this.LblDummyFormat.Text = "Format:";
             // 
@@ -148,10 +152,11 @@
             // 
             this.RadioCMDL.AutoSize = true;
             this.RadioCMDL.BackColor = System.Drawing.Color.Black;
+            this.RadioCMDL.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.RadioCMDL.ForeColor = System.Drawing.Color.White;
-            this.RadioCMDL.Location = new System.Drawing.Point(166, 144);
+            this.RadioCMDL.Location = new System.Drawing.Point(172, 147);
             this.RadioCMDL.Name = "RadioCMDL";
-            this.RadioCMDL.Size = new System.Drawing.Size(55, 17);
+            this.RadioCMDL.Size = new System.Drawing.Size(58, 19);
             this.RadioCMDL.TabIndex = 20;
             this.RadioCMDL.Text = "CMDL";
             this.RadioCMDL.UseVisualStyleBackColor = false;
@@ -160,10 +165,11 @@
             // 
             this.RadioOBJ.AutoSize = true;
             this.RadioOBJ.BackColor = System.Drawing.Color.Black;
+            this.RadioOBJ.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.RadioOBJ.ForeColor = System.Drawing.Color.White;
-            this.RadioOBJ.Location = new System.Drawing.Point(115, 144);
+            this.RadioOBJ.Location = new System.Drawing.Point(121, 147);
             this.RadioOBJ.Name = "RadioOBJ";
-            this.RadioOBJ.Size = new System.Drawing.Size(45, 17);
+            this.RadioOBJ.Size = new System.Drawing.Size(45, 19);
             this.RadioOBJ.TabIndex = 19;
             this.RadioOBJ.Text = "OBJ";
             this.RadioOBJ.UseVisualStyleBackColor = false;
@@ -172,10 +178,11 @@
             // 
             this.RadioSMD.AutoSize = true;
             this.RadioSMD.BackColor = System.Drawing.Color.Black;
+            this.RadioSMD.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.RadioSMD.ForeColor = System.Drawing.Color.White;
-            this.RadioSMD.Location = new System.Drawing.Point(60, 144);
+            this.RadioSMD.Location = new System.Drawing.Point(65, 147);
             this.RadioSMD.Name = "RadioSMD";
-            this.RadioSMD.Size = new System.Drawing.Size(49, 17);
+            this.RadioSMD.Size = new System.Drawing.Size(50, 19);
             this.RadioSMD.TabIndex = 18;
             this.RadioSMD.Text = "SMD";
             this.RadioSMD.UseVisualStyleBackColor = false;
@@ -184,10 +191,11 @@
             // 
             this.RadioDAE.AutoSize = true;
             this.RadioDAE.BackColor = System.Drawing.Color.Black;
+            this.RadioDAE.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.RadioDAE.ForeColor = System.Drawing.Color.White;
-            this.RadioDAE.Location = new System.Drawing.Point(8, 144);
+            this.RadioDAE.Location = new System.Drawing.Point(11, 147);
             this.RadioDAE.Name = "RadioDAE";
-            this.RadioDAE.Size = new System.Drawing.Size(46, 17);
+            this.RadioDAE.Size = new System.Drawing.Size(47, 19);
             this.RadioDAE.TabIndex = 17;
             this.RadioDAE.Text = "DAE";
             this.RadioDAE.UseVisualStyleBackColor = false;
@@ -198,9 +206,10 @@
             this.ChkExportAllModels.BackColor = System.Drawing.Color.Transparent;
             this.ChkExportAllModels.BoxColor = System.Drawing.Color.Black;
             this.ChkExportAllModels.Checked = false;
-            this.ChkExportAllModels.Location = new System.Drawing.Point(8, 167);
+            this.ChkExportAllModels.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ChkExportAllModels.Location = new System.Drawing.Point(11, 172);
             this.ChkExportAllModels.Name = "ChkExportAllModels";
-            this.ChkExportAllModels.Size = new System.Drawing.Size(243, 16);
+            this.ChkExportAllModels.Size = new System.Drawing.Size(255, 17);
             this.ChkExportAllModels.TabIndex = 21;
             this.ChkExportAllModels.Text = "Export all models (with their internal names)";
             this.ChkExportAllModels.CheckedChanged += new System.EventHandler(this.ChkExportAllModels_CheckedChanged);
@@ -211,18 +220,18 @@
             this.ChkExportAllAnimations.BackColor = System.Drawing.Color.Transparent;
             this.ChkExportAllAnimations.BoxColor = System.Drawing.Color.Black;
             this.ChkExportAllAnimations.Checked = false;
-            this.ChkExportAllAnimations.Location = new System.Drawing.Point(8, 189);
+            this.ChkExportAllAnimations.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ChkExportAllAnimations.Location = new System.Drawing.Point(11, 195);
             this.ChkExportAllAnimations.Name = "ChkExportAllAnimations";
-            this.ChkExportAllAnimations.Size = new System.Drawing.Size(198, 16);
+            this.ChkExportAllAnimations.Size = new System.Drawing.Size(208, 17);
             this.ChkExportAllAnimations.TabIndex = 22;
             this.ChkExportAllAnimations.Text = "Export all animations (if supported)";
             // 
             // BtnOk
             // 
             this.BtnOk.Centered = true;
-            this.BtnOk.Hover = true;
-            this.BtnOk.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_ticked;
-            this.BtnOk.Location = new System.Drawing.Point(238, 348);
+            this.BtnOk.Image = global::Ohana3DS_Rebirth.Properties.Resources.ui_icon_tick;
+            this.BtnOk.Location = new System.Drawing.Point(237, 347);
             this.BtnOk.Name = "BtnOk";
             this.BtnOk.Size = new System.Drawing.Size(64, 24);
             this.BtnOk.TabIndex = 24;
@@ -232,9 +241,8 @@
             // BtnCancel
             // 
             this.BtnCancel.Centered = true;
-            this.BtnCancel.Hover = true;
-            this.BtnCancel.Image = global::Ohana3DS_Rebirth.Properties.Resources.icn_close;
-            this.BtnCancel.Location = new System.Drawing.Point(308, 348);
+            this.BtnCancel.Image = global::Ohana3DS_Rebirth.Properties.Resources.ui_icon_block;
+            this.BtnCancel.Location = new System.Drawing.Point(307, 347);
             this.BtnCancel.Name = "BtnCancel";
             this.BtnCancel.Size = new System.Drawing.Size(64, 24);
             this.BtnCancel.TabIndex = 23;
@@ -250,7 +258,8 @@
             this.Name = "OModelExportForm";
             this.Resizable = false;
             this.ShowMinimize = false;
-            this.Text = "OModelExportForm";
+            this.Text = "Export model";
+            this.TitleIcon = ((System.Drawing.Image)(resources.GetObject("$this.TitleIcon")));
             this.Load += new System.EventHandler(this.OModelExportForm_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.OModelExportForm_KeyDown);
             this.ContentContainer.ResumeLayout(false);

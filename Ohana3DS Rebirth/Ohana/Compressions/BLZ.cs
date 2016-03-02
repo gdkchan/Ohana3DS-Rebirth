@@ -12,6 +12,7 @@ namespace Ohana3DS_Rebirth.Ohana.Compressions
         /// <returns></returns>
         public static byte[] decompress(Stream data)
         {
+            data.Seek(0, SeekOrigin.Begin);
             byte[] input = new byte[data.Length];
             data.Read(input, 0, input.Length);
             data.Close();

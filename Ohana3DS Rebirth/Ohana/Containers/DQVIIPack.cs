@@ -26,7 +26,7 @@ namespace Ohana3DS_Rebirth.Ohana.Containers
         /// </summary>
         /// <param name="fileName">The File Name where the data is located</param>
         /// <returns></returns>
-        public static GenericContainer.OContainer load(string fileName)
+        public static OContainer load(string fileName)
         {
             return load(new FileStream(fileName, FileMode.Open));
         }
@@ -36,10 +36,10 @@ namespace Ohana3DS_Rebirth.Ohana.Containers
         /// </summary>
         /// <param name="data">Stream of the data</param>
         /// <returns></returns>
-        public static GenericContainer.OContainer load(Stream data)
+        public static OContainer load(Stream data)
         {
             BinaryReader input = new BinaryReader(data);
-            GenericContainer.OContainer output = new GenericContainer.OContainer();
+            OContainer output = new OContainer();
 
             List<sectionEntry> mainSection = getSection(input);
 
@@ -89,7 +89,6 @@ namespace Ohana3DS_Rebirth.Ohana.Containers
             {
                 data.Seek(entry.offset, SeekOrigin.Begin);
                 
-
                 //Field Data section
                 /*
                  * Usually have 3 entries.
@@ -105,7 +104,7 @@ namespace Ohana3DS_Rebirth.Ohana.Containers
                 byte[] buffer = new byte[length];
                 input.Read(buffer, 0, buffer.Length);
 
-                GenericContainer.OContainerEntry file = new GenericContainer.OContainerEntry();
+                OContainer.fileEntry file = new OContainer.fileEntry();
                 file.name = CGFX.getName(new MemoryStream(buffer)) + ".bcmdl";
                 file.data = buffer;
 
@@ -129,7 +128,7 @@ namespace Ohana3DS_Rebirth.Ohana.Containers
             byte[] texBuffer = new byte[mainSection[5].length];
             input.Read(texBuffer, 0, texBuffer.Length);
 
-            GenericContainer.OContainerEntry texFile = new GenericContainer.OContainerEntry();
+            OContainer.fileEntry texFile = new OContainer.fileEntry();
             texFile.name = "textures.bctex";
             texFile.data = texBuffer;
 

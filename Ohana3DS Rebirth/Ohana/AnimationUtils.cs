@@ -5,12 +5,12 @@ namespace Ohana3DS_Rebirth.Ohana
     class AnimationUtils
     {
         /// <summary>
-        ///     Gets the smaller and closest frame to the given Key Frame.
+        ///     Gets the rounded down frame relative to the given Key Frame.
         /// </summary>
         /// <param name="keyFrames">List with the Key Frames</param>
         /// <param name="frame">The frame number used as reference</param>
         /// <returns></returns>
-        public static RenderBase.OAnimationKeyFrame getSmallerPoint(List<RenderBase.OAnimationKeyFrame> keyFrames, float frame)
+        public static RenderBase.OAnimationKeyFrame getLeftFrame(List<RenderBase.OAnimationKeyFrame> keyFrames, float frame)
         {
             if (keyFrames == null || keyFrames.Count == 0) return null;
             RenderBase.OAnimationKeyFrame value = keyFrames[0];
@@ -23,12 +23,12 @@ namespace Ohana3DS_Rebirth.Ohana
         }
 
         /// <summary>
-        ///     Gets the larger and closest frame to the given Key Frame.
+        ///     Gets the rounded up frame relative to the given Key Frame.
         /// </summary>
         /// <param name="keyFrames">List with the Key Frames</param>
         /// <param name="frame">The frame number used as reference</param>
         /// <returns></returns>
-        public static RenderBase.OAnimationKeyFrame getLargerPoint(List<RenderBase.OAnimationKeyFrame> keyFrames, float frame)
+        public static RenderBase.OAnimationKeyFrame getRightFrame(List<RenderBase.OAnimationKeyFrame> keyFrames, float frame)
         {
             if (keyFrames == null || keyFrames.Count == 0) return null;
             RenderBase.OAnimationKeyFrame value = keyFrames[keyFrames.Count - 1];
@@ -49,7 +49,7 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <returns>The closest smaller frame value</returns>
         public static float interpolateStep(List<RenderBase.OAnimationKeyFrame> keyFrames, float frame)
         {
-            return getSmallerPoint(keyFrames, frame).value;
+            return getLeftFrame(keyFrames, frame).value;
         }
 
         /// <summary>
@@ -60,8 +60,8 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <returns>The interpolated frame value</returns>
         public static float interpolateLinear(List<RenderBase.OAnimationKeyFrame> keyFrames, float frame)
         {
-            RenderBase.OAnimationKeyFrame a = getSmallerPoint(keyFrames, frame);
-            RenderBase.OAnimationKeyFrame b = getLargerPoint(keyFrames, frame);
+            RenderBase.OAnimationKeyFrame a = getLeftFrame(keyFrames, frame);
+            RenderBase.OAnimationKeyFrame b = getRightFrame(keyFrames, frame);
             if (a.frame == b.frame) return a.value;
 
             float mu = (frame - a.frame) / (b.frame - a.frame);
@@ -125,8 +125,8 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <returns>The interpolated frame value</returns>
         public static float interpolateHermite(List<RenderBase.OAnimationKeyFrame> keyFrames, float frame)
         {
-            RenderBase.OAnimationKeyFrame a = getSmallerPoint(keyFrames, frame);
-            RenderBase.OAnimationKeyFrame b = getLargerPoint(keyFrames, frame);
+            RenderBase.OAnimationKeyFrame a = getLeftFrame(keyFrames, frame);
+            RenderBase.OAnimationKeyFrame b = getRightFrame(keyFrames, frame);
             if (a.frame == b.frame) return a.value;
 
             float outSlope = a.outSlope;

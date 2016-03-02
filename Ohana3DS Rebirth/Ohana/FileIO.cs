@@ -1,170 +1,194 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Windows.Forms;
 using System.IO;
-using System.Diagnostics;
+using System.Text;
+using System.Windows.Forms;
 
 using Ohana3DS_Rebirth.GUI.Forms;
 using Ohana3DS_Rebirth.Ohana.Models;
 using Ohana3DS_Rebirth.Ohana.Models.GenericFormats;
+using Ohana3DS_Rebirth.Ohana.Models.PocketMonsters;
 using Ohana3DS_Rebirth.Ohana.Textures;
+using Ohana3DS_Rebirth.Ohana.Textures.PocketMonsters;
 using Ohana3DS_Rebirth.Ohana.Compressions;
+using Ohana3DS_Rebirth.Ohana.Containers;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
     public class FileIO
     {
-        public enum fileFormat
+        [Flags]
+        public enum formatType : uint
         {
-            cmpBLZ,
-            cmpIECP,
-            cmpLZSS,
-            cmpLZSSHeader,
-            dq7DMP,
-            dq7FPT0,
-            dq7Model,
-            flZMdl,
-            flZTex,
-            fmNLK2,
-            nlpSMes,
-            nw4cCGfx,
-            nw4cH3D,
-            pkmnContainer,
-            unsupported
+            unsupported = 0,
+            compression = 1,
+            container = 2,
+            image = 4,
+            model = 8,
+            texture = 0x10,
+            all = 0xffffffff
         }
 
-        /// <summary>
-        ///     Identifies the format of a file based on Signature.
-        /// </summary>
-        /// <param name="fileName">The Full Path to the file</param>
-        /// <returns></returns>
-        public static fileFormat identify(string fileName)
+        public struct file
         {
-            Stream data = new FileStream(fileName, FileMode.Open);
-            fileFormat format = identify(data);
-            data.Close();
-            return format;
+            public object data;
+            public formatType type;
         }
 
-        /// <summary>
-        ///     Identifies the format of a file based on Signature.
-        ///     Note that the Stream will REMAIN OPEN and at position 0, so it can be used afterwards.
-        /// </summary>
-        /// <param name="data">The Stream with the data</param>
-        /// <returns></returns>
-        public static fileFormat identify(Stream data)
+        public static file load(string fileName)
         {
+            switch (Path.GetExtension(fileName).ToLower())
+            {
+                case ".mbn": return new file { data = MBN.load(fileName), type = formatType.model };
+                case ".xml": return new file { data = NLP.load(fileName), type = formatType.model };
+                default: return load(new FileStream(fileName, FileMode.Open));
+            }
+        }
+
+        public static file load(Stream data)
+        {
+            //Too small
+            if (data.Length < 0x10)
+            {
+                data.Close();
+                return new file { type = formatType.unsupported };
+            }
+
             BinaryReader input = new BinaryReader(data);
+            uint magic, length;
 
-            byte compression = input.ReadByte();
-            string magic2b = IOUtils.readString(input, 0, 2);
-            string magic3b = IOUtils.readString(input, 0, 3);
-            string magic4b = IOUtils.readString(input, 0, 4);
-            string magic5b = IOUtils.readString(input, 0, 5);
-            data.Seek(0, SeekOrigin.Begin);
-
-            switch (magic5b)
+            switch (getMagic(input, 5))
             {
-                case "MODEL": return fileFormat.dq7Model;
+                case "MODEL": return new file { data = DQVIIPack.load(data), type = formatType.container };
             }
 
-            switch (magic4b)
+            switch (getMagic(input, 4))
             {
-                case "IECP": return fileFormat.cmpIECP;
-                case "FPT0": return fileFormat.dq7FPT0;
-                case "zmdl": return fileFormat.flZMdl;
-                case "ztex": return fileFormat.flZTex;
-                case "NLK2": return fileFormat.fmNLK2;
-                case "SMES": return fileFormat.nlpSMes;
-                case "CGFX": return fileFormat.nw4cCGfx;
-            }
-
-            switch (magic3b)
-            {
-                case "DMP": return fileFormat.dq7DMP;
-                case "BCH": return fileFormat.nw4cH3D;
-            }
-
-            switch (magic2b)
-            {
-                case "PC":
-                case "PT":
-                case "PK":
-                case "PB":
-                case "GR":
-                case "MM":
-                case "AD":
-                    return fileFormat.pkmnContainer;
-            }
-
-            //Unfortunately compression only have one byte for identification.
-            //So, it may have a lot of false positives.
-            switch (compression)
-            {
-                case 0x90: return fileFormat.cmpBLZ;
-                case 0x11: return fileFormat.cmpLZSS;
-                case 0x13: return fileFormat.cmpLZSSHeader;
-            }
-
-            return fileFormat.unsupported;
-        }
-
-        /// <summary>
-        ///     Returns true if the format is a compression format, and false otherwise.
-        /// </summary>
-        /// <param name="format">The format of the file</param>
-        /// <returns></returns>
-        public static bool isCompressed(fileFormat format)
-        {
-            switch (format)
-            {
-                case fileFormat.cmpBLZ:
-                case fileFormat.cmpIECP:
-                case fileFormat.cmpLZSS:
-                case fileFormat.cmpLZSSHeader:
-                    return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        ///     Decompress a file and automaticaly updates the format of the compressed file.
-        /// </summary>
-        /// <param name="data">Stream with the file to be decompressed</param>
-        /// <param name="format">Format of the compression</param>
-        /// <returns></returns>
-        public static void decompress(ref Stream data, ref fileFormat format)
-        {
-            BinaryReader input = new BinaryReader(data);
-            byte[] decompressedData, content;
-            uint length;
-
-            switch (format)
-            {
-                case fileFormat.cmpBLZ:
-                    decompressedData = BLZ.decompress(data);
-                    content = new byte[decompressedData.Length - 1];
-                    Buffer.BlockCopy(decompressedData, 1, content, 0, content.Length);
-                    data = new MemoryStream(content);
-                    format = identify(data);
-                    break;
-                case fileFormat.cmpIECP: //Stella Glow
-                    uint magic = input.ReadUInt32();
+                case "CGFX": return new file { data = CGFX.load(data), type = formatType.model };
+                case "CRAG": return new file { data = GARC.load(data), type = formatType.container };
+                case "darc": return new file { data = DARC.load(data), type = formatType.container };
+                case "FPT0": return new file { data = FPT0.load(data), type = formatType.container };
+                case "IECP":
+                    magic = input.ReadUInt32();
                     length = input.ReadUInt32();
-                    decompressedData = LZSS.decompress(data, length);
-                    data = new MemoryStream(decompressedData);
-                    format = identify(data);
-                    break;
-                case fileFormat.cmpLZSS:
-                case fileFormat.cmpLZSSHeader:
-                    if (format == fileFormat.cmpLZSSHeader) input.ReadUInt32();
-                    length = input.ReadUInt32() >> 8;
-                    decompressedData = LZSS_Ninty.decompress(data, length);
-                    data = new MemoryStream(decompressedData);
-                    format = identify(data);
-                    break;
+                    return load(new MemoryStream(LZSS.decompress(data, length)));
+                case "NLK2":
+                    data.Seek(0x80, SeekOrigin.Begin);
+                    return new file
+                    {
+                        data = CGFX.load(data),
+                        type = formatType.model
+                    };
+                case "SARC": return new file { data = SARC.load(data), type = formatType.container };
+                case "SMES": return new file { data = NLP.loadMesh(data), type = formatType.model };
+                case "Yaz0":
+                    magic = input.ReadUInt32();
+                    length = IOUtils.endianSwap(input.ReadUInt32());
+                    data.Seek(8, SeekOrigin.Current);
+                    return load(new MemoryStream(Yaz0.decompress(data, length)));
+                case "zmdl": return new file { data = ZMDL.load(data), type = formatType.model };
+                case "ztex": return new file { data = ZTEX.load(data), type = formatType.texture };
             }
+
+            //Check if is a BCLIM or BFLIM file (header on the end)
+            if (data.Length > 0x28)
+            {
+                data.Seek(-0x28, SeekOrigin.End);
+                string clim = IOUtils.readStringWithLength(input, 4);
+                if (clim == "CLIM" || clim == "FLIM") return new file { data = BCLIM.load(data), type = formatType.image };
+            }
+
+            switch (getMagic(input, 3))
+            {
+                case "BCH":
+                    byte[] buffer = new byte[data.Length];
+                    input.Read(buffer, 0, buffer.Length);
+                    data.Close();
+                    return new file
+                    {
+                        data = BCH.load(new MemoryStream(buffer)),
+                        type = formatType.model
+                    };
+                case "DMP": return new file { data = DMP.load(data), type = formatType.image };
+            }
+
+            switch (getMagic(input, 2))
+            {
+                case "AD": return new file { data = AD.load(data), type = formatType.model };
+                case "BM": return new file { data = MM.load(data), type = formatType.model };
+                case "GR": return new file { data = GR.load(data), type = formatType.model };
+                case "MM": return new file { data = MM.load(data), type = formatType.model };
+                case "PC": return new file { data = PC.load(data), type = formatType.model };
+                case "PT": return new file { data = PT.load(data), type = formatType.texture };
+            }
+
+            //Compressions
+            data.Seek(0, SeekOrigin.Begin);
+            uint cmp = input.ReadUInt32();
+            if ((cmp & 0xff) == 0x13) cmp = input.ReadUInt32();
+            switch (cmp & 0xff)
+            {
+                case 0x11: return load(new MemoryStream(LZSS_Ninty.decompress(data, cmp >> 8)));
+                case 0x90:
+                    byte[] buffer = BLZ.decompress(data);
+                    byte[] newData = new byte[buffer.Length - 1];
+                    Buffer.BlockCopy(buffer, 1, newData, 0, newData.Length);
+                    return load(new MemoryStream(newData));
+            }
+
+            data.Close();
+            return new file { type = formatType.unsupported };
+        }
+
+        public static string getExtension(byte[] data, int startIndex = 0)
+        {
+            if (data.Length > 3)
+            {
+                switch (getMagic(data, 4, startIndex))
+                {
+                    case "CGFX": return ".bcres";
+                }
+            }
+
+            if (data.Length > 2)
+            {
+                switch (getMagic(data, 3, startIndex))
+                {
+                    case "BCH": return ".bch";
+                }
+            }
+
+            if (data.Length > 1)
+            {
+                switch (getMagic(data, 2, startIndex))
+                {
+                    case "AD": return ".ad";
+                    case "BM": return ".bm";
+                    case "GR": return ".gr";
+                    case "MM": return ".mm";
+                    case "PB": return ".pb";
+                    case "PC": return ".pc";
+                    case "PF": return ".pf";
+                    case "PK": return ".pk";
+                    case "PO": return ".po";
+                    case "PT": return ".pt";
+                    case "TM": return ".tm";
+                }
+            }
+
+            return ".bin";
+        }
+
+        private static string getMagic(BinaryReader input, uint length)
+        {
+            string magic = IOUtils.readString(input, 0, length);
+            input.BaseStream.Seek(0, SeekOrigin.Begin);
+            return magic;
+        }
+
+        private static string getMagic(byte[] data, int length, int startIndex = 0)
+        {
+            return Encoding.ASCII.GetString(data, startIndex, length);
         }
 
         public enum fileType
@@ -183,7 +207,7 @@ namespace Ohana3DS_Rebirth.Ohana
         /// </summary>
         /// <param name="type">The type of the data</param>
         /// <returns></returns>
-        public static Object import(fileType type)
+        public static object import(fileType type)
         {
             using (OpenFileDialog openDlg = new OpenFileDialog())
             {
@@ -192,164 +216,76 @@ namespace Ohana3DS_Rebirth.Ohana
                 switch (type)
                 {
                     case fileType.model:
-                        openDlg.Title = "Import Model";
-                        openDlg.Filter = "All supported files|*.bch;*.bcmdl;*.bcres;*.cx;*.lz;*.cmp;*.zmdl;*.smes;*.smd";
-                        openDlg.Filter += "|Binary CTR H3D|*.bch";
-                        openDlg.Filter += "|Binary CTR Model|*.bcmdl";
-                        openDlg.Filter += "|Binary CTR Resource|*.bcres";
-                        openDlg.Filter += "|Compressed file|*.cx;*.lz;*.cmp";
-                        openDlg.Filter += "|Fantasy Life Model|*.zmdl";
-                        openDlg.Filter += "|New Love Plus Mesh|*.smes";
-                        openDlg.Filter += "|StudioMdl Model|*.smd";
-                        openDlg.Filter += "|All files|*.*";
+                        openDlg.Title = "Import models";
+                        openDlg.Filter = "All files|*.*";
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
                             List<RenderBase.OModel> output = new List<RenderBase.OModel>();
                             foreach (string fileName in openDlg.FileNames)
                             {
-                                try
-                                {
-                                    switch (Path.GetExtension(fileName).ToLower())
-                                    {
-                                        case ".smd": output.AddRange(SMD.import(fileName).model); break;
-                                        default:
-                                            byte[] buffer = File.ReadAllBytes(fileName);
-                                            Stream data = new MemoryStream(buffer);
-                                            fileFormat format = identify(fileName);
-                                            if (isCompressed(format)) decompress(ref data, ref format);
-                                            switch (format)
-                                            {
-                                                case fileFormat.flZMdl: output.AddRange(ZMDL.load(data).model); break;
-                                                case fileFormat.nlpSMes: output.AddRange(NLP.loadMesh(data).model); break;
-                                                case fileFormat.nw4cCGfx: output.AddRange(CGFX.load(data).model); break;
-                                                case fileFormat.nw4cH3D: output.AddRange(BCH.load((MemoryStream)data).model); break;
-                                                default: data.Close(); break;
-                                            }
-                                            break;
-                                    }
-                                }
-                                catch
-                                {
-                                    Debug.WriteLine("FileIO: Unable to import model file \"" + fileName + "\"!");
-                                }
+                                output.AddRange(((RenderBase.OModelGroup)load(fileName).data).model);
                             }
                             return output;
                         }
                         break;
                     case fileType.texture:
-                        openDlg.Title = "Import Texture";
-                        openDlg.Filter = "All supported files|*.bch;*.bcmdl;*.bcres;*.bctex;*.cx;*.lz;*.cmp;*.ztex";
-                        openDlg.Filter += "|Binary CTR H3D|*.bch";
-                        openDlg.Filter += "|Binary CTR Model|*.bcmdl";
-                        openDlg.Filter += "|Binary CTR Resource|*.bcres";
-                        openDlg.Filter += "|Binary CTR Texture|*.bctex";
-                        openDlg.Filter += "|Compressed file|*.cx;*.lz;*.cmp";
-                        openDlg.Filter += "|Fantasy Life Texture|*.ztex";
-                        openDlg.Filter += "|All files|*.*";
+                        openDlg.Title = "Import textures";
+                        openDlg.Filter = "All files|*.*";
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
                             List<RenderBase.OTexture> output = new List<RenderBase.OTexture>();
                             foreach (string fileName in openDlg.FileNames)
                             {
-                                byte[] buffer = File.ReadAllBytes(fileName);
-                                Stream data = new MemoryStream(buffer);
-                                fileFormat format = identify(fileName);
-                                if (isCompressed(format)) decompress(ref data, ref format);
-                                switch (format)
+                                file file = load(fileName);
+                                switch (file.type)
                                 {
-                                    case fileFormat.flZTex: output.AddRange(ZTEX.load(data)); break;
-                                    case fileFormat.nw4cCGfx: output.AddRange(CGFX.load(data).texture); break;
-                                    case fileFormat.nw4cH3D: output.AddRange(BCH.load((MemoryStream)data).texture); break;
-                                    default: data.Close(); break;
+                                    case formatType.model: output.AddRange(((RenderBase.OModelGroup)file.data).texture); break;
+                                    case formatType.texture: output.AddRange((List<RenderBase.OTexture>)file.data); break;
                                 }
                             }
                             return output;
                         }
                         break;
                     case fileType.skeletalAnimation:
-                        openDlg.Title = "Import Skeletal Animation";
-                        openDlg.Filter = "All supported files|*.bch;*.bcres;*.bcskla;*.smd";
-                        openDlg.Filter += "|Binary CTR H3D|*.bch";
-                        openDlg.Filter += "|Binary CTR Resource|*.bcres";
-                        openDlg.Filter += "|Binary CTR Skeletal Animation|*.bcskla";
-                        openDlg.Filter += "|StudioMdl Model|*.smd";
-                        openDlg.Filter += "|All files|*.*";
+                        openDlg.Title = "Import skeletal animations";
+                        openDlg.Filter = "All files|*.*";
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
                             RenderBase.OAnimationListBase output = new RenderBase.OAnimationListBase();
                             foreach (string fileName in openDlg.FileNames)
                             {
-                                switch (Path.GetExtension(fileName).ToLower())
-                                {
-                                    case ".smd": output.list.AddRange(SMD.import(fileName).skeletalAnimation.list); break;
-                                    default:
-                                        byte[] buffer = File.ReadAllBytes(fileName);
-                                        Stream data = new MemoryStream(buffer);
-                                        fileFormat format = identify(fileName);
-                                        if (isCompressed(format)) decompress(ref data, ref format);
-                                        switch (format)
-                                        {
-                                            case fileFormat.nw4cCGfx: output.list.AddRange(CGFX.load(data).skeletalAnimation.list); break;
-                                            case fileFormat.nw4cH3D: output.list.AddRange(BCH.load((MemoryStream)data).skeletalAnimation.list); break;
-                                            default: data.Close(); break;
-                                        }
-                                        break;
-                                }
+                                output.list.AddRange(((RenderBase.OModelGroup)load(fileName).data).skeletalAnimation.list);
                             }
                             return output;
                         }
                         break;
                     case fileType.materialAnimation:
-                        openDlg.Title = "Import Material Animation";
-                        openDlg.Filter = "All supported files|*.bch;";
-                        openDlg.Filter += "|Binary CTR H3D|*.bch";
-                        openDlg.Filter += "|All files|*.*";
+                        openDlg.Title = "Import material animations";
+                        openDlg.Filter = "All files|*.*";
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
                             RenderBase.OAnimationListBase output = new RenderBase.OAnimationListBase();
                             foreach (string fileName in openDlg.FileNames)
                             {
-
-                                byte[] buffer = File.ReadAllBytes(fileName);
-                                Stream data = new MemoryStream(buffer);
-                                fileFormat format = identify(fileName);
-                                if (isCompressed(format)) decompress(ref data, ref format);
-                                switch (format)
-                                {
-                                    case fileFormat.nw4cCGfx: output.list.AddRange(CGFX.load(data).materialAnimation.list); break;
-                                    case fileFormat.nw4cH3D: output.list.AddRange(BCH.load((MemoryStream)data).materialAnimation.list); break;
-                                    default: data.Close(); break;
-                                }
+                                output.list.AddRange(((RenderBase.OModelGroup)load(fileName).data).materialAnimation.list);
                             }
                             return output;
                         }
                         break;
                     case fileType.visibilityAnimation:
-                        openDlg.Title = "Import Visibility Animation";
-                        openDlg.Filter = "All supported files|*.bch;";
-                        openDlg.Filter += "|Binary CTR H3D|*.bch";
-                        openDlg.Filter += "|All files|*.*";
+                        openDlg.Title = "Import visibility animations";
+                        openDlg.Filter = "All files|*.*";
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
                             RenderBase.OAnimationListBase output = new RenderBase.OAnimationListBase();
                             foreach (string fileName in openDlg.FileNames)
                             {
-
-                                byte[] buffer = File.ReadAllBytes(fileName);
-                                Stream data = new MemoryStream(buffer);
-                                fileFormat format = identify(fileName);
-                                if (isCompressed(format)) decompress(ref data, ref format);
-                                switch (format)
-                                {
-                                    case fileFormat.nw4cCGfx: output.list.AddRange(CGFX.load(data).visibilityAnimation.list); break;
-                                    case fileFormat.nw4cH3D: output.list.AddRange(BCH.load((MemoryStream)data).visibilityAnimation.list); break;
-                                    default: data.Close(); break;
-                                }
+                                output.list.AddRange(((RenderBase.OModelGroup)load(fileName).data).visibilityAnimation.list);
                             }
                             return output;
                         }
@@ -367,7 +303,7 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="type">Type of the data to be exported</param>
         /// <param name="data">The data</param>
         /// <param name="arguments">Optional arguments to be used by the exporter</param>
-        public static void export(fileType type, Object data, List<int> arguments = null)
+        public static void export(fileType type, object data, params int[] arguments)
         {
             using (SaveFileDialog saveDlg = new SaveFileDialog())
             {

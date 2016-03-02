@@ -89,7 +89,7 @@ namespace Ohana3DS_Rebirth.GUI
             base.OnLayout(levent);
         }
 
-        private void TextBox_TextChanged(Object sender, EventArgs e)
+        private void TextBox_TextChanged(object sender, EventArgs e)
         {
             if (ChangedText != null) ChangedText(this, EventArgs.Empty);
         }

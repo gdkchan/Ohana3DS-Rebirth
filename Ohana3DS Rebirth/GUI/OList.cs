@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace Ohana3DS_Rebirth.GUI
@@ -11,7 +10,7 @@ namespace Ohana3DS_Rebirth.GUI
         private int tileSize = 64;
         private int headerSize = 24;
 
-        Color selectedColor = ColorManager.highlight;
+        Color selectedColor = ColorManager.ui_hoveredDark;
         Point mousePosition;
         bool clicked;
 
@@ -29,6 +28,7 @@ namespace Ohana3DS_Rebirth.GUI
                 thumbnail = _thumbnail;
             }
         }
+
         public class listItemGroup
         {
             public List<listItem> columns;
@@ -37,7 +37,6 @@ namespace Ohana3DS_Rebirth.GUI
                 columns = new List<listItem>();
             }
         }
-        List<listItemGroup> list = new List<listItemGroup>();
 
         public class columnHeader
         {
@@ -50,6 +49,8 @@ namespace Ohana3DS_Rebirth.GUI
                 text = _text;
             }
         }
+
+        List<listItemGroup> list = new List<listItemGroup>();
         List<columnHeader> columns = new List<columnHeader>();
 
         int selectedIndex = -1;
@@ -253,7 +254,8 @@ namespace Ohana3DS_Rebirth.GUI
         /// <summary>
         ///     Erase the list.
         /// </summary>
-        public void flush()
+        /// <param name="keepColumns">Set to true to keep the columns (optional, default = false)</param>
+        public void flush(bool keepColumns = false)
         {
             for (int i = 0; i < list.Count; i++)
             {
@@ -261,11 +263,15 @@ namespace Ohana3DS_Rebirth.GUI
             }
 
             list.Clear();
-            columns.Clear();
+            if (!keepColumns)
+            {
+                columns.Clear();
+                showHeader = false;
+            }
             selectedIndex = -1;
             oldIndex = -1;
             recalcScroll();
-            showHeader = false;
+            Refresh();
         }
 
         private void recalcScroll()
@@ -285,8 +291,6 @@ namespace Ohana3DS_Rebirth.GUI
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            if (list.Count == 0) return;
-
             int totalSize = (list.Count * tileSize) + (showHeader ? headerSize : 0);
             int startY = 0;
             if (totalSize > Height) startY = -ListScroll.Value;
@@ -305,12 +309,13 @@ namespace Ohana3DS_Rebirth.GUI
                     if (columnWidth < 2) break;
 
                     Rectangle rect = new Rectangle(columnX, startY, columnWidth - 1, headerSize);
-                    e.Graphics.FillRectangle(new LinearGradientBrush(rect, Color.Transparent, Color.FromArgb(0x2f, 0x2f, 0x2f), LinearGradientMode.Vertical), rect);
-                    e.Graphics.DrawLine(new Pen(Color.FromArgb(0x1f, 0x1f, 0x1f)), new Point(columnX, startY + headerSize), new Point(columnX + (columnWidth - 2), startY + headerSize));
+                    e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(0x1f, Color.White)), rect);
 
                     Font font = new Font(Font.FontFamily, Font.Size, FontStyle.Bold);
                     int textHeight = (int)e.Graphics.MeasureString(header.text, font).Height;
-                    e.Graphics.DrawString(DrawingUtils.clampText(e.Graphics, header.text, font, columnWidth), font, new SolidBrush(ForeColor), new Point(columnX, startY + ((headerSize / 2) - (textHeight / 2))));
+                    string text = DrawingUtils.clampText(e.Graphics, header.text, font, columnWidth);
+                    Point textLocation = new Point(columnX, startY + ((headerSize / 2) - (textHeight / 2)));
+                    e.Graphics.DrawString(text, font, new SolidBrush(ForeColor), textLocation);
                     font.Dispose();
 
                     columnX += columnWidth;
@@ -336,7 +341,7 @@ namespace Ohana3DS_Rebirth.GUI
                     {
                         if (itemRect.Contains(mousePosition))
                         {
-                            e.Graphics.FillRectangle(new SolidBrush(selectedColor), new Rectangle(0, startY, Width, tileSize));
+                            e.Graphics.FillRectangle(new SolidBrush(selectedColor), itemRect);
                             selectedIndex = index;
                             if (selectedIndex != oldIndex && SelectedIndexChanged != null) SelectedIndexChanged(this, EventArgs.Empty);
                             oldIndex = selectedIndex;
@@ -345,7 +350,7 @@ namespace Ohana3DS_Rebirth.GUI
                     }
                     else
                     {
-                        if (index == selectedIndex) e.Graphics.FillRectangle(new SolidBrush(selectedColor), new Rectangle(0, startY, Width, tileSize));
+                        if (index == selectedIndex) e.Graphics.FillRectangle(new SolidBrush(selectedColor), itemRect);
                     }
 
                     //Textos e afins
@@ -354,7 +359,11 @@ namespace Ohana3DS_Rebirth.GUI
                     foreach (listItem subItem in item.columns)
                     {
                         int columnWidth;
-                        if (i == columns.Count - 1 || columns.Count == 0) columnWidth = Width - x; else columnWidth = columns[i].width;
+                        if (i == columns.Count - 1 || columns.Count == 0)
+                            columnWidth = Width - x;
+                        else
+                            columnWidth = columns[i].width;
+
                         if (columnWidth < 1) break;
 
                         if (subItem.thumbnail != null)
@@ -373,7 +382,9 @@ namespace Ohana3DS_Rebirth.GUI
                         }
 
                         int textHeight = (int)e.Graphics.MeasureString(subItem.text, Font).Height;
-                        e.Graphics.DrawString(DrawingUtils.clampText(e.Graphics, subItem.text, Font, columnWidth), Font, new SolidBrush(ForeColor), new Point(x, startY + ((tileSize / 2) - (textHeight / 2))));
+                        string text = DrawingUtils.clampText(e.Graphics, subItem.text, Font, columnWidth);
+                        Point textLocation = new Point(x, startY + ((tileSize / 2) - (textHeight / 2)));
+                        e.Graphics.DrawString(text, Font, new SolidBrush(ForeColor), textLocation);
 
                         x += columnWidth;
                         i++;
@@ -411,9 +422,10 @@ namespace Ohana3DS_Rebirth.GUI
         {
             if (ListScroll.Visible)
             {
+                int disp = Math.Max(tileSize / 2, Height / 16);
                 ListScroll.Value = e.Delta > 0
-                    ? Math.Max(ListScroll.Value - 32, 0)
-                    : Math.Min(ListScroll.Value + 32, ListScroll.MaximumScroll);
+                    ? Math.Max(ListScroll.Value - disp, 0)
+                    : Math.Min(ListScroll.Value + disp, ListScroll.MaximumScroll);
 
                 Refresh();
             }
@@ -436,6 +448,7 @@ namespace Ohana3DS_Rebirth.GUI
                 case Keys.Up: if (selectedIndex > 0) selectedIndex--; break;
                 case Keys.Down: if (selectedIndex < list.Count - 1) selectedIndex++; break;
             }
+
             if (keyData == Keys.Up || keyData == Keys.Down)
             {
                 updateScroll();

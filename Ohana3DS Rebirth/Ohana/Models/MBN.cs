@@ -112,6 +112,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                         for (int k = 0; k < face.primitiveCount; k++) face.buffer[k] = input.ReadUInt16();
                         alignWord(input);
                     }
+
                     idxDescriptors.Add(face);
                 }
 
@@ -161,7 +162,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                         vtxBuffer = currVertex.buffer;
                 }
 
-                List<RenderBase.CustomVertex> vertexBuffer = new List<RenderBase.CustomVertex>();
                 RenderBase.OMesh obj;
                 if (isBCHLoaded)
                 {
@@ -235,7 +235,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models
 
                         MeshUtils.calculateBounds(model, vertex);
                         obj.vertices.Add(vertex);
-                        vertexBuffer.Add(RenderBase.convertVertex(vertex));
                     }
 
                     faceIndex++;
@@ -245,7 +244,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                     break;
                 }
 
-                obj.renderBuffer = vertexBuffer.ToArray();
                 model.mesh.Add(obj);
             }
 
@@ -263,6 +261,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models
         private static vtxEntry getVtxDescriptor(BinaryReader input)
         {
             vtxEntry vtx = new vtxEntry();
+
             uint attributesCount = input.ReadUInt32();
             for (int j = 0; j < attributesCount; j++)
             {
@@ -297,6 +296,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                     default: throw new Exception("MBN: Unknown Vertex Attribute type, can't calculate Stride! STOP!");
                 }
             }
+
             while ((vtx.stride & 1) != 0) vtx.stride++;
             vtx.length = input.ReadUInt32();
             return vtx;

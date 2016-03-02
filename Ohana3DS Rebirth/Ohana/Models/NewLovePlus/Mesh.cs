@@ -49,7 +49,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models.NewLovePlus
                 //Index Buffer section
                 data.Seek(indexSectionOffset, SeekOrigin.Begin);
 
-                List<RenderBase.CustomVertex> vertexBuffer = new List<RenderBase.CustomVertex>();
                 RenderBase.OMesh obj = new RenderBase.OMesh();
                 if (!ignoreMaterial) obj.materialId = (ushort)materialIndex;
                 obj.isVisible = true;
@@ -124,7 +123,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models.NewLovePlus
 
                                 MeshUtils.calculateBounds(model, vertex);
                                 obj.vertices.Add(vertex);
-                                vertexBuffer.Add(RenderBase.convertVertex(vertex));
 
                                 data.Seek(position, SeekOrigin.Begin);
                             }
@@ -135,7 +133,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models.NewLovePlus
                     data.Seek(startOffset + sectionLength, SeekOrigin.Begin);
                 }
 
-                obj.renderBuffer = vertexBuffer.ToArray();
                 model.mesh.Add(obj);
             }
 

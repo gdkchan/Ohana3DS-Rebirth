@@ -1,5 +1,5 @@
-﻿using System.Text;
-using System.IO;
+﻿using System.IO;
+using System.Text;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
@@ -95,6 +95,20 @@ namespace Ohana3DS_Rebirth.Ohana
             bool sign = (value & (1 << (bits - 1))) > 0;
             if (sign) value -= (1 << bits);
             return value;
+        }
+
+        /// <summary>
+        ///     Converts a value from Little to Big or Big to Little endian.
+        /// </summary>
+        /// <param name="value">The value to be swapped</param>
+        /// <returns>The swapped value</returns>
+        public static uint endianSwap(uint value)
+        {
+            return
+                (value >> 24) |
+                ((value >> 8) & 0xff00) |
+                ((value & 0xff00) << 8) |
+                ((value & 0xff) << 24);
         }
     }
 }

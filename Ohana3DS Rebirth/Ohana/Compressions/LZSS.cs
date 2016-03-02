@@ -12,9 +12,9 @@ namespace Ohana3DS_Rebirth.Ohana.Compressions
             long inputOffset = 0;
 
             byte[] output = new byte[decodedLength];
-            long outputOffset = 0;
-
             byte[] dictionary = new byte[4096];
+
+            long outputOffset = 0;
             long dictionaryOffset = 4078;
 
             ushort mask = 0x80;

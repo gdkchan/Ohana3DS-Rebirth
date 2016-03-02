@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -44,6 +44,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseVSHostingProcess>true</UseVSHostingProcess>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>bin\x86\Release\</OutputPath>
@@ -56,6 +57,7 @@
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>true</UseVSHostingProcess>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.DirectX, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
@@ -89,12 +91,6 @@
     <Compile Include="FrmMain.Designer.cs">
       <DependentUpon>FrmMain.cs</DependentUpon>
     </Compile>
-    <Compile Include="FrmSettings.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FrmSettings.Designer.cs">
-      <DependentUpon>FrmSettings.cs</DependentUpon>
-    </Compile>
     <Compile Include="GUI\ColorManager.cs" />
     <Compile Include="GUI\DrawingUtils.cs" />
     <Compile Include="GUI\Forms\OModelExportForm.cs">
@@ -121,11 +117,12 @@
     <Compile Include="GUI\OFloatTextBox.Designer.cs">
       <DependentUpon>OFloatTextBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\OGenericAnimationControls.cs">
+    <Compile Include="GUI\Panels\IPanel.cs" />
+    <Compile Include="GUI\Panels\OAnimationsPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="GUI\OGenericAnimationControls.Designer.cs">
-      <DependentUpon>OGenericAnimationControls.cs</DependentUpon>
+    <Compile Include="GUI\Panels\OAnimationsPanel.Designer.cs">
+      <DependentUpon>OAnimationsPanel.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\ORadioButton.cs">
       <SubType>Component</SubType>
@@ -151,29 +148,11 @@
     <Compile Include="GUI\OTextBox.Designer.cs">
       <DependentUpon>OTextBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\Windows\OAnimationsWindow.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="GUI\Windows\OAnimationsWindow.Designer.cs">
-      <DependentUpon>OAnimationsWindow.cs</DependentUpon>
-    </Compile>
     <Compile Include="GUI\OButton.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="GUI\OButton.Designer.cs">
       <DependentUpon>OButton.cs</DependentUpon>
-    </Compile>
-    <Compile Include="GUI\ODock.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="GUI\ODock.Designer.cs">
-      <DependentUpon>ODock.cs</DependentUpon>
-    </Compile>
-    <Compile Include="GUI\Windows\ODockWindow.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="GUI\Windows\ODockWindow.Designer.cs">
-      <DependentUpon>ODockWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\OGroupBox.cs">
       <SubType>UserControl</SubType>
@@ -203,23 +182,29 @@
     <Compile Include="GUI\OMenuStrip.Designer.cs">
       <DependentUpon>OMenuStrip.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\Windows\OModelWindow.cs">
+    <Compile Include="GUI\Panels\OContainerPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="GUI\Windows\OModelWindow.Designer.cs">
-      <DependentUpon>OModelWindow.cs</DependentUpon>
+    <Compile Include="GUI\Panels\OContainerPanel.Designer.cs">
+      <DependentUpon>OContainerPanel.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\Windows\OSingleTextureWindow.cs">
+    <Compile Include="GUI\Panels\OModelsPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="GUI\Windows\OSingleTextureWindow.Designer.cs">
-      <DependentUpon>OSingleTextureWindow.cs</DependentUpon>
+    <Compile Include="GUI\Panels\OModelsPanel.Designer.cs">
+      <DependentUpon>OModelsPanel.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\Windows\OViewportWindow.cs">
+    <Compile Include="GUI\Panels\OImagePanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="GUI\Windows\OViewportWindow.Designer.cs">
-      <DependentUpon>OViewportWindow.cs</DependentUpon>
+    <Compile Include="GUI\Panels\OImagePanel.Designer.cs">
+      <DependentUpon>OImagePanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Panels\OViewportPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Panels\OViewportPanel.Designer.cs">
+      <DependentUpon>OViewportPanel.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\OScrollablePanel.cs">
       <SubType>UserControl</SubType>
@@ -227,29 +212,17 @@
     <Compile Include="GUI\OScrollablePanel.Designer.cs">
       <DependentUpon>OScrollablePanel.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\Windows\OTextureWindow.cs">
+    <Compile Include="GUI\Panels\OTexturesPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="GUI\Windows\OTextureWindow.Designer.cs">
-      <DependentUpon>OTextureWindow.cs</DependentUpon>
+    <Compile Include="GUI\Panels\OTexturesPanel.Designer.cs">
+      <DependentUpon>OTexturesPanel.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\OVScroll.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="GUI\OVScroll.Designer.cs">
       <DependentUpon>OVScroll.cs</DependentUpon>
-    </Compile>
-    <Compile Include="GUI\OWindowManager.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="GUI\OWindowManager.Designer.cs">
-      <DependentUpon>OWindowManager.cs</DependentUpon>
-    </Compile>
-    <Compile Include="GUI\Forms\OContainerForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="GUI\Forms\OContainerForm.Designer.cs">
-      <DependentUpon>OContainerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="OForm.cs">
       <SubType>Form</SubType>
@@ -258,6 +231,10 @@
       <DependentUpon>OForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Ohana\AnimationUtils.cs" />
+    <Compile Include="Ohana\Compressions\Yaz0.cs" />
+    <Compile Include="Ohana\Containers\DARC.cs" />
+    <Compile Include="Ohana\Containers\GARC.cs" />
+    <Compile Include="Ohana\Containers\SARC.cs" />
     <Compile Include="Ohana\Models\MeshUtils.cs" />
     <Compile Include="Ohana\Models\BCH.cs" />
     <Compile Include="Ohana\Models\CGFX.cs" />
@@ -265,7 +242,7 @@
     <Compile Include="Ohana\Compressions\LZSS_Ninty.cs" />
     <Compile Include="Ohana\Containers\DQVIIPack.cs" />
     <Compile Include="Ohana\Containers\FPT0.cs" />
-    <Compile Include="Ohana\Containers\GenericContainer.cs" />
+    <Compile Include="Ohana\Containers\OContainer.cs" />
     <Compile Include="Ohana\Containers\PkmnContainer.cs" />
     <Compile Include="Ohana\Compressions\BLZ.cs" />
     <Compile Include="Ohana\Models\GenericFormats\OBJ.cs" />
@@ -274,7 +251,11 @@
     <Compile Include="Ohana\Models\NewLovePlus\Model.cs" />
     <Compile Include="Ohana\Models\NewLovePlus\Serialization.cs" />
     <Compile Include="Ohana\Models\NLP.cs" />
+    <Compile Include="Ohana\Models\PocketMonsters\GR.cs" />
+    <Compile Include="Ohana\Models\PocketMonsters\MM.cs" />
+    <Compile Include="Ohana\Models\PocketMonsters\PC.cs" />
     <Compile Include="Ohana\PatriciaTree.cs" />
+    <Compile Include="Ohana\Textures\BCLIM.cs" />
     <Compile Include="Ohana\Textures\DMP.cs" />
     <Compile Include="Ohana\FileIO.cs" />
     <Compile Include="Ohana\Models\GenericFormats\CMDL.cs" />
@@ -287,16 +268,27 @@
     <Compile Include="Ohana\RenderBase.cs" />
     <Compile Include="Ohana\RenderEngine.cs" />
     <Compile Include="Ohana\TextureCodec.cs" />
+    <Compile Include="Ohana\Textures\PocketMonsters\AD.cs" />
+    <Compile Include="Ohana\Textures\PocketMonsters\PT.cs" />
     <Compile Include="Ohana\TextureUtils.cs" />
     <Compile Include="Ohana\Models\ZMDL.cs" />
     <Compile Include="Ohana\Textures\ZTEX.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tools\OBCHTextureReplacer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Tools\OBCHTextureReplacer.Designer.cs">
+      <DependentUpon>OBCHTextureReplacer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Tools\OSm4shModelCreator.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Tools\OSm4shModelCreator.Designer.cs">
+      <DependentUpon>OSm4shModelCreator.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="FrmMain.resx">
       <DependentUpon>FrmMain.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FrmSettings.resx">
-      <DependentUpon>FrmSettings.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Forms\OModelExportForm.resx">
       <DependentUpon>OModelExportForm.cs</DependentUpon>
@@ -307,8 +299,8 @@
     <EmbeddedResource Include="GUI\OFloatTextBox.resx">
       <DependentUpon>OFloatTextBox.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\OGenericAnimationControls.resx">
-      <DependentUpon>OGenericAnimationControls.cs</DependentUpon>
+    <EmbeddedResource Include="GUI\Panels\OAnimationsPanel.resx">
+      <DependentUpon>OAnimationsPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\ORgbaColorBox.resx">
       <DependentUpon>ORgbaColorBox.cs</DependentUpon>
@@ -316,38 +308,29 @@
     <EmbeddedResource Include="GUI\OTextBox.resx">
       <DependentUpon>OTextBox.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\Windows\OAnimationsWindow.resx">
-      <DependentUpon>OAnimationsWindow.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GUI\ODock.resx">
-      <DependentUpon>ODock.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GUI\Windows\ODockWindow.resx">
-      <DependentUpon>ODockWindow.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="GUI\OGroupBox.resx">
       <DependentUpon>OGroupBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\OList.resx">
       <DependentUpon>OList.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\Windows\OModelWindow.resx">
-      <DependentUpon>OModelWindow.cs</DependentUpon>
+    <EmbeddedResource Include="GUI\Panels\OContainerPanel.resx">
+      <DependentUpon>OContainerPanel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\Windows\OSingleTextureWindow.resx">
-      <DependentUpon>OSingleTextureWindow.cs</DependentUpon>
+    <EmbeddedResource Include="GUI\Panels\OModelsPanel.resx">
+      <DependentUpon>OModelsPanel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\Windows\OViewportWindow.resx">
-      <DependentUpon>OViewportWindow.cs</DependentUpon>
+    <EmbeddedResource Include="GUI\Panels\OImagePanel.resx">
+      <DependentUpon>OImagePanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Panels\OViewportPanel.resx">
+      <DependentUpon>OViewportPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\OScrollablePanel.resx">
       <DependentUpon>OScrollablePanel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\Windows\OTextureWindow.resx">
-      <DependentUpon>OTextureWindow.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GUI\Forms\OContainerForm.resx">
-      <DependentUpon>OContainerForm.cs</DependentUpon>
+    <EmbeddedResource Include="GUI\Panels\OTexturesPanel.resx">
+      <DependentUpon>OTexturesPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="OForm.resx">
       <DependentUpon>OForm.cs</DependentUpon>
@@ -362,7 +345,15 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Include="app.config" />
+    <EmbeddedResource Include="Tools\OBCHTextureReplacer.resx">
+      <DependentUpon>OBCHTextureReplacer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Tools\OSm4shModelCreator.resx">
+      <DependentUpon>OSm4shModelCreator.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -377,129 +368,98 @@
     <None Include="Resources\App.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\hover_red.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\hover_maximize.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\hover_minimize.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\btnmaximize.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\btnnormal.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\hover_normal.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_close.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_dockable.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_locked.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_wm_close.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_wm_up_arrow.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_ticked.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_wm_scroll_left.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_wm_scroll_right.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\OFragmentShader.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_collapse.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_expand.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_arrow_down.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_arrow_up.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_edit.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_trash.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_big_next.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_big_play.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_big_previous.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_big_stop.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_big_pause.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\ui_knob.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\icn_bottom_scrn.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_top_scrn.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_camera.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icn_lightbulb.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\ui_alpha_grid.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\ui_down.png" />
+    <None Include="Resources\ui_icon_minus.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\ui_up.png" />
+    <None Include="Resources\ui_icon_plus.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\icn_open.png" />
+    <None Include="Resources\ui_icon_upload.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\icn_w_animations.png" />
+    <None Include="Resources\ui_icon_arrowdown.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\icn_w_models.png" />
+    <None Include="Resources\ui_icon_arrowup.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\icn_w_textures.png" />
+    <None Include="Resources\ui_icon_delete.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\icn_w_viewport.png" />
+    <None Include="Resources\ui_icon_download.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\icn_gear.png" />
+    <None Include="Resources\ui_icon_trash.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\icn_info.png" />
+    <None Include="Resources\ui_icon_imagedelete.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="Resources\ui_icon_videodelete.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_arrowleft.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_arrowright.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_pause.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_play.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_stop.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_close.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_closehover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_maximize.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_maximizehover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_minimizehover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_unmaximize.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_unmaximizehover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_block.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_tick.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_folder.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_minimize.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_floppy.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_imageed.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

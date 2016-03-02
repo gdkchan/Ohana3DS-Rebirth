@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Drawing;
+using System.IO;
 
 namespace Ohana3DS_Rebirth.Ohana.Models.PICA200
 {
@@ -637,7 +637,8 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PICA200
         public Color getTexUnit2BorderColor()
         {
             uint rgba = getParameter(PICACommand.texUnit2BorderColor);
-            return Color.FromArgb((byte)(rgba >> 24),
+            return Color.FromArgb(
+                (byte)(rgba >> 24),
                 (byte)(rgba & 0xff),
                 (byte)((rgba >> 8) & 0xff),
                 (byte)((rgba >> 16) & 0xff));
