@@ -68,8 +68,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
             public static bool operator ==(OVector2 a, OVector2 b)
             {
-                return a.x == b.x &&
-                    a.y == b.y;
+                return a.x == b.x && a.y == b.y;
             }
 
             public static bool operator !=(OVector2 a, OVector2 b)
@@ -162,11 +161,14 @@ namespace Ohana3DS_Rebirth.Ohana
                     z.GetHashCode();
             }
 
+            public static OVector3 operator *(OVector3 a, OVector3 b)
+            {
+                return new OVector3(a.x * b.x, a.y * b.y, a.z * b.z);
+            }
+
             public static bool operator ==(OVector3 a, OVector3 b)
             {
-                return a.x == b.x &&
-                    a.y == b.y &&
-                    a.z == b.z;
+                return a.x == b.x && a.y == b.y && a.z == b.z;
             }
 
             public static bool operator !=(OVector3 a, OVector3 b)
@@ -252,10 +254,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
             public static bool operator ==(OVector4 a, OVector4 b)
             {
-                return a.x == b.x &&
-                    a.y == b.y &&
-                    a.z == b.z &&
-                    a.w == b.w;
+                return a.x == b.x && a.y == b.y && a.z == b.z && a.w == b.w;
             }
 
             public static bool operator !=(OVector4 a, OVector4 b)
@@ -452,7 +451,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             opMatrix[m, N + 4] = 0;
                     }
                 }
-                
+
                 for (int k = 0; k < 4; k++)
                 {
                     if (opMatrix[k, k] == 0)
@@ -516,8 +515,8 @@ namespace Ohana3DS_Rebirth.Ohana
             {
                 OMatrix output = new OMatrix
                 {
-                    M11 = scale.x, 
-                    M22 = scale.y, 
+                    M11 = scale.x,
+                    M22 = scale.y,
                     M33 = scale.z
                 };
 
@@ -549,8 +548,8 @@ namespace Ohana3DS_Rebirth.Ohana
             {
                 OMatrix output = new OMatrix
                 {
-                    M11 = scale, 
-                    M22 = scale, 
+                    M11 = scale,
+                    M22 = scale,
                     M33 = scale
                 };
 
@@ -620,8 +619,8 @@ namespace Ohana3DS_Rebirth.Ohana
             {
                 OMatrix output = new OMatrix
                 {
-                    M41 = position.x, 
-                    M42 = position.y, 
+                    M41 = position.x,
+                    M42 = position.y,
                     M43 = position.z
                 };
 
@@ -1081,7 +1080,7 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public bool isTestEnabled;
             public OTestFunction testFunction;
-            public uint testReference; 
+            public uint testReference;
         }
 
         /// <summary>
@@ -1160,7 +1159,7 @@ namespace Ohana3DS_Rebirth.Ohana
             orReverse = 0xe,
             orInverted = 0xf
         }
-        
+
         /// <summary>
         ///     Alpha blending functions.
         /// </summary>
@@ -1208,7 +1207,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public OBlendEquation alphaBlendEquation;
             public Color blendColor;
         }
-        
+
         /// <summary>
         ///     Stencil operation operation.
         /// </summary>
@@ -1807,11 +1806,13 @@ namespace Ohana3DS_Rebirth.Ohana
         public class OSkeletalAnimationBone
         {
             public string name;
+
             public OAnimationKeyFrameGroup rotationX, rotationY, rotationZ;
             public OAnimationKeyFrameGroup translationX, translationY, translationZ;
 
             public OAnimationFrame rotationQuaternion;
             public OAnimationFrame translation;
+            public OAnimationFrame scale;
             public bool isFrameFormat;
 
             public List<OMatrix> transform;
@@ -1822,12 +1823,14 @@ namespace Ohana3DS_Rebirth.Ohana
                 rotationX = new OAnimationKeyFrameGroup();
                 rotationY = new OAnimationKeyFrameGroup();
                 rotationZ = new OAnimationKeyFrameGroup();
+
                 translationX = new OAnimationKeyFrameGroup();
                 translationY = new OAnimationKeyFrameGroup();
                 translationZ = new OAnimationKeyFrameGroup();
 
                 rotationQuaternion = new OAnimationFrame();
                 translation = new OAnimationFrame();
+                scale = new OAnimationFrame();
 
                 transform = new List<OMatrix>();
             }
@@ -2048,7 +2051,7 @@ namespace Ohana3DS_Rebirth.Ohana
             puAspectRatio = 0xd,
             puHeight = 0xe
         }
-        
+
         /// <summary>
         ///     Camera animation data.
         /// </summary>
@@ -2158,7 +2161,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public OAnimationListBase cameraAnimation;
             public OAnimationListBase fogAnimation;
             public List<OScene> scene;
-            
+
             public OModelGroup()
             {
                 model = new List<OModel>();

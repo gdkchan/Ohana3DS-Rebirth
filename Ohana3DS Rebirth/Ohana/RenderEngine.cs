@@ -614,6 +614,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         newBone.parentId = mdl.skeleton[index].parentId;
                         newBone.rotationQuaternion = getQuaternion(mdl.skeleton[index].rotation);
                         newBone.translation = new RenderBase.OVector3(mdl.skeleton[index].translation);
+                        newBone.scale = new RenderBase.OVector3(1, 1, 1);
                         foreach (RenderBase.OSkeletalAnimationBone b in bone)
                         {
                             if (b.name == mdl.skeleton[index].name)
@@ -628,6 +629,18 @@ namespace Ohana3DS_Rebirth.Ohana
                                     float fl = (float)Math.Floor(ctrlSA.Frame);
                                     float fr = (float)Math.Ceiling(ctrlSA.Frame);
                                     float mu = ctrlSA.Frame - fl;
+
+                                    if (b.scale.exists)
+                                    {
+                                        int il = Math.Min((int)fl, b.scale.vector.Count - 1);
+                                        int ir = Math.Min((int)fr, b.scale.vector.Count - 1);
+
+                                        RenderBase.OVector4 sl = b.scale.vector[il];
+                                        RenderBase.OVector4 sr = b.scale.vector[ir];
+                                        RenderBase.OVector4 s = AnimationUtils.interpolateLinear(sl, sr, mu);
+
+                                        newBone.scale = new RenderBase.OVector3(s.x, s.y, s.z);
+                                    }
 
                                     if (b.rotationQuaternion.exists)
                                     {
@@ -648,6 +661,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                         RenderBase.OVector4 tl = b.translation.vector[il];
                                         RenderBase.OVector4 tr = b.translation.vector[ir];
                                         RenderBase.OVector4 t = AnimationUtils.interpolateLinear(tl, tr, mu);
+
                                         newBone.translation = new RenderBase.OVector3(t.x, t.y, t.z);
 
                                         newBone.translation.x *= mdl.skeleton[index].absoluteScale.x;
@@ -721,7 +735,24 @@ namespace Ohana3DS_Rebirth.Ohana
                         if (frameAnimationSkeleton[index].hasTransform)
                             animationSkeletonTransform[index] = getMatrix(frameAnimationSkeleton[index].transform);
                         else
-                            transformAnimationSkeleton(frameAnimationSkeleton, index, ref animationSkeletonTransform[index]);
+                        {
+                            animationSkeletonTransform[index] *= Matrix.Scaling(
+                                frameAnimationSkeleton[index].scale.x,
+                                frameAnimationSkeleton[index].scale.y,
+                                frameAnimationSkeleton[index].scale.z);
+
+                            int id = index;
+                            while (id > -1)
+                            {
+                                RenderBase.OVector3 t = new RenderBase.OVector3(frameAnimationSkeleton[id].translation);
+                                if (frameAnimationSkeleton[id].parentId > -1) t *= frameAnimationSkeleton[frameAnimationSkeleton[id].parentId].scale;
+
+                                animationSkeletonTransform[index] *= Matrix.RotationQuaternion(frameAnimationSkeleton[id].rotationQuaternion);
+                                animationSkeletonTransform[index] *= Matrix.Translation(t.x, t.y, t.z);
+
+                                id = frameAnimationSkeleton[id].parentId;
+                            }
+                        }
 
                         animationSkeletonTransform[index] = Matrix.Invert(skeletonTransform[index]) * animationSkeletonTransform[index];
                     }
@@ -1441,24 +1472,6 @@ namespace Ohana3DS_Rebirth.Ohana
                 skeleton[index].translation.z);
 
             if (skeleton[index].parentId > -1) transformSkeleton(skeleton, skeleton[index].parentId, ref target);
-        }
-
-        /// <summary>
-        ///     Transforms a Skeleton from relative to absolute positions.
-        ///     Uses Quaternion for rotations.
-        /// </summary>
-        /// <param name="skeleton">The animated skeleton</param>
-        /// <param name="index">Index of the bone to convert</param>
-        /// <param name="target">Target matrix to save bone transformation</param>
-        private void transformAnimationSkeleton(List<OAnimationBone> skeleton, int index, ref Matrix target)
-        {
-            target *= Matrix.RotationQuaternion(skeleton[index].rotationQuaternion);
-            target *= Matrix.Translation(
-                skeleton[index].translation.x,
-                skeleton[index].translation.y,
-                skeleton[index].translation.z);
-
-            if (skeleton[index].parentId > -1) transformAnimationSkeleton(skeleton, skeleton[index].parentId, ref target);
         }
 
         /// <summary>

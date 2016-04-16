@@ -364,16 +364,57 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                             break;
                         case cgfxSegmentType.transformQuaternion:
                             bone.isFrameFormat = true;
+
                             uint rotationOffset = getRelativeOffset(input);
                             uint translationOffset = getRelativeOffset(input);
                             uint scaleOffset = getRelativeOffset(input);
 
+                            if ((boneFlags & 0x20) == 0)
+                            {
+                                bone.scale.exists = true;
+
+                                data.Seek(scaleOffset, SeekOrigin.Begin);
+                                bone.scale.startFrame = input.ReadSingle();
+                                bone.scale.endFrame = input.ReadSingle();
+
+                                input.ReadUInt32();
+                                uint constantFlags = input.ReadUInt32();
+
+                                if ((constantFlags & 1) > 0)
+                                {
+                                    bone.scale.vector.Add(new RenderBase.OVector4(
+                                        input.ReadSingle(),
+                                        input.ReadSingle(),
+                                        input.ReadSingle(),
+                                        0));
+                                }
+                                else
+                                {
+                                    uint scaleEntries = (uint)(bone.scale.endFrame - bone.scale.startFrame);
+
+                                    for (int j = 0; j < scaleEntries; j++)
+                                    {
+                                        bone.scale.vector.Add(new RenderBase.OVector4(
+                                            input.ReadSingle(),
+                                            input.ReadSingle(),
+                                            input.ReadSingle(),
+                                            0));
+
+                                        input.ReadUInt32();
+                                    }
+                                }
+                            }
+                            else
+                                data.Seek(4, SeekOrigin.Current);
+
                             if ((boneFlags & 0x10) == 0)
                             {
                                 bone.rotationQuaternion.exists = true;
+
                                 data.Seek(rotationOffset, SeekOrigin.Begin);
                                 bone.rotationQuaternion.startFrame = input.ReadSingle();
                                 bone.rotationQuaternion.endFrame = input.ReadSingle();
+
                                 input.ReadUInt32();
                                 uint constantFlags = input.ReadUInt32();
 
@@ -396,7 +437,8 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                                             input.ReadSingle(),
                                             input.ReadSingle(),
                                             input.ReadSingle()));
-                                        uint flags = input.ReadUInt32();
+
+                                        input.ReadUInt32();
                                     }
                                 }
                             }
@@ -406,9 +448,11 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                             if ((boneFlags & 8) == 0)
                             {
                                 bone.translation.exists = true;
+
                                 data.Seek(translationOffset, SeekOrigin.Begin);
                                 bone.translation.startFrame = input.ReadSingle();
                                 bone.translation.endFrame = input.ReadSingle();
+
                                 input.ReadUInt32();
                                 uint constantFlags = input.ReadUInt32();
 
@@ -422,7 +466,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                                 }
                                 else
                                 {
-                                    uint translationEntries = (uint)(bone.rotationQuaternion.endFrame - bone.rotationQuaternion.startFrame);
+                                    uint translationEntries = (uint)(bone.translation.endFrame - bone.translation.startFrame);
 
                                     for (int j = 0; j < translationEntries; j++)
                                     {
@@ -431,7 +475,8 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                                             input.ReadSingle(),
                                             input.ReadSingle(),
                                             0));
-                                        uint flags = input.ReadUInt32();
+
+                                        input.ReadUInt32();
                                     }
                                 }
                             }

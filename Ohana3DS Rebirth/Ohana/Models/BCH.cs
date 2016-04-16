@@ -347,13 +347,17 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                 uint dataOffset = input.ReadUInt32();
                 data.Seek(dataOffset, SeekOrigin.Begin);
 
-                uint textureCommandsOffset = input.ReadUInt32();
-                uint textureCommandsWordCount = input.ReadUInt32();
-                data.Seek(0x14, SeekOrigin.Current);
+                uint texUnit0CommandsOffset = input.ReadUInt32();
+                uint texUnit0CommandsWordCount = input.ReadUInt32();
+                uint texUnit1CommandsOffset = input.ReadUInt32();
+                uint texUnit1CommandsWordCount = input.ReadUInt32();
+                uint texUnit2CommandsOffset = input.ReadUInt32();
+                uint texUnit2CommandsWordCount = input.ReadUInt32();
+                input.ReadUInt32();
                 string textureName = readString(input);
 
-                data.Seek(textureCommandsOffset, SeekOrigin.Begin);
-                PICACommandReader textureCommands = new PICACommandReader(data, textureCommandsWordCount);
+                data.Seek(texUnit0CommandsOffset, SeekOrigin.Begin);
+                PICACommandReader textureCommands = new PICACommandReader(data, texUnit0CommandsWordCount);
 
                 //Note: It have textures for the 3 texture units.
                 //The other texture units are used with textureCoordinate1 and 2.
@@ -604,7 +608,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                     bone.name = readString(input);
                     uint animationTypeFlags = input.ReadUInt32();
                     uint flags = input.ReadUInt32();
-                    input.ReadUInt32();
 
                     RenderBase.OSegmentType segmentType = (RenderBase.OSegmentType)((animationTypeFlags >> 16) & 0xf);
                     switch (segmentType)
@@ -673,9 +676,43 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                         case RenderBase.OSegmentType.transformQuaternion:
                             bone.isFrameFormat = true;
 
-                            long originalPos = data.Position;
+                            uint scaleOffset = input.ReadUInt32();
                             uint rotationOffset = input.ReadUInt32();
                             uint translationOffset = input.ReadUInt32();
+
+                            if ((flags & 0x20) == 0)
+                            {
+                                bone.scale.exists = true;
+                                data.Seek(scaleOffset, SeekOrigin.Begin);
+
+                                if ((flags & 4) > 0)
+                                {
+                                    bone.scale.vector.Add(new RenderBase.OVector4(
+                                        input.ReadSingle(),
+                                        input.ReadSingle(),
+                                        input.ReadSingle(),
+                                        0));
+                                }
+                                else
+                                {
+                                    bone.scale.startFrame = input.ReadSingle();
+                                    bone.scale.endFrame = input.ReadSingle();
+
+                                    uint scaleFlags = input.ReadUInt32();
+                                    uint scaleDataOffset = input.ReadUInt32();
+                                    uint scaleEntries = input.ReadUInt32();
+
+                                    data.Seek(scaleDataOffset, SeekOrigin.Begin);
+                                    for (int j = 0; j < scaleEntries; j++)
+                                    {
+                                        bone.scale.vector.Add(new RenderBase.OVector4(
+                                            input.ReadSingle(),
+                                            input.ReadSingle(),
+                                            input.ReadSingle(),
+                                            0));
+                                    }
+                                }
+                            }
 
                             if ((flags & 0x10) == 0)
                             {
@@ -749,6 +786,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                         case RenderBase.OSegmentType.transformMatrix:
                             bone.isFullBakedFormat = true;
 
+                            input.ReadUInt32();
                             input.ReadUInt32();
                             uint matrixOffset = input.ReadUInt32();
                             uint entries = input.ReadUInt32();
@@ -1632,7 +1670,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                         else
                         {
                             data.Seek(facesTableOffset + f * 8, SeekOrigin.Begin);
-                            
+
                             idxBufferOffset = input.ReadUInt32();
                             idxBufferFormat = PICACommand.indexBufferFormat.unsignedShort;
                             idxBufferTotalVertices = input.ReadUInt32();
@@ -1802,7 +1840,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                             obj.boundingBox.Add(bBox);
                         }
                     }
-    
+
                     model.mesh.Add(obj);
                 }
 
@@ -1872,6 +1910,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models
             target *= RenderBase.OMatrix.rotateY(skeleton[index].rotation.y);
             target *= RenderBase.OMatrix.rotateZ(skeleton[index].rotation.z);
             target *= RenderBase.OMatrix.translate(skeleton[index].translation);
+
             if (skeleton[index].parentId > -1) transformSkeleton(skeleton, skeleton[index].parentId, ref target);
         }
 
@@ -1953,7 +1992,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models
             uint entries = segmentFlags >> 16;
             float valueScale = input.ReadSingle();
             float valueOffset = input.ReadSingle();
-            float frameScale  = input.ReadSingle();
+            float frameScale = input.ReadSingle();
             float frameOffset = input.ReadSingle();
 
             uint offset = input.ReadUInt32();
