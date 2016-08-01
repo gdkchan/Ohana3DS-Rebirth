@@ -65,29 +65,51 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
                         newBone.translation = new RenderBase.OVector3(mdl.skeleton[index].translation);
                         foreach (RenderBase.OSkeletalAnimationBone b in ((RenderBase.OSkeletalAnimation)model.skeletalAnimation.list[skeletalAnimationIndex]).bone)
                         {
-                            if (b.isFrameFormat || b.isFullBakedFormat) error = true;
-                            if (b.name == mdl.skeleton[index].name && !b.isFrameFormat && !b.isFullBakedFormat)
+                            if (b.isFullBakedFormat) error = true;
+
+                            if (b.name == mdl.skeleton[index].name && !b.isFullBakedFormat)
                             {
-                                if (b.rotationX.exists) newBone.rotation.x = AnimationUtils.getKey(b.rotationX, frame);
-                                if (b.rotationY.exists) newBone.rotation.y = AnimationUtils.getKey(b.rotationY, frame);
-                                if (b.rotationZ.exists) newBone.rotation.z = AnimationUtils.getKey(b.rotationZ, frame);
-
-                                if (b.translationX.exists)
+                                if (b.isFrameFormat)
                                 {
-                                    newBone.translation.x = AnimationUtils.getKey(b.translationX, frame);
-                                    newBone.translation.x *= mdl.skeleton[index].absoluteScale.x;
+                                    if (b.translation.exists)
+                                    {
+                                        int tFrame = Math.Min((int)frame, b.translation.vector.Count - 1);
+
+                                        newBone.translation.x = b.translation.vector[tFrame].x;
+                                        newBone.translation.y = b.translation.vector[tFrame].y;
+                                        newBone.translation.z = b.translation.vector[tFrame].z;
+                                    }
+
+                                    if (b.rotationQuaternion.exists)
+                                    {
+                                        int qFrame = Math.Min((int)frame, b.rotationQuaternion.vector.Count - 1);
+
+                                        newBone.rotation = b.rotationQuaternion.vector[qFrame].toEuler();
+                                    }
                                 }
-
-                                if (b.translationY.exists)
+                                else
                                 {
-                                    newBone.translation.y = AnimationUtils.getKey(b.translationY, frame);
-                                    newBone.translation.y *= mdl.skeleton[index].absoluteScale.y;
-                                }
+                                    if (b.translationX.exists)
+                                    {
+                                        newBone.translation.x = AnimationUtils.getKey(b.translationX, frame);
+                                        newBone.translation.x *= mdl.skeleton[index].absoluteScale.x;
+                                    }
 
-                                if (b.translationZ.exists)
-                                {
-                                    newBone.translation.z = AnimationUtils.getKey(b.translationZ, frame);
-                                    newBone.translation.z *= mdl.skeleton[index].absoluteScale.z;
+                                    if (b.translationY.exists)
+                                    {
+                                        newBone.translation.y = AnimationUtils.getKey(b.translationY, frame);
+                                        newBone.translation.y *= mdl.skeleton[index].absoluteScale.y;
+                                    }
+
+                                    if (b.translationZ.exists)
+                                    {
+                                        newBone.translation.z = AnimationUtils.getKey(b.translationZ, frame);
+                                        newBone.translation.z *= mdl.skeleton[index].absoluteScale.z;
+                                    }
+
+                                    if (b.rotationX.exists) newBone.rotation.x = AnimationUtils.getKey(b.rotationX, frame);
+                                    if (b.rotationY.exists) newBone.rotation.y = AnimationUtils.getKey(b.rotationY, frame);
+                                    if (b.rotationZ.exists) newBone.rotation.z = AnimationUtils.getKey(b.rotationZ, frame);
                                 }
 
                                 break;

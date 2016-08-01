@@ -238,6 +238,21 @@ namespace Ohana3DS_Rebirth.Ohana
                 output.Write(w);
             }
 
+            /// <summary>
+            ///     Converts the Quaternion representation on this Vector to the Euler representation.
+            /// </summary>
+            /// <returns>The Euler X, Y and Z rotation angles in radians</returns>
+            public OVector3 toEuler()
+            {
+                OVector3 output = new OVector3();
+
+                output.z = (float)Math.Atan2(2 * (x * y + z * w), 1 - 2 * (y * y + z * z));
+                output.y = -(float)Math.Asin(2 * (x * z - w * y));
+                output.x = (float)Math.Atan2(2 * (x * w + y * z), -(1 - 2 * (z * z + w * w)));
+
+                return output;
+            }
+
             public override bool Equals(object obj)
             {
                 if (obj == null) return false;
