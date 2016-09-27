@@ -84,9 +84,9 @@ namespace Ohana3DS_Rebirth
             FileIO.file file = FileIO.load(fileName);
             currentFormat = file.type;
 
-            if (file.type != FileIO.formatType.unsupported)
+            if (currentFormat != FileIO.formatType.unsupported)
             {
-                switch (file.type)
+                switch (currentFormat)
                 {
                     case FileIO.formatType.container: currentPanel = new OContainerPanel(); break;
                     case FileIO.formatType.image: currentPanel = new OImagePanel(); break;
@@ -135,6 +135,12 @@ namespace Ohana3DS_Rebirth
                 openDlg.Filter = "All files|*.*";
                 if (openDlg.ShowDialog() == DialogResult.OK) open(openDlg.FileName);
             }
+        }
+
+        //Exit
+
+        private void MenuExit_Click(object sender, EventArgs e) {
+            //TODO clear maybe?
         }
 
         /*
@@ -226,6 +232,10 @@ namespace Ohana3DS_Rebirth
         }
 
         private void MenuViewShowInformation_Click(object sender, EventArgs e)
+        {
+            ShowInformation();
+        }
+        private void ShowInformation()
         {
             MenuViewShowInformation.Checked = !MenuViewShowInformation.Checked;
             Settings.Default.reShowInformation = MenuViewShowInformation.Checked;
@@ -347,5 +357,20 @@ namespace Ohana3DS_Rebirth
             MessageBox.Show("Ohana3DS Rebirth made by gdkchan.", "About", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         #endregion
+
+        //Global keylistener
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
+            if (currentPanel != null) {
+                switch (keyData) {
+                    case Keys.I:
+                        ShowInformation();
+                        break;
+                }
+                return true;
+            }
+
+            // Call the base class
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
     }
 }

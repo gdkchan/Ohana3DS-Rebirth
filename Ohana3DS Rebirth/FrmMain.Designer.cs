@@ -116,6 +116,7 @@
             this.MenuExit.Name = "MenuExit";
             this.MenuExit.Size = new System.Drawing.Size(103, 22);
             this.MenuExit.Text = "&Exit";
+            this.MenuExit.Click += new System.EventHandler(this.MenuExit_Click);
             // 
             // MenuOptions
             // 
@@ -136,7 +137,7 @@
             this.MenuViewShowSidebar,
             this.MenuViewWireframeMode});
             this.MenuViewport.Name = "MenuViewport";
-            this.MenuViewport.Size = new System.Drawing.Size(121, 22);
+            this.MenuViewport.Size = new System.Drawing.Size(152, 22);
             this.MenuViewport.Text = "&Viewport";
             // 
             // MenuViewAA
@@ -154,35 +155,35 @@
             // MenuViewAANone
             // 
             this.MenuViewAANone.Name = "MenuViewAANone";
-            this.MenuViewAANone.Size = new System.Drawing.Size(103, 22);
+            this.MenuViewAANone.Size = new System.Drawing.Size(152, 22);
             this.MenuViewAANone.Text = "&None";
             this.MenuViewAANone.Click += new System.EventHandler(this.MenuViewAANone_Click);
             // 
             // MenuViewAA2x
             // 
             this.MenuViewAA2x.Name = "MenuViewAA2x";
-            this.MenuViewAA2x.Size = new System.Drawing.Size(103, 22);
+            this.MenuViewAA2x.Size = new System.Drawing.Size(152, 22);
             this.MenuViewAA2x.Text = "&2x";
             this.MenuViewAA2x.Click += new System.EventHandler(this.MenuViewAA2x_Click);
             // 
             // MenuViewAA4x
             // 
             this.MenuViewAA4x.Name = "MenuViewAA4x";
-            this.MenuViewAA4x.Size = new System.Drawing.Size(103, 22);
+            this.MenuViewAA4x.Size = new System.Drawing.Size(152, 22);
             this.MenuViewAA4x.Text = "&4x";
             this.MenuViewAA4x.Click += new System.EventHandler(this.MenuViewAA4x_Click);
             // 
             // MenuViewAA8x
             // 
             this.MenuViewAA8x.Name = "MenuViewAA8x";
-            this.MenuViewAA8x.Size = new System.Drawing.Size(103, 22);
+            this.MenuViewAA8x.Size = new System.Drawing.Size(152, 22);
             this.MenuViewAA8x.Text = "&8x";
             this.MenuViewAA8x.Click += new System.EventHandler(this.MenuViewAA8x_Click);
             // 
             // MenuViewAA16x
             // 
             this.MenuViewAA16x.Name = "MenuViewAA16x";
-            this.MenuViewAA16x.Size = new System.Drawing.Size(103, 22);
+            this.MenuViewAA16x.Size = new System.Drawing.Size(152, 22);
             this.MenuViewAA16x.Text = "&16x";
             this.MenuViewAA16x.Click += new System.EventHandler(this.MenuViewAA16x_Click);
             // 
@@ -324,7 +325,7 @@
             this.MenuToolBCHTextureReplace,
             this.MenuToolSm4shModelCreator});
             this.MenuTools.Name = "MenuTools";
-            this.MenuTools.Size = new System.Drawing.Size(47, 20);
+            this.MenuTools.Size = new System.Drawing.Size(48, 20);
             this.MenuTools.Text = "&Tools";
             // 
             // MenuToolBCHTextureReplace
@@ -352,7 +353,7 @@
             // MenuAbout
             // 
             this.MenuAbout.Name = "MenuAbout";
-            this.MenuAbout.Size = new System.Drawing.Size(152, 22);
+            this.MenuAbout.Size = new System.Drawing.Size(107, 22);
             this.MenuAbout.Text = "&About";
             this.MenuAbout.Click += new System.EventHandler(this.MenuAbout_Click);
             // 

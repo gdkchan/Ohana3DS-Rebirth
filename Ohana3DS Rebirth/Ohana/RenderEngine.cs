@@ -1146,7 +1146,7 @@ namespace Ohana3DS_Rebirth.Ohana
             device.EndScene();
             device.Present();
 
-            ctrlSA.advanceFrame();
+            ctrlSA.advanceFrame(); //TODO Fix me. StackOverflow occurs here!
             ctrlMA.advanceFrame();
             ctrlVA.advanceFrame();
         }
