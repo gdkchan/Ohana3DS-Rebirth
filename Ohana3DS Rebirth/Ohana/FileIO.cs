@@ -8,8 +8,9 @@ using Ohana3DS_Rebirth.GUI.Forms;
 using Ohana3DS_Rebirth.Ohana.Models;
 using Ohana3DS_Rebirth.Ohana.Models.GenericFormats;
 using Ohana3DS_Rebirth.Ohana.Models.PocketMonsters;
-using Ohana3DS_Rebirth.Ohana.Textures;
 using Ohana3DS_Rebirth.Ohana.Textures.PocketMonsters;
+using Ohana3DS_Rebirth.Ohana.Animations.PocketMonsters;
+using Ohana3DS_Rebirth.Ohana.Textures;
 using Ohana3DS_Rebirth.Ohana.Compressions;
 using Ohana3DS_Rebirth.Ohana.Containers;
 
@@ -21,11 +22,12 @@ namespace Ohana3DS_Rebirth.Ohana
         public enum formatType : uint
         {
             unsupported = 0,
-            compression = 1,
-            container = 2,
-            image = 4,
-            model = 8,
-            texture = 0x10,
+            compression = 1 << 0,
+            container = 1 << 1,
+            image = 1 << 2,
+            model = 1 << 3,
+            texture = 1 << 4,
+            anims = 1 << 5,
             all = 0xffffffff
         }
 
@@ -120,6 +122,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 case "MM": return new file { data = MM.load(data), type = formatType.model };
                 case "PC": return new file { data = PC.load(data), type = formatType.model };
                 case "PT": return new file { data = PT.load(data), type = formatType.texture };
+                case "BS": return new file { data = BS.load(data), type = formatType.anims };
             }
 
             //Compressions
@@ -173,6 +176,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     case "PO": return ".po";
                     case "PT": return ".pt";
                     case "TM": return ".tm";
+                    case "BS": return ".bs";
                 }
             }
 
