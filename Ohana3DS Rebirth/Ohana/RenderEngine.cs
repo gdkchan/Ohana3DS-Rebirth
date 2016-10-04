@@ -65,8 +65,8 @@ namespace Ohana3DS_Rebirth.Ohana
 
         private bool fragmentShaderMode;
 
-        const string infoHUDFontFamily = "Segoe UI";
-        const int infoHUDFontSize = 12;
+        const string infoHUDFontFamily = "Times New Roman";
+        const int infoHUDFontSize = 14;
 
         public class animationControl
         {
@@ -1140,7 +1140,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 if (ctrlMA.CurrentAnimation > -1) info.AppendLine("M. Frame: " + ctrlMA.CurrentFrameInfo);
                 if (ctrlVA.CurrentAnimation > -1) info.AppendLine("V. Frame: " + ctrlVA.CurrentFrameInfo);
 
-                drawText(info.ToString(), 256, 192);
+                drawText(info.ToString(), 128, 128);
             }
 
             device.EndScene();

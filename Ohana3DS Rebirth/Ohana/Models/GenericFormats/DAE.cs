@@ -991,10 +991,10 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
             scene.url = "#" + vs.id;
             dae.scene.Add(scene);
 
-            XmlWriterSettings settings = new XmlWriterSettings
-            {
+            XmlWriterSettings settings = new XmlWriterSettings {
                 Encoding = Encoding.UTF8,
-                Indent = true
+                Indent = true,
+                IndentChars = "\t"
             };
 
             XmlSerializerNamespaces ns = new XmlSerializerNamespaces();

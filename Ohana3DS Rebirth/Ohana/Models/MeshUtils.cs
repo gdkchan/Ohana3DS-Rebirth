@@ -118,5 +118,13 @@ namespace Ohana3DS_Rebirth.Ohana.Models
 
             return output;
         }
+
+        public static uint getOptimizedVertCount(List<RenderBase.OMesh> om) {
+            uint cnt = 0;
+            foreach(var v in om) {
+                cnt += (uint)optimizeMesh(v).vertices.Count;
+            }
+            return cnt;
+        }
     }
 }

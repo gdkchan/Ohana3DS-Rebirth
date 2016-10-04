@@ -708,7 +708,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public ushort renderPriority;
             public string name;
             public bool isVisible;
-            public List<OOrientedBoundingBox> boundingBox;
+            public OOrientedBoundingBox boundingBox;
 
             public bool hasNormal;
             public bool hasTangent;
@@ -720,7 +720,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public OMesh()
             {
                 vertices = new List<OVertex>();
-                boundingBox = new List<OOrientedBoundingBox>();
+                boundingBox = new OOrientedBoundingBox();
                 isVisible = true;
             }
         }
@@ -1432,7 +1432,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 get
                 {
                     int count = 0;
-                    foreach (RenderBase.OMesh obj in mesh) count += obj.vertices.Count;
+                    foreach (RenderBase.OMesh obj in mesh) count += obj.vertices.Count; //TODO Ommit duplicate verts
                     return count;
                 }
             }
