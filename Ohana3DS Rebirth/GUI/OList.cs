@@ -131,10 +131,10 @@ namespace Ohana3DS_Rebirth.GUI
         ///     Adds a item to the list. At least one column is necessary.
         /// </summary>
         /// <param name="item">The item with one or more columns</param>
-        public void addItem(listItemGroup item)
+        public void addItem(listItemGroup item, bool refresh = true)
         {
             list.Add(item);
-            recalcScroll();
+            if (refresh) recalcScroll();
         }
 
         /// <summary>
@@ -274,7 +274,7 @@ namespace Ohana3DS_Rebirth.GUI
             Refresh();
         }
 
-        private void recalcScroll()
+        public void recalcScroll()
         {
             int totalSize = (list.Count * tileSize) + (showHeader ? headerSize : 0);
             if (totalSize > Height)

@@ -13,6 +13,7 @@ namespace Ohana3DS_Rebirth.Ohana.Containers
             public bool loadFromDisk;
             public uint fileOffset;
             public uint fileLength;
+            public bool doDecompression;
         }
 
         public Stream data;

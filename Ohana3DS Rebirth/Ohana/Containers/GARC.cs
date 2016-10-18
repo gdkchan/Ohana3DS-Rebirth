@@ -28,51 +28,67 @@ namespace Ohana3DS_Rebirth.Ohana.Containers
             output.data = data;
 
             string garcMagic = IOUtils.readStringWithLength(input, 4);
-            uint garcHeaderLength = input.ReadUInt32();
+            uint garcLength = input.ReadUInt32();
             ushort endian = input.ReadUInt16();
-            input.ReadUInt16(); //0x400
+            ushort version = input.ReadUInt16(); //0x400
             uint sectionCount = input.ReadUInt32();
             uint dataOffset = input.ReadUInt32();
             uint decompressedLength = input.ReadUInt32();
             uint compressedLength = input.ReadUInt32();
 
+            data.Seek(garcLength, SeekOrigin.Begin); //This is just the header "GARC" blk len, not the entire file
+
             //File Allocation Table Offsets
+            long fatoPosition = data.Position;
             string fatoMagic = IOUtils.readStringWithLength(input, 4);
-            uint fatoHeaderLength = input.ReadUInt32();
+            uint fatoLength = input.ReadUInt32();
             ushort fatoEntries = input.ReadUInt16();
             input.ReadUInt16(); //0xffff = Padding?
-            data.Seek(fatoEntries * 4, SeekOrigin.Current); //We don't need this
 
-            string fatbMagic = IOUtils.readStringWithLength(input, 4);
-            uint fatbHeaderLength = input.ReadUInt32();
-            uint entries = input.ReadUInt32();
+            long fatbPosition = fatoPosition + fatoLength;
 
-            long baseOffset = data.Position;
-
-            for (int i = 0; i < entries; i++)
+            for (int i = 0; i < fatoEntries; i++)
             {
-                data.Seek(baseOffset + i * 0x10, SeekOrigin.Begin);
+                data.Seek(fatoPosition + 0xc + i * 4, SeekOrigin.Begin);
+                data.Seek(input.ReadUInt32() + fatbPosition + 0xc, SeekOrigin.Begin);
 
                 uint flags = input.ReadUInt32();
-                uint startOffset = input.ReadUInt32();
-                uint endOffset = input.ReadUInt32();
-                uint length = input.ReadUInt32();
 
-                input.BaseStream.Seek(startOffset + dataOffset, SeekOrigin.Begin);
-                byte[] buffer = new byte[Math.Min(0x10, length)];
-                input.Read(buffer, 0, buffer.Length);
+                string folder = string.Empty;
 
-                bool isCompressed = buffer.Length > 0 ? buffer[0] == 0x11 : false;
-                string extension = FileIO.getExtension(buffer, isCompressed ? 5 : 0);
-                string name = string.Format("file_{0:D5}{1}", i, extension);
+                if (flags != 1) folder = string.Format("folder_{0:D5}/", i);
 
-                //And add the file to the container list
-                OContainer.fileEntry entry = new OContainer.fileEntry();
-                entry.name = name;
-                entry.loadFromDisk = true;
-                entry.fileOffset = startOffset + dataOffset;
-                entry.fileLength = length;
-                output.content.Add(entry);
+                for (int bit = 0; bit < 32; bit++)
+                {
+                    if ((flags & (1 << bit)) > 0)
+                    {
+                        uint startOffset = input.ReadUInt32();
+                        uint endOffset = input.ReadUInt32();
+                        uint length = input.ReadUInt32();
+
+                        long position = data.Position;
+
+                        input.BaseStream.Seek(startOffset + dataOffset, SeekOrigin.Begin);
+
+                        byte[] buffer = new byte[length];
+                        input.Read(buffer, 0, buffer.Length);
+
+                        bool isCompressed = buffer.Length > 0 ? buffer[0] == 0x11 : false;
+                        string extension = FileIO.getExtension(buffer, isCompressed ? 5 : 0);
+                        string name = folder + string.Format("file_{0:D5}{1}", flags == 1 ? i : bit, extension);
+
+                        //And add the file to the container list
+                        OContainer.fileEntry entry = new OContainer.fileEntry();
+                        entry.name = name;
+                        entry.loadFromDisk = true;
+                        entry.fileOffset = startOffset + dataOffset;
+                        entry.fileLength = length;
+                        entry.doDecompression = isCompressed;
+                        output.content.Add(entry);
+
+                        input.BaseStream.Seek(position, SeekOrigin.Begin);
+                    }
+                }
             }
 
             return output;

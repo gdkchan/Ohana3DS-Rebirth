@@ -4,6 +4,16 @@ namespace Ohana3DS_Rebirth.Ohana.Compressions
 {
     class LZSS_Ninty
     {
+        public static byte[] decompress(byte[] buffer)
+        {
+            using (MemoryStream ms = new MemoryStream(buffer))
+            {
+                BinaryReader input = new BinaryReader(ms);
+                uint decodedLength = input.ReadUInt32() >> 8;
+                return decompress(ms, decodedLength);
+            }
+        }
+
         public static byte[] decompress(Stream data, uint decodedLength)
         {
             byte[] input = new byte[data.Length - data.Position];

@@ -2,6 +2,7 @@
 using System.Windows.Forms;
 
 using Ohana3DS_Rebirth.Ohana.Containers;
+using Ohana3DS_Rebirth.Ohana.Compressions;
 
 namespace Ohana3DS_Rebirth.GUI
 {
@@ -34,8 +35,9 @@ namespace Ohana3DS_Rebirth.GUI
                 item.columns.Add(new OList.listItem(file.name));
                 uint length = file.loadFromDisk ? file.fileLength : (uint)file.data.Length;
                 item.columns.Add(new OList.listItem(getLength(length)));
-                FileList.addItem(item);
+                FileList.addItem(item, false);
             }
+            FileList.recalcScroll();
             FileList.Refresh();
         }
 
@@ -51,15 +53,21 @@ namespace Ohana3DS_Rebirth.GUI
                         string fileName = Path.Combine(browserDlg.SelectedPath, file.name);
                         string dir = Path.GetDirectoryName(fileName);
                         if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+
+                        byte[] buffer;
+
                         if (file.loadFromDisk)
                         {
-                            byte[] buffer = new byte[file.fileLength];
+                            buffer = new byte[file.fileLength];
                             container.data.Seek(file.fileOffset, SeekOrigin.Begin);
                             container.data.Read(buffer, 0, buffer.Length);
-                            File.WriteAllBytes(fileName, buffer);
                         }
                         else
-                            File.WriteAllBytes(fileName, file.data);
+                            buffer = file.data;
+
+                        if (file.doDecompression) buffer = LZSS_Ninty.decompress(buffer);
+
+                        File.WriteAllBytes(fileName, buffer);
                     }
                 }
             }
@@ -77,15 +85,20 @@ namespace Ohana3DS_Rebirth.GUI
                 {
                     OContainer.fileEntry file = container.content[FileList.SelectedIndex];
 
+                    byte[] buffer;
+
                     if (file.loadFromDisk)
                     {
-                        byte[] buffer = new byte[file.fileLength];
+                        buffer = new byte[file.fileLength];
                         container.data.Seek(file.fileOffset, SeekOrigin.Begin);
                         container.data.Read(buffer, 0, buffer.Length);
-                        File.WriteAllBytes(saveDlg.FileName, buffer);
                     }
                     else
-                        File.WriteAllBytes(saveDlg.FileName, file.data);
+                        buffer = file.data;
+
+                    if (file.doDecompression) buffer = LZSS_Ninty.decompress(buffer);
+
+                    File.WriteAllBytes(saveDlg.FileName, buffer);
                 }
             }
         }

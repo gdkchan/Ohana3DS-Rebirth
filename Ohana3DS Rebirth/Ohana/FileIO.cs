@@ -145,7 +145,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
         public static string getExtension(byte[] data, int startIndex = 0)
         {
-            if (data.Length > 3)
+            if (data.Length > 3 + startIndex)
             {
                 switch (getMagic(data, 4, startIndex))
                 {
@@ -153,7 +153,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 }
             }
 
-            if (data.Length > 2)
+            if (data.Length > 2 + startIndex)
             {
                 switch (getMagic(data, 3, startIndex))
                 {
@@ -161,7 +161,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 }
             }
 
-            if (data.Length > 1)
+            if (data.Length > 1 + startIndex)
             {
                 switch (getMagic(data, 2, startIndex))
                 {
