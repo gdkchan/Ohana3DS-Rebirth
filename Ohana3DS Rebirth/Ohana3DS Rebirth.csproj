@@ -255,6 +255,7 @@
     <Compile Include="Ohana\Models\PocketMonsters\MM.cs" />
     <Compile Include="Ohana\Animations\BS.cs" />
     <Compile Include="Ohana\Models\PocketMonsters\PC.cs" />
+    <Compile Include="Ohana\Models\PocketMonsters\Gen7.cs" />
     <Compile Include="Ohana\PatriciaTree.cs" />
     <Compile Include="Ohana\Textures\BCLIM.cs" />
     <Compile Include="Ohana\Textures\DMP.cs" />

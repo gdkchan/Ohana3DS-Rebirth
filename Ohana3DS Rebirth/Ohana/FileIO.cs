@@ -59,6 +59,11 @@ namespace Ohana3DS_Rebirth.Ohana
             BinaryReader input = new BinaryReader(data);
             uint magic, length;
 
+            switch (peek(input))
+            {
+                case 0x10000: return new file { data = Gen7.load(data), type = formatType.model };
+            }
+
             switch (getMagic(input, 5))
             {
                 case "MODEL": return new file { data = DQVIIPack.load(data), type = formatType.container };
@@ -181,6 +186,13 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             return ".bin";
+        }
+
+        private static uint peek(BinaryReader input)
+        {
+            uint value = input.ReadUInt32();
+            input.BaseStream.Seek(-4, SeekOrigin.Current);
+            return value;
         }
 
         private static string getMagic(BinaryReader input, uint length)

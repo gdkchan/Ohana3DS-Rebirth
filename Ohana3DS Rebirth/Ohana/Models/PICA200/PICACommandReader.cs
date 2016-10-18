@@ -106,7 +106,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PICA200
         public PICACommand.vshAttribute[] getVSHAttributesBufferPermutation()
         {
             ulong permutation = getParameter(PICACommand.vertexShaderAttributesPermutationLow);
-            permutation |= getParameter(PICACommand.vertexShaderAttributesPermutationHigh) << 32;
+            permutation |= (ulong)getParameter(PICACommand.vertexShaderAttributesPermutationHigh) << 32;
 
             PICACommand.vshAttribute[] attributes = new PICACommand.vshAttribute[23];
             for (int attribute = 0; attribute < attributes.Length; attribute++)
@@ -135,7 +135,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PICA200
         public PICACommand.attributeFormat[] getVSHAttributesBufferFormat()
         {
             ulong format = getParameter(PICACommand.vertexShaderAttributesBufferFormatLow);
-            format |= getParameter(PICACommand.vertexShaderAttributesBufferFormatHigh) << 32;
+            format |= (ulong)getParameter(PICACommand.vertexShaderAttributesBufferFormatHigh) << 32;
 
             PICACommand.attributeFormat[] formats = new PICACommand.attributeFormat[23];
             for (int attribute = 0; attribute < formats.Length; attribute++)
@@ -191,7 +191,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PICA200
         public uint[] getVSHAttributesBufferPermutation(byte bufferIndex)
         {
             ulong permutation = getParameter((ushort)(PICACommand.vertexShaderAttributesBuffer0Permutation + (bufferIndex * 3)));
-            permutation |= (getParameter((ushort)(PICACommand.vertexShaderAttributesBuffer0Stride + (bufferIndex * 3))) & 0xffff) << 32;
+            permutation |= (ulong)(getParameter((ushort)(PICACommand.vertexShaderAttributesBuffer0Stride + (bufferIndex * 3))) & 0xffff) << 32;
 
             uint[] attributes = new uint[23];
             for (int attribute = 0; attribute < attributes.Length; attribute++)
