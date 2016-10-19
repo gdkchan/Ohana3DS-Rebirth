@@ -251,6 +251,7 @@
     <Compile Include="Ohana\Models\NewLovePlus\Model.cs" />
     <Compile Include="Ohana\Models\NewLovePlus\Serialization.cs" />
     <Compile Include="Ohana\Models\NLP.cs" />
+    <Compile Include="Ohana\Models\PocketMonsters\CM.cs" />
     <Compile Include="Ohana\Models\PocketMonsters\GR.cs" />
     <Compile Include="Ohana\Models\PocketMonsters\MM.cs" />
     <Compile Include="Ohana\Animations\BS.cs" />

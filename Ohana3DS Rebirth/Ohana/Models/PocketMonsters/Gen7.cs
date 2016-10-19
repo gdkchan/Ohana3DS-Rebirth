@@ -1,4 +1,5 @@
 ﻿using Ohana3DS_Rebirth.Ohana.Models.PICA200;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -106,21 +107,37 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
                             uint bonesCount = input.ReadUInt32(); //Not sure
                             input.BaseStream.Seek(0xc, SeekOrigin.Current);
 
+                            List<string> boneNames = new List<string>();
+
                             //Probably wrong, maybe right
                             for (int b = 0; b < bonesCount; b++)
                             {
-                                byte strName = input.ReadByte();
-                                string bname = IOUtils.readStringWithLength(input, nameStrLen);
-                                input.ReadByte();
-                                input.ReadByte();
-                                input.ReadByte();
+                                string boneName = IOUtils.readStringWithLength(input, input.ReadByte());
+                                string parentName = IOUtils.readStringWithLength(input, input.ReadByte());
+                                byte flags = input.ReadByte();
 
-                                RenderBase.OVector3 scale = new RenderBase.OVector3(
+                                RenderBase.OBone bone = new RenderBase.OBone();
+
+                                bone.name = boneName;
+                                bone.parentId = (short)boneNames.IndexOf(parentName);
+
+                                bone.scale = new RenderBase.OVector3(
                                     input.ReadSingle(), 
                                     input.ReadSingle(), 
                                     input.ReadSingle());
 
-                                input.BaseStream.Seek(0x18, SeekOrigin.Current);
+                                bone.rotation = new RenderBase.OVector3(
+                                    input.ReadSingle(),
+                                    input.ReadSingle(),
+                                    input.ReadSingle());
+
+                                bone.translation = new RenderBase.OVector3(
+                                    input.ReadSingle(),
+                                    input.ReadSingle(),
+                                    input.ReadSingle());
+
+                                mdl.skeleton.Add(bone);
+                                boneNames.Add(boneName);
                             }
 
                             //Materials
@@ -161,7 +178,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
                             //Meshes
                             for (int m = 0; m < meshNames.Length; m++)
                             {
-                                ulong meshMagic = input.ReadUInt64(); //material string
+                                ulong meshMagic = input.ReadUInt64(); //mesh string
                                 uint meshLength = input.ReadUInt32();
                                 input.ReadUInt32(); //-1
 
@@ -177,8 +194,10 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
                                     RenderBase.OMesh obj = new RenderBase.OMesh();
 
                                     obj.isVisible = true;
-                                    obj.name = meshNames[m];
+                                    obj.name = info.names[sm];
                                     obj.materialId = (ushort)m;
+
+                                    ushort[] nodeList = info.nodeLists[sm];
 
                                     //NOTE: All Addresses on commands are set to 0x99999999 and are probably relocated by game engine
                                     PICACommandReader vtxCmdReader = info.cmdBuffers[sm * 3 + 0];
@@ -266,18 +285,18 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
                                                 case PICACommand.vshAttribute.textureCoordinate2:
                                                     vertex.texture2 = new RenderBase.OVector2(vector.x, vector.y);
                                                     break;
-                                                    /*case PICACommand.vshAttribute.boneIndex:
-                                                        vertex.node.Add(nodeList[(int)vector.x]);
-                                                        if (format.attributeLength > 0) vertex.node.Add(nodeList[(int)vector.y]);
-                                                        if (format.attributeLength > 1) vertex.node.Add(nodeList[(int)vector.z]);
-                                                        if (format.attributeLength > 2) vertex.node.Add(nodeList[(int)vector.w]);
-                                                        break;
-                                                    case PICACommand.vshAttribute.boneWeight:
-                                                        vertex.weight.Add(vector.x * 0.01f);
-                                                        if (format.attributeLength > 0) vertex.weight.Add(vector.y * 0.01f);
-                                                        if (format.attributeLength > 1) vertex.weight.Add(vector.z * 0.01f);
-                                                        if (format.attributeLength > 2) vertex.weight.Add(vector.w * 0.01f);
-                                                        break;*/
+                                                case PICACommand.vshAttribute.boneIndex:
+                                                    addNode(vertex.node, nodeList, (int)vector.x);
+                                                    if (format.attributeLength > 0) addNode(vertex.node, nodeList, (int)vector.y);
+                                                    if (format.attributeLength > 1) addNode(vertex.node, nodeList, (int)vector.z);
+                                                    if (format.attributeLength > 2) addNode(vertex.node, nodeList, (int)vector.w);
+                                                    break;
+                                                case PICACommand.vshAttribute.boneWeight:
+                                                    vertex.weight.Add(vector.x / 255f);
+                                                    if (format.attributeLength > 0) vertex.weight.Add(vector.y / 255f);
+                                                    if (format.attributeLength > 1) vertex.weight.Add(vector.z / 255f);
+                                                    if (format.attributeLength > 2) vertex.weight.Add(vector.w / 255f);
+                                                    break;
                                             }
                                         }
 
@@ -309,13 +328,25 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
                             data.Seek(descAddress + 0x68, SeekOrigin.Begin);
                             ushort width = input.ReadUInt16();
                             ushort height = input.ReadUInt16();
-                            ushort texBytesPerPx = input.ReadUInt16(); //Not sure
-                            ushort texFormat = input.ReadUInt16();
+                            ushort texFormat = input.ReadUInt16(); //Not sure
+                            ushort texMipMaps = input.ReadUInt16();
 
                             data.Seek(0x10, SeekOrigin.Current);
                             byte[] texBuffer = input.ReadBytes(texLength);
 
-                            Bitmap tex = TextureCodec.decode(texBuffer, width, height, (RenderBase.OTextureFormat)texFormat);
+                            RenderBase.OTextureFormat fmt = RenderBase.OTextureFormat.dontCare;
+
+                            //Debug.WriteLine(texFormat.ToString("X4") + " - " + texName + " - " + (width * height).ToString("X8") + " - " + texLength.ToString("X8"));
+
+                            switch (texFormat)
+                            {
+                                case 0x2: fmt = RenderBase.OTextureFormat.rgb565; break;
+                                case 0x3: fmt = RenderBase.OTextureFormat.rgb8; break;
+                                case 0x4: fmt = RenderBase.OTextureFormat.rgba8; break;
+                                case 0x25: fmt = RenderBase.OTextureFormat.l8; break;
+                            }
+
+                            Bitmap tex = TextureCodec.decode(texBuffer, width, height, fmt);
 
                             mdls.texture.Add(new RenderBase.OTexture(tex, texName));
                             break;
@@ -391,6 +422,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
             public List<ushort[]> nodeLists;
             public List<uint> vtxLengths;
             public List<uint> idxLengths;
+            public List<string> names;
 
             public int count;
         }
@@ -403,6 +435,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
             output.nodeLists = new List<ushort[]>();
             output.vtxLengths = new List<uint>();
             output.idxLengths = new List<uint>();
+            output.names = new List<string>();
 
             int currCmdIdx = 0;
             int totalCmds = 0;
@@ -422,23 +455,34 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
             for (int i = 0; i < output.count; i++)
             {
                 uint maybeHash = input.ReadUInt32();
-                input.BaseStream.Seek(input.ReadUInt32(), SeekOrigin.Current); //SubMesh name, we don't need this
+                uint subMeshNameLen = input.ReadUInt32();
+                long subMeshNameStart = input.BaseStream.Position;
+                string name = IOUtils.readStringWithLength(input, subMeshNameLen);
 
-                ushort[] nodeList = new ushort[20];
+                input.BaseStream.Seek(subMeshNameStart + subMeshNameLen, SeekOrigin.Begin);
 
-                for (int n = 0; n < 20; n++) nodeList[n] = input.ReadByte();
+                long nodeListStart = input.BaseStream.Position;
+                byte nodeListLen = input.ReadByte();
+                ushort[] nodeList = new ushort[nodeListLen];
+                for (int n = 0; n < nodeListLen; n++) nodeList[n] = input.ReadByte();
 
-                output.nodeLists.Add(nodeList);
+                input.BaseStream.Seek(nodeListStart + 0x20, SeekOrigin.Begin);
 
-                input.BaseStream.Seek(0xc, SeekOrigin.Current);
-
-                uint unkCount0 = input.ReadUInt32();
-                uint unkCount1 = input.ReadUInt32();
+                uint vtxCount = input.ReadUInt32();
+                uint idxCount = input.ReadUInt32();
                 output.vtxLengths.Add(input.ReadUInt32());
                 output.idxLengths.Add(input.ReadUInt32());
+
+                output.names.Add(name);
+                output.nodeLists.Add(nodeList);
             }
 
             return output;
+        }
+
+        private static void addNode(List<int> target, ushort[] nodeList, int nodeVal)
+        {
+            if (nodeVal != 0xff) target.Add(nodeList[nodeVal]);
         }
     }
 }

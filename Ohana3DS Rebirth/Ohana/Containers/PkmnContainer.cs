@@ -27,36 +27,26 @@ namespace Ohana3DS_Rebirth.Ohana.Containers
             OContainer output = null;
 
             string magic = IOUtils.readString(input, 0, 2); //Magic
-            switch (magic) {
-                case "BS":
-                case "PT":
-                case "GR":
-                case "MM":
-                case "PC":
-                case "NA": 
-                {
-                    ushort sectionCount = input.ReadUInt16();
-                    output = new OContainer();
-                    for (int i = 0; i < sectionCount; i++) {
-                        OContainer.fileEntry entry = new OContainer.fileEntry();
+            ushort sectionCount = input.ReadUInt16();
+            output = new OContainer();
+            for (int i = 0; i < sectionCount; i++)
+            {
+                OContainer.fileEntry entry = new OContainer.fileEntry();
 
-                        data.Seek(4 + (i * 4), SeekOrigin.Begin);
-                        uint startOffset = input.ReadUInt32();
-                        uint endOffset = input.ReadUInt32();
-                        uint length = endOffset - startOffset;
-                        
-                        data.Seek(startOffset, SeekOrigin.Begin);
-                        byte[] buffer = new byte[length];
-                        input.Read(buffer, 0, (int)length);
-                        entry.data = buffer;
-                            
-                        output.content.Add(entry);
-                    }
+                data.Seek(4 + (i * 4), SeekOrigin.Begin);
+                uint startOffset = input.ReadUInt32();
+                uint endOffset = input.ReadUInt32();
+                uint length = endOffset - startOffset;
 
-                    data.Close();
-                    break;
-                }
+                data.Seek(startOffset, SeekOrigin.Begin);
+                byte[] buffer = new byte[length];
+                input.Read(buffer, 0, (int)length);
+                entry.data = buffer;
+
+                output.content.Add(entry);
             }
+
+            data.Close();
 
             return output;
         }
