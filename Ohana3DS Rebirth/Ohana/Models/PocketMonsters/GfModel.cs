@@ -140,6 +140,8 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
                             }
 
                             //Materials
+                            List<string> matMeshBinding = new List<string>();
+
                             input.BaseStream.Seek(descAddress + mdlLength + 0x20, SeekOrigin.Begin);
 
                             for (int m = 0; m < materialNames.Length; m++)
@@ -164,10 +166,42 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
                                     unkNames[n] = IOUtils.readStringWithLength(input, nameLen);
                                 }
 
-                                data.Seek(0xb0, SeekOrigin.Current);
+                                matMeshBinding.Add(unkNames[0]);
 
-                                //Texture 0 name
-                                mat.name0 = IOUtils.readStringWithLength(input, input.ReadByte());
+                                data.Seek(0xac, SeekOrigin.Current);
+
+                                long textureCoordsStart = data.Position;
+
+                                for (int unit = 0; unit < 3; unit++)
+                                {
+                                    data.Seek(textureCoordsStart + unit * 0x42, SeekOrigin.Begin);
+
+                                    uint maybeHash = input.ReadUInt32();
+                                    string texName = IOUtils.readStringWithLength(input, input.ReadByte());
+
+                                    if (texName == string.Empty) break;
+
+                                    switch (unit)
+                                    {
+                                        case 0: mat.name0 = texName; break;
+                                        case 1: mat.name1 = texName; break;
+                                        case 2: mat.name2 = texName; break;
+                                    }
+
+                                    ushort unitIdx = input.ReadUInt16();
+
+                                    mat.textureCoordinator[unit].scaleU = input.ReadSingle();
+                                    mat.textureCoordinator[unit].scaleV = input.ReadSingle();
+                                    mat.textureCoordinator[unit].rotate = input.ReadSingle();
+                                    mat.textureCoordinator[unit].translateU = input.ReadSingle();
+                                    mat.textureCoordinator[unit].translateV = input.ReadSingle();
+
+                                    uint texMapperU = input.ReadUInt32();
+                                    uint texMapperV = input.ReadUInt32();
+
+                                    mat.textureMapper[unit].wrapU = (RenderBase.OTextureWrap)(texMapperU & 7);
+                                    mat.textureMapper[unit].wrapV = (RenderBase.OTextureWrap)(texMapperV & 7);
+                                }
 
                                 mdl.material.Add(mat);
 
@@ -194,7 +228,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
 
                                     obj.isVisible = true;
                                     obj.name = info.names[sm];
-                                    if (m < mdl.material.Count) obj.materialId = (ushort)m;
+                                    obj.materialId = (ushort)matMeshBinding.IndexOf(obj.name);
 
                                     ushort[] nodeList = info.nodeLists[sm];
 
