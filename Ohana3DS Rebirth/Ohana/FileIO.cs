@@ -63,6 +63,10 @@ namespace Ohana3DS_Rebirth.Ohana
             {
                 case 0x00010000: return new file { data = GfModel.load(data), type = formatType.model };
                 case 0x15041213: return new file { data = GfTexture.load(data), type = formatType.image };
+                case 0x15122117:
+                    RenderBase.OModelGroup mdls = new RenderBase.OModelGroup();
+                    mdls.model.Add(GfModel.loadModel(data));
+                    return new file { data = mdls, type = formatType.model };
             }
 
             switch (getMagic(input, 5))
@@ -215,7 +219,7 @@ namespace Ohana3DS_Rebirth.Ohana
             return magic;
         }
 
-        private static string getMagic(byte[] data, int length, int startIndex = 0)
+        public static string getMagic(byte[] data, int length, int startIndex = 0)
         {
             return Encoding.ASCII.GetString(data, startIndex, length);
         }

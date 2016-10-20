@@ -29,6 +29,7 @@ namespace Ohana3DS_Rebirth.Ohana.Containers
             string magic = IOUtils.readString(input, 0, 2); //Magic
             ushort sectionCount = input.ReadUInt16();
             output = new OContainer();
+
             for (int i = 0; i < sectionCount; i++)
             {
                 OContainer.fileEntry entry = new OContainer.fileEntry();

@@ -60,14 +60,7 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <returns></returns>
         public static string readStringWithLength(BinaryReader input, uint count)
         {
-            MemoryStream bytes = new MemoryStream();
-            for (int i = 0; i < count; i++)
-            {
-                byte b = input.ReadByte();
-                if (b == 0) break;
-                bytes.WriteByte(b);
-            }
-            return Encoding.ASCII.GetString(bytes.ToArray());
+            return readString(input, (uint)input.BaseStream.Position, count);
         }
 
         /// <summary>

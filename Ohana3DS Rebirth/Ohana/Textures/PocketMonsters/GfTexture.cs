@@ -16,6 +16,9 @@ namespace Ohana3DS_Rebirth.Ohana.Textures.PocketMonsters
             BinaryReader input = new BinaryReader(data);
             long descAddress = data.Position;
 
+            data.Seek(8, SeekOrigin.Current);
+            if (IOUtils.readStringWithLength(input, 7) != "texture") return null;
+
             data.Seek(descAddress + 0x18, SeekOrigin.Begin);
             int texLength = input.ReadInt32();
 
