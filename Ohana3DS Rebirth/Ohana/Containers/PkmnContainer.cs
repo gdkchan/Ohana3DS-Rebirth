@@ -41,7 +41,13 @@ namespace Ohana3DS_Rebirth.Ohana.Containers
                 data.Seek(startOffset, SeekOrigin.Begin);
                 byte[] buffer = new byte[length];
                 input.Read(buffer, 0, (int)length);
+
+                bool isCompressed = buffer.Length > 0 ? buffer[0] == 0x11 : false;
+                string extension = FileIO.getExtension(buffer, isCompressed ? 5 : 0);
+                string name = string.Format("file_{0:D5}{1}", i, extension);
+
                 entry.data = buffer;
+                entry.name = name;
 
                 output.content.Add(entry);
             }

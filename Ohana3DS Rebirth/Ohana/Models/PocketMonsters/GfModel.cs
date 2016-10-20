@@ -1,5 +1,5 @@
 ﻿using Ohana3DS_Rebirth.Ohana.Models.PICA200;
-
+using Ohana3DS_Rebirth.Ohana.Textures.PocketMonsters;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,7 +8,7 @@ using System.IO;
 
 namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
 {
-    class Gen7
+    class GfModel
     {
         /// <summary>
         ///     Loads a Pokémon Sun/Moon Model file.
@@ -104,12 +104,11 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
 
                             input.BaseStream.Seek(0x20, SeekOrigin.Current); //???
 
-                            uint bonesCount = input.ReadUInt32(); //Not sure
+                            uint bonesCount = input.ReadUInt32();
                             input.BaseStream.Seek(0xc, SeekOrigin.Current);
 
                             List<string> boneNames = new List<string>();
 
-                            //Probably wrong, maybe right
                             for (int b = 0; b < bonesCount; b++)
                             {
                                 string boneName = IOUtils.readStringWithLength(input, input.ReadByte());
@@ -195,7 +194,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
 
                                     obj.isVisible = true;
                                     obj.name = info.names[sm];
-                                    obj.materialId = (ushort)m;
+                                    if (m < mdl.material.Count) obj.materialId = (ushort)m;
 
                                     ushort[] nodeList = info.nodeLists[sm];
 
@@ -318,38 +317,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
 
                             break;
 
-                        case TEXTURE_SECT:
-                            data.Seek(descAddress + 0x18, SeekOrigin.Begin);
-                            int texLength = input.ReadInt32();
-
-                            data.Seek(descAddress + 0x28, SeekOrigin.Begin);
-                            string texName = IOUtils.readStringWithLength(input, 0x40);
-
-                            data.Seek(descAddress + 0x68, SeekOrigin.Begin);
-                            ushort width = input.ReadUInt16();
-                            ushort height = input.ReadUInt16();
-                            ushort texFormat = input.ReadUInt16(); //Not sure
-                            ushort texMipMaps = input.ReadUInt16();
-
-                            data.Seek(0x10, SeekOrigin.Current);
-                            byte[] texBuffer = input.ReadBytes(texLength);
-
-                            RenderBase.OTextureFormat fmt = RenderBase.OTextureFormat.dontCare;
-
-                            //Debug.WriteLine(texFormat.ToString("X4") + " - " + texName + " - " + (width * height).ToString("X8") + " - " + texLength.ToString("X8"));
-
-                            switch (texFormat)
-                            {
-                                case 0x2: fmt = RenderBase.OTextureFormat.rgb565; break;
-                                case 0x3: fmt = RenderBase.OTextureFormat.rgb8; break;
-                                case 0x4: fmt = RenderBase.OTextureFormat.rgba8; break;
-                                case 0x25: fmt = RenderBase.OTextureFormat.l8; break;
-                            }
-
-                            Bitmap tex = TextureCodec.decode(texBuffer, width, height, fmt);
-
-                            mdls.texture.Add(new RenderBase.OTexture(tex, texName));
-                            break;
+                        case TEXTURE_SECT: mdls.texture.Add(GfTexture.load(data, true)); break;
                     }
                 }
 

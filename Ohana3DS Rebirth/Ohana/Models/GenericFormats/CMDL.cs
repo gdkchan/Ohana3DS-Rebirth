@@ -4,7 +4,6 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
-using static Ohana3DS_Rebirth.Ohana.RenderBase;
 
 namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
 {
@@ -465,7 +464,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
             public bool HasSkinningMatrix;
 
             [XmlAttribute]
-            public OBillboardMode BillboardMode;
+            public RenderBase.OBillboardMode BillboardMode;
 
             public ctrTransform Transform = new ctrTransform();
         }

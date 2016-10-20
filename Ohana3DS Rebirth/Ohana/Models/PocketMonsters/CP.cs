@@ -4,10 +4,10 @@ using System.IO;
 
 namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
 {
-    class CM
+    class CP
     {
         /// <summary>
-        ///     Loads a CM overworld character model from Pokémon.
+        ///     Loads a CP overworld character model from Pokémon.
         /// </summary>
         /// <param name="data">The data</param>
         /// <returns>The Model group with the character meshes</returns>
@@ -16,7 +16,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
             RenderBase.OModelGroup models = new RenderBase.OModelGroup();
 
             OContainer container = PkmnContainer.load(data);
-            models = GfModel.load(new MemoryStream(container.content[0].data));
+            models = CM.load(new MemoryStream(container.content[1].data));
 
             return models;
         }

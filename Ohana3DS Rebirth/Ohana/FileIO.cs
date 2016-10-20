@@ -61,7 +61,8 @@ namespace Ohana3DS_Rebirth.Ohana
 
             switch (peek(input))
             {
-                case 0x10000: return new file { data = Gen7.load(data), type = formatType.model };
+                case 0x00010000: return new file { data = GfModel.load(data), type = formatType.model };
+                case 0x15041213: return new file { data = GfTexture.load(data), type = formatType.image };
             }
 
             switch (getMagic(input, 5))
@@ -119,16 +120,25 @@ namespace Ohana3DS_Rebirth.Ohana
                 case "DMP": return new file { data = DMP.load(data), type = formatType.image };
             }
 
-            switch (getMagic(input, 2))
+            string magic2b = getMagic(input, 2);
+
+            switch (magic2b)
             {
                 case "AD": return new file { data = AD.load(data), type = formatType.model };
                 case "BM": return new file { data = MM.load(data), type = formatType.model };
+                case "BS": return new file { data = BS.load(data), type = formatType.anims };
                 case "CM": return new file { data = CM.load(data), type = formatType.model };
+                case "CP": return new file { data = CP.load(data), type = formatType.model };
                 case "GR": return new file { data = GR.load(data), type = formatType.model };
                 case "MM": return new file { data = MM.load(data), type = formatType.model };
                 case "PC": return new file { data = PC.load(data), type = formatType.model };
                 case "PT": return new file { data = PT.load(data), type = formatType.texture };
-                case "BS": return new file { data = BS.load(data), type = formatType.anims };
+            }
+
+            if ((magic2b[0] >= 'A' && magic2b[0] <= 'Z') &&
+                (magic2b[1] >= 'A' && magic2b[1] <= 'Z'))
+            {
+                return new file { data = PkmnContainer.load(data), type = formatType.container };
             }
 
             //Compressions
@@ -172,7 +182,10 @@ namespace Ohana3DS_Rebirth.Ohana
                 switch (getMagic(data, 2, startIndex))
                 {
                     case "AD": return ".ad";
+                    case "BG": return ".bg";
                     case "BM": return ".bm";
+                    case "BS": return ".bs";
+                    case "CM": return ".cm";
                     case "GR": return ".gr";
                     case "MM": return ".mm";
                     case "PB": return ".pb";
@@ -182,7 +195,6 @@ namespace Ohana3DS_Rebirth.Ohana
                     case "PO": return ".po";
                     case "PT": return ".pt";
                     case "TM": return ".tm";
-                    case "BS": return ".bs";
                 }
             }
 
