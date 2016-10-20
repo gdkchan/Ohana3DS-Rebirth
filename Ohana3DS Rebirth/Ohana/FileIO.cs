@@ -139,10 +139,13 @@ namespace Ohana3DS_Rebirth.Ohana
                 case "PT": return new file { data = PT.load(data), type = formatType.texture };
             }
 
-            if ((magic2b[0] >= 'A' && magic2b[0] <= 'Z') &&
-                (magic2b[1] >= 'A' && magic2b[1] <= 'Z'))
+            if (magic2b.Length == 2)
             {
-                return new file { data = PkmnContainer.load(data), type = formatType.container };
+                if ((magic2b[0] >= 'A' && magic2b[0] <= 'Z') &&
+                    (magic2b[1] >= 'A' && magic2b[1] <= 'Z'))
+                {
+                    return new file { data = PkmnContainer.load(data), type = formatType.container };
+                }
             }
 
             //Compressions

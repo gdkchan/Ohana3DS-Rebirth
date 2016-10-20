@@ -126,7 +126,12 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
             mdl.transform.M34 = input.ReadSingle();
             mdl.transform.M44 = input.ReadSingle();
 
-            input.BaseStream.Seek(0x20, SeekOrigin.Current); //???
+            uint unkDataLen = input.ReadUInt32();
+            uint unkDataRelStart = input.ReadUInt32();
+            input.ReadUInt32();
+            input.ReadUInt32();
+
+            input.BaseStream.Seek(unkDataRelStart + unkDataLen, SeekOrigin.Current); //???
 
             uint bonesCount = input.ReadUInt32();
             input.BaseStream.Seek(0xc, SeekOrigin.Current);
