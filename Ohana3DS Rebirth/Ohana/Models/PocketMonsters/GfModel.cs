@@ -107,23 +107,23 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
 
             mdl.transform = new RenderBase.OMatrix();
             mdl.transform.M11 = input.ReadSingle();
-            mdl.transform.M21 = input.ReadSingle();
-            mdl.transform.M31 = input.ReadSingle();
-            mdl.transform.M41 = input.ReadSingle();
-
             mdl.transform.M12 = input.ReadSingle();
-            mdl.transform.M22 = input.ReadSingle();
-            mdl.transform.M32 = input.ReadSingle();
-            mdl.transform.M42 = input.ReadSingle();
-
             mdl.transform.M13 = input.ReadSingle();
-            mdl.transform.M23 = input.ReadSingle();
-            mdl.transform.M33 = input.ReadSingle();
-            mdl.transform.M43 = input.ReadSingle();
-
             mdl.transform.M14 = input.ReadSingle();
+
+            mdl.transform.M21 = input.ReadSingle();
+            mdl.transform.M22 = input.ReadSingle();
+            mdl.transform.M23 = input.ReadSingle();
             mdl.transform.M24 = input.ReadSingle();
+
+            mdl.transform.M31 = input.ReadSingle();
+            mdl.transform.M32 = input.ReadSingle();
+            mdl.transform.M33 = input.ReadSingle();
             mdl.transform.M34 = input.ReadSingle();
+
+            mdl.transform.M41 = input.ReadSingle();
+            mdl.transform.M42 = input.ReadSingle();
+            mdl.transform.M43 = input.ReadSingle();
             mdl.transform.M44 = input.ReadSingle();
 
             uint unkDataLen = input.ReadUInt32();

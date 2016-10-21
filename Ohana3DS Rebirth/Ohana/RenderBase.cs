@@ -161,6 +161,11 @@ namespace Ohana3DS_Rebirth.Ohana
                     z.GetHashCode();
             }
 
+            public static OVector3 operator *(OVector3 a, float b)
+            {
+                return new OVector3(a.x * b, a.y * b, a.z * b);
+            }
+
             public static OVector3 operator *(OVector3 a, OVector3 b)
             {
                 return new OVector3(a.x * b.x, a.y * b.y, a.z * b.z);
@@ -265,6 +270,16 @@ namespace Ohana3DS_Rebirth.Ohana
                     y.GetHashCode() ^
                     z.GetHashCode() ^
                     w.GetHashCode();
+            }
+
+            public static OVector4 operator *(OVector4 a, float b)
+            {
+                return new OVector4(a.x * b, a.y * b, a.z * b, a.w * b);
+            }
+
+            public static OVector4 operator *(OVector4 a, OVector4 b)
+            {
+                return new OVector4(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
             }
 
             public static bool operator ==(OVector4 a, OVector4 b)
