@@ -279,6 +279,7 @@ namespace Ohana3DS_Rebirth.Ohana
                                 {
                                     case formatType.model: output.AddRange(((RenderBase.OModelGroup)file.data).texture); break;
                                     case formatType.texture: output.AddRange((List<RenderBase.OTexture>)file.data); break;
+                                    case formatType.image: output.Add((RenderBase.OTexture)file.data); break;
                                 }
                             }
                             return output;
