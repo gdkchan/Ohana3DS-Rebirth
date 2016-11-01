@@ -1710,8 +1710,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                         {
                             ushort index = 0;
 
-                            //Debug.WriteLine("index " + data.Position.ToString("X8") + " - " + idxBufferFormat);
-
                             switch (idxBufferFormat)
                             {
                                 case PICACommand.indexBufferFormat.unsignedShort: index = input.ReadUInt16(); break;
@@ -1721,8 +1719,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models
                             long dataPosition = data.Position;
                             long vertexOffset = vshAttributesBufferOffset + (index * vshAttributesBufferStride);
                             data.Seek(vertexOffset, SeekOrigin.Begin);
-
-                            //Debug.WriteLine("vtx " + data.Position.ToString("X8"));
 
                             RenderBase.OVertex vertex = new RenderBase.OVertex();
                             vertex.diffuseColor = 0xffffffff;

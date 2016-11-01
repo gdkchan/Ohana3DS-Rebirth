@@ -13,6 +13,7 @@ using Ohana3DS_Rebirth.Ohana.Animations.PocketMonsters;
 using Ohana3DS_Rebirth.Ohana.Textures;
 using Ohana3DS_Rebirth.Ohana.Compressions;
 using Ohana3DS_Rebirth.Ohana.Containers;
+using Ohana3DS_Rebirth.Ohana.Animations;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
@@ -62,6 +63,7 @@ namespace Ohana3DS_Rebirth.Ohana
             switch (peek(input))
             {
                 case 0x00010000: return new file { data = GfModel.load(data), type = formatType.model };
+                case 0x00060000: return new file { data = GfMotion.loadAnim(input), type = formatType.anims };
                 case 0x15041213: return new file { data = GfTexture.load(data), type = formatType.image };
                 case 0x15122117:
                     RenderBase.OModelGroup mdls = new RenderBase.OModelGroup();

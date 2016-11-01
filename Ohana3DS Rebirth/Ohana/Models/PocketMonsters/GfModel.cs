@@ -64,8 +64,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
                     switch (sect)
                     {
                         case MODEL_SECT:
-                            
-
                             RenderBase.OModel mdl = loadModel(data, true);
                             mdl.name = name;
 
