@@ -1,5 +1,6 @@
-﻿using Ohana3DS_Rebirth.Ohana.Containers;
-
+﻿using Ohana3DS_Rebirth.Ohana.Animations;
+using Ohana3DS_Rebirth.Ohana.Containers;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
@@ -17,6 +18,13 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
 
             OContainer container = PkmnContainer.load(data);
             models = GfModel.load(new MemoryStream(container.content[0].data));
+
+            List<RenderBase.OSkeletalAnimation> anms = GfMotion.load(new MemoryStream(container.content[1].data));
+
+            foreach (RenderBase.OSkeletalAnimation anm in anms)
+            {
+                models.skeletalAnimation.list.Add(anm);
+            }
 
             return models;
         }

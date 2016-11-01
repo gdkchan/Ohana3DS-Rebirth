@@ -127,10 +127,10 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
             public void set(Color col)
             {
                 color = string.Format(
-                    "{0} {1} {2} {3}", 
-                    getString(col.R / 255f), 
-                    getString(col.G / 255f), 
-                    getString(col.B / 255f), 
+                    "{0} {1} {2} {3}",
+                    getString(col.R / 255f),
+                    getString(col.G / 255f),
+                    getString(col.B / 255f),
                     getString(col.A / 255f));
             }
 
@@ -880,7 +880,7 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
                     controller.skin.src.Add(joints);
 
                     daeSource bindPoses = new daeSource();
-                    bindPoses.id = meshName +"_ctrl_inv_bind_poses_id";
+                    bindPoses.id = meshName + "_ctrl_inv_bind_poses_id";
                     bindPoses.float_array = new daeFloatArray();
                     bindPoses.float_array.id = meshName + "_ctrl_inv_bind_poses_array_id";
                     bindPoses.float_array.count = (uint)(mdl.skeleton.Count * 16);
@@ -991,7 +991,8 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
             scene.url = "#" + vs.id;
             dae.scene.Add(scene);
 
-            XmlWriterSettings settings = new XmlWriterSettings {
+            XmlWriterSettings settings = new XmlWriterSettings
+            {
                 Encoding = Encoding.UTF8,
                 Indent = true,
                 IndentChars = "\t"

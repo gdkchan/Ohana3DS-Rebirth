@@ -164,6 +164,8 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
                     input.ReadSingle(),
                     input.ReadSingle());
 
+                bone.absoluteScale = new RenderBase.OVector3(bone.scale);
+
                 mdl.skeleton.Add(bone);
                 boneNames.Add(boneName);
             }

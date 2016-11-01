@@ -612,7 +612,7 @@ namespace Ohana3DS_Rebirth.Ohana
                     {
                         OAnimationBone newBone = new OAnimationBone();
                         newBone.parentId = mdl.skeleton[index].parentId;
-                        newBone.rotationQuaternion = getQuaternion(mdl.skeleton[index].rotation);
+                        newBone.rotationQuaternion = getQuaternion(mdl.skeleton[index].rotation, false);
                         newBone.translation = new RenderBase.OVector3(mdl.skeleton[index].translation);
                         newBone.scale = new RenderBase.OVector3(1, 1, 1);
                         foreach (RenderBase.OSkeletalAnimationBone b in bone)
@@ -671,6 +671,11 @@ namespace Ohana3DS_Rebirth.Ohana
                                 }
                                 else
                                 {
+                                    //Scale
+                                    if (b.scaleX.exists) newBone.scale.x = AnimationUtils.getKey(b.scaleX, ctrlSA.Frame);
+                                    if (b.scaleY.exists) newBone.scale.y = AnimationUtils.getKey(b.scaleY, ctrlSA.Frame);
+                                    if (b.scaleZ.exists) newBone.scale.z = AnimationUtils.getKey(b.scaleZ, ctrlSA.Frame);
+
                                     //Rotation
                                     float fl = (float)Math.Floor(ctrlSA.Frame);
                                     float fr = (float)Math.Ceiling(ctrlSA.Frame);
@@ -697,8 +702,8 @@ namespace Ohana3DS_Rebirth.Ohana
                                         vr.z = AnimationUtils.getKey(b.rotationZ, fr);
                                     }
 
-                                    Quaternion ql = getQuaternion(vl);
-                                    Quaternion qr = getQuaternion(vr);
+                                    Quaternion ql = getQuaternion(vl, b.isAxisAngle);
+                                    Quaternion qr = getQuaternion(vr, b.isAxisAngle);
                                     newBone.rotationQuaternion = Quaternion.Slerp(ql, qr, mu);
 
                                     //Translation
@@ -1333,13 +1338,23 @@ namespace Ohana3DS_Rebirth.Ohana
         /// </summary>
         /// <param name="vector">The rotation vector</param>
         /// <returns></returns>
-        private Quaternion getQuaternion(RenderBase.OVector3 vector)
+        private Quaternion getQuaternion(RenderBase.OVector3 vector, bool isAxisAngle)
         {
             Quaternion output = Quaternion.Identity;
 
-            output *= Quaternion.RotationAxis(new Vector3(1, 0, 0), vector.x);
-            output *= Quaternion.RotationAxis(new Vector3(0, 1, 0), vector.y);
-            output *= Quaternion.RotationAxis(new Vector3(0, 0, 1), vector.z);
+            if (isAxisAngle)
+            {
+                Vector3 v = new Vector3(vector.x, vector.y, vector.z);
+                float angle = v.Length();
+                v.Normalize();
+                output *= Quaternion.RotationAxis(v, angle);
+            }
+            else
+            {
+                output *= Quaternion.RotationAxis(new Vector3(1, 0, 0), vector.x);
+                output *= Quaternion.RotationAxis(new Vector3(0, 1, 0), vector.y);
+                output *= Quaternion.RotationAxis(new Vector3(0, 0, 1), vector.z);
+            }
 
             return output;
         }

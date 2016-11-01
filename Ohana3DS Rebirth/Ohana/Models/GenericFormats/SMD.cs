@@ -110,6 +110,12 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
                                     if (b.rotationX.exists) newBone.rotation.x = AnimationUtils.getKey(b.rotationX, frame);
                                     if (b.rotationY.exists) newBone.rotation.y = AnimationUtils.getKey(b.rotationY, frame);
                                     if (b.rotationZ.exists) newBone.rotation.z = AnimationUtils.getKey(b.rotationZ, frame);
+
+                                    if (b.isAxisAngle)
+                                    {
+                                        RenderBase.OVector4 q = new RenderBase.OVector4(newBone.rotation.normalize(), newBone.rotation.length());
+                                        newBone.rotation = q.toEuler();
+                                    }
                                 }
 
                                 break;

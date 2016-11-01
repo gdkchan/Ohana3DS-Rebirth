@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
@@ -171,6 +172,11 @@ namespace Ohana3DS_Rebirth.Ohana
                 return new OVector3(a.x * b.x, a.y * b.y, a.z * b.z);
             }
 
+            public static OVector3 operator /(OVector3 a, float b)
+            {
+                return new OVector3(a.x / b, a.y / b, a.z / b);
+            }
+
             public static bool operator ==(OVector3 a, OVector3 b)
             {
                 return a.x == b.x && a.y == b.y && a.z == b.z;
@@ -179,6 +185,25 @@ namespace Ohana3DS_Rebirth.Ohana
             public static bool operator !=(OVector3 a, OVector3 b)
             {
                 return !(a == b);
+            }
+
+            public float length()
+            {
+                return (float)Math.Sqrt(dot(this, this));
+            }
+
+            public OVector3 normalize()
+            {
+                return this / length();
+            }
+
+            public static float dot(OVector3 a, OVector3 b)
+            {
+                float x = a.x * b.x;
+                float y = a.y * b.y;
+                float z = a.z * b.z;
+
+                return x + y + z;
             }
 
             public override string ToString()
@@ -222,6 +247,19 @@ namespace Ohana3DS_Rebirth.Ohana
                 y = vector.y;
                 z = vector.z;
                 w = vector.w;
+            }
+
+            /// <summary>
+            ///     Creates a Quaternion from a Axis/Angle.
+            /// </summary>
+            /// <param name="vector">The Axis vector</param>
+            /// <param name="angle">The Angle</param>
+            public OVector4(OVector3 vector, float angle)
+            {
+                x = (float)(Math.Sin(angle * 0.5f) * vector.x);
+                y = (float)(Math.Sin(angle * 0.5f) * vector.y);
+                z = (float)(Math.Sin(angle * 0.5f) * vector.z);
+                w = (float)Math.Cos(angle * 0.5f);
             }
 
             /// <summary>
@@ -672,6 +710,23 @@ namespace Ohana3DS_Rebirth.Ohana
 
                 return output;
             }
+
+            public override string ToString()
+            {
+                StringBuilder SB = new StringBuilder();
+
+                for (int Row = 0; Row < 3; Row++)
+                {
+                    for (int Col = 0; Col < 4; Col++)
+                    {
+                        SB.Append(string.Format("M{0}{1}: {2,-16}", Row + 1, Col + 1, this[Col, Row]));
+                    }
+
+                    SB.Append(Environment.NewLine);
+                }
+
+                return SB.ToString();
+            }
         }
 
         /// <summary>
@@ -763,6 +818,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public OVector3 rotation;
             public OVector3 scale;
             public OVector3 absoluteScale;
+            public OMatrix invTransform;
             public short parentId;
             public string name = null;
 
@@ -1837,8 +1893,10 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public string name;
 
+            public OAnimationKeyFrameGroup scaleX, scaleY, scaleZ;
             public OAnimationKeyFrameGroup rotationX, rotationY, rotationZ;
             public OAnimationKeyFrameGroup translationX, translationY, translationZ;
+            public bool isAxisAngle;
 
             public OAnimationFrame rotationQuaternion;
             public OAnimationFrame translation;
@@ -1850,6 +1908,10 @@ namespace Ohana3DS_Rebirth.Ohana
 
             public OSkeletalAnimationBone()
             {
+                scaleX = new OAnimationKeyFrameGroup();
+                scaleY = new OAnimationKeyFrameGroup();
+                scaleZ = new OAnimationKeyFrameGroup();
+
                 rotationX = new OAnimationKeyFrameGroup();
                 rotationY = new OAnimationKeyFrameGroup();
                 rotationZ = new OAnimationKeyFrameGroup();
