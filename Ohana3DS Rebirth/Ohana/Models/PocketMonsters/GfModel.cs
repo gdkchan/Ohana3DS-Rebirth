@@ -312,6 +312,12 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
 
                         RenderBase.OVertex vertex = new RenderBase.OVertex();
                         vertex.diffuseColor = 0xffffffff;
+                        // Fix weight problems
+                        vertex.weight.Add(1);
+                        vertex.weight.Add(0);
+                        vertex.weight.Add(0);
+                        vertex.weight.Add(0);
+
                         for (int attribute = 0; attribute < vshTotalAttributes; attribute++)
                         {
                             //gdkchan self note: The Attribute type flags are used for something else on Bone Weight (and bone index?)
@@ -354,10 +360,10 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
                                     if (format.attributeLength > 2) addNode(vertex.node, nodeList, (int)vector.w);
                                     break;
                                 case PICACommand.vshAttribute.boneWeight:
-                                    vertex.weight.Add(vector.x / 255f);
-                                    if (format.attributeLength > 0) vertex.weight.Add(vector.y / 255f);
-                                    if (format.attributeLength > 1) vertex.weight.Add(vector.z / 255f);
-                                    if (format.attributeLength > 2) vertex.weight.Add(vector.w / 255f);
+                                    vertex.weight[0] = (vector.x / 255f);
+                                    if (format.attributeLength > 0) vertex.weight[1] = (vector.y / 255f);
+                                    if (format.attributeLength > 1) vertex.weight[2] = (vector.z / 255f);
+                                    if (format.attributeLength > 2) vertex.weight[3] = (vector.w / 255f);
                                     break;
                             }
                         }
