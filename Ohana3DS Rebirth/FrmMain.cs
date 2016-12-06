@@ -70,6 +70,8 @@ namespace Ohana3DS_Rebirth
         }
 
         delegate void openFile(string fileNmame);
+        delegate void openFiles(string[] fileNames);
+
         FileIO.formatType currentFormat;
         IPanel currentPanel;
 
@@ -80,45 +82,123 @@ namespace Ohana3DS_Rebirth
                 currentPanel.finalize();
                 ContentContainer.Controls.Remove((Control)currentPanel);
             }
-
-            FileIO.file file = FileIO.load(fileName);
-            currentFormat = file.type;
-
-            if (currentFormat != FileIO.formatType.unsupported)
+            
+            try
             {
-                switch (currentFormat)
+                FileIO.file file = FileIO.load(fileName);
+                currentFormat = file.type;
+
+                if (currentFormat != FileIO.formatType.unsupported)
                 {
-                    case FileIO.formatType.container: currentPanel = new OContainerPanel(); break;
-                    case FileIO.formatType.image: currentPanel = new OImagePanel(); break;
-                    case FileIO.formatType.model: currentPanel = new OViewportPanel(); break;
-                    case FileIO.formatType.texture: currentPanel = new OTexturesPanel(); break;
+                    switch (currentFormat)
+                    {
+                        case FileIO.formatType.container:
+                            currentPanel = new OContainerPanel();
+                            break;
+                        case FileIO.formatType.image:
+                            currentPanel = new OImagePanel();
+                            break;
+                        case FileIO.formatType.model:
+                            currentPanel = new OViewportPanel();
+                            break;
+                        case FileIO.formatType.texture:
+                            currentPanel = new OTexturesPanel();
+                            break;
+                    }
+
+                    ((Control)currentPanel).Dock = DockStyle.Fill;
+                    SuspendDrawing();
+                    ContentContainer.Controls.Add((Control)currentPanel);
+                    ContentContainer.Controls.SetChildIndex((Control)currentPanel, 0);
+                    ResumeDrawing();
+                    currentPanel.launch(file.data);
+                }
+                else
+                    MessageBox.Show("Unsupported file format!", "Error", MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation);
+
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Unsupported file format!", "Error", MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation);
+
+                if (currentPanel != null)
+                {
+                    currentPanel.finalize();
+                    ContentContainer.Controls.Remove((Control)currentPanel);
+                }
+            }
+        }
+
+        public void openMultipleFiles(string[] fileNames)
+        {
+            if (currentPanel != null)
+            {
+                currentPanel.finalize();
+                ContentContainer.Controls.Remove((Control)currentPanel);
+            }
+
+            RenderBase.OModelGroup model = new RenderBase.OModelGroup();
+            string error = "";
+
+            foreach (string fileName in fileNames)
+            {
+                try
+                {
+                    FileIO.file file = FileIO.load(fileName);
+
+                    if (file.type == FileIO.formatType.model)
+                    {
+                        model.merge((RenderBase.OModelGroup)file.data);
+                    }
+                    else
+                    {
+                        error += "\n    " + System.IO.Path.GetFileName(fileName);
+                        if (file.type != FileIO.formatType.unsupported) error += "*";
+                    }
+                }
+                catch (Exception)
+                {
+                    error += "\n    " + System.IO.Path.GetFileName(fileName);
                 }
 
-                ((Control)currentPanel).Dock = DockStyle.Fill;
-                SuspendDrawing();
-                ContentContainer.Controls.Add((Control)currentPanel);
-                ContentContainer.Controls.SetChildIndex((Control)currentPanel, 0);
-                ResumeDrawing();
-                currentPanel.launch(file.data);
             }
-            else
-                MessageBox.Show("Unsupported file format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+
+            currentPanel = new OViewportPanel();
+
+            ((Control)currentPanel).Dock = DockStyle.Fill;
+            SuspendDrawing();
+            ContentContainer.Controls.Add((Control)currentPanel);
+            ContentContainer.Controls.SetChildIndex((Control)currentPanel, 0);
+            ResumeDrawing();
+            currentPanel.launch(model);
+
+            if (error.Length > 0)
+                MessageBox.Show("Could not load the following files in MultiFile-Mode:\n" + error + "\n\n*Marked files are loadable in Single File-Mode", 
+                    "Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void FrmMain_DragDrop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy;
-        }
-
-        private void FrmMain_DragEnter(object sender, DragEventArgs e)
-        {
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            if (files.Length > 0)
+            if (files.Length == 1)
             {
                 openFile openFileDelegate = new openFile(open);
                 BeginInvoke(openFileDelegate, files[0]);
                 Activate();
             }
+            else if (files.Length > 1)
+            {
+                openFiles openFilesDelegate = new openFiles(openMultipleFiles);
+                BeginInvoke(openFilesDelegate, (object)files);
+                Activate();
+            }
+        }
+
+        private void FrmMain_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy;
         }
 
         #region "Menus"
