@@ -113,8 +113,15 @@ namespace Ohana3DS_Rebirth.Ohana.Models.GenericFormats
 
                                     if (b.isAxisAngle)
                                     {
-                                        RenderBase.OVector4 q = new RenderBase.OVector4(newBone.rotation.normalize(), newBone.rotation.length());
-                                        newBone.rotation = q.toEuler();
+                                        if (newBone.rotation.length() == 0)
+                                        {
+                                            newBone.rotation = new RenderBase.OVector3(0, 0, 0);
+                                        }
+                                        else
+                                        {
+                                            RenderBase.OVector4 q = new RenderBase.OVector4(newBone.rotation.normalize(), newBone.rotation.length());
+                                            newBone.rotation = q.toEuler();
+                                        }
                                     }
                                 }
 
