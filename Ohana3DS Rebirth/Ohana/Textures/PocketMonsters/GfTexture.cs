@@ -41,6 +41,7 @@ namespace Ohana3DS_Rebirth.Ohana.Textures.PocketMonsters
                 case 0x2: fmt = RenderBase.OTextureFormat.rgb565; break;
                 case 0x3: fmt = RenderBase.OTextureFormat.rgb8; break;
                 case 0x4: fmt = RenderBase.OTextureFormat.rgba8; break;
+                case 0x16: fmt = RenderBase.OTextureFormat.rgba4; break;
                 case 0x17: fmt = RenderBase.OTextureFormat.rgba5551; break;
                 case 0x23: fmt = RenderBase.OTextureFormat.la8; break;
                 case 0x24: fmt = RenderBase.OTextureFormat.hilo8; break;
