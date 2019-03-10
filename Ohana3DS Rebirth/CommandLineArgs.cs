@@ -65,10 +65,10 @@ Options for --batch mode:
                 {
                          if (args[i].Equals("--models") || args[i].Equals("-m")) exportModels = true;
                     else if (args[i].Equals("--textures") || args[i].Equals("-t")) exportTextures = true;
-                    else if (args[i++].Equals("--output") || args[i].Equals("-o")) outputFolder = args[i];
-                    else if (args[i++].Equals("--format") || args[i].Equals("-f"))
+                    else if (args[i].Equals("--output") || args[i].Equals("-o")) outputFolder = args[++i];
+                    else if (args[i].Equals("--format") || args[i].Equals("-f"))
                     {
-                        switch(args[i])
+                        switch(args[++i])
                         {
                             case "dae":
                             case "DAE":

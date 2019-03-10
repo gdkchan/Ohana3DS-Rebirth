@@ -35,7 +35,7 @@ namespace Ohana3DS_Rebirth
                 var data = (RenderBase.OModelGroup)file.data;
                 for (int i = 0; i < data.model.Count; i++)
                 {
-                    string fileName = Path.Combine(destination, filename + data.model[i].name);
+                    string fileName = Path.Combine(destination, Path.GetFileNameWithoutExtension(filename) + data.model[i].name);
                     switch (format)
                     {
                         case 0: DAE.export(data, fileName + ".dae", i); break;
@@ -62,7 +62,7 @@ namespace Ohana3DS_Rebirth
                 var data = (RenderBase.OModelGroup)file.data;
                 foreach (RenderBase.OTexture tex in data.texture)
                 {
-                    string fileName = Path.Combine(destination, filename + tex.name) + ".png";
+                    string fileName = Path.Combine(destination, Path.GetFileNameWithoutExtension(filename) + tex.name) + ".png";
                     tex.texture.Save(fileName);
                 }
             }
