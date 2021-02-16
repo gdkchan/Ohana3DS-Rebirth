@@ -1489,7 +1489,8 @@ namespace Ohana3DS_Rebirth.Ohana
         }
 
         /// <summary>
-        ///     Gets the current frame of a Material Animation color.
+        ///     Transforms a Skeleton from relative to absolute positions.
+        ///     Uses Quaternion for rotations.
         /// </summary>
         /// <param name="skeleton">The animated skeleton</param>
         /// <param name="index">Index of the bone to convert</param>
