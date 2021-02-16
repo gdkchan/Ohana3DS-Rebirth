@@ -1116,6 +1116,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         using (VertexBuffer vertexBuffer = new VertexBuffer(typeof(customVertex), buffer.Length, device, Usage.None, vertexFormat, Pool.Managed))
                         {
                             vertexBuffer.SetData(buffer, 0, LockFlags.None);
+                            device.SetStreamSource(0, vertexBuffer, 0);
 
                             device.DrawPrimitives(PrimitiveType.TriangleList, 0, buffer.Length / 3);
                         }
