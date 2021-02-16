@@ -1492,6 +1492,23 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <summary>
         ///     Gets the current frame of a Material Animation color.
         /// </summary>
+        /// <param name="skeleton">The animated skeleton</param>
+        /// <param name="index">Index of the bone to convert</param>
+        /// <param name="target">Target matrix to save bone transformation</param>
+        private void transformAnimationSkeleton(List<OAnimationBone> skeleton, int index, ref Matrix target)
+        {
+            target *= Matrix.RotationQuaternion(skeleton[index].rotationQuaternion);
+            target *= Matrix.Translation(
+                skeleton[index].translation.x,
+                skeleton[index].translation.y,
+                skeleton[index].translation.z);
+
+            if (skeleton[index].parentId > -1) transformAnimationSkeleton(skeleton, skeleton[index].parentId, ref target);
+        }
+
+        /// <summary>
+        ///     Gets the current frame of a Material Animation color.
+        /// </summary>
         /// <param name="data">The animation data</param>
         /// <param name="color">The color where the animation will be applied</param>
         private void getMaterialAnimationColor(RenderBase.OMaterialAnimationData data, ref Color color)
