@@ -88,6 +88,7 @@
             this.TopMenu.Name = "TopMenu";
             this.TopMenu.Size = new System.Drawing.Size(792, 24);
             this.TopMenu.TabIndex = 10;
+            this.TopMenu.Text = "menuStrip1";
             // 
             // MenuFile
             // 
