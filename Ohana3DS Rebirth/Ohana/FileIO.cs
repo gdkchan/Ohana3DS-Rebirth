@@ -29,6 +29,7 @@ namespace Ohana3DS_Rebirth.Ohana
             model = 1 << 3,
             texture = 1 << 4,
             anims = 1 << 5,
+            animation = 0x20,
             all = 0xffffffff
         }
 
@@ -342,18 +343,18 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <param name="type">Type of the data to be exported</param>
         /// <param name="data">The data</param>
         /// <param name="arguments">Optional arguments to be used by the exporter</param>
-        public static void export(fileType type, object data, params int[] arguments)
+        public static void export(fileType type, object data, params object[] arguments)
         {
             using (SaveFileDialog saveDlg = new SaveFileDialog())
             {
                 switch (type)
                 {
                     case fileType.model:
-                        OModelExportForm exportMdl = new OModelExportForm((RenderBase.OModelGroup)data, arguments[0]);
+                        OModelExportForm exportMdl = new OModelExportForm((RenderBase.OModelGroup)data, (int)arguments[0]);
                         exportMdl.Show();
                         break;
                     case fileType.texture:
-                        OTextureExportForm exportTex = new OTextureExportForm((RenderBase.OModelGroup)data, arguments[0]);
+                        OTextureExportForm exportTex = new OTextureExportForm((RenderBase.OModelGroup)data, (int)arguments[0]);
                         exportTex.Show();
                         break;
                     case fileType.skeletalAnimation:
@@ -364,7 +365,7 @@ namespace Ohana3DS_Rebirth.Ohana
                             switch (saveDlg.FilterIndex)
                             {
                                 case 1:
-                                    SMD.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0], arguments[1]);
+                                    SMD.export((RenderBase.OModelGroup)data, saveDlg.FileName, (int)arguments[0], (int)arguments[1]);
                                     break;
                             }
                         }
