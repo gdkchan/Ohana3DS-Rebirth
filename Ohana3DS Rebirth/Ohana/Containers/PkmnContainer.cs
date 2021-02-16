@@ -23,7 +23,7 @@ namespace Ohana3DS_Rebirth.Ohana.Containers
         /// <returns></returns>
         public static OContainer load(Stream data)
         {
-            BinaryReader input = new BinaryReader(data);
+            BinaryReader input = new BinaryReader(data); ;
             OContainer output = null;
 
             string magic = IOUtils.readString(input, 0, 2); //Magic

@@ -1116,6 +1116,7 @@ namespace Ohana3DS_Rebirth.Ohana
                         using (VertexBuffer vertexBuffer = new VertexBuffer(typeof(customVertex), buffer.Length, device, Usage.None, vertexFormat, Pool.Managed))
                         {
                             vertexBuffer.SetData(buffer, 0, LockFlags.None);
+                            device.SetStreamSource(0, vertexBuffer, 0);
 
                             device.DrawPrimitives(PrimitiveType.TriangleList, 0, buffer.Length / 3);
                         }
@@ -1486,24 +1487,6 @@ namespace Ohana3DS_Rebirth.Ohana
                 skeleton[index].translation.z);
 
             if (skeleton[index].parentId > -1) transformSkeleton(skeleton, skeleton[index].parentId, ref target);
-        }
-
-        /// <summary>
-        ///     Transforms a Skeleton from relative to absolute positions.
-        ///     Uses Quaternion for rotations.
-        /// </summary>
-        /// <param name="skeleton">The animated skeleton</param>
-        /// <param name="index">Index of the bone to convert</param>
-        /// <param name="target">Target matrix to save bone transformation</param>
-        private void transformAnimationSkeleton(List<OAnimationBone> skeleton, int index, ref Matrix target)
-        {
-            target *= Matrix.RotationQuaternion(skeleton[index].rotationQuaternion);
-            target *= Matrix.Translation(
-                skeleton[index].translation.x,
-                skeleton[index].translation.y,
-                skeleton[index].translation.z);
-
-            if (skeleton[index].parentId > -1) transformAnimationSkeleton(skeleton, skeleton[index].parentId, ref target);
         }
 
         /// <summary>

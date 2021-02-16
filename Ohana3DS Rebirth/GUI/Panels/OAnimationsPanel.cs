@@ -6,7 +6,7 @@ using Ohana3DS_Rebirth.Ohana;
 
 namespace Ohana3DS_Rebirth.GUI
 {
-    public partial class OAnimationsPanel : UserControl, IPanel
+    public partial class OAnimationsPanel : UserControl
     {
         private RenderEngine renderer;
         private RenderEngine.animationControl control;
@@ -19,34 +19,6 @@ namespace Ohana3DS_Rebirth.GUI
         public OAnimationsPanel()
         {
             InitializeComponent();
-        }
-
-        public void launch(object data)
-        {
-            RenderBase.OModelGroup group = (RenderBase.OModelGroup)data;
-            animations = new RenderBase.OAnimationListBase();
-
-            foreach (RenderBase.OAnimationBase mAnim in group.materialAnimation.list)
-            {
-                animations.list.Add(mAnim);
-            }
-
-            foreach (RenderBase.OAnimationBase sAnim in group.skeletalAnimation.list)
-            {
-                animations.list.Add(sAnim);
-            }
-
-            foreach (RenderBase.OAnimationBase vAnim in group.visibilityAnimation.list)
-            {
-                animations.list.Add(vAnim);
-            }
-
-            updateList();
-        }
-
-        public void finalize()
-        {
-            AnimationsList.flush();
         }
 
         public void launch(RenderEngine renderEngine, FileIO.fileType type)

@@ -8,13 +8,6 @@ namespace Ohana3DS_Rebirth.Ohana.Models.PocketMonsters
 {
     class PC
     {
-        public static RenderBase.OModelGroup load(string file)
-        {
-            RenderBase.OModelGroup group = load(File.Open(file, FileMode.Open));
-
-            return group;
-        }
-
         /// <summary>
         ///     Loads a PC monster model from Pokémon.
         /// </summary>

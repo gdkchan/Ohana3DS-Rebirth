@@ -7,11 +7,6 @@ namespace Ohana3DS_Rebirth.Ohana.Textures.PocketMonsters
 {
     class PT
     {
-        public static List<RenderBase.OTexture> load(string file)
-        {
-            return load(File.Open(file, FileMode.Open));
-        }
-
         /// <summary>
         ///     Loads all monster textures on a PT Pokémon container.
         /// </summary>
