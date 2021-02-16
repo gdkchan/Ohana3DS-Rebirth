@@ -4,12 +4,12 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{79753E74-1271-4C63-8249-0391F761CBCC}</ProjectGuid>
+    <ProjectGuid>{6D3A8F74-6F12-4B4B-924C-B8058F581F66}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Ohana3DS_Rebirth</RootNamespace>
     <AssemblyName>Ohana3DS Rebirth</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -231,6 +231,9 @@
       <DependentUpon>OForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Ohana\Animations\GfMotion.cs" />
+    <Compile Include="Ohana\Animations\PB.cs" />
+    <Compile Include="Ohana\Animations\PF.cs" />
+    <Compile Include="Ohana\Animations\PK.cs" />
     <Compile Include="Ohana\AnimationUtils.cs" />
     <Compile Include="Ohana\Compressions\Yaz0.cs" />
     <Compile Include="Ohana\Containers\DARC.cs" />

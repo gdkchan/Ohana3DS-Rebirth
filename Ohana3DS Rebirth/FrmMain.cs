@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-
+using System.IO;
 using Ohana3DS_Rebirth.GUI;
 using Ohana3DS_Rebirth.Ohana;
 using Ohana3DS_Rebirth.Properties;
 using Ohana3DS_Rebirth.Tools;
+using Ohana3DS_Rebirth.Ohana.Models.PocketMonsters;
 
 namespace Ohana3DS_Rebirth
 {
@@ -13,6 +14,7 @@ namespace Ohana3DS_Rebirth
     {
         bool hasFileToOpen;
         string fileToOpen;
+        FileIO.file file;
 
         public FrmMain()
         {
@@ -50,6 +52,22 @@ namespace Ohana3DS_Rebirth
 
             MenuViewShowSidebar.Checked = Settings.Default.viewShowSidebar;
             MenuViewWireframeMode.Checked = Settings.Default.reWireframeMode;
+
+            if (hasFileToOpen)
+            {
+                RenderBase.OModelGroup group = PC.load(fileToOpen);
+                group.model[0].name = Path.GetFileNameWithoutExtension(fileToOpen);
+
+                object[] arguments = { 0, 0, Path.Combine(Path.GetDirectoryName(fileToOpen), Path.GetFileNameWithoutExtension(fileToOpen)) };
+
+                FileIO.export(FileIO.fileType.model, group, arguments);
+
+                file.data = null;
+
+                Close();
+
+                Application.Exit();
+            }
         }
 
         public void setFileToOpen(string fileName)
@@ -92,18 +110,11 @@ namespace Ohana3DS_Rebirth
                 {
                     switch (currentFormat)
                     {
-                        case FileIO.formatType.container:
-                            currentPanel = new OContainerPanel();
-                            break;
-                        case FileIO.formatType.image:
-                            currentPanel = new OImagePanel();
-                            break;
-                        case FileIO.formatType.model:
-                            currentPanel = new OViewportPanel();
-                            break;
-                        case FileIO.formatType.texture:
-                            currentPanel = new OTexturesPanel();
-                            break;
+                        case FileIO.formatType.container: currentPanel = new OContainerPanel(); break;
+                        case FileIO.formatType.image: currentPanel = new OImagePanel(); break;
+                        case FileIO.formatType.model: currentPanel = new OViewportPanel(); break;
+                        case FileIO.formatType.texture: currentPanel = new OTexturesPanel(); break;
+                        case FileIO.formatType.animation: currentPanel = new OAnimationsPanel(); break;
                     }
 
                     ((Control)currentPanel).Dock = DockStyle.Fill;
@@ -114,14 +125,12 @@ namespace Ohana3DS_Rebirth
                     currentPanel.launch(file.data);
                 }
                 else
-                    MessageBox.Show("Unsupported file format!", "Error", MessageBoxButtons.OK,
-                        MessageBoxIcon.Exclamation);
+                    MessageBox.Show("Unsupported file format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 
             }
             catch (Exception)
             {
-                MessageBox.Show("Unsupported file format!", "Error", MessageBoxButtons.OK,
-                    MessageBoxIcon.Exclamation);
+                MessageBox.Show("Unsupported file format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 
                 if (currentPanel != null)
                 {
@@ -201,6 +210,15 @@ namespace Ohana3DS_Rebirth
             if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy;
         }
 
+        private void destroyOpenPanels()
+        {
+            if (currentPanel != null)
+            {
+                currentPanel.finalize();
+                ContentContainer.Controls.Remove((Control)currentPanel);
+            }
+        }
+
         #region "Menus"
         /*
          * File
@@ -213,7 +231,11 @@ namespace Ohana3DS_Rebirth
             using (OpenFileDialog openDlg = new OpenFileDialog())
             {
                 openDlg.Filter = "All files|*.*";
-                if (openDlg.ShowDialog() == DialogResult.OK) open(openDlg.FileName);
+                if (openDlg.ShowDialog() == DialogResult.OK)
+                {
+                    destroyOpenPanels();
+                    open(openDlg.FileName);
+                }
             }
         }
 
