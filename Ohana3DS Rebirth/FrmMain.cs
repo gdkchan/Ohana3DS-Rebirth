@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-
+using System.IO;
 using Ohana3DS_Rebirth.GUI;
 using Ohana3DS_Rebirth.Ohana;
 using Ohana3DS_Rebirth.Properties;
