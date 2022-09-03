@@ -260,6 +260,7 @@
     <Compile Include="Ohana\Models\PocketMonsters\PC.cs" />
     <Compile Include="Ohana\Models\PocketMonsters\GfModel.cs" />
     <Compile Include="Ohana\PatriciaTree.cs" />
+    <Compile Include="Ohana\Textures\3DST.cs" />
     <Compile Include="Ohana\Textures\BCLIM.cs" />
     <Compile Include="Ohana\Textures\DMP.cs" />
     <Compile Include="Ohana\FileIO.cs" />
