@@ -17,7 +17,6 @@ namespace Ohana3DS_Rebirth.Ohana.Textures
 
             // A 3DST image contains the word 'texture' at the beggining of the file, followed by 9 null bytes
             string _3dstMagic = IOUtils.readStringWithLength(input, 7);
-            if (_3dstMagic != "texture") throw new Exception("3DST: Invalid or corrupted file!");
             input.ReadUInt32();
             input.ReadUInt32();
             input.ReadByte();
@@ -27,7 +26,7 @@ namespace Ohana3DS_Rebirth.Ohana.Textures
             ushort height = input.ReadUInt16();
             ushort format = input.ReadUInt16();
 
-            // Depending of the image format, the length of it is calculated differently
+            // Depending of the image format, its length is calculated differently
             int length = 0;
             RenderBase.OTextureFormat OTextureFormat = RenderBase.OTextureFormat.dontCare;
             switch(format)
@@ -41,6 +40,7 @@ namespace Ohana3DS_Rebirth.Ohana.Textures
                     OTextureFormat = RenderBase.OTextureFormat.etc1;
                     break;
             }
+
             // The image data starts at byte 0x80
             data.Seek(0x80, SeekOrigin.Begin);
             byte[] buffer = new byte[length];
