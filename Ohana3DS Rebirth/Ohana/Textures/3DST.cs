@@ -26,30 +26,39 @@ namespace Ohana3DS_Rebirth.Ohana.Textures
             ushort height = input.ReadUInt16();
             ushort format = input.ReadUInt16();
 
-            // Depending of the image format, its length is calculated differently
-            int length = 0;
-            RenderBase.OTextureFormat OTextureFormat = RenderBase.OTextureFormat.dontCare;
-            switch(format)
-            {
-                case 0:
-                    length = width * height * 4;
-                    OTextureFormat = RenderBase.OTextureFormat.rgba8;
-                    break;
-                case 4:
-                    length = width * height / 2;
-                    OTextureFormat = RenderBase.OTextureFormat.etc1;
-                    break;
-            }
-
             // The image data starts at byte 0x80
             data.Seek(0x80, SeekOrigin.Begin);
-            byte[] buffer = new byte[length];
+            byte[] buffer = new byte[data.Length - 0x80];
             data.Read(buffer, 0, buffer.Length);
             data.Close();
 
             // Note: 3DST images are flipped upside-down.
             // This is intended as the console flips it back and shows it correctly
-            Bitmap bmp = TextureCodec.decode(buffer, width, height, OTextureFormat);
+            Bitmap bmp = null;
+            switch (format)
+            {
+                case 0:
+                    bmp = TextureCodec.decode(buffer, width, height, RenderBase.OTextureFormat.rgba8);
+                    break;
+                case 1:
+                    bmp = TextureCodec.decode(buffer, width, height, RenderBase.OTextureFormat.rgb8);
+                    break;
+                case 2:
+                    bmp = TextureCodec.decode(buffer, width, height, RenderBase.OTextureFormat.a8);
+                    break;
+                case 4:
+                    bmp = TextureCodec.decode(buffer, width, height, RenderBase.OTextureFormat.etc1);
+                    break;
+                case 5:
+                    bmp = TextureCodec.decode(buffer, width, height, RenderBase.OTextureFormat.rgba5551);
+                    break;
+                case 6:
+                    bmp = TextureCodec.decode(buffer, width, height, RenderBase.OTextureFormat.rgb565);
+                    break;
+                case 7:
+                    bmp = TextureCodec.decode(buffer, width, height, RenderBase.OTextureFormat.rgba4);
+                    break;
+            }
 
             Bitmap newBmp = new Bitmap(width, height);
             Graphics gfx = Graphics.FromImage(newBmp);
