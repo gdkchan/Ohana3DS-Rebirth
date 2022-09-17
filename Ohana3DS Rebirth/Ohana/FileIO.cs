@@ -71,6 +71,11 @@ namespace Ohana3DS_Rebirth.Ohana
                     return new file { data = mdls, type = formatType.model };
             }
 
+            switch (getMagic(input, 7))
+            {
+                case "texture": return new file { data = _3DST.load(data), type = formatType.image };
+            }
+
             switch (getMagic(input, 5))
             {
                 case "MODEL": return new file { data = DQVIIPack.load(data), type = formatType.container };
